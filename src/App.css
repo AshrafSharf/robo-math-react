@@ -1,0 +1,66 @@
+/* Global reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+}
+
+/* Main robo compass container */
+.robo-compass-div {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.robo-compass-header {
+  height: 50px;
+  background: #2c3e50;
+  border-bottom: 1px solid #1a252f;
+  z-index: 1000;
+  position: relative;
+}
+
+.robo-compass-header .navbar-header {
+  padding: 0 20px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.robo-compass-header .navbar-brand {
+  padding: 0;
+  height: auto;
+  text-decoration: none;
+}
+
+/* Main Shell */
+.robo-shell-main {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #fafafa;
+}
+
+/* Play Surface */
+.robo-shell-main-playsurface {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 250px;
+  right: 0;
+  overflow: hidden;
+  transition: left 0.2s linear;
+  background-color: #fafafa;
+}
+
+/* When command editor is collapsed - canvas takes full width */
+.robo-shell-main-playsurface.expanded {
+  left: 0;
+}

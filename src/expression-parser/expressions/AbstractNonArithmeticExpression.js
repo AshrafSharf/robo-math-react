@@ -1,0 +1,128 @@
+/**
+ * Base class for non-arithmetic expressions
+ */
+import { ExpressionError } from '../core/ExpressionError.js';
+import { MathUtils } from '../utils/MathUtils.js';
+import { NumericExpression } from './NumericExpression.js';
+
+export class AbstractNonArithmeticExpression {
+    constructor() {
+        this.expressionId = -1;
+        this.commandText = '';
+    }
+
+    getExpressionId() {
+        return this.expressionId;
+    }
+
+    setExpressionId(expressionId) {
+        this.expressionId = expressionId;
+    }
+
+    setExpressionCommandText(commandText) {
+        this.commandText = commandText;
+    }
+
+    getExpressionCommandText() {
+        return this.commandText;
+    }
+
+    resolve(context) {
+        // To be implemented by subclasses
+    }
+
+    getName() {
+        return 'Abstract';
+    }
+
+    add(otherExpression) {
+        return null;
+    }
+
+    subtract(otherExpression) {
+        return null;
+    }
+
+    divide(otherExpression) {
+        return null;
+    }
+
+    multiply(otherExpression) {
+        if (otherExpression instanceof NumericExpression) {
+            const numValue = otherExpression.getNumericValue();
+            if (numValue === -1) {
+                return this.reverse();
+            }
+        }
+        return null;
+    }
+
+    power(otherExpression) {
+        return null;
+    }
+
+    getVariableAtomicValues() {
+        return [];
+    }
+
+    dispatchError(errMessage) {
+        const expressionError = new ExpressionError(this.getExpressionId(), 'Expression Error', errMessage);
+        throw expressionError;
+    }
+
+    getStartValue() {
+        return [];
+    }
+
+    getEndValue() {
+        return [];
+    }
+
+    alwaysExecute() {
+        return false;
+    }
+
+    equals(other) {
+        if (!other) return false;
+
+        const currentExp = this.getComparableExpression();
+        const otherExp = other.getComparableExpression();
+
+        if (currentExp.getName() !== otherExp.getName()) return false;
+        if (this.getLabel() !== other.getLabel()) return false;
+
+        const currentAtomicValues = currentExp.getVariableAtomicValues();
+        const otherAtomicValues = otherExp.getVariableAtomicValues();
+
+        if (currentAtomicValues.length === otherAtomicValues.length) {
+            for (let i = 0; i < currentAtomicValues.length; i++) {
+                if (!MathUtils.isEqual(currentAtomicValues[i], otherAtomicValues[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    getComparableExpression() {
+        return this;
+    }
+
+    getLabel() {
+        return '';
+    }
+
+    reverse() {
+        this.dispatchError('The object doesnt support reverse option');
+        return null;
+    }
+
+    getTraceableCoordinates() {
+        return this.getVariableAtomicValues();
+    }
+
+    getIndexedVariableAtomicValues(index) {
+        return this.getVariableAtomicValues();
+    }
+}

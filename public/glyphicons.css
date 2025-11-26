@@ -1,0 +1,37 @@
+/* Bootstrap Glyphicons for icons */
+@font-face {
+  font-family: 'Glyphicons Halflings';
+  src: url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/fonts/glyphicons-halflings-regular.eot');
+  src: url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'),
+       url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/fonts/glyphicons-halflings-regular.woff2') format('woff2'),
+       url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/fonts/glyphicons-halflings-regular.woff') format('woff'),
+       url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/fonts/glyphicons-halflings-regular.ttf') format('truetype'),
+       url('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+}
+
+.glyphicon {
+  position: relative;
+  top: 1px;
+  display: inline-block;
+  font-family: 'Glyphicons Halflings';
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.glyphicon-play:before { content: "\e072"; }
+.glyphicon-stop:before { content: "\e074"; }
+.glyphicon-pause:before { content: "\e073"; }
+.glyphicon-trash:before { content: "\e020"; }
+.glyphicon-chevron-left:before { content: "\e079"; }
+.glyphicon-chevron-right:before { content: "\e080"; }
+.glyphicon-remove:before { content: "\e014"; }
+.glyphicon-cog:before { content: "\e019"; }
+.glyphicon-ok:before { content: "\e013"; }
+.glyphicon-chevron-down:before { content: "\e114"; }
+.glyphicon-chevron-up:before { content: "\e113"; }
+.glyphicon-warning-sign:before { content: "\e107"; }
+.glyphicon-minus:before { content: "\2212"; }
+.glyphicon-plus:before { content: "\002b"; }
