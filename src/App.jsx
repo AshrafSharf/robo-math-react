@@ -2,12 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import CommandEditor from './components/CommandEditor';
 import './App.css';
 import { RoboCanvas } from './RoboCanvas.js';
+import { AnimationSpeedManager } from './mathtext/animation-speed-manager.js';
 
 function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isAnimated, setIsAnimated] = useState(false);
+  const [latexInput, setLatexInput] = useState('w_k = \\sqrt[n]{r}\\Bigl(\\cos\\Bigl(\\frac{\\bbox[0px]{\\theta + 2k\\pi}}{n}\\Bigr)+i\\sin\\Bigl(\\frac{\\theta + 2k\\pi}{n}\\Bigr)\\Bigr),\\quad k=0,1,\\dots,n-1');
+  const [speed, setSpeed] = useState(1.0);
   const roboCanvasRef = useRef(null);
   const containerRef = useRef(null);
+  const mathComponentRef = useRef(null);
+  const debounceTimerRef = useRef(null);
 
   const handleExecute = (command) => {
     console.log('Execute command:', command);
@@ -63,6 +68,9 @@ function App() {
 
         roboCanvasRef.current = roboCanvas;
         console.log('App: RoboCanvas initialized successfully');
+
+        // Render initial latex after canvas is ready
+        renderLatex(latexInput);
       } catch (error) {
         console.error('App: RoboCanvas initialization failed', error);
         alert(`Failed to initialize RoboCanvas: ${error.message}`);
@@ -136,6 +144,91 @@ function App() {
     }
   };
 
+  // Render LaTeX in text section
+  const renderLatex = (latexContent) => {
+    const roboCanvas = roboCanvasRef.current;
+    if (!roboCanvas || !roboCanvas.diagram) return;
+
+    // Clear text section only (not graphics)
+    const textSection = roboCanvas.getTextSection();
+    if (textSection) {
+      textSection.innerHTML = '';
+    }
+
+    if (!latexContent || latexContent.trim() === '') {
+      mathComponentRef.current = null;
+      return;
+    }
+
+    // Create math text at position (1, 1) in logical coordinates
+    const mathComponent = roboCanvas.diagram.mathText(latexContent, 1, 1, {
+      fontSize: 40,
+      stroke: '#000000'
+    });
+
+    // Store reference for animation controls
+    mathComponentRef.current = mathComponent;
+  };
+
+  // Handle LaTeX input change with debouncing
+  const handleLatexChange = (e) => {
+    const value = e.target.value;
+    setLatexInput(value);
+
+    // Clear previous timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new debounce timer
+    debounceTimerRef.current = setTimeout(() => {
+      renderLatex(value);
+    }, 500);
+  };
+
+  // Write with pen animation - using diagram API
+  const handleWriteWithPen = () => {
+    const roboCanvas = roboCanvasRef.current;
+    const mathComponent = mathComponentRef.current;
+    if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
+
+    roboCanvas.diagram.writeMathText(mathComponent);
+  };
+
+  // Hide marked parts - using diagram API
+  const handleHideBBox = () => {
+    const roboCanvas = roboCanvasRef.current;
+    const mathComponent = mathComponentRef.current;
+    if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
+
+    roboCanvas.diagram.hideMathTextParts(mathComponent);
+  };
+
+  // Write only marked parts - using diagram API
+  const handleWriteOnlyBBox = () => {
+    const roboCanvas = roboCanvasRef.current;
+    const mathComponent = mathComponentRef.current;
+    if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
+
+    roboCanvas.diagram.writeOnlyMathTextParts(mathComponent);
+  };
+
+  // Write without marked parts - using diagram API
+  const handleWriteWithoutBBox = () => {
+    const roboCanvas = roboCanvasRef.current;
+    const mathComponent = mathComponentRef.current;
+    if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
+
+    roboCanvas.diagram.writeWithoutMathTextParts(mathComponent);
+  };
+
+  // Handle speed change
+  const handleSpeedChange = (e) => {
+    const newSpeed = parseFloat(e.target.value);
+    setSpeed(newSpeed);
+    AnimationSpeedManager.setSpeedMultiplier(newSpeed);
+  };
+
   return (
     <div id="robo" className="robo-compass-div">
       {/* Top Header */}
@@ -144,6 +237,104 @@ function App() {
           <a className="navbar-brand" href="/">
             <h3 style={{ margin: 0, color: 'white', display: 'inline-block' }}>Robo Math</h3>
           </a>
+        </div>
+      </div>
+
+      {/* Write Animation Controls */}
+      <div style={{
+        padding: '10px 20px',
+        backgroundColor: '#fff',
+        borderBottom: '1px solid #ddd',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        {/* LaTeX Input */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <label style={{ fontSize: '14px', fontWeight: 'bold', minWidth: '100px' }}>LaTeX Input:</label>
+          <textarea
+            value={latexInput}
+            onChange={handleLatexChange}
+            style={{
+              flex: 1,
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              resize: 'vertical',
+              minHeight: '60px'
+            }}
+            placeholder="Enter LaTeX code..."
+          />
+        </div>
+
+        {/* Write Animation Buttons */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button onClick={handleWriteWithPen} style={{
+            padding: '8px 16px',
+            border: '1px solid #007bff',
+            backgroundColor: '#007bff',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}>
+            Write with Pen
+          </button>
+
+          <button onClick={handleHideBBox} style={{
+            padding: '8px 16px',
+            border: '1px solid #6c757d',
+            backgroundColor: '#6c757d',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}>
+            Hide BBox
+          </button>
+
+          <button onClick={handleWriteOnlyBBox} style={{
+            padding: '8px 16px',
+            border: '1px solid #28a745',
+            backgroundColor: '#28a745',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}>
+            Write Only BBox
+          </button>
+
+          <button onClick={handleWriteWithoutBBox} style={{
+            padding: '8px 16px',
+            border: '1px solid #17a2b8',
+            backgroundColor: '#17a2b8',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}>
+            Write Without BBox
+          </button>
+
+          {/* Speed Control */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+            <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Speed:</label>
+            <input
+              type="range"
+              min="0.1"
+              max="3"
+              step="0.1"
+              value={speed}
+              onChange={handleSpeedChange}
+              style={{ width: '120px', cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '14px', fontFamily: 'monospace', minWidth: '45px' }}>
+              {speed.toFixed(1)}x
+            </span>
+          </div>
         </div>
       </div>
 

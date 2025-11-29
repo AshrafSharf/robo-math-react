@@ -14,6 +14,7 @@ import { ParallelogramPrimitiveShape } from '../script-shapes/parallelogram-prim
 import { subtractVectors, addVectors } from '../utils/vector-math-2d.js';
 import { FocusEffect } from '../effects/focus-effect.js';
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
+import { WriteEffect } from '../mathtext/effects/write-effect.js';
 
 export class Diagram {
   constructor(graphContainer, options = {}) {
@@ -991,6 +992,91 @@ export class Diagram {
     this.objects.push(mathComponent);
 
     return mathComponent;
+  }
+
+  // ============= WRITE ANIMATION METHODS =============
+
+  /**
+   * Write a math text component with pen animation
+   * @param {MathTextComponent} mathComponent - The math text component to animate
+   * @returns {WriteEffect|null} The write effect instance or null if invalid component
+   */
+  writeMathText(mathComponent) {
+    if (!mathComponent) {
+      console.warn('No math text component provided');
+      return null;
+    }
+
+    console.log('Starting pen write animation...');
+    const writeEffect = new WriteEffect(mathComponent);
+    writeEffect.play();
+    return writeEffect;
+  }
+
+  /**
+   * Hide marked parts in a math text component
+   * @param {MathTextComponent} mathComponent - The math text component
+   * @returns {boolean} True if parts were hidden, false otherwise
+   */
+  hideMathTextParts(mathComponent) {
+    if (!mathComponent) {
+      console.warn('No math text component provided');
+      return false;
+    }
+
+    if (!mathComponent.hideBBoxContent) {
+      console.warn('hideBBoxContent method not available on this math component');
+      return false;
+    }
+
+    console.log('Hiding marked parts...');
+    mathComponent.hideBBoxContent();
+    return true;
+  }
+
+  /**
+   * Write only the marked parts in a math text component
+   * @param {MathTextComponent} mathComponent - The math text component
+   * @param {boolean} includeAll - Whether to include all content (default: false)
+   * @returns {Object|null} The write effect instance or null if invalid component
+   */
+  writeOnlyMathTextParts(mathComponent, includeAll = false) {
+    if (!mathComponent) {
+      console.warn('No math text component provided');
+      return null;
+    }
+
+    if (!mathComponent.writeOnlyBBox) {
+      console.warn('writeOnlyBBox method not available on this math component');
+      return null;
+    }
+
+    console.log('Starting write only marked parts animation...');
+    const effect = mathComponent.writeOnlyBBox(includeAll);
+    effect.play();
+    return effect;
+  }
+
+  /**
+   * Write everything except the marked parts in a math text component
+   * @param {MathTextComponent} mathComponent - The math text component
+   * @returns {Object|null} The write effect instance or null if invalid component
+   */
+  writeWithoutMathTextParts(mathComponent) {
+    if (!mathComponent) {
+      console.warn('No math text component provided');
+      return null;
+    }
+
+    if (!mathComponent.writeWithoutBBox) {
+      console.warn('writeWithoutBBox method not available on this math component');
+      return null;
+    }
+
+    console.log('Starting write without marked parts animation...');
+    const effect = mathComponent.writeWithoutBBox();
+    effect.play();
+    return effect;
   }
 
   /**
