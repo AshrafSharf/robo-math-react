@@ -1,5 +1,6 @@
 import { GeomPrimitiveShape } from "./geom-primitive-shape.js";
 import { CirclePathGenerator } from "../path-generators/circle-path-generator.js";
+import { TweenablePath } from "../animator/tweenable-path.js";
 
 export class PointPrimitiveShape extends GeomPrimitiveShape {
 
@@ -24,6 +25,51 @@ export class PointPrimitiveShape extends GeomPrimitiveShape {
 
     setTweenSpeed(tweenablePath) {
         tweenablePath.setFast();
+    }
+
+    /**
+     * Custom animation for points:
+     * 1. Pen moves to location
+     * 2. Pen draws circle stroke
+     * 3. Fill appears (while pen is still at the point)
+     * 4. Pen moves away
+     */
+    renderWithAnimation(penStartPoint, completionHandler) {
+        try {
+            // Save original fill color
+            const originalFill = this.styleObj.fill;
+
+            const shapeTweenCompletionhandler = () => {
+                // Enable stroke after animation completes
+                this.enableStroke();
+                completionHandler();
+            };
+
+            // Restore fill AFTER stroke is drawn but BEFORE pen moves away
+            const preCompletionHandler = () => {
+                this.primitiveShape.attr('fill', originalFill);
+            };
+
+            const tweenablePath = new TweenablePath(this.primitiveShape.node);
+
+            // Hide fill during animation (only show stroke)
+            this.primitiveShape.attr('fill', 'transparent');
+            this.primitiveShape.show();
+            this.disableStroke();
+            this.setTweenSpeed(tweenablePath);
+
+            // Animate with pen movement and stroke drawing
+            tweenablePath.tween(
+                shapeTweenCompletionhandler,
+                penStartPoint,
+                preCompletionHandler, // Restore fill before pen moves away
+                null  // No text trace point
+            );
+        } catch (e) {
+            console.error('Point animation error:', e);
+            this.primitiveShape.show();
+            completionHandler();
+        }
     }
 
     /**

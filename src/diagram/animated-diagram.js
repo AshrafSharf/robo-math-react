@@ -98,11 +98,10 @@ export class AnimatedDiagram extends Diagram {
     const shape = this.graphContainer.point(position.x, position.y, options.radius || 4);
     shape.stroke(this.parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Always render points instantly (like measurement indicators)
-    shape.renderEndState();
-    shape.show();
-    
+
+    // Apply animation mode logic (animate in animated mode, instant in static mode)
+    this._applyModeLogic(shape);
+
     this.objects.push(shape);
     return shape;
   }
