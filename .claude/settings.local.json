@@ -10,7 +10,11 @@
       "Bash(node:*)",
       "Bash(chmod:*)",
       "Bash(/Users/ashraf/manim-ws/manim-builder/robo-math/src/expression-parser/test/run-tests.sh)",
-      "Read(//Users/ashraf/manim-ws/**)"
+      "Read(//Users/ashraf/manim-ws/**)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run dev)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)"
     ],
     "deny": [],
     "ask": []
