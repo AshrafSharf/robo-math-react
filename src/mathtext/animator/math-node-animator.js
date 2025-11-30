@@ -100,12 +100,20 @@ export class MathNodeAnimator extends MathNodeCalculator {
     }
 
     let lastVisitedPoint = startPoint;
+    let isFirstNode = true;
+
     tweenableNodes.forEach((tweenableNode) => {
       let currentTweenNode = tweenableNode;
       let lastVisitedTweenNode = RoboEventManager.getLastVisitedTween();
+
       if (lastVisitedTweenNode) {
         penMovementAnimator.addPenTweenDynamicHandler(liveLastPoint(lastVisitedTweenNode), liveCurrentEndPoint(currentTweenNode), mathTimeLine);
+      } else if (isFirstNode) {
+        // No previous tween - animate from startPoint to first node
+        penMovementAnimator.addPenTween(startPoint, tweenableNode.getStartPoint(), mathTimeLine);
       }
+
+      isFirstNode = false;
       tweenableNode.buildPathDrawingTimeLine(mathTimeLine);
       lastVisitedPoint = tweenableNode.getLastPoint();
       RoboEventManager.setLastVisitedTween(tweenableNode);

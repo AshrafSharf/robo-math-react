@@ -19,6 +19,7 @@ import { PenTracerImpl } from './pen/pen-tracer-impl.js';
 import { LogicalCoordinateMapper } from './mathtext/components/logical-coordinate-mapper.js';
 import { Diagram } from './diagram/diagram.js';
 import { AnimatedDiagram } from './diagram/animated-diagram.js';
+import { TweenMax, Power2 } from 'gsap';
 
 export class RoboCanvas {
   /**
@@ -216,45 +217,61 @@ export class RoboCanvas {
    * Scroll to a component smoothly using exact position calculation
    * @param {Object} component - Component to scroll to (mathText or Grapher)
    * @param {Object} options - Scroll options {position: 'center'|'top'|'bottom', offset: number}
+   * @returns {Promise} Resolves when scroll animation completes
    */
   scrollToComponent(component, options = {}) {
-    const element = this._getComponentElement(component);
-    if (!element) {
-      console.warn('scrollToComponent: No element found for component', component);
-      return;
-    }
+    return new Promise((resolve) => {
+      const element = this._getComponentElement(component);
+      if (!element) {
+        console.warn('scrollToComponent: No element found for component', component);
+        resolve();
+        return;
+      }
 
-    // Calculate exact scroll position using getBoundingClientRect
-    const elementRect = element.getBoundingClientRect();
-    const containerRect = this.containerElement.getBoundingClientRect();
+      // Calculate exact scroll position using getBoundingClientRect
+      const elementRect = element.getBoundingClientRect();
+      const containerRect = this.containerElement.getBoundingClientRect();
 
-    // Calculate target scroll position
-    let targetScrollTop;
-    const position = options.position || 'center';
-    const offset = options.offset || 0;
+      // Calculate target scroll position
+      let targetScrollTop;
+      const position = options.position || 'center';
+      const offset = options.offset || 0;
 
-    switch (position) {
-      case 'top':
-        targetScrollTop = this.containerElement.scrollTop + elementRect.top - containerRect.top + offset;
-        break;
-      case 'bottom':
-        targetScrollTop = this.containerElement.scrollTop + elementRect.bottom - containerRect.bottom + offset;
-        break;
-      case 'center':
-      default:
-        // Center the element in the viewport
-        const elementCenter = elementRect.top + elementRect.height / 2;
-        const containerCenter = containerRect.top + containerRect.height / 2;
-        targetScrollTop = this.containerElement.scrollTop + (elementCenter - containerCenter) + offset;
-        break;
-    }
+      switch (position) {
+        case 'top':
+          targetScrollTop = this.containerElement.scrollTop + elementRect.top - containerRect.top + offset;
+          break;
+        case 'bottom':
+          targetScrollTop = this.containerElement.scrollTop + elementRect.bottom - containerRect.bottom + offset;
+          break;
+        case 'center':
+        default:
+          // Center the element in the viewport
+          const elementCenter = elementRect.top + elementRect.height / 2;
+          const containerCenter = containerRect.top + containerRect.height / 2;
+          targetScrollTop = this.containerElement.scrollTop + (elementCenter - containerCenter) + offset;
+          break;
+      }
 
-    console.log(`📜 Scrolling to component: current=${this.containerElement.scrollTop}, target=${targetScrollTop}`);
+      const scrollDistance = Math.abs(targetScrollTop - this.containerElement.scrollTop);
+      console.log(`📜 Scrolling to component: current=${this.containerElement.scrollTop}, target=${targetScrollTop}, distance=${scrollDistance}px`);
 
-    // Smooth scroll to calculated position
-    this.containerElement.scrollTo({
-      top: targetScrollTop,
-      behavior: 'smooth'
+      // If already close enough (within 50px), skip scrolling - resolve immediately
+      if (scrollDistance < 50) {
+        console.log('📜 Already close enough, skipping scroll');
+        resolve();
+        return;
+      }
+
+      // Use GSAP for smooth scroll with proper completion callback
+      TweenMax.to(this.containerElement, 0.5, {
+        scrollTop: targetScrollTop,
+        ease: Power2.easeInOut,
+        onComplete: () => {
+          console.log('📜 Scroll complete (GSAP onComplete)');
+          resolve();
+        }
+      });
     });
   }
 
@@ -277,6 +294,7 @@ export class RoboCanvas {
     }
     return null;
   }
+
 
   /**
    * Destroy the canvas and clean up resources

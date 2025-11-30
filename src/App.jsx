@@ -145,82 +145,53 @@ function App() {
   };
 
   // Test button handlers - use named components
-  const handleWriteMathText = () => {
+  const handleWriteMathText = async () => {
     const component = componentsMapRef.current[componentName];
     if (!component) {
       alert(`Component "${componentName}" not found`);
       return;
     }
 
-    const roboCanvas = roboCanvasRef.current;
-    if (!roboCanvas) return;
-
-    // Scroll to component first (external scroll logic)
-    roboCanvas.scrollToComponent(component);
-
-    // Then call the clean diagram method
-    roboCanvas.diagram.writeMathText(component);
+    await roboCanvasRef.current.scrollToComponent(component);
+    roboCanvasRef.current.diagram.writeMathText(component);
   };
 
-  const handleTestPoint = () => {
+  const handleTestPoint = async () => {
     const component = componentsMapRef.current[componentName];
     if (!component) {
       alert(`Component "${componentName}" not found`);
       return;
     }
 
-    const roboCanvas = roboCanvasRef.current;
-    if (!roboCanvas) return;
-
-    // Scroll to graph container first (external scroll logic)
-    roboCanvas.scrollToComponent(component);
-
-    // Then draw on the named graph container
-    roboCanvas.diagram.point(component, {x: 0, y: 0}, 'red', { radius: 6 });
+    await roboCanvasRef.current.scrollToComponent(component);
+    roboCanvasRef.current.diagram.point(component, {x: 0, y: 0}, 'red', { radius: 6 });
   };
 
-  const handleTestLine = () => {
+  const handleTestLine = async () => {
     const component = componentsMapRef.current[componentName];
     if (!component) {
       alert(`Component "${componentName}" not found`);
       return;
     }
 
-    const roboCanvas = roboCanvasRef.current;
-    if (!roboCanvas) return;
-
-    // Scroll to graph container first (external scroll logic)
-    roboCanvas.scrollToComponent(component);
-
-    // Then draw on the named graph container
-    roboCanvas.diagram.line(component, {x: -5, y: -5}, {x: 5, y: 5}, 'blue', { strokeWidth: 2 });
+    await roboCanvasRef.current.scrollToComponent(component);
+    roboCanvasRef.current.diagram.line(component, {x: -5, y: -5}, {x: 5, y: 5}, 'blue', { strokeWidth: 2 });
   };
 
   const handleClearAll = () => {
-    console.log('Test: Clear all');
-    const roboCanvas = roboCanvasRef.current;
-    if (!roboCanvas) return;
-    roboCanvas.clearAll();
-    // Clear components map
+    roboCanvasRef.current.clearAll();
     componentsMapRef.current = {};
-    setComponentsCount(0);  // Trigger re-render
+    setComponentsCount(0);
   };
 
   const handleToggleAnimated = (e) => {
-    const checked = e.target.checked;
-    setIsAnimated(checked);
-    const roboCanvas = roboCanvasRef.current;
-    if (!roboCanvas) return;
+    setIsAnimated(e.target.checked);
+    roboCanvasRef.current.clearAll();
 
-    // Clear all existing shapes and text
-    roboCanvas.clearAll();
-
-    if (checked) {
-      roboCanvas.useAnimatedDiagram();
-      console.log('✅ Switched to Animated mode');
+    if (e.target.checked) {
+      roboCanvasRef.current.useAnimatedDiagram();
     } else {
-      roboCanvas.useStaticDiagram();
-      console.log('✅ Switched to Static mode');
+      roboCanvasRef.current.useStaticDiagram();
     }
   };
 
@@ -267,43 +238,24 @@ function App() {
   };
 
   // Write with pen animation - using diagram API
-  const handleWriteWithPen = () => {
-    const roboCanvas = roboCanvasRef.current;
-    const mathComponent = mathComponentRef.current;
-    if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
-
-    // Scroll to component first (external scroll logic)
-    roboCanvas.scrollToComponent(mathComponent);
-
-    // Then write the mathtext
-    roboCanvas.diagram.writeMathText(mathComponent);
+  const handleWriteWithPen = async () => {
+    await roboCanvasRef.current.scrollToComponent(mathComponentRef.current);
+    roboCanvasRef.current.diagram.writeMathText(mathComponentRef.current);
   };
 
   // Hide marked parts - using diagram API
   const handleHideBBox = () => {
-    const roboCanvas = roboCanvasRef.current;
-    const mathComponent = mathComponentRef.current;
-    if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
-
-    roboCanvas.diagram.hideMathTextParts(mathComponent);
+    roboCanvasRef.current.diagram.hideMathTextParts(mathComponentRef.current);
   };
 
   // Write only marked parts - using diagram API
   const handleWriteOnlyBBox = () => {
-    const roboCanvas = roboCanvasRef.current;
-    const mathComponent = mathComponentRef.current;
-    if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
-
-    roboCanvas.diagram.writeOnlyMathTextParts(mathComponent);
+    roboCanvasRef.current.diagram.writeOnlyMathTextParts(mathComponentRef.current);
   };
 
   // Write without marked parts - using diagram API
   const handleWriteWithoutBBox = () => {
-    const roboCanvas = roboCanvasRef.current;
-    const mathComponent = mathComponentRef.current;
-    if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
-
-    roboCanvas.diagram.writeWithoutMathTextParts(mathComponent);
+    roboCanvasRef.current.diagram.writeWithoutMathTextParts(mathComponentRef.current);
   };
 
   // Handle speed change
