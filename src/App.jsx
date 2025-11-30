@@ -14,6 +14,21 @@ function App() {
   const mathComponentRef = useRef(null);
   const debounceTimerRef = useRef(null);
 
+  // Component name management (for testing)
+  const componentsMapRef = useRef({});  // { name: component }
+  const [componentsCount, setComponentsCount] = useState(0);  // For triggering re-renders
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [componentName, setComponentName] = useState('');  // For operations
+  const [createType, setCreateType] = useState('graph');  // 'graph' or 'text'
+
+  // Form state for creating components
+  const [newName, setNewName] = useState('');
+  const [newCol, setNewCol] = useState('0');
+  const [newRow, setNewRow] = useState('0');
+  const [newWidth, setNewWidth] = useState('600');
+  const [newHeight, setNewHeight] = useState('400');
+  const [newLatex, setNewLatex] = useState('x^2');
+
   const handleExecute = (command) => {
     console.log('Execute command:', command);
   };
@@ -52,15 +67,9 @@ function App() {
     const initRoboCanvas = async () => {
       try {
         const roboCanvas = new RoboCanvas(containerRef.current, {
-          textWidthPercent: 40,
-          graphWidthPercent: 60,
+          canvasWidth: 1200,
           logicalWidth: 8,
-          logicalHeight: 16,
-          graphOptions: {
-            showGrid: true,
-            xRange: [-10, 10],
-            yRange: [-10, 10]
-          }
+          logicalHeight: 200
         });
 
         await roboCanvas.init();
@@ -87,36 +96,104 @@ function App() {
     };
   }, []); // Empty dependency array - run only once
 
-  // Test button handlers
-  const handleTestMathText = async () => {
-    console.log('Test: Drawing math text');
+  // Create component handler
+  const handleCreateComponent = () => {
+    const roboCanvas = roboCanvasRef.current;
+    if (!roboCanvas || !newName.trim()) {
+      alert('Please enter a component name');
+      return;
+    }
+
+    if (componentsMapRef.current[newName]) {
+      alert(`Component "${newName}" already exists`);
+      return;
+    }
+
+    const col = parseFloat(newCol);
+    const row = parseFloat(newRow);
+
+    if (createType === 'graph') {
+      const width = parseFloat(newWidth);
+      const height = parseFloat(newHeight);
+
+      const gc = roboCanvas.diagram.graphContainer(col, row, {
+        width,
+        height,
+        showGrid: true,
+        xRange: [-10, 10],
+        yRange: [-10, 10]
+      });
+
+      componentsMapRef.current[newName] = gc;
+      console.log(`Created graph container: ${newName}`);
+    } else {
+      const mathComponent = roboCanvas.diagram.mathText(newLatex, col, row, {
+        fontSize: 32,
+        stroke: '#000000'
+      });
+
+      componentsMapRef.current[newName] = mathComponent;
+      console.log(`Created math text: ${newName}`);
+    }
+
+    // Reset form and close modal
+    setNewName('');
+    setNewCol('0');
+    setNewRow('0');
+    setShowCreateModal(false);
+    setComponentsCount(prev => prev + 1);  // Trigger re-render
+  };
+
+  // Test button handlers - use named components
+  const handleWriteMathText = () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+
     const roboCanvas = roboCanvasRef.current;
     if (!roboCanvas) return;
 
-    // Use the single diagram instance
-    roboCanvas.diagram.mathText(
-      'f(x) = x^2 + 2x + 1',
-      2, 3,
-      { fontSize: 36, stroke: '#d9534f' }
-    );
+    // Scroll to component first (external scroll logic)
+    roboCanvas.scrollToComponent(component);
+
+    // Then call the clean diagram method
+    roboCanvas.diagram.writeMathText(component);
   };
 
   const handleTestPoint = () => {
-    console.log('Test: Drawing point');
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+
     const roboCanvas = roboCanvasRef.current;
     if (!roboCanvas) return;
 
-    // Use the single diagram instance
-    roboCanvas.diagram.point({x: 0, y: 0}, 'red', { radius: 6 });
+    // Scroll to graph container first (external scroll logic)
+    roboCanvas.scrollToComponent(component);
+
+    // Then draw on the named graph container
+    roboCanvas.diagram.point(component, {x: 0, y: 0}, 'red', { radius: 6 });
   };
 
   const handleTestLine = () => {
-    console.log('Test: Drawing line');
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+
     const roboCanvas = roboCanvasRef.current;
     if (!roboCanvas) return;
 
-    // Use the single diagram instance
-    roboCanvas.diagram.line({x: -5, y: -5}, {x: 5, y: 5}, 'blue', { strokeWidth: 2 });
+    // Scroll to graph container first (external scroll logic)
+    roboCanvas.scrollToComponent(component);
+
+    // Then draw on the named graph container
+    roboCanvas.diagram.line(component, {x: -5, y: -5}, {x: 5, y: 5}, 'blue', { strokeWidth: 2 });
   };
 
   const handleClearAll = () => {
@@ -124,6 +201,9 @@ function App() {
     const roboCanvas = roboCanvasRef.current;
     if (!roboCanvas) return;
     roboCanvas.clearAll();
+    // Clear components map
+    componentsMapRef.current = {};
+    setComponentsCount(0);  // Trigger re-render
   };
 
   const handleToggleAnimated = (e) => {
@@ -144,15 +224,15 @@ function App() {
     }
   };
 
-  // Render LaTeX in text section
+  // Render LaTeX in canvas section
   const renderLatex = (latexContent) => {
     const roboCanvas = roboCanvasRef.current;
     if (!roboCanvas || !roboCanvas.diagram) return;
 
-    // Clear text section only (not graphics)
-    const textSection = roboCanvas.getTextSection();
-    if (textSection) {
-      textSection.innerHTML = '';
+    // Clear canvas section (all content)
+    const canvasSection = roboCanvas.getCanvasSection();
+    if (canvasSection) {
+      canvasSection.innerHTML = '';
     }
 
     if (!latexContent || latexContent.trim() === '') {
@@ -160,7 +240,7 @@ function App() {
       return;
     }
 
-    // Create math text at position (1, 1) in logical coordinates
+    // Create math text cell at position (1, 1) in logical coordinates
     const mathComponent = roboCanvas.diagram.mathText(latexContent, 1, 1, {
       fontSize: 40,
       stroke: '#000000'
@@ -192,6 +272,10 @@ function App() {
     const mathComponent = mathComponentRef.current;
     if (!roboCanvas || !roboCanvas.diagram || !mathComponent) return;
 
+    // Scroll to component first (external scroll logic)
+    roboCanvas.scrollToComponent(mathComponent);
+
+    // Then write the mathtext
     roboCanvas.diagram.writeMathText(mathComponent);
   };
 
@@ -338,16 +422,57 @@ function App() {
         </div>
       </div>
 
-      {/* Test Controls */}
+      {/* Component Management Controls */}
       <div style={{
         padding: '10px 20px',
-        backgroundColor: '#fff',
+        backgroundColor: '#f8f9fa',
         borderBottom: '1px solid #ddd',
         display: 'flex',
         gap: '10px',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexWrap: 'wrap'
       }}>
-        <button onClick={handleTestMathText} style={{
+        <button onClick={() => setShowCreateModal(true)} style={{
+          padding: '8px 16px',
+          border: '1px solid #6f42c1',
+          backgroundColor: '#6f42c1',
+          color: 'white',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          fontWeight: 'bold'
+        }}>
+          + Create Component
+        </button>
+
+        <div style={{
+          padding: '6px 12px',
+          backgroundColor: '#e9ecef',
+          borderRadius: '4px',
+          fontSize: '12px',
+          color: '#495057'
+        }}>
+          Components: {Object.keys(componentsMapRef.current).join(', ') || 'none'}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Use Component:</label>
+          <input
+            type="text"
+            value={componentName}
+            onChange={(e) => setComponentName(e.target.value)}
+            placeholder="e.g., graph1, text1"
+            style={{
+              padding: '6px 10px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '14px',
+              width: '150px'
+            }}
+          />
+        </div>
+
+        <button onClick={handleWriteMathText} style={{
           padding: '8px 16px',
           border: '1px solid #007bff',
           backgroundColor: '#007bff',
@@ -356,7 +481,7 @@ function App() {
           cursor: 'pointer',
           fontSize: '14px'
         }}>
-          Test Math Text
+          Write MathText
         </button>
         <button onClick={handleTestPoint} style={{
           padding: '8px 16px',
@@ -367,7 +492,7 @@ function App() {
           cursor: 'pointer',
           fontSize: '14px'
         }}>
-          Test Point
+          Draw Point
         </button>
         <button onClick={handleTestLine} style={{
           padding: '8px 16px',
@@ -378,7 +503,7 @@ function App() {
           cursor: 'pointer',
           fontSize: '14px'
         }}>
-          Test Line
+          Draw Line
         </button>
         <button onClick={handleClearAll} style={{
           padding: '8px 16px',
@@ -391,7 +516,7 @@ function App() {
         }}>
           Clear All
         </button>
-        <div style={{ marginLeft: '20px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '5px' }}>
           <span style={{ fontSize: '14px' }}>Static</span>
           <input
             type="checkbox"
@@ -421,13 +546,215 @@ function App() {
         <div
           ref={containerRef}
           className={`robo-shell-main-playsurface ${isSidebarCollapsed ? 'expanded' : ''}`}
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%'
-          }}
         />
       </div>
+
+      {/* Create Component Modal */}
+      {showCreateModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '20px',
+            borderRadius: '8px',
+            width: '500px',
+            maxWidth: '90%',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}>
+            <h2 style={{ marginTop: 0, marginBottom: '20px' }}>Create Component</h2>
+
+            {/* Type Selection */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px' }}>
+                Component Type:
+              </label>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <input
+                    type="radio"
+                    value="graph"
+                    checked={createType === 'graph'}
+                    onChange={(e) => setCreateType(e.target.value)}
+                  />
+                  Graph Container
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <input
+                    type="radio"
+                    value="text"
+                    checked={createType === 'text'}
+                    onChange={(e) => setCreateType(e.target.value)}
+                  />
+                  MathText
+                </label>
+              </div>
+            </div>
+
+            {/* Name */}
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
+                Name:
+              </label>
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g., graph1, text1"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #ccc',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+
+            {/* Position */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
+                  Column (X):
+                </label>
+                <input
+                  type="number"
+                  value={newCol}
+                  onChange={(e) => setNewCol(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
+                  Row (Y):
+                </label>
+                <input
+                  type="number"
+                  value={newRow}
+                  onChange={(e) => setNewRow(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Graph-specific options */}
+            {createType === 'graph' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
+                <div>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
+                    Width:
+                  </label>
+                  <input
+                    type="number"
+                    value={newWidth}
+                    onChange={(e) => setNewWidth(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
+                    Height:
+                  </label>
+                  <input
+                    type="number"
+                    value={newHeight}
+                    onChange={(e) => setNewHeight(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ccc',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* MathText-specific options */}
+            {createType === 'text' && (
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
+                  LaTeX Content:
+                </label>
+                <input
+                  type="text"
+                  value={newLatex}
+                  onChange={(e) => setNewLatex(e.target.value)}
+                  placeholder="e.g., x^2 + 2x + 1"
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    borderRadius: '4px',
+                    border: '1px solid #ccc',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid #6c757d',
+                  backgroundColor: 'white',
+                  color: '#6c757d',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateComponent}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid #6f42c1',
+                  backgroundColor: '#6f42c1',
+                  color: 'white',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -17,391 +17,364 @@ import { MathTextComponent } from '../mathtext/components/math-text-component.js
 import { WriteEffect } from '../mathtext/effects/write-effect.js';
 
 export class Diagram {
-  constructor(graphContainer, options = {}) {
-    // graphContainer is a Grapher instance, not a DOM element
-    this.graphContainer = graphContainer;
+  constructor(options = {}) {
+    // Store canvasSection (parent DOM) and coordinateMapper for cell positioning
     this.options = options;
-
-    // Store text section and coordinate mapper for mathText support
-    this.textSection = options.textSection || null;
     this.coordinateMapper = options.coordinateMapper || null;
+    this.canvasSection = options.canvasSection || null;
+    this.roboCanvas = options.roboCanvas || null;  // For auto-scrolling
 
-    // Track all created objects
+    // Track objects for utility methods
     this.objects = [];
+
+    // Track graph containers created by graphContainer() method
+    this.graphContainers = [];
 
     // Focus effect instance
     this.focusEffect = new FocusEffect();
   }
 
-  
+
   /**
    * Create a point
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} position - Position {x, y}
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {radius, strokeWidth}
    * @returns {Object} Point shape
    */
-  point(position, color = DEFAULT_SHAPE_COLORS.point, options = {}) {
-    const shape = this.graphContainer.point(position.x, position.y, options.radius || 4);
+  point(graphContainer, position, color = DEFAULT_SHAPE_COLORS.point, options = {}) {
+    const shape = graphContainer.point(position.x, position.y, options.radius || 4);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Shape is already created by graphContainer.point() -> addMathShape()
-    // Just render and show it
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a vector (arrow)
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y}
    * @param {Object} end - End position {x, y}
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Object} Vector shape
    */
-  vector(start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
-    const shape = this.graphContainer.vector(start.x, start.y, end.x, end.y);
+  vector(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
+    const shape = graphContainer.vector(start.x, start.y, end.x, end.y);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a vector at original position and instantly move it to target position
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} originalVector - Original vector definition {start: {x,y}, end: {x,y}}
    * @param {Object} targetPosition - Target position {x, y} or target vector {start: {x,y}, end: {x,y}}
-   * @param {Object} options - Options including label, color
+   * @param {Object} options - Options including color, strokeWidth, dashed, dashPattern
    * @returns {Object} The vector shape at target position
    */
-  moveVector(originalVector, targetPosition, options = {}) {
-    // Extract start and end from originalVector
-    let originalStart, originalEnd;
-    if (originalVector.start && originalVector.end) {
-      originalStart = originalVector.start;
-      originalEnd = originalVector.end;
-    } else {
-      throw new Error('Invalid originalVector provided to moveVector');
-    }
-    
-    // Extract target start position
+  moveVector(graphContainer, originalVector, targetPosition, options = {}) {
+    const originalStart = originalVector.start;
+    const originalEnd = originalVector.end;
     const targetStart = targetPosition.start || targetPosition;
-    
-    // Calculate displacement
+
     const displacement = {
       x: targetStart.x - originalStart.x,
       y: targetStart.y - originalStart.y
     };
-    
-    // Create the vector at TARGET position (no animation in base Diagram)
-    const shape = this.graphContainer.vector(
+
+    const shape = graphContainer.vector(
       targetStart.x,
       targetStart.y,
       originalEnd.x + displacement.x,
       originalEnd.y + displacement.y
     );
-    
+
     const color = options.color || 'blue';
     shape.stroke(parseColor(color));
-    
+
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Add dash pattern if specified
+
     if (options.dashed) {
       const dashPattern = options.dashPattern || '5,3';
       shape.primitiveShape.attr('stroke-dasharray', dashPattern);
     }
-    
-    // Show immediately at target position
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a line segment
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y}
    * @param {Object} end - End position {x, y}
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
    * @returns {Object} Line shape
    */
-  line(start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
-    const shape = this.graphContainer.line(start.x, start.y, end.x, end.y);
+  line(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
+    const shape = graphContainer.line(start.x, start.y, end.x, end.y);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
     if (options.fill) shape.fill(parseColor(options.fill));
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a measurement indicator with end markers
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y}
    * @param {Object} end - End position {x, y}
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
-   * @param {Object} options - Additional options {mainRadius, markerLength, markerRadius, offset}
+   * @param {Object} options - Additional options {mainRadius, markerLength, markerRadius, offset, strokeWidth}
    * @returns {Object} Measurement indicator shape
    */
-  measurementIndicator(start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
-    const shape = this.graphContainer.measurementIndicator(start.x, start.y, end.x, end.y, options);
+  measurementIndicator(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
+    const shape = graphContainer.measurementIndicator(start.x, start.y, end.x, end.y, options);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a function plot
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Function} equation - Function that takes x and returns y
    * @param {number} domainMin - Minimum x value
    * @param {number} domainMax - Maximum x value
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Object} Plot shape
    */
-  plot(equation, domainMin, domainMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
-    const shape = this.graphContainer.plot(equation, domainMin, domainMax);
+  plot(graphContainer, equation, domainMin, domainMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
+    const shape = graphContainer.plot(equation, domainMin, domainMax);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a circle
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} center - Center position {x, y}
    * @param {number} radius - Circle radius
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
    * @returns {Object} Circle shape
    */
-  circle(center, radius, color = DEFAULT_SHAPE_COLORS.circle, options = {}) {
-    const shape = this.graphContainer.circle(center.x, center.y, radius);
+  circle(graphContainer, center, radius, color = DEFAULT_SHAPE_COLORS.circle, options = {}) {
+    const shape = graphContainer.circle(center.x, center.y, radius);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
     if (options.fill) shape.fill(parseColor(options.fill));
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create an ellipse
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} center - Center position {x, y}
    * @param {number} rx - Horizontal radius
    * @param {number} ry - Vertical radius
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
    * @returns {Object} Ellipse shape
    */
-  ellipse(center, rx, ry, color = DEFAULT_SHAPE_COLORS.ellipse, options = {}) {
-    const shape = this.graphContainer.ellipse(center.x, center.y, rx, ry);
+  ellipse(graphContainer, center, rx, ry, color = DEFAULT_SHAPE_COLORS.ellipse, options = {}) {
+    const shape = graphContainer.ellipse(center.x, center.y, rx, ry);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
     if (options.fill) shape.fill(parseColor(options.fill));
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create an arc
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start point {x, y}
    * @param {Object} end - End point {x, y}
    * @param {number} rx - Horizontal radius
    * @param {number} ry - Vertical radius
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Object} Arc shape
    */
-  arc(start, end, rx, ry, color = DEFAULT_SHAPE_COLORS.arc, options = {}) {
-    const shape = this.graphContainer.arc(start, end, rx, ry);
+  arc(graphContainer, start, end, rx, ry, color = DEFAULT_SHAPE_COLORS.arc, options = {}) {
+    const shape = graphContainer.arc(start, end, rx, ry);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a curved arrow
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y} in graph coordinates
    * @param {Object} end - End position {x, y} in graph coordinates
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, angle, clockwise}
    * @returns {Object} Arrow shape
    */
-  arrow(start, end, color = DEFAULT_SHAPE_COLORS.arrow, options = {}) {
-    // Create arrow using GraphContainer (same as vector, line, etc.)
-    const shape = this.graphContainer.arrow(
-      start.x, 
-      start.y, 
-      end.x, 
-      end.y, 
-      options.angle || Math.PI,  // Default to straight arrow
+  arrow(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.arrow, options = {}) {
+    const shape = graphContainer.arrow(
+      start.x,
+      start.y,
+      end.x,
+      end.y,
+      options.angle || Math.PI,
       options.clockwise !== undefined ? options.clockwise : true
     );
-    
-    // Apply styling
+
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a polygon
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Array<Object>} vertices - Array of vertices [{x, y}, ...]
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
    * @returns {Object} Polygon shape
    */
-  polygon(vertices, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
-    // Convert array of {x, y} to flat array for graphContainer
+  polygon(graphContainer, vertices, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
     const coords = [];
     vertices.forEach(v => {
       coords.push(v.x, v.y);
     });
-    
-    const shape = this.graphContainer.polygon(...coords);
+
+    const shape = graphContainer.polygon(...coords);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
     if (options.fill) shape.fill(parseColor(options.fill));
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a curve
+   * @param {Object} graphContainer - The graph container to render on
    * @param {string} type - Curve type ('linear', 'basis', 'cardinal', etc.)
    * @param {Array<Object>} points - Control points [{x, y}, ...]
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Object} Curve shape
    */
-  curve(type, points, color = DEFAULT_SHAPE_COLORS.curve, options = {}) {
-    // Convert array of {x, y} to flat array
+  curve(graphContainer, type, points, color = DEFAULT_SHAPE_COLORS.curve, options = {}) {
     const coords = [];
     points.forEach(p => {
       coords.push(p.x, p.y);
     });
-    
-    const shape = this.graphContainer.curve(type, ...coords);
+
+    const shape = graphContainer.curve(type, ...coords);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create an angle between three points or two vectors
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object|Array} vertex - Vertex point {x, y} or array of 3 points
    * @param {Object} point1 - First point {x, y} (if vertex is not array)
    * @param {Object} point2 - Second point {x, y} (if vertex is not array)
    * @param {string} angleType - Type of angle ('interior', 'exterior-first', 'exterior-second', 'reflex', 'opposite')
-   * @param {Object} options - Additional options {radius, label, color, fillOpacity, strokeWidth, showValue}
+   * @param {Object} options - Additional options {radius, color, fill, fillOpacity, strokeWidth, showValue}
    * @returns {Object} Angle shape
    */
-  angle(vertex, point1, point2, angleType = 'interior', options = {}) {
-    // Pass parameters directly to graphContainer.angle
-    // It will handle the coordinate formatting internally
-    const shape = this.graphContainer.angle(vertex, point1, point2, angleType, options);
-    
-    // Use color from options or default based on angle type
+  angle(graphContainer, vertex, point1, point2, angleType = 'interior', options = {}) {
+    const shape = graphContainer.angle(vertex, point1, point2, angleType, options);
+
     const color = options.color || options.stroke || getAngleColor(angleType);
     shape.stroke(parseColor(color));
     shape.fill(parseColor(options.fill || color));
-    
+
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Shape is already created by graphContainer
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create an interior angle (standard angle between two vectors)
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
    * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
    * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  interiorAngle(vector1, vector2, radius = 0.8, color = getAngleColor('interior'), options = {}) {
+  interiorAngle(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('interior'), options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-    
+
     return this.angle(
+      graphContainer,
       vertex,
       point1,
       point2,
@@ -412,20 +385,21 @@ export class Diagram {
   
   /**
    * Create a right angle indicator (small square with only two edges)
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
    * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
    * @param {number} size - Size of the square (default 0.5)
-   * @param {string} label - Label for the angle
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
    * @returns {Object} Right angle indicator shape
    */
-  rightAngleIndicator(vector1, vector2, size = 0.5, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
+  rightAngleIndicator(graphContainer, vector1, vector2, size = 0.5, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-    
+
     return this.angle(
+      graphContainer,
       vertex,
       point1,
       point2,
@@ -436,20 +410,21 @@ export class Diagram {
   
   /**
    * Create an exterior angle at first vector
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
    * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
    * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  exteriorAngleFirst(vector1, vector2, radius = 0.8, color = getAngleColor('exterior-first'), options = {}) {
+  exteriorAngleFirst(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('exterior-first'), options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-    
+
     return this.angle(
+      graphContainer,
       vertex,
       point1,
       point2,
@@ -460,20 +435,21 @@ export class Diagram {
   
   /**
    * Create an exterior angle at second vector
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
    * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
    * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  exteriorAngleSecond(vector1, vector2, radius = 0.8, color = getAngleColor('exterior-second'), options = {}) {
+  exteriorAngleSecond(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('exterior-second'), options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-    
+
     return this.angle(
+      graphContainer,
       vertex,
       point1,
       point2,
@@ -484,20 +460,21 @@ export class Diagram {
   
   /**
    * Create a reflex angle (>180 degrees)
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
    * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
    * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  reflexAngle(vector1, vector2, radius = 0.8, color = getAngleColor('reflex'), options = {}) {
+  reflexAngle(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('reflex'), options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-    
+
     return this.angle(
+      graphContainer,
       vertex,
       point1,
       point2,
@@ -508,20 +485,21 @@ export class Diagram {
   
   /**
    * Create an opposite/vertical angle
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
    * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
    * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  oppositeAngle(vector1, vector2, radius = 0.8, color = getAngleColor('opposite'), options = {}) {
+  oppositeAngle(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('opposite'), options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-    
+
     return this.angle(
+      graphContainer,
       vertex,
       point1,
       point2,
@@ -731,100 +709,92 @@ export class Diagram {
   /**
    * Create a parallelogram from origin and two vectors
    * Useful for visualizing vector addition and cross product area
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} origin - Origin point {x, y}
    * @param {Object} vector1End - End point of first vector {x, y}
    * @param {Object} vector2End - End point of second vector {x, y}
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
-   * @param {Object} options - Additional options {fill, fillOpacity, showEdges, edgeWidth}
+   * @param {Object} options - Additional options {fill, fillOpacity, showEdges, edgeWidth, strokeWidth}
    * @returns {Object} Parallelogram shape
    */
-  parallelogram(origin, vector1End, vector2End, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
+  parallelogram(graphContainer, origin, vector1End, vector2End, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
     const coords = [
       origin.x, origin.y,
       vector1End.x, vector1End.y,
       vector2End.x, vector2End.y
     ];
-    
-    // Create parallelogram shape instance
+
     const parallelogramShape = new ParallelogramPrimitiveShape(coords, options);
-    const shape = this.graphContainer.addMathShape(parallelogramShape);
+    const shape = graphContainer.addMathShape(parallelogramShape);
     shape.stroke(parseColor(color));
     if (options.fill) shape.fill(parseColor(options.fill));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
+
     shape.renderEndState();
     shape.show();
-    
-    // Add label if provided (for future use)
-    if (label) {
-      shape.label = label;
-    }
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a dashed line segment
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y}
    * @param {Object} end - End position {x, y}
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, dashPattern}
    * @returns {Object} Line shape with dash pattern
    */
-  dashedLine(start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
-    const shape = this.graphContainer.line(start.x, start.y, end.x, end.y);
+  dashedLine(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
+    const shape = graphContainer.line(start.x, start.y, end.x, end.y);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Add dash pattern
+
     const dashPattern = options.dashPattern || '5,3';
     shape.primitiveShape.attr('stroke-dasharray', dashPattern);
-    
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a dashed vector (arrow)
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y}
    * @param {Object} end - End position {x, y}
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, dashPattern}
    * @returns {Object} Vector shape with dash pattern
    */
-  dashedVector(start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
-    const shape = this.graphContainer.vector(start.x, start.y, end.x, end.y);
+  dashedVector(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
+    const shape = graphContainer.vector(start.x, start.y, end.x, end.y);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    
-    // Add dash pattern
+
     const dashPattern = options.dashPattern || '5,3';
     shape.primitiveShape.attr('stroke-dasharray', dashPattern);
-    
+
     shape.renderEndState();
     shape.show();
-    
+
     this.objects.push(shape);
     return shape;
   }
   
   /**
    * Create a reversed vector (pointing in opposite direction)
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vectorShape - Vector shape object or {start, end} coordinates
-   * @param {Object} options - Options including label, color, dashPattern
+   * @param {Object} options - Options including color, dashPattern, strokeWidth
    * @returns {Object} Reversed vector shape
    */
-  reverseVector(vectorShape, options = {}) {
+  reverseVector(graphContainer, vectorShape, options = {}) {
     let start, end;
-    
-    // Extract coordinates from vector shape or use provided coordinates
+
     if (vectorShape.modelCoordinates) {
       const coords = vectorShape.modelCoordinates;
       start = { x: coords[0], y: coords[1] };
@@ -832,33 +802,25 @@ export class Diagram {
     } else if (vectorShape.start && vectorShape.end) {
       start = vectorShape.start;
       end = vectorShape.end;
-    } else {
-      throw new Error('Invalid vector shape provided to reverseVector');
     }
-    
-    // Calculate reversed end point
+
     const displacement = subtractVectors(end, start);
     const reversedEnd = subtractVectors(start, displacement);
-    
-    // Create dashed vector in opposite direction
+
     const color = options.color || DEFAULT_SHAPE_COLORS.vector;
-    return this.dashedVector(start, reversedEnd, options.label || '', color, options);
+    return this.dashedVector(graphContainer, start, reversedEnd, color, options);
   }
   
   
   /**
    * Trace vector path - shows vector addition chain
    * Takes an array of vector shapes and shows their sum
+   * @param {Object} graphContainer - The graph container to render on
    * @param {Array} vectorShapes - Array of vector shape objects
-   * @param {Object} options - Options {traceColor, directColor, showDirect}
+   * @param {Object} options - Options {chainColor, directColor, showChain, showDirect}
    * @returns {Object} Object containing trace elements
    */
-  traceVectorPath(vectorShapes, options = {}) {
-    if (!Array.isArray(vectorShapes) || vectorShapes.length < 2) {
-      throw new Error('traceVectorPath requires at least 2 vector shapes');
-    }
-    
-    // Extract coordinates from vector shapes
+  traceVectorPath(graphContainer, vectorShapes, options = {}) {
     const vectorPaths = vectorShapes.map(shape => {
       if (shape.modelCoordinates) {
         const coords = shape.modelCoordinates;
@@ -869,49 +831,44 @@ export class Diagram {
       } else if (shape.start && shape.end) {
         return { start: shape.start, end: shape.end };
       }
-      throw new Error('Invalid vector shape in array');
     });
-    
-    // Calculate direct path from first start to last end
+
     const directPath = {
       start: vectorPaths[0].start,
       end: vectorPaths[vectorPaths.length - 1].end
     };
-    
-    // Create visual elements
+
     const elements = {
       vectors: vectorShapes,
       chain: [],
       direct: null
     };
-    
-    // Create chain visualization (dashed lines showing the path)
+
     if (options.showChain !== false) {
       const chainColor = options.chainColor || '#888888';
       for (let i = 0; i < vectorPaths.length - 1; i++) {
         const chainLine = this.dashedLine(
+          graphContainer,
           vectorPaths[i].end,
           vectorPaths[i + 1].start,
-          '',
           chainColor,
           { dashPattern: '2,2', strokeWidth: 1 }
         );
         elements.chain.push(chainLine);
       }
     }
-    
-    // Create direct path vector
+
     if (options.showDirect !== false) {
       const directColor = options.directColor || 'red';
       elements.direct = this.dashedVector(
+        graphContainer,
         directPath.start,
         directPath.end,
-        options.directLabel || 'sum',
         directColor,
         { dashPattern: '8,4', strokeWidth: 3 }
       );
     }
-    
+
     return elements;
   }
   
@@ -941,10 +898,54 @@ export class Diagram {
     return this.focusEffect.isActive();
   }
   
-  // ============= MATHTEXT METHODS =============
+  // ============= CELL CREATION METHODS (JUPYTER-STYLE) =============
+
+  /**
+   * Create a graph container cell at logical coordinates
+   * Similar to creating a graph cell in a Jupyter notebook
+   * @param {number} col - Logical column coordinate
+   * @param {number} row - Logical row coordinate
+   * @param {Object} options - Graph options {width, height, showGrid, xRange, yRange}
+   * @returns {Grapher} Graph container instance for drawing
+   */
+  graphContainer(col, row, options = {}) {
+    if (!this.coordinateMapper || !this.canvasSection) {
+      throw new Error('graphContainer requires coordinateMapper and canvasSection to be initialized');
+    }
+
+    // Convert logical coordinates to pixel coordinates
+    const pixelCoords = this.coordinateMapper.toPixel(col, row);
+
+    // Create container div at position
+    const containerDiv = document.createElement('div');
+    containerDiv.style.position = 'absolute';
+    containerDiv.style.left = pixelCoords.x + 'px';
+    containerDiv.style.top = pixelCoords.y + 'px';
+    containerDiv.style.width = (options.width || 600) + 'px';
+    containerDiv.style.height = (options.height || 400) + 'px';
+    this.canvasSection.appendChild(containerDiv);
+
+    // Create Grapher instance in this container
+    const grapher = new Grapher(containerDiv, {
+      width: options.width || 600,
+      height: options.height || 400,
+      showGrid: options.showGrid !== false,
+      xRange: options.xRange || [-10, 10],
+      yRange: options.yRange || [-10, 10]
+    });
+
+    // Track for cleanup
+    this.graphContainers.push({
+      grapher: grapher,
+      containerDiv: containerDiv
+    });
+
+    return grapher;
+  }
 
   /**
    * Create mathematical text using MathJax rendering
+   * Similar to creating a text cell in a Jupyter notebook
    * @param {string} text - LaTeX mathematical expression
    * @param {number} col - Logical column coordinate
    * @param {number} row - Logical row coordinate
@@ -952,31 +953,12 @@ export class Diagram {
    * @returns {MathTextComponent} Math text component
    */
   mathText(text, col, row, options = {}) {
-    if (!this.textSection) {
-      console.warn('mathText requires textSection to be configured in options');
-      return null;
-    }
-
-    if (!this.coordinateMapper) {
-      console.warn('mathText requires coordinateMapper to be configured in options');
-      return null;
-    }
-
-    // Convert logical coordinates to pixel coordinates
-    const pixelCoords = this.coordinateMapper.toPixel(col, row);
-
-    // Create component state
-    const componentState = {
-      componentId: `math-text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      content: text,
-      left: pixelCoords.x,
-      top: pixelCoords.y
-    };
-
-    // Create MathTextComponent
     const mathComponent = new MathTextComponent(
-      componentState,
-      this.textSection,
+      text,
+      col,
+      row,
+      this.coordinateMapper,
+      this.canvasSection,
       {
         fontSize: options.fontSize || 32,
         stroke: options.stroke || '#000000',
@@ -984,11 +966,8 @@ export class Diagram {
       }
     );
 
-    // Show immediately (non-animated)
-    mathComponent.enableStroke();
-    mathComponent.show();
-
-    // Track the component
+    mathComponent.hide();
+    mathComponent.disableStroke();
     this.objects.push(mathComponent);
 
     return mathComponent;
@@ -997,95 +976,67 @@ export class Diagram {
   // ============= WRITE ANIMATION METHODS =============
 
   /**
-   * Write a math text component with pen animation
-   * @param {MathTextComponent} mathComponent - The math text component to animate
-   * @returns {WriteEffect|null} The write effect instance or null if invalid component
+   * Show a math text component instantly (no animation)
+   * @param {MathTextComponent} mathComponent - The math text component to show
+   * @returns {MathTextComponent} The math text component
    */
   writeMathText(mathComponent) {
-    if (!mathComponent) {
-      console.warn('No math text component provided');
-      return null;
-    }
-
-    console.log('Starting pen write animation...');
-    const writeEffect = new WriteEffect(mathComponent);
-    writeEffect.play();
-    return writeEffect;
+    mathComponent.show();
+    mathComponent.enableStroke();
+    return mathComponent;
   }
 
   /**
-   * Hide marked parts in a math text component
+   * Hide marked parts in a math text component instantly
    * @param {MathTextComponent} mathComponent - The math text component
-   * @returns {boolean} True if parts were hidden, false otherwise
+   * @returns {MathTextComponent} The math text component
    */
   hideMathTextParts(mathComponent) {
-    if (!mathComponent) {
-      console.warn('No math text component provided');
-      return false;
-    }
-
-    if (!mathComponent.hideBBoxContent) {
-      console.warn('hideBBoxContent method not available on this math component');
-      return false;
-    }
-
-    console.log('Hiding marked parts...');
     mathComponent.hideBBoxContent();
-    return true;
+    return mathComponent;
   }
 
   /**
-   * Write only the marked parts in a math text component
+   * Show only the marked parts in a math text component instantly
    * @param {MathTextComponent} mathComponent - The math text component
    * @param {boolean} includeAll - Whether to include all content (default: false)
-   * @returns {Object|null} The write effect instance or null if invalid component
+   * @returns {MathTextComponent} The math text component
    */
   writeOnlyMathTextParts(mathComponent, includeAll = false) {
-    if (!mathComponent) {
-      console.warn('No math text component provided');
-      return null;
-    }
-
-    if (!mathComponent.writeOnlyBBox) {
-      console.warn('writeOnlyBBox method not available on this math component');
-      return null;
-    }
-
-    console.log('Starting write only marked parts animation...');
-    const effect = mathComponent.writeOnlyBBox(includeAll);
-    effect.play();
-    return effect;
+    mathComponent.showOnlyBBox(includeAll);
+    return mathComponent;
   }
 
   /**
-   * Write everything except the marked parts in a math text component
+   * Show everything except the marked parts in a math text component instantly
    * @param {MathTextComponent} mathComponent - The math text component
-   * @returns {Object|null} The write effect instance or null if invalid component
+   * @returns {MathTextComponent} The math text component
    */
   writeWithoutMathTextParts(mathComponent) {
-    if (!mathComponent) {
-      console.warn('No math text component provided');
-      return null;
-    }
-
-    if (!mathComponent.writeWithoutBBox) {
-      console.warn('writeWithoutBBox method not available on this math component');
-      return null;
-    }
-
-    console.log('Starting write without marked parts animation...');
-    const effect = mathComponent.writeWithoutBBox();
-    effect.play();
-    return effect;
+    mathComponent.showWithoutBBox();
+    return mathComponent;
   }
 
   /**
-   * Clear all shapes from the diagram
-   * Note: Does NOT destroy the graphContainer (managed by RoboCanvas)
+   * Clear all shapes and clean up resources
+   * Destroys all graphContainers created by this diagram
    */
   destroy() {
-    // Just clear all shapes
+    // Clear all shapes first
     this.clearAll();
+
+    // Destroy all graph containers
+    if (this.graphContainers) {
+      this.graphContainers.forEach(gc => {
+        if (gc.grapher && gc.grapher.destroy) {
+          gc.grapher.destroy();
+        }
+        if (gc.containerDiv && gc.containerDiv.parentNode) {
+          gc.containerDiv.parentNode.removeChild(gc.containerDiv);
+        }
+      });
+      this.graphContainers = [];
+    }
 
     // Clear references
     this.objects = [];

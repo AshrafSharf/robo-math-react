@@ -19,8 +19,21 @@ import { SelectionUnit } from '../models/selection-unit.js';
 import $ from '../utils/dom-query.js';
 
 export class MathTextComponent {
-  constructor(componentState, parentDOM, options = {}) {
-    this.componentState = componentState;
+  constructor(text, col, row, coordinateMapper, parentDOM, options = {}) {
+    // Store coordinateMapper for internal use
+    this.coordinateMapper = coordinateMapper;
+
+    // Convert logical coordinates to pixel coordinates
+    const pixelCoords = this.coordinateMapper.toPixel(col, row);
+
+    // Create component state internally
+    this.componentState = {
+      componentId: `math-text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      content: text,
+      left: pixelCoords.x,
+      top: pixelCoords.y
+    };
+
     this.parentDOM = parentDOM;
     this.visible = false;
     this.strokeColor = options.stroke || '#000000';
@@ -50,7 +63,7 @@ export class MathTextComponent {
       'display': 'none'  // Start hidden
     })[0];
     $(this.parentDOM).append(this.containerDOM);
-    
+
     // Auto-render on init
     this.renderMath();
     this.applyStrokeColor();
