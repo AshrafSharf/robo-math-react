@@ -917,16 +917,16 @@ export class Diagram {
     const pixelCoords = this.coordinateMapper.toPixel(col, row);
 
     // Create container div at position
-    const containerDiv = document.createElement('div');
-    containerDiv.style.position = 'absolute';
-    containerDiv.style.left = pixelCoords.x + 'px';
-    containerDiv.style.top = pixelCoords.y + 'px';
-    containerDiv.style.width = (options.width || 600) + 'px';
-    containerDiv.style.height = (options.height || 400) + 'px';
-    this.canvasSection.appendChild(containerDiv);
+    const containerDOM = document.createElement('div');
+    containerDOM.style.position = 'absolute';
+    containerDOM.style.left = pixelCoords.x + 'px';
+    containerDOM.style.top = pixelCoords.y + 'px';
+    containerDOM.style.width = (options.width || 600) + 'px';
+    containerDOM.style.height = (options.height || 400) + 'px';
+    this.canvasSection.appendChild(containerDOM);
 
     // Create Grapher instance in this container
-    const grapher = new Grapher(containerDiv, {
+    const grapher = new Grapher(containerDOM, {
       width: options.width || 600,
       height: options.height || 400,
       showGrid: options.showGrid !== false,
@@ -934,11 +934,11 @@ export class Diagram {
       yRange: options.yRange || [-10, 10]
     });
 
+    // Attach outer containerDOM for scrolling (grapher has its own inner containerDOM)
+    grapher.containerDOM = containerDOM;
+
     // Track for cleanup
-    this.graphContainers.push({
-      grapher: grapher,
-      containerDiv: containerDiv
-    });
+    this.graphContainers.push({ grapher, containerDOM });
 
     return grapher;
   }
@@ -1026,17 +1026,11 @@ export class Diagram {
     this.clearAll();
 
     // Destroy all graph containers
-    if (this.graphContainers) {
-      this.graphContainers.forEach(gc => {
-        if (gc.grapher && gc.grapher.destroy) {
-          gc.grapher.destroy();
-        }
-        if (gc.containerDiv && gc.containerDiv.parentNode) {
-          gc.containerDiv.parentNode.removeChild(gc.containerDiv);
-        }
-      });
-      this.graphContainers = [];
-    }
+    this.graphContainers.forEach(gc => {
+      gc.grapher.destroy();
+      gc.containerDOM.parentNode.removeChild(gc.containerDOM);
+    });
+    this.graphContainers = [];
 
     // Clear references
     this.objects = [];

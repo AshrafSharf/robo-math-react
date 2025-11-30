@@ -144,17 +144,8 @@ export class RoboCanvas {
     }
 
     if (this.isAnimatedMode) {
-      // Clear current diagram content
       this.diagram.clearAll();
-
-      // Switch pointer to static diagram
       this.diagram = this.staticDiagram;
-
-      // Explicitly disable animation mode (defensive - staticDiagram may inherit this method)
-      if (this.diagram.setAnimateMode) {
-        this.diagram.setAnimateMode(false);
-      }
-
       this.isAnimatedMode = false;
       console.log('✅ Switched to static diagram');
       console.log('✅ this.diagram is now:', this.diagram.constructor.name);
@@ -170,15 +161,9 @@ export class RoboCanvas {
     }
 
     if (!this.isAnimatedMode) {
-      // Clear current diagram content
       this.diagram.clearAll();
-
-      // Switch pointer to animated diagram
       this.diagram = this.animatedDiagram;
-
-      // Explicitly enable animation mode
       this.diagram.setAnimateMode(true);
-
       this.isAnimatedMode = true;
       console.log('✅ Switched to animated diagram');
       console.log('✅ this.diagram is now:', this.diagram.constructor.name);
@@ -207,10 +192,7 @@ export class RoboCanvas {
    * Clear all content (text and graphics)
    */
   clearAll() {
-    // Clear the current active diagram
-    if (this.diagram) {
-      this.diagram.clearAll();
-    }
+    this.diagram.clearAll();
   }
 
   /**
@@ -221,16 +203,23 @@ export class RoboCanvas {
    */
   scrollToComponent(component, options = {}) {
     return new Promise((resolve) => {
-      const element = this._getComponentElement(component);
-      if (!element) {
-        console.warn('scrollToComponent: No element found for component', component);
-        resolve();
-        return;
-      }
+      const element = component.containerDOM;
 
-      // Calculate exact scroll position using getBoundingClientRect
-      const elementRect = element.getBoundingClientRect();
-      const containerRect = this.containerElement.getBoundingClientRect();
+      // Get current scroll state
+      const currentScroll = this.containerElement.scrollTop;
+      const containerHeight = this.containerElement.clientHeight;
+      const maxScrollTop = this.containerElement.scrollHeight - containerHeight;
+
+      // Parse the CSS top value directly (we set it via inline styles)
+      // offsetTop doesn't work reliably with position:absolute, so use getComputedStyle
+      const computedStyle = window.getComputedStyle(element);
+      const cssTop = computedStyle.top;
+      const elementAbsoluteTop = parseFloat(cssTop) || 0;  // Parse "100px" -> 100
+      const elementHeight = element.offsetHeight;
+
+      console.log(`📍 Element: ${element.id}, cssTop=${cssTop}, parsed=${elementAbsoluteTop}`);
+      console.log(`📍 Element info: height=${elementHeight}`);
+      console.log(`📍 Container: scrollTop=${currentScroll}, height=${containerHeight}, maxScroll=${maxScrollTop}`);
 
       // Calculate target scroll position
       let targetScrollTop;
@@ -239,22 +228,27 @@ export class RoboCanvas {
 
       switch (position) {
         case 'top':
-          targetScrollTop = this.containerElement.scrollTop + elementRect.top - containerRect.top + offset;
+          targetScrollTop = elementAbsoluteTop + offset;
           break;
         case 'bottom':
-          targetScrollTop = this.containerElement.scrollTop + elementRect.bottom - containerRect.bottom + offset;
+          targetScrollTop = elementAbsoluteTop + elementHeight - containerHeight + offset;
           break;
         case 'center':
         default:
           // Center the element in the viewport
-          const elementCenter = elementRect.top + elementRect.height / 2;
-          const containerCenter = containerRect.top + containerRect.height / 2;
-          targetScrollTop = this.containerElement.scrollTop + (elementCenter - containerCenter) + offset;
+          const elementCenter = elementAbsoluteTop + elementHeight / 2;
+          const viewportCenter = containerHeight / 2;
+          targetScrollTop = elementCenter - viewportCenter + offset;
           break;
       }
 
-      const scrollDistance = Math.abs(targetScrollTop - this.containerElement.scrollTop);
-      console.log(`📜 Scrolling to component: current=${this.containerElement.scrollTop}, target=${targetScrollTop}, distance=${scrollDistance}px`);
+      // Clamp target to valid scroll range
+      targetScrollTop = Math.max(0, Math.min(targetScrollTop, maxScrollTop));
+
+      const scrollDistance = Math.abs(targetScrollTop - currentScroll);
+      const direction = targetScrollTop > currentScroll ? 'DOWN' : 'UP';
+
+      console.log(`📜 Scroll ${direction}: current=${currentScroll}, target=${targetScrollTop}, distance=${scrollDistance}px`);
 
       // If already close enough (within 50px), skip scrolling - resolve immediately
       if (scrollDistance < 50) {
@@ -268,52 +262,27 @@ export class RoboCanvas {
         scrollTop: targetScrollTop,
         ease: Power2.easeInOut,
         onComplete: () => {
-          console.log('📜 Scroll complete (GSAP onComplete)');
-          resolve();
+          console.log(`📜 Scroll ${direction} complete: final position=${this.containerElement.scrollTop}`);
+          // Wait for browser repaint before resolving
+          // This ensures getBoundingClientRect() returns fresh coordinates
+          requestAnimationFrame(() => {
+            console.log('📜 Browser repainted, coordinates now stable');
+            resolve();
+          });
         }
       });
     });
   }
 
   /**
-   * Get DOM element from component (helper method)
-   * @private
-   */
-  _getComponentElement(component) {
-    // MathTextComponent has containerDOM
-    if (component && component.containerDOM) {
-      return component.containerDOM;
-    }
-    // Grapher has containerDOM through its parent
-    else if (component && component.getContainerDOM) {
-      return component.getContainerDOM();
-    }
-    // Graph container wrapper {grapher, containerDiv}
-    else if (component && component.containerDiv) {
-      return component.containerDiv;
-    }
-    return null;
-  }
-
-
-  /**
    * Destroy the canvas and clean up resources
    */
   destroy() {
-    // Destroy both diagram instances (they will clean up their graphContainers)
-    if (this.staticDiagram && this.staticDiagram.destroy) {
-      this.staticDiagram.destroy();
-    }
-    if (this.animatedDiagram && this.animatedDiagram.destroy) {
-      this.animatedDiagram.destroy();
-    }
-
-    // Clean up references
+    this.staticDiagram.destroy();
+    this.animatedDiagram.destroy();
     this.staticDiagram = null;
     this.animatedDiagram = null;
     this.diagram = null;
-
-    // Clear the container
     this.containerElement.innerHTML = '';
     this.initialized = false;
   }

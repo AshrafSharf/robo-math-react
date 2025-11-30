@@ -98,11 +98,12 @@ function App() {
 
   // Create component handler
   const handleCreateComponent = () => {
-    const roboCanvas = roboCanvasRef.current;
-    if (!roboCanvas || !newName.trim()) {
+    if (!newName.trim()) {
       alert('Please enter a component name');
       return;
     }
+
+    const roboCanvas = roboCanvasRef.current;
 
     if (componentsMapRef.current[newName]) {
       alert(`Component "${newName}" already exists`);
@@ -197,19 +198,14 @@ function App() {
 
   // Render LaTeX in canvas section
   const renderLatex = (latexContent) => {
-    const roboCanvas = roboCanvasRef.current;
-    if (!roboCanvas || !roboCanvas.diagram) return;
-
-    // Clear canvas section (all content)
-    const canvasSection = roboCanvas.getCanvasSection();
-    if (canvasSection) {
-      canvasSection.innerHTML = '';
-    }
-
     if (!latexContent || latexContent.trim() === '') {
       mathComponentRef.current = null;
       return;
     }
+
+    const roboCanvas = roboCanvasRef.current;
+    const canvasSection = roboCanvas.getCanvasSection();
+    canvasSection.innerHTML = '';
 
     // Create math text cell at position (1, 1) in logical coordinates
     const mathComponent = roboCanvas.diagram.mathText(latexContent, 1, 1, {
