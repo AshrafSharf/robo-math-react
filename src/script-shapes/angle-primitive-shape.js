@@ -3,17 +3,6 @@ import { AnglePathGenerator } from '../path-generators/angle-path-generator.js';
 import { Point } from '../geom/Point.js';
 import $ from 'jquery';
 
-// Default colors for different angle types
-const ANGLE_COLORS = {
-  INTERIOR: '#FF9800', // Orange
-  EXTERIOR_FIRST: '#2196F3', // Blue
-  EXTERIOR_SECOND: '#4CAF50', // Green
-  REFLEX: '#9C27B0', // Purple
-  OPPOSITE: '#FFEB3B', // Yellow
-  RIGHT: '#8B4513', // Brown
-  DEFAULT: '#FF9800' // Orange
-};
-
 export class AnglePrimitiveShape extends GeomPrimitiveShape {
   constructor(modelCoordinates, angleType = 'interior', options = {}) {
     super(modelCoordinates);
@@ -31,9 +20,7 @@ export class AnglePrimitiveShape extends GeomPrimitiveShape {
     this.showValue = options.showValue || false;
     this.valuePrecision = options.valuePrecision || 1;
     
-    // Set default color based on angle type
-    const defaultColor = ANGLE_COLORS[angleType.toUpperCase().replace('-', '_')] || ANGLE_COLORS.DEFAULT;
-    this.styleObj.stroke = options.stroke || defaultColor;
+    // Color is set by Diagram layer, not here
     this.styleObj['stroke-width'] = options.strokeWidth || 2;
     
     // Handle fill - all angles are arc-only without fill
@@ -301,16 +288,6 @@ export class AnglePrimitiveShape extends GeomPrimitiveShape {
    */
   setAngleType(newType) {
     this.angleType = newType;
-    
-    // Update default color if not explicitly set
-    if (!this.angleOptions.stroke) {
-      const defaultColor = ANGLE_COLORS[newType.toUpperCase().replace('-', '_')] || ANGLE_COLORS.DEFAULT;
-      this.styleObj.stroke = defaultColor;
-      // No fill for angles - arc only
-      this.styleObj.fill = 'none';
-      this.styleObj['fill-opacity'] = 0;
-    }
-    
     // Regenerate path
     this.generatePath();
     this.primitiveShape.attr(this.styleObj);

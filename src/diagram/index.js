@@ -4,8 +4,9 @@
  */
 
 // Main diagram classes
-export { Diagram } from './diagram.js';
+export { StaticDiagram } from './diagram.js';
 export { AnimatedDiagram } from './animated-diagram.js';
+export { BaseDiagram } from './base-diagram.js';
 
 // Note: Effect classes are intentionally NOT exported
 // They are internal implementation details

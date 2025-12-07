@@ -17,7 +17,7 @@
 
 import { PenTracerImpl } from './pen/pen-tracer-impl.js';
 import { LogicalCoordinateMapper } from './mathtext/components/logical-coordinate-mapper.js';
-import { Diagram } from './diagram/diagram.js';
+import { StaticDiagram } from './diagram/diagram.js';
 import { AnimatedDiagram } from './diagram/animated-diagram.js';
 import { TweenMax, Power2 } from 'gsap';
 
@@ -108,17 +108,10 @@ export class RoboCanvas {
       );
       console.log(`Coordinate Mapper: ${this.options.logicalWidth}×${this.options.logicalHeight} logical → ${this.options.canvasWidth}×${pixelHeight}px (${pixelHeight / this.options.logicalHeight}px per row)`);
 
-      // Create diagram options (canvasSection replaces textSection)
-      const diagramOptions = {
-        canvasSection: this.canvasSection,
-        coordinateMapper: coordinateMapper,
-        roboCanvas: this  // Pass reference for auto-scrolling
-      };
-
       // Create both diagram instances (no shared Grapher - created on demand)
       console.log('Creating static and animated diagram instances...');
-      this.staticDiagram = new Diagram(diagramOptions);
-      this.animatedDiagram = new AnimatedDiagram(diagramOptions);
+      this.staticDiagram = new StaticDiagram(coordinateMapper, this.canvasSection, this);
+      this.animatedDiagram = new AnimatedDiagram(coordinateMapper, this.canvasSection, this);
 
       // Start with static diagram
       this.diagram = this.staticDiagram;

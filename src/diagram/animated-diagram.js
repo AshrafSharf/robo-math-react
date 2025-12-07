@@ -1,27 +1,28 @@
 /**
- * AnimatedDiagram class extending Diagram
+ * AnimatedDiagram class extending BaseDiagram
  * Shapes are created and animated immediately
  * Step control handled through direct method calls
  */
 
-import { Diagram } from './diagram.js';
+import { BaseDiagram } from './base-diagram.js';
 import { TexToSVGShapeEffect } from '../effects/shape-effects/tex-to-svg-shape-effect.js';
 import { MathShapeEffect } from '../effects/shape-effects/math-shape-effect.js';
 import { ReverseVectorEffect } from '../effects/reverse-vector-effect.js';
 import { MoveVectorEffect } from '../effects/move-vector-effect.js';
 import { ZoomEffect } from '../effects/zoom-effect.js';
 import { PanEffect } from '../effects/pan-effect.js';
-import {
-  parseColor,
-  getAngleColor,
-  DEFAULT_SHAPE_COLORS
-} from './style_helper.js';
-import { MathTextComponent } from '../mathtext/components/math-text-component.js';
+import { DEFAULT_SHAPE_COLORS } from './style_helper.js';
 import { WriteEffect } from '../mathtext/effects/write-effect.js';
 
-export class AnimatedDiagram extends Diagram {
-  constructor(options = {}) {
-    super(options);
+export class AnimatedDiagram extends BaseDiagram {
+  /**
+   * @param {Object} coordinateMapper - Coordinate mapper for logical to pixel conversion
+   * @param {HTMLElement} canvasSection - Parent DOM element for rendering
+   * @param {Object} roboCanvas - RoboCanvas instance for auto-scrolling
+   * @param {Object} options - Additional options
+   */
+  constructor(coordinateMapper, canvasSection, roboCanvas, options = {}) {
+    super(coordinateMapper, canvasSection, roboCanvas, options);
 
     // Track active timeouts for cleanup
     this.activeTimeouts = new Set();
@@ -90,12 +91,8 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Point shape
    */
   point(graphContainer, position, color = 'red', options = {}) {
-    const shape = graphContainer.point(position.x, position.y, options.radius || 4);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createPoint(graphContainer, position, color, options);
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -110,16 +107,11 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Vector shape
    */
   vector(graphContainer, start, end, color = 'red', options = {}) {
-    const shape = graphContainer.vector(start.x, start.y, end.x, end.y);
-    shape.stroke(this.parseColor(color));
+    const shape = this._createVector(graphContainer, start, end, color, options);
     shape.primitiveShape.attr('fill', null);
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
-    shape.start = {x: start.x, y: start.y};
-    shape.end = {x: end.x, y: end.y};
-
+    shape.start = { x: start.x, y: start.y };
+    shape.end = { x: end.x, y: end.y };
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -134,15 +126,8 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Vector shape with dash pattern
    */
   dashedVector(graphContainer, start, end, color = 'red', options = {}) {
-    const shape = graphContainer.vector(start.x, start.y, end.x, end.y);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
-    const dashPattern = options.dashPattern || '5,3';
-    shape.primitiveShape.attr('stroke-dasharray', dashPattern);
-
+    const shape = this._createDashedVector(graphContainer, start, end, color, options);
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -236,13 +221,8 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Line shape
    */
   line(graphContainer, start, end, color = 'black', options = {}) {
-    const shape = graphContainer.line(start.x, start.y, end.x, end.y);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    if (options.fill) shape.fill(this.parseColor(options.fill));
-
+    const shape = this._createLine(graphContainer, start, end, color, options);
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -257,13 +237,10 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Measurement indicator shape
    */
   measurementIndicator(graphContainer, start, end, color = 'black', options = {}) {
-    const shape = graphContainer.measurementIndicator(start.x, start.y, end.x, end.y, options);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createMeasurementIndicator(graphContainer, start, end, color, options);
+    // Measurement indicators always render instantly (no animation)
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -279,12 +256,8 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Plot shape
    */
   plot(graphContainer, equation, domainMin, domainMax, color = 'green', options = {}) {
-    const shape = graphContainer.plot(equation, domainMin, domainMax);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createPlot(graphContainer, equation, domainMin, domainMax, color, options);
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -301,12 +274,8 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Parametric plot shape
    */
   parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = 'blue', options = {}) {
-    const shape = graphContainer.parametricPlot(xFunction, yFunction, tMin, tMax);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createParametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -326,15 +295,9 @@ export class AnimatedDiagram extends Diagram {
       stroke: options.stroke || color,
       fill: options.fill || color
     };
-
-    const shape = graphContainer.circle(center.x, center.y, radius, shapeOptions);
-
-    shape.stroke(this.parseColor(shapeOptions.stroke));
+    const shape = this._createCircle(graphContainer, center, radius, shapeOptions.stroke, shapeOptions);
     if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -345,28 +308,19 @@ export class AnimatedDiagram extends Diagram {
    * @param {Object} center - Center position {x, y}
    * @param {number} rx - Horizontal radius
    * @param {number} ry - Vertical radius
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
    * @returns {Object} Ellipse shape
    */
   ellipse(graphContainer, center, rx, ry, color = 'red', options = {}) {
-    // Pass options to the shape constructor
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
       fill: options.fill || color
     };
-
-    const shape = graphContainer.ellipse(center.x, center.y, rx, ry, shapeOptions);
-
-    // Apply styles using shape methods
-    shape.stroke(this.parseColor(shapeOptions.stroke));
+    const shape = this._createEllipse(graphContainer, center, rx, ry, shapeOptions.stroke, shapeOptions);
     if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -378,18 +332,13 @@ export class AnimatedDiagram extends Diagram {
    * @param {Object} end - End point {x, y}
    * @param {number} rx - Horizontal radius
    * @param {number} ry - Vertical radius
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Object} Arc shape
    */
   arc(graphContainer, start, end, rx, ry, color = 'green', options = {}) {
-    const shape = graphContainer.arc(start, end, rx, ry);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createArc(graphContainer, start, end, rx, ry, color, options);
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -398,34 +347,19 @@ export class AnimatedDiagram extends Diagram {
    * Create a polygon with immediate animation
    * @param {Object} graphContainer - The graph container to render on
    * @param {Array<Object>} vertices - Array of vertices [{x, y}, ...]
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
    * @returns {Object} Polygon shape
    */
   polygon(graphContainer, vertices, color = 'orange', options = {}) {
-    // Convert array of {x, y} to flat array for graphContainer
-    const coords = [];
-    vertices.forEach(v => {
-      coords.push(v.x, v.y);
-    });
-
-    // Pass options to the shape constructor
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
       fill: options.fill || color
     };
-
-    const shape = graphContainer.polygon(...coords, shapeOptions);
-
-    // Apply styles using shape methods
-    shape.stroke(this.parseColor(shapeOptions.stroke));
+    const shape = this._createPolygon(graphContainer, vertices, shapeOptions.stroke, shapeOptions);
     if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -435,24 +369,13 @@ export class AnimatedDiagram extends Diagram {
    * @param {Object} graphContainer - The graph container to render on
    * @param {string} type - Curve type ('linear', 'basis', 'cardinal', etc.)
    * @param {Array<Object>} points - Control points [{x, y}, ...]
-   * @param {string} label - Optional label
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Object} Curve shape
    */
-  curve(graphContainer, type, points, label = '', color = 'violet', options = {}) {
-    // Convert array of {x, y} to flat array
-    const coords = [];
-    points.forEach(p => {
-      coords.push(p.x, p.y);
-    });
-
-    const shape = graphContainer.curve(type, ...coords);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+  curve(graphContainer, type, points, color = 'violet', options = {}) {
+    const shape = this._createCurve(graphContainer, type, points, color, options);
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -467,24 +390,9 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Arrow shape
    */
   arrow(graphContainer, start, end, color = 'red', options = {}) {
-    // Create arrow using GraphContainer (same as vector, line, etc.)
-    const shape = graphContainer.arrow(
-      start.x,
-      start.y,
-      end.x,
-      end.y,
-      options.angle || Math.PI,  // Default to straight arrow
-      options.clockwise !== undefined ? options.clockwise : true
-    );
-
-    // Apply styling
-    shape.stroke(this.parseColor(color));
-    // Remove fill attribute entirely for arrows
+    const shape = this._createArrow(graphContainer, start, end, color, options);
     shape.primitiveShape.attr('fill', null);
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
   }
@@ -500,186 +408,11 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Angle shape
    */
   angle(graphContainer, vertex, point1, point2, angleType = 'interior', options = {}) {
-    // Pass parameters directly to graphContainer.angle
-    // It will handle the coordinate formatting internally
-    const shape = graphContainer.angle(vertex, point1, point2, angleType, options);
-
-    // Apply default color based on angle type if not specified
-    const defaultColors = {
-      'interior': '#FF9800',
-      'exterior-first': '#2196F3',
-      'exterior-second': '#4CAF50',
-      'reflex': '#9C27B0',
-      'opposite': '#FFEB3B'
-    };
-
-    // Use color from options or default based on angle type
-    const color = options.color || options.stroke || defaultColors[angleType] || '#FF9800';
-    shape.stroke(this.parseColor(color));
-    shape.fill(this.parseColor(options.fill || color));
-
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const color = options.color || options.stroke || DEFAULT_SHAPE_COLORS.angle;
+    const shape = this._createAngle(graphContainer, vertex, point1, point2, angleType, color, options);
     this._applyModeLogic(shape);
-
     this.objects.push(shape);
     return shape;
-  }
-  
-  /**
-   * Create an interior angle (standard angle between two vectors) - animated
-   * @param {Object} graphContainer - The graph container to render on
-   * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
-   * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
-   * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
-   * @param {string} color - Color name or hex
-   * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
-   */
-  interiorAngle(graphContainer, vector1, vector2, radius = 0.8, color = '#FF9800', options = {}) {
-    const vertex = vector1.start;
-    const point1 = vector1.end;
-    const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'interior',
-      { ...options, radius, color }
-    );
-  }
-  
-  /**
-   * Create a right angle indicator (small square with only two edges) - animated
-   * @param {Object} graphContainer - The graph container to render on
-   * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
-   * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
-   * @param {number} size - Size of the square (default 0.5)
-   * @param {string} label - Label for the angle
-   * @param {string} color - Color name or hex
-   * @param {Object} options - Additional options
-   * @returns {Object} Right angle indicator shape
-   */
-  rightAngleIndicator(graphContainer, vector1, vector2, size = 0.5, color = '#FF9800', options = {}) {
-    const vertex = vector1.start;
-    const point1 = vector1.end;
-    const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'right',
-      { ...options, radius: size, color }
-    );
-  }
-  
-  /**
-   * Create an exterior angle at first vector - animated
-   * @param {Object} graphContainer - The graph container to render on
-   * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
-   * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
-   * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
-   * @param {string} color - Color name or hex
-   * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
-   */
-  exteriorAngleFirst(graphContainer, vector1, vector2, radius = 0.8, color = '#2196F3', options = {}) {
-    const vertex = vector1.start;
-    const point1 = vector1.end;
-    const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'exterior-first',
-      { ...options, radius, color }
-    );
-  }
-  
-  /**
-   * Create an exterior angle at second vector - animated
-   * @param {Object} graphContainer - The graph container to render on
-   * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
-   * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
-   * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
-   * @param {string} color - Color name or hex
-   * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
-   */
-  exteriorAngleSecond(graphContainer, vector1, vector2, radius = 0.8, color = '#4CAF50', options = {}) {
-    const vertex = vector1.start;
-    const point1 = vector1.end;
-    const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'exterior-second',
-      { ...options, radius, color }
-    );
-  }
-  
-  /**
-   * Create a reflex angle (>180 degrees) - animated
-   * @param {Object} graphContainer - The graph container to render on
-   * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
-   * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
-   * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
-   * @param {string} color - Color name or hex
-   * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
-   */
-  reflexAngle(graphContainer, vector1, vector2, radius = 0.8, color = '#9C27B0', options = {}) {
-    const vertex = vector1.start;
-    const point1 = vector1.end;
-    const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'reflex',
-      { ...options, radius, color }
-    );
-  }
-  
-  /**
-   * Create an opposite/vertical angle - animated
-   * @param {Object} graphContainer - The graph container to render on
-   * @param {Object} vector1 - First vector {start: {x, y}, end: {x, y}}
-   * @param {Object} vector2 - Second vector {start: {x, y}, end: {x, y}}
-   * @param {number} radius - Radius of angle arc (default 0.8)
-   * @param {string} label - Label for the angle
-   * @param {string} color - Color name or hex
-   * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
-   */
-  oppositeAngle(graphContainer, vector1, vector2, radius = 0.8, color = '#FFEB3B', options = {}) {
-    const vertex = vector1.start;
-    const point1 = vector1.end;
-    const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'opposite',
-      { ...options, radius, color }
-    );
   }
   
   /**
@@ -692,17 +425,10 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} LatexShape
    */
   texToSvg(graphContainer, position, latexString, color = 'black', options = {}) {
-    console.log('🔥 TEX-TO-SVG CALLED WITH FONTSIZE:', options.fontSize);
-    // Create LaTeX shape using the graphContainer method (same pattern as other shapes)
-    const shape = graphContainer.latex(position.x, position.y, latexString, options);
-    shape.stroke(this.parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
-    // Hide then play immediately
+    const shape = this._createTexToSvg(graphContainer, position, latexString, color, options);
+    // Use TexToSVGShapeEffect for animated drawing
     shape.hide();
     this._playEffect(new TexToSVGShapeEffect(shape));
-    console.log(`Created and animated LaTeX "${latexString}"`);
-
     this.objects.push(shape);
     return shape;
   }
@@ -717,35 +443,11 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Label shape
    */
   labelOnPoint(graphContainer, point, latexString, color = 'black', options = {}) {
-    console.log(`🏷️ labelOnPoint called: point=${JSON.stringify(point)}, latex="${latexString}", color=${color}`);
-    const shape = graphContainer.latex(point.x, point.y, latexString, options);
-    console.log(`🏷️ LaTeX shape created:`, shape);
-    shape.fill(this.parseColor(color));
-    shape.stroke('none');
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
-    // Apply rotation if specified
-    if (options.rotation !== undefined) {
-      // Rotate about the element's own center (0,0 relative to the element)
-      shape.shapeGroup.transform({ rotation: options.rotation, cx: 0, cy: 0 });
-    }
-
-    // Apply perpendicular offset if specified
-    if (options.offset !== undefined && options.offset !== 0) {
-      const offsetX = options.offset * Math.cos((options.rotation || 0) + Math.PI/2);
-      const offsetY = options.offset * Math.sin((options.rotation || 0) + Math.PI/2);
-      console.log(`🏷️ Applying offset: offsetX=${offsetX}, offsetY=${offsetY}`);
-      // Note: move() should also use view coordinates, but offset positioning may need revision
-      shape.shapeGroup.move(point.x + offsetX, point.y + offsetY);
-    }
-
-    // Always render labels instantly (like measurement indicators)
-    console.log(`🏷️ Rendering label instantly`);
+    const shape = this._createLabelOnPoint(graphContainer, point, latexString, color, options);
+    // Labels always render instantly (no animation)
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
-    console.log(`🏷️ Label added to objects, total objects: ${this.objects.length}`);
     return shape;
   }
 
@@ -760,80 +462,11 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Label shape
    */
   labelBetweenPoints(graphContainer, start, end, latexString, color = 'black', options = {}) {
-    console.log(`🏷️ labelBetweenPoints called: start=${JSON.stringify(start)}, end=${JSON.stringify(end)}, latex="${latexString}"`);
-    // Calculate midpoint
-    const midX = (start.x + end.x) / 2;
-    const midY = (start.y + end.y) / 2;
-
-    // Calculate rotation angle in model coordinates, then flip sign for SVG
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const modelRotation = Math.atan2(dy, dx) * (180 / Math.PI);
-    const svgRotation = -modelRotation; // Flip sign for SVG coordinate system
-    console.log(`🏷️ Model rotation: ${modelRotation}°, SVG rotation: ${svgRotation}°`);
-
-    // Convert midpoint to view coordinates (create temp shape to use getViewCoordinates)
-    const tempShape = graphContainer.latex(0, 0, 'temp');
-    const midViewCoords = tempShape.getViewCoordinates([midX, midY]);
-    const midViewX = midViewCoords[0];
-    const midViewY = midViewCoords[1];
-    tempShape.remove(); // Clean up temp shape
-
-    // Calculate offset position in view coordinates
-    let finalViewX = midViewX;
-    let finalViewY = midViewY;
-
-    const offsetAmount = options.offset !== undefined ? options.offset : 30;
-    console.log(`🏷️ Offset amount: ${offsetAmount}, midView: (${midViewX}, ${midViewY})`);
-
-    if (offsetAmount !== 0) {
-      // Calculate perpendicular direction in model coordinates, then convert to view
-      const perpAngle = modelRotation + Math.PI/2;
-      const modelPerpX = Math.cos(perpAngle);
-      const modelPerpY = Math.sin(perpAngle);
-
-      // Convert perpendicular direction to view coordinates
-      const viewPerp1 = tempShape.getViewCoordinates([0, 0]);
-      const viewPerp2 = tempShape.getViewCoordinates([modelPerpX, modelPerpY]);
-      const viewPerpX = viewPerp2[0] - viewPerp1[0];
-      const viewPerpY = viewPerp2[1] - viewPerp1[1];
-
-      // Normalize the view perpendicular vector
-      const perpLength = Math.sqrt(viewPerpX * viewPerpX + viewPerpY * viewPerpY);
-      const unitViewPerpX = viewPerpX / perpLength;
-      const unitViewPerpY = viewPerpY / perpLength;
-
-      // Apply offset in view coordinates
-      finalViewX = midViewX + offsetAmount * unitViewPerpX;
-      finalViewY = midViewY + offsetAmount * unitViewPerpY;
-      console.log(`🏷️ Applied ${offsetAmount}px offset, unitPerp: (${unitViewPerpX}, ${unitViewPerpY}), final: (${finalViewX}, ${finalViewY})`);
-    }
-
-    // Create the label at midpoint
-    const shape = graphContainer.latex(midX, midY, latexString, options);
-    console.log(`🏷️ LaTeX shape created at model coordinates: (${midX}, ${midY})`);
-    shape.fill(this.parseColor(color));
-    shape.stroke('none');
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
-    // Apply rotation with center at (0,0) relative to the element
-    shape.shapeGroup.rotate(svgRotation, 0, 0);
-    console.log(`🏷️ Applied rotation: ${svgRotation}°`);
-
-    // Apply vertical offset after rotation (default 30px or user-specified)
-    const verticalOffset = options.offset !== undefined ? options.offset : 30;
-    if (verticalOffset !== 0) {
-      shape.shapeGroup.dy(-verticalOffset);
-      console.log(`🏷️ Applied vertical offset: -${verticalOffset}px`);
-    }
-
-    // Always render labels instantly (like measurement indicators)
-    console.log(`🏷️ Rendering label instantly`);
+    const shape = this._createLabelBetweenPoints(graphContainer, start, end, latexString, color, options);
+    // Labels always render instantly (no animation)
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
-    console.log(`🏷️ Label added to objects, total objects: ${this.objects.length}`);
     return shape;
   }
 
@@ -847,14 +480,10 @@ export class AnimatedDiagram extends Diagram {
    * @returns {Object} Label shape
    */
   angleLabel(graphContainer, angleShape, latexString, color = 'black', options = {}) {
-    console.log(`🏷️ angleLabel called: latex="${latexString}", color=${color}, options:`, options);
-
     // Get angle center in view coordinates
     const viewCenter = angleShape.getAngleCenter();
-    console.log(`🏷️ Angle center (view coordinates):`, viewCenter);
-
     if (!viewCenter) {
-      console.error(`🏷️ Error: Could not get angle center from shape`);
+      console.error('Error: Could not get angle center from shape');
       return null;
     }
 
@@ -864,60 +493,17 @@ export class AnimatedDiagram extends Diagram {
 
     const offsetDistance = options.offsetInView || 0;
     if (offsetDistance !== 0) {
-      // For simplicity, apply offset radially outward from angle center
-      // We can enhance this later to be directional if needed
-
-      // For now, apply offset upward (negative Y in view coordinates)
-      // This can be enhanced to calculate optimal direction later
       finalViewX = viewCenter.x;
       finalViewY = viewCenter.y - offsetDistance;
-
-      console.log(`🏷️ Applied offset: ${offsetDistance}px, final view position: (${finalViewX}, ${finalViewY})`);
     }
 
-    // Convert final view position to model coordinates for labelOnPoint
+    // Convert final view position to model coordinates
     const modelX = graphContainer.graphSheet2D.toModelX(finalViewX);
     const modelY = graphContainer.graphSheet2D.toModelY(finalViewY);
     const modelPosition = { x: modelX, y: modelY };
 
-    console.log(`🏷️ Converted to model coordinates:`, modelPosition);
-
-    // Use existing labelOnPoint method with model coordinates
-    const shape = this.labelOnPoint(graphContainer, modelPosition, latexString, color, options);
-
-    console.log(`🏷️ Angle label created successfully`);
-    return shape;
-  }
-
-  // ============= MATHTEXT METHODS (Override) =============
-
-  /**
-   * Create mathematical text using MathJax rendering (hidden by default)
-   * @param {string} text - LaTeX mathematical expression
-   * @param {number} col - Logical column coordinate
-   * @param {number} row - Logical row coordinate
-   * @param {Object} options - Rendering options {fontSize, stroke, fill}
-   * @returns {MathTextComponent} Math text component (hidden)
-   */
-  mathText(text, col, row, options = {}) {
-    const mathComponent = new MathTextComponent(
-      text,
-      col,
-      row,
-      this.coordinateMapper,
-      this.canvasSection,
-      {
-        fontSize: options.fontSize || 32,
-        stroke: options.stroke || '#000000',
-        fill: options.fill || '#000000'
-      }
-    );
-
-    mathComponent.hide();
-    mathComponent.disableStroke();
-    this.objects.push(mathComponent);
-
-    return mathComponent;
+    // Use labelOnPoint with model coordinates
+    return this.labelOnPoint(graphContainer, modelPosition, latexString, color, options);
   }
 
   /**

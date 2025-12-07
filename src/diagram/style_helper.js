@@ -26,15 +26,6 @@ export const COLOR_MAP = {
   'darkgreen': '#006400'
 };
 
-// Default colors for different angle types
-export const ANGLE_TYPE_COLORS = {
-  'interior': '#FF9800',
-  'exterior-first': '#2196F3',
-  'exterior-second': '#4CAF50',
-  'reflex': '#9C27B0',
-  'opposite': '#FFEB3B'
-};
-
 // Animation type mappings for messages
 export const ANIMATION_TYPE_MAP = {
   'fade': 'f',
@@ -86,7 +77,8 @@ export const DEFAULT_SHAPE_COLORS = {
   arc: 'green',
   polygon: 'orange',
   curve: 'violet',
-  arrow: 'red'
+  arrow: 'red',
+  angle: 'orange'
 };
 
 /**
@@ -102,15 +94,6 @@ export function parseColor(color) {
   }
   
   return COLOR_MAP[color.toLowerCase()] || color;
-}
-
-/**
- * Get default color for angle type
- * @param {string} angleType - Type of angle
- * @returns {string} Default color for the angle type
- */
-export function getAngleColor(angleType) {
-  return ANGLE_TYPE_COLORS[angleType] || '#FF9800';
 }
 
 /**

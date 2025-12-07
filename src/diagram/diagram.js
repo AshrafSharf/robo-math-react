@@ -1,34 +1,27 @@
 /**
- * Base Diagram class for 2D visualizations
+ * StaticDiagram class for 2D visualizations
  * Provides a clean API with dictionary-style parameters
  * All shapes render instantly (non-animated)
  */
 
-import { Grapher } from '../blocks/grapher.js';
+import { BaseDiagram } from './base-diagram.js';
 import {
   parseColor,
-  getAngleColor,
   DEFAULT_SHAPE_COLORS
 } from './style_helper.js';
 import { ParallelogramPrimitiveShape } from '../script-shapes/parallelogram-primitive-shape.js';
-import { subtractVectors, addVectors } from '../utils/vector-math-2d.js';
+import { subtractVectors } from '../utils/vector-math-2d.js';
 import { FocusEffect } from '../effects/focus-effect.js';
-import { MathTextComponent } from '../mathtext/components/math-text-component.js';
-import { WriteEffect } from '../mathtext/effects/write-effect.js';
 
-export class Diagram {
-  constructor(options = {}) {
-    // Store canvasSection (parent DOM) and coordinateMapper for cell positioning
-    this.options = options;
-    this.coordinateMapper = options.coordinateMapper || null;
-    this.canvasSection = options.canvasSection || null;
-    this.roboCanvas = options.roboCanvas || null;  // For auto-scrolling
-
-    // Track objects for utility methods
-    this.objects = [];
-
-    // Track graph containers created by graphContainer() method
-    this.graphContainers = [];
+export class StaticDiagram extends BaseDiagram {
+  /**
+   * @param {Object} coordinateMapper - Coordinate mapper for logical to pixel conversion
+   * @param {HTMLElement} canvasSection - Parent DOM element for rendering
+   * @param {Object} roboCanvas - RoboCanvas instance for auto-scrolling
+   * @param {Object} options - Additional options
+   */
+  constructor(coordinateMapper, canvasSection, roboCanvas, options = {}) {
+    super(coordinateMapper, canvasSection, roboCanvas, options);
 
     // Focus effect instance
     this.focusEffect = new FocusEffect();
@@ -44,13 +37,9 @@ export class Diagram {
    * @returns {Object} Point shape
    */
   point(graphContainer, position, color = DEFAULT_SHAPE_COLORS.point, options = {}) {
-    const shape = graphContainer.point(position.x, position.y, options.radius || 4);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createPoint(graphContainer, position, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -65,13 +54,9 @@ export class Diagram {
    * @returns {Object} Vector shape
    */
   vector(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
-    const shape = graphContainer.vector(start.x, start.y, end.x, end.y);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createVector(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -128,14 +113,9 @@ export class Diagram {
    * @returns {Object} Line shape
    */
   line(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
-    const shape = graphContainer.line(start.x, start.y, end.x, end.y);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    if (options.fill) shape.fill(parseColor(options.fill));
-
+    const shape = this._createLine(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -150,13 +130,9 @@ export class Diagram {
    * @returns {Object} Measurement indicator shape
    */
   measurementIndicator(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
-    const shape = graphContainer.measurementIndicator(start.x, start.y, end.x, end.y, options);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createMeasurementIndicator(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -172,17 +148,32 @@ export class Diagram {
    * @returns {Object} Plot shape
    */
   plot(graphContainer, equation, domainMin, domainMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
-    const shape = graphContainer.plot(equation, domainMin, domainMax);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createPlot(graphContainer, equation, domainMin, domainMax, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
-  
+
+  /**
+   * Create a parametric plot
+   * @param {Object} graphContainer - The graph container to render on
+   * @param {Function} xFunction - Function that takes t and returns x
+   * @param {Function} yFunction - Function that takes t and returns y
+   * @param {number} tMin - Minimum t value
+   * @param {number} tMax - Maximum t value
+   * @param {string} color - Color name or hex
+   * @param {Object} options - Additional options {strokeWidth}
+   * @returns {Object} Parametric plot shape
+   */
+  parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
+    const shape = this._createParametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
+    shape.renderEndState();
+    shape.show();
+    this.objects.push(shape);
+    return shape;
+  }
+
   /**
    * Create a circle
    * @param {Object} graphContainer - The graph container to render on
@@ -193,14 +184,9 @@ export class Diagram {
    * @returns {Object} Circle shape
    */
   circle(graphContainer, center, radius, color = DEFAULT_SHAPE_COLORS.circle, options = {}) {
-    const shape = graphContainer.circle(center.x, center.y, radius);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    if (options.fill) shape.fill(parseColor(options.fill));
-
+    const shape = this._createCircle(graphContainer, center, radius, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -216,14 +202,9 @@ export class Diagram {
    * @returns {Object} Ellipse shape
    */
   ellipse(graphContainer, center, rx, ry, color = DEFAULT_SHAPE_COLORS.ellipse, options = {}) {
-    const shape = graphContainer.ellipse(center.x, center.y, rx, ry);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    if (options.fill) shape.fill(parseColor(options.fill));
-
+    const shape = this._createEllipse(graphContainer, center, rx, ry, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -240,13 +221,9 @@ export class Diagram {
    * @returns {Object} Arc shape
    */
   arc(graphContainer, start, end, rx, ry, color = DEFAULT_SHAPE_COLORS.arc, options = {}) {
-    const shape = graphContainer.arc(start, end, rx, ry);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createArc(graphContainer, start, end, rx, ry, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -261,21 +238,9 @@ export class Diagram {
    * @returns {Object} Arrow shape
    */
   arrow(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.arrow, options = {}) {
-    const shape = graphContainer.arrow(
-      start.x,
-      start.y,
-      end.x,
-      end.y,
-      options.angle || Math.PI,
-      options.clockwise !== undefined ? options.clockwise : true
-    );
-
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createArrow(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -289,19 +254,9 @@ export class Diagram {
    * @returns {Object} Polygon shape
    */
   polygon(graphContainer, vertices, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
-    const coords = [];
-    vertices.forEach(v => {
-      coords.push(v.x, v.y);
-    });
-
-    const shape = graphContainer.polygon(...coords);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    if (options.fill) shape.fill(parseColor(options.fill));
-
+    const shape = this._createPolygon(graphContainer, vertices, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -316,22 +271,101 @@ export class Diagram {
    * @returns {Object} Curve shape
    */
   curve(graphContainer, type, points, color = DEFAULT_SHAPE_COLORS.curve, options = {}) {
-    const coords = [];
-    points.forEach(p => {
-      coords.push(p.x, p.y);
-    });
-
-    const shape = graphContainer.curve(type, ...coords);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const shape = this._createCurve(graphContainer, type, points, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
-  
+
+  /**
+   * Create a LaTeX text rendered as SVG
+   * @param {Object} graphContainer - The graph container to render on
+   * @param {Object} position - Position {x, y}
+   * @param {string} latexString - LaTeX expression string
+   * @param {string} color - Color name or hex
+   * @param {Object} options - Additional options {fontSize, scale}
+   * @returns {Object} LatexShape
+   */
+  texToSvg(graphContainer, position, latexString, color = 'black', options = {}) {
+    const shape = this._createTexToSvg(graphContainer, position, latexString, color, options);
+    shape.renderEndState();
+    shape.show();
+    this.objects.push(shape);
+    return shape;
+  }
+
+  /**
+   * Create a label at a specific point with optional rotation and offset
+   * @param {Object} graphContainer - The graph container to render on
+   * @param {Object} point - Point position {x, y}
+   * @param {string} latexString - LaTeX expression string
+   * @param {string} color - Color name or hex
+   * @param {Object} options - Additional options {fontSize, rotation, offset}
+   * @returns {Object} Label shape
+   */
+  labelOnPoint(graphContainer, point, latexString, color = 'black', options = {}) {
+    const shape = this._createLabelOnPoint(graphContainer, point, latexString, color, options);
+    shape.renderEndState();
+    shape.show();
+    this.objects.push(shape);
+    return shape;
+  }
+
+  /**
+   * Create a label between two points with automatic rotation and offset
+   * @param {Object} graphContainer - The graph container to render on
+   * @param {Object} start - Start point {x, y}
+   * @param {Object} end - End point {x, y}
+   * @param {string} latexString - LaTeX expression string
+   * @param {string} color - Color name or hex
+   * @param {Object} options - Additional options {fontSize, offset}
+   * @returns {Object} Label shape
+   */
+  labelBetweenPoints(graphContainer, start, end, latexString, color = 'black', options = {}) {
+    const shape = this._createLabelBetweenPoints(graphContainer, start, end, latexString, color, options);
+    shape.renderEndState();
+    shape.show();
+    this.objects.push(shape);
+    return shape;
+  }
+
+  /**
+   * Create a label for an angle shape at its center with optional offset
+   * @param {Object} graphContainer - The graph container to render on
+   * @param {Object} angleShape - The angle shape object (from interiorAngle, exteriorAngle, etc.)
+   * @param {string} latexString - LaTeX expression string
+   * @param {string} color - Color name or hex (default: 'black')
+   * @param {Object} options - Additional options {offsetInView, fontSize}
+   * @returns {Object} Label shape
+   */
+  angleLabel(graphContainer, angleShape, latexString, color = 'black', options = {}) {
+    // Get angle center in view coordinates
+    const viewCenter = angleShape.getAngleCenter();
+    if (!viewCenter) {
+      console.error('Error: Could not get angle center from shape');
+      return null;
+    }
+
+    // Apply offset in view coordinates if specified
+    let finalViewX = viewCenter.x;
+    let finalViewY = viewCenter.y;
+
+    const offsetDistance = options.offsetInView || 0;
+    if (offsetDistance !== 0) {
+      finalViewX = viewCenter.x;
+      finalViewY = viewCenter.y - offsetDistance;
+    }
+
+    // Convert final view position to model coordinates
+    const modelX = graphContainer.graphSheet2D.toModelX(finalViewX);
+    const modelY = graphContainer.graphSheet2D.toModelY(finalViewY);
+    const modelPosition = { x: modelX, y: modelY };
+
+    // Use labelOnPoint with model coordinates
+    return this.labelOnPoint(graphContainer, modelPosition, latexString, color, options);
+  }
+
   /**
    * Create an angle between three points or two vectors
    * @param {Object} graphContainer - The graph container to render on
@@ -343,17 +377,10 @@ export class Diagram {
    * @returns {Object} Angle shape
    */
   angle(graphContainer, vertex, point1, point2, angleType = 'interior', options = {}) {
-    const shape = graphContainer.angle(vertex, point1, point2, angleType, options);
-
-    const color = options.color || options.stroke || getAngleColor(angleType);
-    shape.stroke(parseColor(color));
-    shape.fill(parseColor(options.fill || color));
-
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
+    const color = options.color || options.stroke || DEFAULT_SHAPE_COLORS.angle;
+    const shape = this._createAngle(graphContainer, vertex, point1, point2, angleType, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -368,19 +395,11 @@ export class Diagram {
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  interiorAngle(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('interior'), options = {}) {
+  interiorAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'interior',
-      { ...options, radius, color }
-    );
+    return this.angle(graphContainer, vertex, point1, point2, 'interior', { ...options, radius, color });
   }
   
   /**
@@ -397,15 +416,7 @@ export class Diagram {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'right',
-      { ...options, radius: size, color }
-    );
+    return this.angle(graphContainer, vertex, point1, point2, 'right', { ...options, radius: size, color });
   }
   
   /**
@@ -418,19 +429,11 @@ export class Diagram {
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  exteriorAngleFirst(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('exterior-first'), options = {}) {
+  exteriorAngleFirst(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'exterior-first',
-      { ...options, radius, color }
-    );
+    return this.angle(graphContainer, vertex, point1, point2, 'exterior-first', { ...options, radius, color });
   }
   
   /**
@@ -443,19 +446,11 @@ export class Diagram {
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  exteriorAngleSecond(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('exterior-second'), options = {}) {
+  exteriorAngleSecond(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'exterior-second',
-      { ...options, radius, color }
-    );
+    return this.angle(graphContainer, vertex, point1, point2, 'exterior-second', { ...options, radius, color });
   }
   
   /**
@@ -468,19 +463,11 @@ export class Diagram {
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  reflexAngle(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('reflex'), options = {}) {
+  reflexAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'reflex',
-      { ...options, radius, color }
-    );
+    return this.angle(graphContainer, vertex, point1, point2, 'reflex', { ...options, radius, color });
   }
   
   /**
@@ -493,72 +480,11 @@ export class Diagram {
    * @param {Object} options - Additional options
    * @returns {Object} Angle shape
    */
-  oppositeAngle(graphContainer, vector1, vector2, radius = 0.8, color = getAngleColor('opposite'), options = {}) {
+  oppositeAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
-
-    return this.angle(
-      graphContainer,
-      vertex,
-      point1,
-      point2,
-      'opposite',
-      { ...options, radius, color }
-    );
-  }
-  
-  /**
-   * Clear all shapes from the diagram
-   */
-  clearAll() {
-    this.objects.forEach(obj => {
-      if (obj.remove) {
-        obj.remove();
-      } else if (obj.hide) {
-        obj.hide();
-      }
-    });
-    this.objects = [];
-  }
-  
-  /**
-   * Hide all shapes
-   */
-  hideAll() {
-    this.objects.forEach(obj => {
-      if (obj.hide) {
-        obj.hide();
-      }
-    });
-  }
-  
-  /**
-   * Show all shapes
-   */
-  showAll() {
-    this.objects.forEach(obj => {
-      if (obj.show) {
-        obj.show();
-      }
-    });
-  }
-  
-  
-  /**
-   * Get the graph container for advanced usage
-   * @returns {Object} GraphContainer instance
-   */
-  getGraphContainer() {
-    return this.graphContainer;
-  }
-  
-  /**
-   * Get all created objects
-   * @returns {Array} Array of shape objects
-   */
-  getObjects() {
-    return this.objects;
+    return this.angle(graphContainer, vertex, point1, point2, 'opposite', { ...options, radius, color });
   }
   
   // ============= ZOOM METHODS =============
@@ -690,20 +616,6 @@ export class Diagram {
     }
   }
   
-  // ============= MESSAGE/NOTE METHODS =============
-  
-  // ============= STYLE HELPER METHODS =============
-  
-  /**
-   * Parse color from name or hex string
-   * Delegates to the style helper function
-   * @param {string} color - Color name or hex string
-   * @returns {string} Color value for SVG
-   */
-  parseColor(color) {
-    return parseColor(color);
-  }
-  
   // ============= NEW MATHEMATICAL METHODS =============
   
   /**
@@ -771,16 +683,9 @@ export class Diagram {
    * @returns {Object} Vector shape with dash pattern
    */
   dashedVector(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
-    const shape = graphContainer.vector(start.x, start.y, end.x, end.y);
-    shape.stroke(parseColor(color));
-    if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-
-    const dashPattern = options.dashPattern || '5,3';
-    shape.primitiveShape.attr('stroke-dasharray', dashPattern);
-
+    const shape = this._createDashedVector(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
-
     this.objects.push(shape);
     return shape;
   }
@@ -898,81 +803,6 @@ export class Diagram {
     return this.focusEffect.isActive();
   }
   
-  // ============= CELL CREATION METHODS (JUPYTER-STYLE) =============
-
-  /**
-   * Create a graph container cell at logical coordinates
-   * Similar to creating a graph cell in a Jupyter notebook
-   * @param {number} col - Logical column coordinate
-   * @param {number} row - Logical row coordinate
-   * @param {Object} options - Graph options {width, height, showGrid, xRange, yRange}
-   * @returns {Grapher} Graph container instance for drawing
-   */
-  graphContainer(col, row, options = {}) {
-    if (!this.coordinateMapper || !this.canvasSection) {
-      throw new Error('graphContainer requires coordinateMapper and canvasSection to be initialized');
-    }
-
-    // Convert logical coordinates to pixel coordinates
-    const pixelCoords = this.coordinateMapper.toPixel(col, row);
-
-    // Create container div at position
-    const containerDOM = document.createElement('div');
-    containerDOM.style.position = 'absolute';
-    containerDOM.style.left = pixelCoords.x + 'px';
-    containerDOM.style.top = pixelCoords.y + 'px';
-    containerDOM.style.width = (options.width || 600) + 'px';
-    containerDOM.style.height = (options.height || 400) + 'px';
-    this.canvasSection.appendChild(containerDOM);
-
-    // Create Grapher instance in this container
-    const grapher = new Grapher(containerDOM, {
-      width: options.width || 600,
-      height: options.height || 400,
-      showGrid: options.showGrid !== false,
-      xRange: options.xRange || [-10, 10],
-      yRange: options.yRange || [-10, 10]
-    });
-
-    // Attach outer containerDOM for scrolling (grapher has its own inner containerDOM)
-    grapher.containerDOM = containerDOM;
-
-    // Track for cleanup
-    this.graphContainers.push({ grapher, containerDOM });
-
-    return grapher;
-  }
-
-  /**
-   * Create mathematical text using MathJax rendering
-   * Similar to creating a text cell in a Jupyter notebook
-   * @param {string} text - LaTeX mathematical expression
-   * @param {number} col - Logical column coordinate
-   * @param {number} row - Logical row coordinate
-   * @param {Object} options - Rendering options {fontSize, stroke, fill}
-   * @returns {MathTextComponent} Math text component
-   */
-  mathText(text, col, row, options = {}) {
-    const mathComponent = new MathTextComponent(
-      text,
-      col,
-      row,
-      this.coordinateMapper,
-      this.canvasSection,
-      {
-        fontSize: options.fontSize || 32,
-        stroke: options.stroke || '#000000',
-        fill: options.fill || '#000000'
-      }
-    );
-
-    mathComponent.hide();
-    mathComponent.disableStroke();
-    this.objects.push(mathComponent);
-
-    return mathComponent;
-  }
-
   // ============= WRITE ANIMATION METHODS =============
 
   /**
@@ -1019,21 +849,9 @@ export class Diagram {
 
   /**
    * Clear all shapes and clean up resources
-   * Destroys all graphContainers created by this diagram
    */
   destroy() {
-    // Clear all shapes first
-    this.clearAll();
-
-    // Destroy all graph containers
-    this.graphContainers.forEach(gc => {
-      gc.grapher.destroy();
-      gc.containerDOM.parentNode.removeChild(gc.containerDOM);
-    });
-    this.graphContainers = [];
-
-    // Clear references
-    this.objects = [];
+    super.destroy();
     this.focusEffect = null;
   }
 }
