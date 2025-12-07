@@ -1,7 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App.jsx'
+import TestFeatures from './TestFeatures.jsx'
 import { PluginInitializer } from './utils/plugin-initializer.js'
 
 // Initialize plugins (MathJax, GSAP, etc.) before rendering React app
@@ -16,10 +18,15 @@ PluginInitializer.initialize()
       loadingElement.classList.add('hidden');
     }
 
-    // Render React app
+    // Render React app with routing
     createRoot(document.getElementById('root')).render(
       <StrictMode>
-        <App />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/test" element={<TestFeatures />} />
+          </Routes>
+        </BrowserRouter>
       </StrictMode>,
     );
   })

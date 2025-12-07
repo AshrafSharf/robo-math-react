@@ -14,6 +14,7 @@ export class DivisionExpression extends AbstractArithmeticExpression {
         this.lhsExpression.resolve(context);
         this.rhsExpression.resolve(context);
 
+        
         this.resultantExpression = this.lhsExpression.divide(this.rhsExpression);
     }
 

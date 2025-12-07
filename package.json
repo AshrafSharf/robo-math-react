@@ -32,6 +32,7 @@
     "react": "^19.2.0",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.0",
+    "react-router-dom": "^7.10.1",
     "svg.js": "^2.7.1",
     "tex-to-svg": "^0.2.0",
     "tippy.js": "^6.3.7"
