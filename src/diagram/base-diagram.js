@@ -6,6 +6,7 @@
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
 import { parseColor } from './style_helper.js';
 import { Grapher } from '../blocks/grapher.js';
+import { compile } from 'mathjs';
 
 export class BaseDiagram {
   /**
@@ -132,6 +133,31 @@ export class BaseDiagram {
     const shape = graphContainer.plot(equation, domainMin, domainMax);
     this._applyStyle(shape, color, options);
     return shape;
+  }
+
+  /**
+   * Compile a math expression string to a callable function
+   * Uses math.js for parsing and evaluation
+   * @param {string} expression - Math expression like "x^2 + sin(x)"
+   * @param {string} variable - The independent variable (default: 'x')
+   * @param {Object} scope - Variable substitutions like {a: 2, b: 3}
+   * @returns {Function} A function that takes the variable value and returns result
+   */
+  compileExpression(expression, variable = 'x', scope = {}) {
+    const compiled = compile(expression);
+    return (value) => {
+      const evalScope = { ...scope, [variable]: value };
+      return compiled.evaluate(evalScope);
+    };
+  }
+
+  /**
+   * Create a plot from expression string (without rendering)
+   * @protected
+   */
+  _createPlotFromExpression(graphContainer, expression, variable, scope, domainMin, domainMax, color, options = {}) {
+    const func = this.compileExpression(expression, variable, scope);
+    return this._createPlot(graphContainer, func, domainMin, domainMax, color, options);
   }
 
   /**

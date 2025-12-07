@@ -24,6 +24,12 @@ function TestFeatures() {
   const [newHeight, setNewHeight] = useState('400');
   const [newLatex, setNewLatex] = useState('x^2');
 
+  // Expression plotting state
+  const [expressionInput, setExpressionInput] = useState('x^2');
+  const [scopeInput, setScopeInput] = useState('{}');
+  const [domainMin, setDomainMin] = useState('-5');
+  const [domainMax, setDomainMax] = useState('5');
+
   // Initialize RoboCanvas
   useEffect(() => {
     if (!containerRef.current || roboCanvasRef.current) return;
@@ -105,11 +111,25 @@ function TestFeatures() {
     setComponentsCount(prev => prev + 1);
   };
 
+  // Helper to check if component is a graph container (has point method)
+  const isGraphContainer = (component) => {
+    return component && typeof component.point === 'function';
+  };
+
+  // Helper to check if component is a MathText component
+  const isMathText = (component) => {
+    return component && typeof component.show === 'function' && !isGraphContainer(component);
+  };
+
   // Test button handlers
   const handleWriteMathText = async () => {
     const component = componentsMapRef.current[componentName];
     if (!component) {
       alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isMathText(component)) {
+      alert(`"${componentName}" is not a MathText component. Create a text first.`);
       return;
     }
 
@@ -123,6 +143,10 @@ function TestFeatures() {
       alert(`Component "${componentName}" not found`);
       return;
     }
+    if (!isGraphContainer(component)) {
+      alert(`"${componentName}" is not a graph container. Create a graph first.`);
+      return;
+    }
 
     await roboCanvasRef.current.scrollToComponent(component);
     roboCanvasRef.current.diagram.point(component, {x: 0, y: 0}, 'red', { radius: 6 });
@@ -134,9 +158,89 @@ function TestFeatures() {
       alert(`Component "${componentName}" not found`);
       return;
     }
+    if (!isGraphContainer(component)) {
+      alert(`"${componentName}" is not a graph container. Create a graph first.`);
+      return;
+    }
 
     await roboCanvasRef.current.scrollToComponent(component);
     roboCanvasRef.current.diagram.line(component, {x: -5, y: -5}, {x: 5, y: 5}, 'blue', { strokeWidth: 2 });
+  };
+
+  const handleTestPlot = async () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isGraphContainer(component)) {
+      alert(`"${componentName}" is not a graph container. Create a graph first.`);
+      return;
+    }
+
+    await roboCanvasRef.current.scrollToComponent(component);
+    // Plot y = x^2
+    roboCanvasRef.current.diagram.plot(component, (x) => x * x, -10, 10, 'purple', { strokeWidth: 2 });
+  };
+
+  const handleTestCircle = async () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isGraphContainer(component)) {
+      alert(`"${componentName}" is not a graph container. Create a graph first.`);
+      return;
+    }
+
+    await roboCanvasRef.current.scrollToComponent(component);
+    roboCanvasRef.current.diagram.circle(component, {x: 0, y: 0}, 3, 'orange', { strokeWidth: 2 });
+  };
+
+  const handleTestVector = async () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isGraphContainer(component)) {
+      alert(`"${componentName}" is not a graph container. Create a graph first.`);
+      return;
+    }
+
+    await roboCanvasRef.current.scrollToComponent(component);
+    roboCanvasRef.current.diagram.vector(component, {x: 0, y: 0}, {x: 4, y: 3}, 'green', { strokeWidth: 2 });
+  };
+
+  const handleTestPlotExpression = async () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isGraphContainer(component)) {
+      alert(`"${componentName}" is not a graph container. Create a graph first.`);
+      return;
+    }
+
+    let scope = {};
+    try {
+      scope = JSON.parse(scopeInput);
+    } catch (e) {
+      alert(`Invalid scope JSON: ${e.message}`);
+      return;
+    }
+
+    await roboCanvasRef.current.scrollToComponent(component);
+    roboCanvasRef.current.diagram.plotExpression(
+      component,
+      expressionInput,
+      parseFloat(domainMin),
+      parseFloat(domainMax),
+      scope,
+      { color: 'purple', strokeWidth: 2 }
+    );
   };
 
   const handleClearAll = () => {
@@ -186,88 +290,186 @@ function TestFeatures() {
         flexWrap: 'wrap'
       }}>
         <button onClick={() => setShowCreateModal(true)} style={{
-          padding: '8px 16px',
-          border: '1px solid #6f42c1',
-          backgroundColor: '#6f42c1',
+          padding: '4px 10px',
+          border: '1px solid #dc3545',
+          backgroundColor: '#dc3545',
           color: 'white',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '14px',
+          fontSize: '12px',
           fontWeight: 'bold'
         }}>
-          + Create Component
+          + New
         </button>
 
-        <div style={{
-          padding: '6px 12px',
-          backgroundColor: '#e9ecef',
-          borderRadius: '4px',
-          fontSize: '12px',
-          color: '#495057'
-        }}>
-          Components: {Object.keys(componentsMapRef.current).join(', ') || 'none'}
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <label style={{ fontSize: '14px', fontWeight: 'bold' }}>Use Component:</label>
-          <input
-            type="text"
-            value={componentName}
-            onChange={(e) => setComponentName(e.target.value)}
-            placeholder="e.g., graph1, text1"
-            style={{
-              padding: '6px 10px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              fontSize: '14px',
-              width: '150px'
-            }}
-          />
-        </div>
+        <select
+          value={componentName}
+          onChange={(e) => setComponentName(e.target.value)}
+          style={{
+            padding: '4px 8px',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            fontSize: '12px',
+            minWidth: '100px'
+          }}
+        >
+          <option value="">-- Select --</option>
+          {Object.keys(componentsMapRef.current).map(name => (
+            <option key={name} value={name}>{name}</option>
+          ))}
+        </select>
 
         <button onClick={handleWriteMathText} style={{
-          padding: '8px 16px',
+          padding: '4px 10px',
           border: '1px solid #007bff',
           backgroundColor: '#007bff',
           color: 'white',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '14px'
+          fontSize: '12px'
         }}>
-          Write MathText
+          Write
         </button>
         <button onClick={handleTestPoint} style={{
-          padding: '8px 16px',
+          padding: '4px 10px',
           border: '1px solid #28a745',
           backgroundColor: '#28a745',
           color: 'white',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '14px'
+          fontSize: '12px'
         }}>
-          Draw Point
+          Point
         </button>
         <button onClick={handleTestLine} style={{
-          padding: '8px 16px',
+          padding: '4px 10px',
           border: '1px solid #17a2b8',
           backgroundColor: '#17a2b8',
           color: 'white',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '14px'
+          fontSize: '12px'
         }}>
-          Draw Line
+          Line
         </button>
+        <button onClick={handleTestCircle} style={{
+          padding: '4px 10px',
+          border: '1px solid #fd7e14',
+          backgroundColor: '#fd7e14',
+          color: 'white',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}>
+          Circle
+        </button>
+        <button onClick={handleTestVector} style={{
+          padding: '4px 10px',
+          border: '1px solid #20c997',
+          backgroundColor: '#20c997',
+          color: 'white',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}>
+          Vector
+        </button>
+        <button onClick={handleTestPlot} style={{
+          padding: '4px 10px',
+          border: '1px solid #6f42c1',
+          backgroundColor: '#6f42c1',
+          color: 'white',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontSize: '12px'
+        }}>
+          Plot
+        </button>
+
+        {/* Expression Plot Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', borderLeft: '1px solid #ccc', paddingLeft: '10px' }}>
+          <input
+            type="text"
+            value={expressionInput}
+            onChange={(e) => setExpressionInput(e.target.value)}
+            placeholder="e.g., x^2, sin(x)"
+            style={{
+              padding: '4px 8px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '12px',
+              width: '100px',
+              fontFamily: 'monospace'
+            }}
+          />
+          <input
+            type="text"
+            value={domainMin}
+            onChange={(e) => setDomainMin(e.target.value)}
+            placeholder="min"
+            style={{
+              padding: '4px 4px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '12px',
+              width: '35px',
+              fontFamily: 'monospace',
+              textAlign: 'center'
+            }}
+          />
+          <span style={{ fontSize: '12px' }}>to</span>
+          <input
+            type="text"
+            value={domainMax}
+            onChange={(e) => setDomainMax(e.target.value)}
+            placeholder="max"
+            style={{
+              padding: '4px 4px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '12px',
+              width: '35px',
+              fontFamily: 'monospace',
+              textAlign: 'center'
+            }}
+          />
+          <input
+            type="text"
+            value={scopeInput}
+            onChange={(e) => setScopeInput(e.target.value)}
+            placeholder="{a:1}"
+            style={{
+              padding: '4px 8px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '12px',
+              width: '60px',
+              fontFamily: 'monospace'
+            }}
+          />
+          <button onClick={handleTestPlotExpression} style={{
+            padding: '4px 10px',
+            border: '1px solid #e83e8c',
+            backgroundColor: '#e83e8c',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}>
+            Plot Expr
+          </button>
+        </div>
+
         <button onClick={handleClearAll} style={{
-          padding: '8px 16px',
+          padding: '4px 10px',
           border: '1px solid #6c757d',
           backgroundColor: '#6c757d',
           color: 'white',
           borderRadius: '4px',
           cursor: 'pointer',
-          fontSize: '14px'
+          fontSize: '12px'
         }}>
-          Clear All
+          Clear
         </button>
         {/* Speed Control */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>

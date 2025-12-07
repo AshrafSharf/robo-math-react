@@ -156,6 +156,29 @@ export class StaticDiagram extends BaseDiagram {
   }
 
   /**
+   * Plot a mathematical expression string
+   * Uses math.js for parsing - supports standard math syntax
+   * @param {Object} graphContainer - The graph container to render on
+   * @param {string} expression - Math expression like "a*x^2 + b*x + c" or "sin(x)"
+   * @param {number} domainMin - Minimum x value
+   * @param {number} domainMax - Maximum x value
+   * @param {Object} scope - Variable substitution map {a: 1, b: 2, c: 3}
+   * @param {Object} options - Style options {color, strokeWidth, variable}
+   * @returns {Object} Plot shape
+   */
+  plotExpression(graphContainer, expression, domainMin, domainMax, scope = {}, options = {}) {
+    const { variable = 'x', color = 'blue', ...plotOptions } = options;
+    const shape = this._createPlotFromExpression(
+      graphContainer, expression, variable, scope,
+      domainMin, domainMax, color, plotOptions
+    );
+    shape.renderEndState();
+    shape.show();
+    this.objects.push(shape);
+    return shape;
+  }
+
+  /**
    * Create a parametric plot
    * @param {Object} graphContainer - The graph container to render on
    * @param {Function} xFunction - Function that takes t and returns x
