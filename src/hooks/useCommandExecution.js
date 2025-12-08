@@ -18,14 +18,12 @@ import { useDebounce } from './useDebounce.js';
  * @param {Object} options - Configuration options
  * @param {number} options.debounceMs - Debounce delay (default: 500ms)
  * @param {boolean} options.useAnimatedMode - Whether to use animated diagram
- * @param {Grapher} options.graphContainer - Initial graph container
  * @returns {Object} Hook return value
  */
 export function useCommandExecution(roboCanvas, options = {}) {
     const {
         debounceMs = 500,
-        useAnimatedMode = false,
-        graphContainer: initialGraphContainer = null
+        useAnimatedMode = false
     } = options;
 
     // State
@@ -36,7 +34,6 @@ export function useCommandExecution(roboCanvas, options = {}) {
     const pipelineServiceRef = useRef(new ExpressionPipelineService());
     const commandExecutorRef = useRef(new CommandExecutor());
     const expressionContextRef = useRef(new ExpressionContext());
-    const graphContainerRef = useRef(initialGraphContainer);
     const lastCommandsRef = useRef([]);
     const roboCanvasRef = useRef(roboCanvas);
 
@@ -69,22 +66,19 @@ export function useCommandExecution(roboCanvas, options = {}) {
     /**
      * Execute all commands from scratch
      * This is the core execution function
+     * Flow: parse → resolve → toCommand → (if no errors) → clear → execute
      */
     const executeAllCommands = useCallback((commandModels) => {
         const canvas = roboCanvasRef.current;
-        if (!canvas || !graphContainerRef.current) {
-            console.warn('Cannot execute: roboCanvas or graphContainer not set');
+        if (!canvas) {
+            console.warn('Cannot execute: roboCanvas not set');
             return;
         }
 
-        // Clear everything first
-        clearAndReset();
-
         // Create fresh context for variable resolution
         const freshExprContext = new ExpressionContext();
-        expressionContextRef.current = freshExprContext;
 
-        // Process all commands through pipeline
+        // Process all commands through pipeline (parse, resolve, toCommand)
         const pipelineResult = pipelineServiceRef.current.processCommandList(
             commandModels,
             freshExprContext
@@ -93,14 +87,19 @@ export function useCommandExecution(roboCanvas, options = {}) {
         // Update errors state
         setErrors(pipelineResult.errors);
 
-        if (pipelineResult.commands.length === 0) {
+        // If any errors occurred during parse/resolve/toCommand, abort - don't clear canvas
+        if (pipelineResult.errors.length > 0 || pipelineResult.commands.length === 0) {
             return;
         }
 
-        // Create command context
+        // Only clear after successful compilation
+        clearAndReset();
+        expressionContextRef.current = freshExprContext;
+
+        // Create command context (graphContainer is null - commands specify their own graph)
         const commandContext = new CommandContext(
             getDiagram(),
-            graphContainerRef.current,
+            null,  // No default graph - commands use their own via expression
             freshExprContext
         );
 
@@ -109,9 +108,8 @@ export function useCommandExecution(roboCanvas, options = {}) {
         executor.setCommands(pipelineResult.commands);
         executor.setCommandContext(commandContext);
 
-        // Set up error handler
+        // Set up error handler for execution errors
         executor.setOnError((error, command, index) => {
-            console.error('Execution error:', error, 'at index:', index);
             setErrors(prev => [...prev, { index, error }]);
         });
 
@@ -203,13 +201,6 @@ export function useCommandExecution(roboCanvas, options = {}) {
     }, []);
 
     /**
-     * Set graph container
-     */
-    const setGraphContainer = useCallback((gc) => {
-        graphContainerRef.current = gc;
-    }, []);
-
-    /**
      * Force clear and re-render
      */
     const clearAndRerender = useCallback(() => {
@@ -241,7 +232,6 @@ export function useCommandExecution(roboCanvas, options = {}) {
         executionContext: expressionContextRef.current,
 
         // Utilities
-        clearAndRerender,
-        setGraphContainer
+        clearAndRerender
     };
 }

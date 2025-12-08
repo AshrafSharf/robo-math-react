@@ -1,5 +1,6 @@
 /**
  * Point expression - represents a 2D point
+ * Syntax: point(graph, x, y)
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { NumericExpression } from './NumericExpression.js';
@@ -12,12 +13,21 @@ export class PointExpression extends AbstractArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.point = { x: 0, y: 0 };
+        this.graphExpression = null; // Reference to graph expression
     }
 
     resolve(context) {
-        const coordinates = [];
+        if (this.subExpressions.length < 3) {
+            this.dispatchError('point() requires 3 arguments: graph, x, y');
+        }
 
-        for (let i = 0; i < this.subExpressions.length; i++) {
+        // First arg is graph reference
+        this.subExpressions[0].resolve(context);
+        this.graphExpression = this.subExpressions[0];
+
+        // Remaining args are coordinates
+        const coordinates = [];
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
 
             const resultExpression = this.subExpressions[i];
@@ -29,10 +39,17 @@ export class PointExpression extends AbstractArithmeticExpression {
         }
 
         if (coordinates.length !== 2) {
-            this.dispatchError('Point expression must have two coordinates');
+            this.dispatchError('Point expression must have two coordinates after graph');
         }
 
         this.point = { x: coordinates[0], y: coordinates[1] };
+    }
+
+    getGrapher() {
+        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
+            return this.graphExpression.getGrapher();
+        }
+        return null;
     }
 
     getName() {
@@ -146,6 +163,6 @@ export class PointExpression extends AbstractArithmeticExpression {
      * @returns {PointCommand}
      */
     toCommand(options = {}) {
-        return new PointCommand(this.getPoint(), options);
+        return new PointCommand(this.getGrapher(), this.getPoint(), options);
     }
 }

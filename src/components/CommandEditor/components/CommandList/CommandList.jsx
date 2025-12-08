@@ -13,7 +13,8 @@ const CommandList = ({
   onDelete,
   onPlay,
   onSettingsClick,
-  onAddCommand
+  onAddCommand,
+  errors = []
 }) => {
   const inputRefs = useRef({});
 
@@ -35,24 +36,28 @@ const CommandList = ({
 
   return (
     <>
-      {commands.map((command) => (
-        <CommandItem
-          key={command.id}
-          command={command}
-          isSelected={selectedId === command.id}
-          onSelect={onSelect}
-          onUpdate={onUpdate}
-          onDelete={onDelete}
-          onPlay={onPlay}
-          onSettings={onSettingsClick}
-          onKeyDown={handleKeyDownWithEnter}
-          ref={(el) => {
-            if (el) {
-              inputRefs.current[command.id] = el;
-            }
-          }}
-        />
-      ))}
+      {commands.map((command, index) => {
+        const errorForCommand = errors.find(e => e.index === index);
+        return (
+          <CommandItem
+            key={command.id}
+            command={command}
+            isSelected={selectedId === command.id}
+            onSelect={onSelect}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
+            onPlay={onPlay}
+            onSettings={onSettingsClick}
+            onKeyDown={handleKeyDownWithEnter}
+            error={errorForCommand?.error}
+            ref={(el) => {
+              if (el) {
+                inputRefs.current[command.id] = el;
+              }
+            }}
+          />
+        );
+      })}
     </>
   );
 };

@@ -14,3 +14,5 @@ export { BaseCommand } from './BaseCommand.js';
 export { PointCommand } from './PointCommand.js';
 export { LineCommand } from './LineCommand.js';
 export { ArcCommand } from './ArcCommand.js';
+export { Create2DGraphCommand } from './Create2DGraphCommand.js';
+export { PlotCommand } from './PlotCommand.js';

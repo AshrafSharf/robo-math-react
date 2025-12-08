@@ -71,7 +71,7 @@ export class Grapher {
     $(containerElement).append(this.containerDOM);
     console.log('🔧 Created graph-item div with id:', this.componentState.componentId);
     console.log('🔧 Appended to:', containerElement.id || containerElement.className);
-    
+
     // Initialize the graph
     this.initGraph(options);
     this.initViewBox();
@@ -135,11 +135,9 @@ export class Grapher {
     // Use provided dimensions from options
     const width = this.options.width;
     const height = this.options.height;
-    
-    // Set default position and size
-    // Use relative positioning to work better with flexbox layouts
+
+    // Set default size only - don't override position (may be absolute from parent)
     const compStyle = {
-      'position': 'relative',
       'width': width + 'px',
       'height': height + 'px'
     };

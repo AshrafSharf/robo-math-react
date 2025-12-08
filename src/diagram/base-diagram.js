@@ -359,9 +359,10 @@ export class BaseDiagram {
   // ============= OBJECT MANAGEMENT METHODS =============
 
   /**
-   * Clear all shapes from the diagram
+   * Clear all shapes and graph containers from the diagram
    */
   clearAll() {
+    // Clear shapes
     this.objects.forEach(obj => {
       if (obj.remove) {
         obj.remove();
@@ -370,6 +371,15 @@ export class BaseDiagram {
       }
     });
     this.objects = [];
+
+    // Clear graph containers
+    this.graphContainers.forEach(gc => {
+      gc.grapher.destroy();
+      if (gc.containerDOM && gc.containerDOM.parentNode) {
+        gc.containerDOM.parentNode.removeChild(gc.containerDOM);
+      }
+    });
+    this.graphContainers = [];
   }
 
   /**
@@ -431,15 +441,19 @@ export class BaseDiagram {
 
     // Convert logical coordinates to pixel coordinates
     const pixelCoords = this.coordinateMapper.toPixel(col, row);
+    console.log(`graphContainer: col=${col}, row=${row} -> pixel(${pixelCoords.x}, ${pixelCoords.y})`);
 
     // Create container div at position
     const containerDOM = document.createElement('div');
+    containerDOM.id = `graph-container-${col}-${row}`;
     containerDOM.style.position = 'absolute';
     containerDOM.style.left = pixelCoords.x + 'px';
     containerDOM.style.top = pixelCoords.y + 'px';
     containerDOM.style.width = (options.width || 600) + 'px';
     containerDOM.style.height = (options.height || 400) + 'px';
+    containerDOM.style.border = '1px solid red'; // Debug border
     this.canvasSection.appendChild(containerDOM);
+    console.log(`graphContainer: appended to canvasSection, id=${this.canvasSection.id}`);
 
     // Create Grapher instance in this container
     const grapher = new Grapher(containerDOM, {
@@ -487,7 +501,9 @@ export class BaseDiagram {
     // Destroy all graph containers
     this.graphContainers.forEach(gc => {
       gc.grapher.destroy();
-      gc.containerDOM.parentNode.removeChild(gc.containerDOM);
+      if (gc.containerDOM && gc.containerDOM.parentNode) {
+        gc.containerDOM.parentNode.removeChild(gc.containerDOM);
+      }
     });
     this.graphContainers = [];
 

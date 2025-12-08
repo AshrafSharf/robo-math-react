@@ -3,10 +3,11 @@ export class IdUtil {
 
   static getID() {
     this.counter++;
-    return `id_${Date.now()}_${this.counter}_${Math.random().toString(36).substr(2, 9)}`;
+    return `${this.counter}`;
   }
 
   static generateID(prefix = 'id') {
-    return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.counter++;
+    return `${prefix}_${this.counter}`;
   }
 }

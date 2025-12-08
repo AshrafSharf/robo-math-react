@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CommandEditor from './components/CommandEditor';
+import RoboCanvasGridOverlay from './components/RoboCanvasGridOverlay';
 import './App.css';
 import { RoboCanvas } from './RoboCanvas.js';
 import { useCommandExecution } from './hooks/useCommandExecution.js';
@@ -8,9 +9,9 @@ import { IntrepreterFunctionTable } from './engine/expression-parser/core/Intrep
 function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isAnimated, setIsAnimated] = useState(false);
-  const roboCanvasRef = useRef(null);
+  const [showGrid, setShowGrid] = useState(false);
+  const [roboCanvas, setRoboCanvas] = useState(null);
   const containerRef = useRef(null);
-  const defaultGraphRef = useRef(null);
 
   // Initialize expression function table once
   useEffect(() => {
@@ -26,9 +27,8 @@ function App() {
     handlePause: hookHandlePause,
     handleResume: hookHandleResume,
     errors,
-    setGraphContainer,
     clearAndRerender
-  } = useCommandExecution(roboCanvasRef.current, {
+  } = useCommandExecution(roboCanvas, {
     debounceMs: 500,
     useAnimatedMode: isAnimated
   });
@@ -39,32 +39,30 @@ function App() {
 
   // Initialize RoboCanvas
   useEffect(() => {
-    if (!containerRef.current || roboCanvasRef.current) return;
+    if (!containerRef.current) return;
+
+    let canvasInstance = null;
+    let isMounted = true;
 
     const initRoboCanvas = async () => {
       try {
-        const roboCanvas = new RoboCanvas(containerRef.current, {
+        canvasInstance = new RoboCanvas(containerRef.current, {
           canvasWidth: 1200,
           logicalWidth: 8,
           logicalHeight: 200
         });
 
-        await roboCanvas.init();
-        roboCanvas.useStaticDiagram();
+        await canvasInstance.init();
 
-        roboCanvasRef.current = roboCanvas;
+        // Check if component is still mounted before updating state
+        if (!isMounted) {
+          canvasInstance.destroy();
+          return;
+        }
+
+        canvasInstance.useStaticDiagram();
+        setRoboCanvas(canvasInstance);
         console.log('App: RoboCanvas initialized');
-
-        // Create default graph container for command execution
-        const defaultGraph = roboCanvas.diagram.graphContainer(0, 0, {
-          width: 600,
-          height: 400,
-          showGrid: true,
-          xRange: [-10, 10],
-          yRange: [-10, 10]
-        });
-        defaultGraphRef.current = defaultGraph;
-        setGraphContainer(defaultGraph);
       } catch (error) {
         console.error('App: RoboCanvas initialization failed', error);
         alert(`Failed to initialize RoboCanvas: ${error.message}`);
@@ -74,22 +72,25 @@ function App() {
     initRoboCanvas();
 
     return () => {
-      if (roboCanvasRef.current) {
-        roboCanvasRef.current.destroy();
-        roboCanvasRef.current = null;
+      isMounted = false;
+      if (canvasInstance) {
+        canvasInstance.destroy();
+        setRoboCanvas(null);
       }
     };
   }, []);
 
   const handleToggleAnimated = (e) => {
+    if (!roboCanvas) return;
+
     const newAnimated = e.target.checked;
     setIsAnimated(newAnimated);
-    roboCanvasRef.current.clearAll();
+    roboCanvas.clearAll();
 
     if (newAnimated) {
-      roboCanvasRef.current.useAnimatedDiagram();
+      roboCanvas.useAnimatedDiagram();
     } else {
-      roboCanvasRef.current.useStaticDiagram();
+      roboCanvas.useStaticDiagram();
     }
 
     clearAndRerender();
@@ -113,24 +114,17 @@ function App() {
             style={{ cursor: 'pointer' }}
           />
           <span style={{ color: 'white', fontSize: '14px' }}>Animated</span>
+          <span style={{ color: '#888', margin: '0 10px' }}>|</span>
+          <input
+            type="checkbox"
+            checked={showGrid}
+            onChange={(e) => setShowGrid(e.target.checked)}
+            style={{ cursor: 'pointer' }}
+          />
+          <span style={{ color: 'white', fontSize: '14px' }}>Grid</span>
           <a href="/test" style={{ color: '#aaa', fontSize: '12px', marginLeft: '20px' }}>Test Features</a>
         </div>
       </div>
-
-      {/* Error Display */}
-      {errors.length > 0 && (
-        <div style={{
-          padding: '10px 20px',
-          backgroundColor: '#ffebee',
-          borderBottom: '1px solid #f44336'
-        }}>
-          {errors.map((err, i) => (
-            <div key={i} style={{ color: '#c62828', fontSize: '14px' }}>
-              Command {err.index + 1}: {err.error?.message || String(err.error)}
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Main Shell */}
       <div className="robo-shell-main">
@@ -144,13 +138,19 @@ function App() {
           onChange={hookHandleChange}
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isSidebarCollapsed}
+          errors={errors}
         />
 
         {/* Play Surface - RoboCanvas Container */}
         <div
           ref={containerRef}
           className={`robo-shell-main-playsurface ${isSidebarCollapsed ? 'expanded' : ''}`}
-        />
+        >
+          <RoboCanvasGridOverlay
+            pixelsPerUnit={25}
+            visible={showGrid}
+          />
+        </div>
       </div>
     </div>
   );

@@ -15,8 +15,8 @@
  */
 export class BaseCommand {
   constructor() {
-    // Shape created during init
-    this.shape = null;
+    // Result created during init (shape, graph container, etc.)
+    this.commandResult = null;
 
     // Expression metadata
     this.expressionId = -1;
@@ -138,9 +138,9 @@ export class BaseCommand {
    * Default: render end state and show
    */
   doDirectPlay() {
-    if (this.shape) {
-      this.shape.renderEndState();
-      this.shape.show();
+    if (this.commandResult) {
+      this.commandResult.renderEndState();
+      this.commandResult.show();
     }
 
     // Handle label
@@ -186,15 +186,35 @@ export class BaseCommand {
   }
 
   // ============================================
+  // Cleanup
+  // ============================================
+
+  /**
+   * Clear/remove the command result
+   * Subclasses can override for custom cleanup logic
+   */
+  clear() {
+    if (this.commandResult) {
+      if (typeof this.commandResult.remove === 'function') {
+        this.commandResult.remove();
+      } else if (typeof this.commandResult.destroy === 'function') {
+        this.commandResult.destroy();
+      }
+      this.commandResult = null;
+    }
+    this.isInitialized = false;
+  }
+
+  // ============================================
   // Getters and Setters
   // ============================================
 
   /**
-   * Get the created shape
-   * @returns {Shape|null}
+   * Get the command result (shape, graph container, etc.)
+   * @returns {Object|null}
    */
-  getShape() {
-    return this.shape;
+  getCommandResult() {
+    return this.commandResult;
   }
 
   /**

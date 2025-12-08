@@ -6,6 +6,8 @@ import { NumericExpression } from '../expressions/NumericExpression.js';
 import { PointExpression } from '../expressions/PointExpression.js';
 import { LineExpression } from '../expressions/LineExpression.js';
 import { ArcExpression } from '../expressions/ArcExpression.js';
+import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
+import { PlotExpression } from '../expressions/PlotExpression.js';
 import { VariableReferenceExpression } from '../expressions/VariableReferenceExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
@@ -59,6 +61,8 @@ export class IntrepreterFunctionTable {
         registerMultiArg('point', PointExpression);
         registerMultiArg('line', LineExpression);
         registerMultiArg('arc', ArcExpression);
+        registerMultiArg('g2d', Graph2DExpression);
+        registerMultiArg('plot', PlotExpression);
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

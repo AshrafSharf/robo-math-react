@@ -8,11 +8,13 @@ import { BaseCommand } from './BaseCommand.js';
 export class PointCommand extends BaseCommand {
   /**
    * Create a point command
+   * @param {Object} graphContainer - The graph container (Grapher) to render on
    * @param {Object} position - Point position {x, y}
    * @param {Object} options - Additional options {radius}
    */
-  constructor(position, options = {}) {
+  constructor(graphContainer, position, options = {}) {
     super();
+    this.graphContainer = graphContainer;
     this.position = position; // {x, y}
     this.radius = options.radius || 4;
   }
@@ -21,10 +23,10 @@ export class PointCommand extends BaseCommand {
    * Create point shape via diagram
    */
   doInit() {
-    const { diagram, graphContainer } = this.commandContext;
+    const { diagram } = this.commandContext;
 
-    this.shape = diagram.point(
-      graphContainer,
+    this.commandResult = diagram.point(
+      this.graphContainer,
       this.position,
       this.color,
       {

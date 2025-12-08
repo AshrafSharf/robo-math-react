@@ -1,7 +1,7 @@
 /**
  * Line expression - represents a 2D line segment
- * A line is defined by two points: (x1, y1) and (x2, y2)
- * Optional 5th parameter extends the line length
+ * Syntax: line(graph, x1, y1, x2, y2) or line(graph, point1, point2)
+ * Optional last parameter extends the line length
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { LineCommand } from '../../commands/LineCommand.js';
@@ -13,12 +13,21 @@ export class LineExpression extends AbstractNonArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.coordinates = []; // [x1, y1, x2, y2]
+        this.graphExpression = null; // Reference to graph expression
     }
 
     resolve(context) {
-        this.coordinates = [];
+        if (this.subExpressions.length < 2) {
+            this.dispatchError('line() requires at least graph and coordinates');
+        }
 
-        for (let i = 0; i < this.subExpressions.length; i++) {
+        // First arg is graph reference
+        this.subExpressions[0].resolve(context);
+        this.graphExpression = this.subExpressions[0];
+
+        // Remaining args are coordinates
+        this.coordinates = [];
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
 
             const resultExpression = this.subExpressions[i];
@@ -35,13 +44,20 @@ export class LineExpression extends AbstractNonArithmeticExpression {
         }
 
         if (this.coordinates.length !== 5) {
-            this.dispatchError('The Line Expression allows max of 5 values including an optional length');
+            this.dispatchError('The Line Expression allows max of 5 values including an optional length (after graph)');
         }
 
         // Extend endpoint if extension parameter is non-zero
         if (this.coordinates[4] !== 0) {
             this.extendEndPoint();
         }
+    }
+
+    getGrapher() {
+        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
+            return this.graphExpression.getGrapher();
+        }
+        return null;
     }
 
     /**
@@ -167,6 +183,7 @@ export class LineExpression extends AbstractNonArithmeticExpression {
      */
     toCommand(options = {}) {
         const pts = this.getLinePoints();
-        return new LineCommand(pts[0], pts[1], options);
+        // Pass graph expression, not grapher - grapher resolved at command init time
+        return new LineCommand(this.graphExpression, pts[0], pts[1], options);
     }
 }

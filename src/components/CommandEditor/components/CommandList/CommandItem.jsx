@@ -16,7 +16,8 @@ const CommandItem = ({
   onDelete,
   onPlay,
   onSettings,
-  onKeyDown
+  onKeyDown,
+  error
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const inputRef = useRef(null);
@@ -72,7 +73,7 @@ const CommandItem = ({
             commandId={command.id}
           />
 
-          <DragHandle listeners={listeners} attributes={attributes} />
+          <DragHandle listeners={listeners} attributes={attributes} error={error} />
         </span>
 
         <i

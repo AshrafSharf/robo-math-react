@@ -1,17 +1,20 @@
 import React from 'react';
+import ErrorIndicator from './ErrorIndicator';
 
 /**
  * Drag handle for sortable command items
  */
-const DragHandle = ({ listeners, attributes }) => {
+const DragHandle = ({ listeners, attributes, error }) => {
   return (
     <span
-      className="cmd-editor-left"
-      {...listeners}
-      {...attributes}
-      style={{ cursor: 'move', touchAction: 'none' }}
+      className={`cmd-editor-left ${error ? 'has-error' : ''}`}
+      {...(error ? {} : { ...listeners, ...attributes })}
     >
-      <span style={{ fontSize: '10px', color: '#888', userSelect: 'none' }}>☰</span>
+      {error ? (
+        <ErrorIndicator error={error} />
+      ) : (
+        <span className="drag-handle-icon">☰</span>
+      )}
     </span>
   );
 };

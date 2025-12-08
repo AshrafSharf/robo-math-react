@@ -55,19 +55,13 @@ export class RoboCanvas {
     // Clear container
     this.containerElement.innerHTML = '';
 
-    // Note: Container positioning and overflow are handled by CSS (.robo-shell-main-playsurface)
-    // We only need to ensure the canvas section is properly sized for scrolling
-
-    // Create single canvas section (scrollable)
-    // Height will be very tall (logicalHeight × 100px) to support scrolling
+    // Use the container element directly as the canvas section
+    // CSS handles positioning/overflow via .robo-shell-main-playsurface
     const canvasHeight = this.options.logicalHeight * 100;  // 200 × 100 = 20000px
-    this.canvasSection = document.createElement('div');
+    this.canvasSection = this.containerElement;
     this.canvasSection.id = 'robo-canvas-section';
-    this.canvasSection.style.width = this.options.canvasWidth + 'px';
-    this.canvasSection.style.height = canvasHeight + 'px';  // Fixed large height
+    this.canvasSection.style.minHeight = canvasHeight + 'px';
     this.canvasSection.style.position = 'relative';
-    this.canvasSection.style.backgroundColor = '#f9f9f9';
-    this.containerElement.appendChild(this.canvasSection);
   }
 
   /**
@@ -98,15 +92,17 @@ export class RoboCanvas {
       // Create logical coordinate mapper for the entire canvas
       console.log('Creating coordinate mapper...');
       // Use a large pixel height for proper vertical spacing in scrollable canvas
-      // Each logical row should be ~100px apart for comfortable layout
-      const pixelHeight = this.options.logicalHeight * 100;  // 200 rows × 100px = 20000px
+      // 25px per logical unit for both columns and rows
+      const PIXELS_PER_UNIT = 25;
+      const pixelWidth = this.options.logicalWidth * PIXELS_PER_UNIT;
+      const pixelHeight = this.options.logicalHeight * PIXELS_PER_UNIT;
       const coordinateMapper = new LogicalCoordinateMapper(
-        this.options.canvasWidth,  // 1200px width
-        pixelHeight,               // 20000px height (scrollable)
-        this.options.logicalWidth,  // 8 columns
-        this.options.logicalHeight  // 200 rows
+        pixelWidth,
+        pixelHeight,
+        this.options.logicalWidth,
+        this.options.logicalHeight
       );
-      console.log(`Coordinate Mapper: ${this.options.logicalWidth}×${this.options.logicalHeight} logical → ${this.options.canvasWidth}×${pixelHeight}px (${pixelHeight / this.options.logicalHeight}px per row)`);
+      console.log(`Coordinate Mapper: ${this.options.logicalWidth}×${this.options.logicalHeight} logical → ${pixelWidth}×${pixelHeight}px (${PIXELS_PER_UNIT}px per unit)`);
 
       // Create both diagram instances (no shared Grapher - created on demand)
       console.log('Creating static and animated diagram instances...');
@@ -271,8 +267,8 @@ export class RoboCanvas {
    * Destroy the canvas and clean up resources
    */
   destroy() {
-    this.staticDiagram.destroy();
-    this.animatedDiagram.destroy();
+    this.staticDiagram?.destroy();
+    this.animatedDiagram?.destroy();
     this.staticDiagram = null;
     this.animatedDiagram = null;
     this.diagram = null;

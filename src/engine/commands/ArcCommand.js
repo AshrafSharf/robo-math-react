@@ -74,7 +74,7 @@ export class ArcCommand extends BaseCommand {
       options.strokeWidth = this.strokeWidth;
     }
 
-    this.shape = diagram.arc(
+    this.commandResult = diagram.arc(
       graphContainer,
       this.startPoint,
       this.endPoint,

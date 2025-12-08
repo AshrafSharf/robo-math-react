@@ -22,7 +22,8 @@ const CommandEditor = ({
   onResume,
   onChange,
   onToggleSidebar,
-  isSidebarCollapsed
+  isSidebarCollapsed,
+  errors = []
 }) => {
   const [commands, setCommands] = useState([createCommand(1)]);
   const [selectedId, setSelectedId] = useState(1);
@@ -203,6 +204,7 @@ const CommandEditor = ({
                     onPlay={handlePlay}
                     onSettingsClick={handleSettingsClick}
                     onAddCommand={addCommand}
+                    errors={errors}
                   />
                   <NewCommandButton onClick={() => addCommand()} />
                 </div>

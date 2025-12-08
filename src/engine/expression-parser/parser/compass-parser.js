@@ -1,4 +1,4 @@
-var robo=robo||{};
+var robo = globalThis.robo = globalThis.robo || {};
 robo.compass = robo.compass || {};
 robo.compass.CompassParser = (function() {
 

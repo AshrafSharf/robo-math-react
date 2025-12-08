@@ -93,4 +93,14 @@ export class VariableReferenceExpression extends AbstractNonArithmeticExpression
     getEndValue() {
         return this.variableValueExpression.getEndValue();
     }
+
+    /**
+     * Delegate getGrapher to the underlying expression (for Graph2DExpression)
+     */
+    getGrapher() {
+        if (this.variableValueExpression && typeof this.variableValueExpression.getGrapher === 'function') {
+            return this.variableValueExpression.getGrapher();
+        }
+        return null;
+    }
 }

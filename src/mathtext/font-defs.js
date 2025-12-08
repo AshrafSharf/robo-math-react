@@ -646,11 +646,6 @@ export class FontDefs {
             get: function (targetObj, prop) {
                 let hexCode = FontDefs.dec2hexString(prop);
                 let result = targetObj[prop];
-                if (result) {
-                    console.log(`[MathJax_Main] Found ${hexCode} (${String.fromCharCode(prop)})`);
-                } else {
-                    console.warn(`[MathJax_Main] NOT FOUND: ${hexCode} (${String.fromCharCode(prop)})`);
-                }
                 return result;
             }
         });
@@ -1031,14 +1026,7 @@ export class FontDefs {
             get: function (targetObj, prop) {
                 let hexCode = FontDefs.dec2hexString(prop);
                 let result = targetObj[prop];
-                if (result) {
-                    console.log(`[MathJax_Math-italic] Found ${hexCode} (${String.fromCharCode(prop)})`);
-                } else {
-                    console.warn(`[MathJax_Math-italic] NOT FOUND: ${hexCode} (${String.fromCharCode(prop)})`);
-                }
-                if (hexCode == '0x41') {
-                }
-                return targetObj[prop];
+                return result;
             }
         });
     }
