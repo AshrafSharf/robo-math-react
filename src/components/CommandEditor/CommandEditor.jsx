@@ -170,8 +170,8 @@ const CommandEditor = ({
       updateCommand,
       isExecuting
     }}>
-      <div className={`robo-cmd-editor ${isSidebarCollapsed ? 'collapsed' : ''}`} ref={containerRef} style={{ bottom: 0 }}>
-        <div className="robo-cmdeditor-container robo-animate" style={{ maxWidth: '900px', minWidth: '250px' }}>
+      <div className={`robo-cmd-editor ${isSidebarCollapsed ? 'collapsed' : ''}`} ref={containerRef}>
+        <div className="robo-cmdeditor-container robo-animate">
           <CommandMenuBar
             onPlayAll={handlePlayAll}
             onStop={handleStop}

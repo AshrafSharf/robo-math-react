@@ -43,26 +43,18 @@ body {
 /* Main Shell */
 .robo-shell-main {
   flex: 1;
-  position: relative;
+  display: flex;
+  flex-direction: row;
   overflow: hidden;
   background-color: #fafafa;
 }
 
 /* Play Surface */
 .robo-shell-main-playsurface {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 250px;
-  right: 0;
+  flex: 1;
   overflow: auto;  /* Enable scrolling for infinite canvas */
-  transition: left 0.2s linear;
   background-color: #fafafa;
-}
-
-/* When command editor is collapsed - canvas takes full width */
-.robo-shell-main-playsurface.expanded {
-  left: 0;
+  min-width: 0; /* Allow flex item to shrink below content size */
 }
 
 /* Text Section - Left 40% */

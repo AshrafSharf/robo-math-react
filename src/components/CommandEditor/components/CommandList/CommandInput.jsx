@@ -19,11 +19,11 @@ const CommandInput = forwardRef(({
   const inputRef = ref || localRef;
   const [isFocused, setIsFocused] = useState(false);
 
-  // Auto-resize hook - only use when focused
+  // Auto-resize hook
   const { width, measureRef } = useAutoResize(value);
 
-  // Calculate display width: expanded when focused with extra space, truncated when not
-  const displayWidth = isFocused ? Math.max(width + 100, 150) : 200;
+  // Calculate display width: always based on content, with extra space when focused for cursor
+  const displayWidth = isFocused ? Math.max(width + 100, 150) : Math.max(width + 20, 100);
 
   // Autocomplete hook
   const {
