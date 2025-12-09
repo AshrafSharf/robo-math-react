@@ -1,6 +1,14 @@
 /**
  * Point expression - represents a 2D point
- * Syntax: point(graph, x, y)
+ *
+ * Syntax options:
+ *   point(graph, x, y)     - using separate x and y values
+ *   point(graph, expr)     - using an expression that returns 2 values (e.g., st(line), ed(line))
+ *
+ * Examples:
+ *   point(g, 3, 5)         // point at (3, 5)
+ *   point(g, st(L))        // point at start of line L
+ *   point(g, ed(L))        // point at end of line L
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { NumericExpression } from './NumericExpression.js';
@@ -17,15 +25,17 @@ export class PointExpression extends AbstractArithmeticExpression {
     }
 
     resolve(context) {
-        if (this.subExpressions.length < 3) {
-            this.dispatchError('point() requires 3 arguments: graph, x, y');
+        if (this.subExpressions.length < 2) {
+            this.dispatchError('point() requires at least 2 arguments: graph and coordinates');
         }
 
         // First arg is graph reference
         this.subExpressions[0].resolve(context);
         this.graphExpression = this.subExpressions[0];
 
-        // Remaining args are coordinates
+        // Remaining args are coordinates - can be:
+        // - point(g, x, y) - two separate numeric values
+        // - point(g, expr) - one expression returning 2 values (e.g., st(line), ed(line))
         const coordinates = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
@@ -39,7 +49,7 @@ export class PointExpression extends AbstractArithmeticExpression {
         }
 
         if (coordinates.length !== 2) {
-            this.dispatchError('Point expression must have two coordinates after graph');
+            this.dispatchError('point() requires exactly 2 coordinate values. Use: point(g, x, y) or point(g, st(line))');
         }
 
         this.point = { x: coordinates[0], y: coordinates[1] };

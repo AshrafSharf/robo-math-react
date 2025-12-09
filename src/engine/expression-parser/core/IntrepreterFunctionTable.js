@@ -5,7 +5,14 @@ import { ExpressionInterpreter } from './ExpressionInterpreter.js';
 import { NumericExpression } from '../expressions/NumericExpression.js';
 import { PointExpression } from '../expressions/PointExpression.js';
 import { LineExpression } from '../expressions/LineExpression.js';
+import { VecExpression } from '../expressions/VecExpression.js';
 import { ArcExpression } from '../expressions/ArcExpression.js';
+import { CircleExpression } from '../expressions/CircleExpression.js';
+import { PolygonExpression } from '../expressions/PolygonExpression.js';
+import { XPointExpression } from '../expressions/XPointExpression.js';
+import { YPointExpression } from '../expressions/YPointExpression.js';
+import { StartPointExpression } from '../expressions/StartPointExpression.js';
+import { EndPointExpression } from '../expressions/EndPointExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { VariableReferenceExpression } from '../expressions/VariableReferenceExpression.js';
@@ -60,9 +67,18 @@ export class IntrepreterFunctionTable {
         // Geometry expressions
         registerMultiArg('point', PointExpression);
         registerMultiArg('line', LineExpression);
+        registerMultiArg('vec', VecExpression);
         registerMultiArg('arc', ArcExpression);
+        registerMultiArg('circle', CircleExpression);
+        registerMultiArg('polygon', PolygonExpression);
         registerMultiArg('g2d', Graph2DExpression);
         registerMultiArg('plot', PlotExpression);
+
+        // Coordinate extraction
+        registerMultiArg('x', XPointExpression);
+        registerMultiArg('y', YPointExpression);
+        registerMultiArg('st', StartPointExpression);
+        registerMultiArg('ed', EndPointExpression);
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

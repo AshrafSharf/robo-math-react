@@ -105,6 +105,21 @@ export class GeomUtil {
     return Math.sqrt((x * x) + (y * y));
   }
 
+  /**
+   * Returns the Euclidean norm (magnitude/length) of a vector.
+   * @public
+   *
+   * @param {Object|number} pointOrX - Either a point/vector object with x,y properties, or the x component
+   * @param {number} [y] - The y component (if first param is a number)
+   * @returns {number}
+   */
+  static norm(pointOrX, y) {
+    if (typeof pointOrX === 'object') {
+      return Math.sqrt(pointOrX.x * pointOrX.x + pointOrX.y * pointOrX.y);
+    }
+    return Math.sqrt(pointOrX * pointOrX + y * y);
+  }
+
   static map(value, istart, istop, ostart, ostop) {
     return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
   }
@@ -273,5 +288,170 @@ export class GeomUtil {
       translatedPoints.push(this.translatePoint(points[i].x, points[i].y, tx, ty, aboutX, aboutX));
     }
     return translatedPoints;
+  }
+
+  //=========================================================
+  // Coordinate Extraction Utilities (ported from exp_utils)
+  //=========================================================
+
+  /**
+   * Extracts x coordinate from various point-like objects.
+   * Accepts Point, Vector2, {x, y} objects, or [x, y] arrays.
+   * @param {Point|Object|Array} obj - Point-like object
+   * @returns {number} The x coordinate
+   */
+  static getX(obj) {
+    if (obj === null || obj === undefined) {
+      throw new Error('getX: input is null or undefined');
+    }
+    if (Array.isArray(obj)) {
+      return obj[0];
+    }
+    if (typeof obj.x === 'number') {
+      return obj.x;
+    }
+    throw new Error('getX: cannot extract x coordinate from input');
+  }
+
+  /**
+   * Extracts y coordinate from various point-like objects.
+   * Accepts Point, Vector2, {x, y} objects, or [x, y] arrays.
+   * @param {Point|Object|Array} obj - Point-like object
+   * @returns {number} The y coordinate
+   */
+  static getY(obj) {
+    if (obj === null || obj === undefined) {
+      throw new Error('getY: input is null or undefined');
+    }
+    if (Array.isArray(obj)) {
+      return obj[1];
+    }
+    if (typeof obj.y === 'number') {
+      return obj.y;
+    }
+    throw new Error('getY: cannot extract y coordinate from input');
+  }
+
+  /**
+   * Returns the angle from p1 to p2 in radians.
+   * Result is in range [0, 2π).
+   * @param {Point|Object|Array} p1 - Start point
+   * @param {Point|Object|Array} p2 - End point
+   * @returns {number} Angle in radians [0, 2π)
+   */
+  static getAngle(p1, p2) {
+    const x1 = GeomUtil.getX(p1);
+    const y1 = GeomUtil.getY(p1);
+    const x2 = GeomUtil.getX(p2);
+    const y2 = GeomUtil.getY(p2);
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    return ((angle % GeomUtil.TWO_PI) + GeomUtil.TWO_PI) % GeomUtil.TWO_PI;
+  }
+
+  /**
+   * Returns the slope between two points (rise/run).
+   * Returns Infinity for vertical lines (dx = 0).
+   * @param {Point|Object|Array} p1 - First point
+   * @param {Point|Object|Array} p2 - Second point
+   * @returns {number} Slope value (or Infinity for vertical)
+   */
+  static getSlope(p1, p2) {
+    const x1 = GeomUtil.getX(p1);
+    const y1 = GeomUtil.getY(p1);
+    const x2 = GeomUtil.getX(p2);
+    const y2 = GeomUtil.getY(p2);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    if (Math.abs(dx) < 1e-10) {
+      return dy >= 0 ? Infinity : -Infinity;
+    }
+    return dy / dx;
+  }
+
+  /**
+   * Returns the distance between two points (magnitude of the vector).
+   * @param {Point|Object|Array} p1 - First point
+   * @param {Point|Object|Array} p2 - Second point
+   * @returns {number} Euclidean distance
+   */
+  static getMagnitude(p1, p2) {
+    const x1 = GeomUtil.getX(p1);
+    const y1 = GeomUtil.getY(p1);
+    const x2 = GeomUtil.getX(p2);
+    const y2 = GeomUtil.getY(p2);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /**
+   * Returns the midpoint between two points.
+   * @param {Point|Object|Array} p1 - First point
+   * @param {Point|Object|Array} p2 - Second point
+   * @returns {Point} Midpoint
+   */
+  static getMidpoint(p1, p2) {
+    const x1 = GeomUtil.getX(p1);
+    const y1 = GeomUtil.getY(p1);
+    const x2 = GeomUtil.getX(p2);
+    const y2 = GeomUtil.getY(p2);
+    return new Point((x1 + x2) / 2, (y1 + y2) / 2);
+  }
+
+  /**
+   * Returns the unit vector (direction) from p1 to p2.
+   * @param {Point|Object|Array} p1 - Start point
+   * @param {Point|Object|Array} p2 - End point
+   * @returns {Point} Unit vector as Point (magnitude = 1)
+   */
+  static getUnitVector(p1, p2) {
+    const x1 = GeomUtil.getX(p1);
+    const y1 = GeomUtil.getY(p1);
+    const x2 = GeomUtil.getX(p2);
+    const y2 = GeomUtil.getY(p2);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const mag = Math.sqrt(dx * dx + dy * dy);
+    if (mag < 1e-10) {
+      return new Point(0, 0);
+    }
+    return new Point(dx / mag, dy / mag);
+  }
+
+  /**
+   * Returns a point at proportion t along the line from start to end.
+   * t=0 returns start, t=1 returns end, t=0.5 returns midpoint.
+   * @param {Point|Object|Array} start - Start point
+   * @param {Point|Object|Array} end - End point
+   * @param {number} t - Proportion (0 to 1, can be outside for extrapolation)
+   * @returns {Point} Point at proportion t
+   */
+  static pointAtProportion(start, end, t) {
+    const x1 = GeomUtil.getX(start);
+    const y1 = GeomUtil.getY(start);
+    const x2 = GeomUtil.getX(end);
+    const y2 = GeomUtil.getY(end);
+    return new Point(
+      x1 + (x2 - x1) * t,
+      y1 + (y2 - y1) * t
+    );
+  }
+
+  /**
+   * Returns a point on a circle at the given angle.
+   * Angle is measured counter-clockwise from the positive x-axis.
+   * @param {Point|Object|Array} center - Circle center
+   * @param {number} radius - Circle radius
+   * @param {number} angleDeg - Angle in degrees
+   * @returns {Point} Point on the circle
+   */
+  static pointOnCircleAtAngle(center, radius, angleDeg) {
+    const cx = GeomUtil.getX(center);
+    const cy = GeomUtil.getY(center);
+    const angleRad = GeomUtil.toRadians(angleDeg);
+    return new Point(
+      cx + radius * Math.cos(angleRad),
+      cy + radius * Math.sin(angleRad)
+    );
   }
 }
