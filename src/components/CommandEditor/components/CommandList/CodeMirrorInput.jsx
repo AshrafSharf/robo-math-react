@@ -4,9 +4,11 @@ import { EditorState } from '@codemirror/state';
 import { javascript } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+import { completionStatus } from '@codemirror/autocomplete';
+import { roboCanvasAutocomplete } from '../../auto_complete';
 
 /**
- * CodeMirror-based input component with single-line editing
+ * CodeMirror-based input component with single-line editing and autocomplete
  */
 const CodeMirrorInput = forwardRef(({
   value,
@@ -17,7 +19,9 @@ const CodeMirrorInput = forwardRef(({
   placeholder,
   commandId,
   isFocused,
-  displayWidth
+  displayWidth,
+  variableProvider,
+  currentLineIndex
 }, ref) => {
   const containerRef = useRef(null);
   const editorViewRef = useRef(null);
@@ -61,11 +65,17 @@ const CodeMirrorInput = forwardRef(({
       extensions: [
         javascript(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        // Add robo-canvas autocomplete with variable support
+        ...roboCanvasAutocomplete(variableProvider, currentLineIndex),
         keymap.of([
           ...defaultKeymap,
           {
             key: 'Enter',
             run: (view) => {
+              // If autocomplete is active, let it handle Enter
+              if (completionStatus(view.state) === 'active') {
+                return false;
+              }
               // Prevent new line, trigger parent handler
               const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
               onKeyDownRef.current?.(event);
@@ -75,6 +85,10 @@ const CodeMirrorInput = forwardRef(({
           {
             key: 'ArrowUp',
             run: (view) => {
+              // If autocomplete is active, let it handle navigation
+              if (completionStatus(view.state) === 'active') {
+                return false;
+              }
               const event = new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true });
               onKeyDownRef.current?.(event);
               return true;
@@ -83,6 +97,10 @@ const CodeMirrorInput = forwardRef(({
           {
             key: 'ArrowDown',
             run: (view) => {
+              // If autocomplete is active, let it handle navigation
+              if (completionStatus(view.state) === 'active') {
+                return false;
+              }
               const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true });
               onKeyDownRef.current?.(event);
               return true;
@@ -91,9 +109,23 @@ const CodeMirrorInput = forwardRef(({
           {
             key: 'Tab',
             run: (view) => {
+              // If autocomplete is active, let it handle Tab for selection
+              if (completionStatus(view.state) === 'active') {
+                return false;
+              }
               const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true });
               onKeyDownRef.current?.(event);
               return true;
+            }
+          },
+          {
+            key: 'Escape',
+            run: (view) => {
+              // If autocomplete is active, let it handle Escape to close
+              if (completionStatus(view.state) === 'active') {
+                return false;
+              }
+              return false;
             }
           }
         ]),

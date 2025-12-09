@@ -1,10 +1,10 @@
-import React, { useRef, forwardRef, useState } from 'react';
+import React, { useRef, forwardRef, useState, useCallback, useMemo } from 'react';
 import useAutoResize from '../../hooks/useAutoResize';
-import useAutocomplete from '../../hooks/useAutocomplete';
 import CodeMirrorInput from './CodeMirrorInput';
+import { extractVariables } from '../../auto_complete';
 
 /**
- * Auto-expanding command input with autocomplete
+ * Auto-expanding command input with CodeMirror autocomplete
  */
 const CommandInput = forwardRef(({
   value,
@@ -13,7 +13,9 @@ const CommandInput = forwardRef(({
   onBlur,
   onKeyDown,
   placeholder,
-  commandId
+  commandId,
+  commandIndex,
+  allCommands
 }, ref) => {
   const localRef = useRef(null);
   const inputRef = ref || localRef;
@@ -25,53 +27,19 @@ const CommandInput = forwardRef(({
   // Calculate display width: expands based on content when focused, fixed width when unfocused
   const displayWidth = isFocused ? Math.max(width + 80, 250) : 250;
 
-  // Autocomplete hook
-  const {
-    suggestions,
-    showSuggestions,
-    selectedIndex,
-    handleKeyDown: handleAutocompleteKeyDown,
-    selectSuggestion,
-    hideSuggestions
-  } = useAutocomplete(value);
+  // Create variable provider that returns variables defined before current line
+  const variableProvider = useCallback((lineIndex) => {
+    if (!allCommands) return [];
+    return extractVariables(allCommands, lineIndex);
+  }, [allCommands]);
 
   const handleChange = (e) => {
     onChange(e.target.value);
   };
 
   const handleKeyDownInternal = (e) => {
-    // Handle autocomplete navigation
-    if (showSuggestions) {
-      const handled = handleAutocompleteKeyDown(e);
-      if (handled) return;
-
-      // Handle Enter to select suggestion
-      if (e.key === 'Enter' && suggestions.length > 0) {
-        e.preventDefault();
-        const selected = selectSuggestion(selectedIndex);
-        if (selected) {
-          // Extract search string and replace with selected
-          const parts = value.split(/[,=(]/);
-          const lastPart = parts[parts.length - 1];
-          const newValue = value.slice(0, -lastPart.length) + selected + '(';
-          onChange(newValue);
-          hideSuggestions();
-          return;
-        }
-      }
-    }
-
     // Pass to parent for command-level keyboard navigation
     onKeyDown?.(e);
-  };
-
-  const handleSuggestionClick = (suggestion) => {
-    const parts = value.split(/[,=(]/);
-    const lastPart = parts[parts.length - 1];
-    const newValue = value.slice(0, -lastPart.length) + suggestion + '(';
-    onChange(newValue);
-    hideSuggestions();
-    inputRef.current?.focus();
   };
 
   const handleFocusInternal = () => {
@@ -81,8 +49,6 @@ const CommandInput = forwardRef(({
 
   const handleBlurInternal = () => {
     setIsFocused(false);
-    // Delay hiding suggestions to allow click
-    setTimeout(() => hideSuggestions(), 200);
     onBlur?.();
   };
 
@@ -114,24 +80,9 @@ const CommandInput = forwardRef(({
         commandId={commandId}
         isFocused={isFocused}
         displayWidth={displayWidth}
+        variableProvider={variableProvider}
+        currentLineIndex={commandIndex}
       />
-
-      {showSuggestions && isFocused && (
-        <div className="ui-autocomplete ui-menu ui-widget ui-widget-content">
-          {suggestions.map((suggestion, index) => (
-            <div
-              key={suggestion}
-              className={`ui-menu-item ${index === selectedIndex ? 'ui-state-focus' : ''}`}
-              onMouseDown={(e) => {
-                e.preventDefault(); // Prevent blur
-                handleSuggestionClick(suggestion);
-              }}
-            >
-              <a className="ui-menu-item-wrapper">{suggestion}</a>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 });

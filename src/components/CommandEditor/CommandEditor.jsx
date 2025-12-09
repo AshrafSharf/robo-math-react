@@ -18,6 +18,7 @@ const CommandEditor = ({
   onExecuteAll,
   onPlaySingle,
   onPlayUpTo,
+  onPlayAll,
   onStop,
   onPause,
   onResume,
@@ -124,12 +125,12 @@ const CommandEditor = ({
     }
   }, [commands, selectedId, onPlayUpTo]);
 
-  // Play all commands
+  // Play all commands with animation
   const handlePlayAll = useCallback(() => {
     setIsExecuting(true);
     setIsPaused(false);
-    onExecuteAll?.(commands);
-  }, [commands, onExecuteAll]);
+    onPlayAll?.();
+  }, [onPlayAll]);
 
   // Stop execution
   const handleStop = useCallback(() => {

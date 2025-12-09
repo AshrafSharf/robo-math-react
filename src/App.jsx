@@ -23,6 +23,7 @@ function App() {
     handleExecuteAll: hookHandleExecuteAll,
     handlePlaySingle: hookHandlePlaySingle,
     handlePlayUpTo: hookHandlePlayUpTo,
+    handlePlayAll: hookHandlePlayAll,
     handleChange: hookHandleChange,
     handleStop: hookHandleStop,
     handlePause: hookHandlePause,
@@ -110,6 +111,7 @@ function App() {
           onExecuteAll={hookHandleExecuteAll}
           onPlaySingle={hookHandlePlaySingle}
           onPlayUpTo={hookHandlePlayUpTo}
+          onPlayAll={hookHandlePlayAll}
           onStop={hookHandleStop}
           onPause={hookHandlePause}
           onResume={hookHandleResume}

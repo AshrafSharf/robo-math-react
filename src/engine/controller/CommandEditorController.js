@@ -127,8 +127,9 @@ export class CommandEditorController {
             return;
         }
 
-        // Clear after successful compilation
+        // Clear after successful compilation and ensure static mode
         this.clearAndReset();
+        this.roboCanvas.useStaticDiagram();
         this.expressionContext = freshExprContext;
 
         // Create command context
@@ -235,8 +236,63 @@ export class CommandEditorController {
         await this.commandExecutor.playUpTo(commandIndex);
 
         this._setExecuting(false);
-        // Stay in animated mode - shapes remain visible
-        // Next user action (typing) will trigger executeAll which resets to static mode
+        // Shapes remain visible in animated mode
+        // executeAll() explicitly switches back to static mode
+    }
+
+    /**
+     * Play all commands with animation
+     * @returns {Promise}
+     */
+    async playAll() {
+        if (!this.roboCanvas) {
+            console.warn('Cannot play: roboCanvas not set');
+            return;
+        }
+
+        // Clear and switch to animated diagram
+        this.roboCanvas.clearAll();
+        this.roboCanvas.useAnimatedDiagram();
+
+        // Re-process to get fresh commands
+        const freshExprContext = new ExpressionContext();
+        const pipelineResult = this.pipelineService.processCommandList(
+            this.commandModels,
+            freshExprContext
+        );
+
+        this._setErrors(pipelineResult.errors);
+        this._setCanPlayInfos(pipelineResult.canPlayInfos);
+
+        // Abort if errors
+        if (pipelineResult.errors.length > 0 || pipelineResult.commands.length === 0) {
+            this.roboCanvas.useStaticDiagram();
+            return;
+        }
+
+        this.expressionContext = freshExprContext;
+
+        // Create command context with animated diagram
+        const commandContext = new CommandContext(
+            this.getDiagram(),
+            null,
+            freshExprContext
+        );
+
+        // Set up executor
+        this.commandExecutor.setCommands(pipelineResult.commands);
+        this.commandExecutor.setCommandContext(commandContext);
+
+        this.commandExecutor.setOnError((error, command, index) => {
+            this._setErrors([...this.errors, { index, error }]);
+        });
+
+        // Play all commands
+        this._setExecuting(true);
+
+        await this.commandExecutor.playAll();
+
+        this._setExecuting(false);
     }
 
     /**

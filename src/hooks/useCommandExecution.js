@@ -84,6 +84,14 @@ export function useCommandExecution(roboCanvas, options = {}) {
     }, [controller]);
 
     /**
+     * Handle play all commands with animation
+     */
+    const handlePlayAll = useCallback(() => {
+        controller.cancelPendingExecution();
+        controller.playAll();
+    }, [controller]);
+
+    /**
      * Handle execute all
      */
     const handleExecuteAll = useCallback((commandModels) => {
@@ -137,6 +145,7 @@ export function useCommandExecution(roboCanvas, options = {}) {
         handleExecuteAll,
         handlePlaySingle,
         handlePlayUpTo,
+        handlePlayAll,
         handleChange,
         handleStop,
         handlePause,

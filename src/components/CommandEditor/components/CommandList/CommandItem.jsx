@@ -10,6 +10,8 @@ import DragHandle from './DragHandle';
  */
 const CommandItem = ({
   command,
+  commandIndex,
+  allCommands,
   isSelected,
   onSelect,
   onUpdate,
@@ -88,6 +90,8 @@ const CommandItem = ({
             onKeyDown={handleKeyDownInternal}
             placeholder="type here..."
             commandId={command.id}
+            commandIndex={commandIndex}
+            allCommands={allCommands}
           />
         </span>
 

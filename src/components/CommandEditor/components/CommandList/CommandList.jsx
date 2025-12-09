@@ -44,6 +44,8 @@ const CommandList = ({
           <CommandItem
             key={command.id}
             command={command}
+            commandIndex={index}
+            allCommands={commands}
             isSelected={selectedId === command.id}
             onSelect={onSelect}
             onUpdate={onUpdate}
