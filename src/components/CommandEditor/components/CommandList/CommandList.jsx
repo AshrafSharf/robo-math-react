@@ -12,7 +12,6 @@ const CommandList = ({
   onUpdate,
   onDelete,
   onPlaySingle,
-  onPlayUpTo,
   onSettingsClick,
   onAddCommand,
   errors = [],
@@ -50,7 +49,6 @@ const CommandList = ({
             onUpdate={onUpdate}
             onDelete={onDelete}
             onPlaySingle={onPlaySingle}
-            onPlayUpTo={onPlayUpTo}
             onSettings={onSettingsClick}
             onKeyDown={handleKeyDownWithEnter}
             error={errorForCommand?.error}

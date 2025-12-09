@@ -15,7 +15,6 @@ const CommandItem = ({
   onUpdate,
   onDelete,
   onPlaySingle,
-  onPlayUpTo,
   onSettings,
   onKeyDown,
   error,
@@ -64,6 +63,22 @@ const CommandItem = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="robo-fade-container">
+        {/* Play single button - always visible on left if command can play */}
+        {canPlay && !error ? (
+          <i
+            className="glyphicon glyphicon-play cmd-play-single-left"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlaySingle(command);
+            }}
+            title="Play this only"
+          />
+        ) : (
+          <span className="cmd-play-placeholder" />
+        )}
+
+        <DragHandle listeners={listeners} attributes={attributes} error={error} />
+
         <span className="robo-cmd-main">
           <CommandInput
             ref={inputRef}
@@ -74,31 +89,7 @@ const CommandItem = ({
             placeholder="type here..."
             commandId={command.id}
           />
-
-          <DragHandle listeners={listeners} attributes={attributes} error={error} />
         </span>
-
-        {/* Show play buttons only if expression can play and has no error */}
-        {canPlay && !error && (
-          <div className="cmd-play-buttons">
-            <i
-              className="glyphicon glyphicon-play cmd-play-upto"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPlayUpTo(command);
-              }}
-              title="Play up to here"
-            />
-            <i
-              className="glyphicon glyphicon-play cmd-play-single"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPlaySingle(command);
-              }}
-              title="Play this only"
-            />
-          </div>
-        )}
 
         {isHovered && (
           <CommandActions
