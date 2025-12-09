@@ -219,6 +219,14 @@ export class Grapher {
   getContainerDOM() {
     return this.containerDOM;
   }
+
+  xends() {
+    return this.graphSheet2D.xends();
+  }
+
+  yends() {
+    return this.graphSheet2D.yends();
+  }
   
   hide(allChildItems) {
     this.mathScriptShapes.forEach((scriptShape) => {

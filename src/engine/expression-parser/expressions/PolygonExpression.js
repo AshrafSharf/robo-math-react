@@ -11,6 +11,7 @@
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { PolygonCommand } from '../../commands/PolygonCommand.js';
+import { polygon_error_messages } from '../core/ErrorMessages.js';
 
 export class PolygonExpression extends AbstractNonArithmeticExpression {
     static NAME = 'polygon';
@@ -24,7 +25,7 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError('polygon() requires graph and at least 3 points');
+            this.dispatchError(polygon_error_messages.MISSING_ARGS());
         }
 
         // First arg is graph reference
@@ -45,11 +46,11 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
         }
 
         if (this.coordinates.length < 6) {
-            this.dispatchError('polygon() requires at least 3 points (6 coordinate values)');
+            this.dispatchError(polygon_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
         }
 
         if (this.coordinates.length % 2 !== 0) {
-            this.dispatchError('polygon() has missing coordinate value - each point needs x and y');
+            this.dispatchError(polygon_error_messages.ODD_COORDINATES(this.coordinates.length));
         }
 
         // Auto-close polygon if needed

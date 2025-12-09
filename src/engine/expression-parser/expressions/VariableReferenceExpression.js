@@ -3,6 +3,7 @@
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { NumericExpression } from './NumericExpression.js';
+import { common_error_messages } from '../core/ErrorMessages.js';
 
 export class VariableReferenceExpression extends AbstractNonArithmeticExpression {
     static NAME = 'variable';
@@ -77,7 +78,7 @@ export class VariableReferenceExpression extends AbstractNonArithmeticExpression
 
     getVariableAtomicValues() {
         if (!this.variableValueExpression) {
-            this.dispatchError(`The value referred by the variable ${this.variableName} does not exist`);
+            this.dispatchError(common_error_messages.VARIABLE_NOT_FOUND(this.variableName));
         }
         return this.variableValueExpression.getVariableAtomicValues();
     }

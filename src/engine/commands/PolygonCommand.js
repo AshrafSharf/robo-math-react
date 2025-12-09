@@ -5,6 +5,7 @@
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
+import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 
 export class PolygonCommand extends BaseCommand {
     /**
@@ -31,20 +32,22 @@ export class PolygonCommand extends BaseCommand {
 
         // Resolve grapher from expression at init time (after g2d command has run)
         if (!this.graphExpression) {
-            const err = new Error('Polygon requires a graph container as first argument. Use: polygon(g, point1, point2, point3, ...)');
+            const err = new Error(common_error_messages.GRAPH_REQUIRED('polygon'));
             err.expressionId = this.expressionId;
             throw err;
         }
 
         if (typeof this.graphExpression.getGrapher !== 'function') {
-            const err = new Error('First argument must be a graph variable (from g2d)');
+            const varName = this.graphExpression.variableName || 'first argument';
+            const err = new Error(common_error_messages.INVALID_GRAPH_TYPE(varName));
             err.expressionId = this.expressionId;
             throw err;
         }
 
         this.graphContainer = this.graphExpression.getGrapher();
         if (!this.graphContainer) {
-            const err = new Error('Graph container not initialized. Ensure g2d() is called before polygon()');
+            const varName = this.graphExpression.variableName || 'graph';
+            const err = new Error(common_error_messages.GRAPH_NOT_INITIALIZED(varName));
             err.expressionId = this.expressionId;
             throw err;
         }

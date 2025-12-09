@@ -15,6 +15,7 @@
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
+import { vec_error_messages } from '../core/ErrorMessages.js';
 
 export class VecExpression extends AbstractNonArithmeticExpression {
     static NAME = 'vec';
@@ -28,7 +29,7 @@ export class VecExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError('vec() requires at least graph and coordinates');
+            this.dispatchError(vec_error_messages.MISSING_ARGS());
         }
 
         // First arg is graph reference
@@ -49,7 +50,7 @@ export class VecExpression extends AbstractNonArithmeticExpression {
         }
 
         if (this.coordinates.length !== 4) {
-            this.dispatchError('vec() requires 4 coordinate values (x1, y1, x2, y2). Use: vec(graph, x1, y1, x2, y2) or vec(graph, point1, point2)');
+            this.dispatchError(vec_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
         }
     }
 

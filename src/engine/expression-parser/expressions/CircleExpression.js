@@ -4,6 +4,7 @@
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { CircleCommand } from '../../commands/CircleCommand.js';
+import { circle_error_messages } from '../core/ErrorMessages.js';
 
 export class CircleExpression extends AbstractNonArithmeticExpression {
     static NAME = 'circle';
@@ -17,7 +18,7 @@ export class CircleExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError('circle() requires at least graph and coordinates');
+            this.dispatchError(circle_error_messages.MISSING_ARGS());
         }
 
         // First arg is graph reference
@@ -38,7 +39,7 @@ export class CircleExpression extends AbstractNonArithmeticExpression {
         }
 
         if (this.coordinates.length !== 3) {
-            this.dispatchError('circle() requires center (x, y) and radius. Use: circle(graph, x, y, radius) or circle(graph, point, radius)');
+            this.dispatchError(circle_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
         }
     }
 

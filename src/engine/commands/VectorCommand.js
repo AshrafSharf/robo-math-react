@@ -5,6 +5,7 @@
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
+import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 
 export class VectorCommand extends BaseCommand {
     /**
@@ -32,20 +33,22 @@ export class VectorCommand extends BaseCommand {
 
         // Resolve grapher from expression at init time (after g2d command has run)
         if (!this.graphExpression) {
-            const err = new Error('Vector requires a graph container as first argument. Use: vec(g, x1, y1, x2, y2)');
+            const err = new Error(common_error_messages.GRAPH_REQUIRED('vec'));
             err.expressionId = this.expressionId;
             throw err;
         }
 
         if (typeof this.graphExpression.getGrapher !== 'function') {
-            const err = new Error('First argument must be a graph variable (from g2d)');
+            const varName = this.graphExpression.variableName || 'first argument';
+            const err = new Error(common_error_messages.INVALID_GRAPH_TYPE(varName));
             err.expressionId = this.expressionId;
             throw err;
         }
 
         this.graphContainer = this.graphExpression.getGrapher();
         if (!this.graphContainer) {
-            const err = new Error('Graph container not initialized. Ensure g2d() is called before vec()');
+            const varName = this.graphExpression.variableName || 'graph';
+            const err = new Error(common_error_messages.GRAPH_NOT_INITIALIZED(varName));
             err.expressionId = this.expressionId;
             throw err;
         }

@@ -5,6 +5,7 @@
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { LineCommand } from '../../commands/LineCommand.js';
+import { line_error_messages } from '../core/ErrorMessages.js';
 
 export class LineExpression extends AbstractNonArithmeticExpression {
     static NAME = 'line';
@@ -18,7 +19,7 @@ export class LineExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError('line() requires at least graph and coordinates');
+            this.dispatchError(line_error_messages.MISSING_ARGS());
         }
 
         // First arg is graph reference
@@ -44,7 +45,7 @@ export class LineExpression extends AbstractNonArithmeticExpression {
         }
 
         if (this.coordinates.length !== 5) {
-            this.dispatchError('The Line Expression allows max of 5 values including an optional length (after graph)');
+            this.dispatchError(line_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
         }
 
         // Extend endpoint if extension parameter is non-zero

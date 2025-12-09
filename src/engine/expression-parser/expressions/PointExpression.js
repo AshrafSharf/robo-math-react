@@ -13,6 +13,7 @@
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { NumericExpression } from './NumericExpression.js';
 import { PointCommand } from '../../commands/PointCommand.js';
+import { point_error_messages } from '../core/ErrorMessages.js';
 
 export class PointExpression extends AbstractArithmeticExpression {
     static NAME = 'point';
@@ -26,7 +27,7 @@ export class PointExpression extends AbstractArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError('point() requires at least 2 arguments: graph and coordinates');
+            this.dispatchError(point_error_messages.MISSING_ARGS());
         }
 
         // First arg is graph reference
@@ -49,7 +50,7 @@ export class PointExpression extends AbstractArithmeticExpression {
         }
 
         if (coordinates.length !== 2) {
-            this.dispatchError('point() requires exactly 2 coordinate values. Use: point(g, x, y) or point(g, st(line))');
+            this.dispatchError(point_error_messages.WRONG_COORD_COUNT(coordinates.length));
         }
 
         this.point = { x: coordinates[0], y: coordinates[1] };
@@ -96,7 +97,7 @@ export class PointExpression extends AbstractArithmeticExpression {
 
     divide(otherExpression) {
         if (otherExpression.getVariableAtomicValues().length > 1) {
-            this.dispatchError('Point can only be divided by a scalar');
+            this.dispatchError(point_error_messages.DIVIDE_BY_POINT());
         }
 
         const divisor = otherExpression.getVariableAtomicValues()[0];
@@ -113,7 +114,7 @@ export class PointExpression extends AbstractArithmeticExpression {
 
     multiply(otherExpression) {
         if (otherExpression.getVariableAtomicValues().length > 1) {
-            this.dispatchError('Point can only be multiplied by a scalar');
+            this.dispatchError(point_error_messages.MULTIPLY_BY_POINT());
         }
 
         const scaleBy = otherExpression.getVariableAtomicValues()[0];
@@ -129,7 +130,7 @@ export class PointExpression extends AbstractArithmeticExpression {
     }
 
     power(otherExpression) {
-        this.dispatchError('Power for Point not supported');
+        this.dispatchError(point_error_messages.POWER_NOT_SUPPORTED());
         return null;
     }
 

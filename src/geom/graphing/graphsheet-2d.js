@@ -51,6 +51,16 @@ export class Graphsheet2d {
     return this.graphGrid.getHeight();
   }
 
+  xends() {
+    const domain = this.graphGrid.getXScale().domain();
+    return { min: domain[0], max: domain[1] };
+  }
+
+  yends() {
+    const domain = this.graphGrid.getYScale().domain();
+    return { min: domain[0], max: domain[1] };
+  }
+
   clearShapes() {
     this.shapesGroup.selectAll("*").remove();
     this.backgroundImageGroup.selectAll("*").remove();
