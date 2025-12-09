@@ -7,7 +7,6 @@ import SettingsPanel from './components/SettingsPanel/SettingsPanel';
 import NewCommandButton from './components/NewCommandButton/NewCommandButton';
 import { CommandProvider } from './context/CommandContext';
 import { createCommand, getNextId } from './utils/commandModel';
-import useThrottle from './hooks/useThrottle';
 import './CommandEditor.css';
 
 /**
@@ -36,16 +35,12 @@ const CommandEditor = ({
   const containerRef = useRef(null);
   const selectedCommandRef = useRef(null);
 
-  // Throttled onChange callback
-  const throttledOnChange = useThrottle((cmds) => {
-    onChange?.(cmds);
-  }, 300);
-
   // Update commands and notify parent
+  // Controller handles debouncing internally - no throttle needed here
   const updateCommands = useCallback((newCommands) => {
     setCommands(newCommands);
-    throttledOnChange(newCommands);
-  }, [throttledOnChange]);
+    onChange?.(newCommands);
+  }, [onChange]);
 
   // Add new command
   const addCommand = useCallback((afterId = null) => {

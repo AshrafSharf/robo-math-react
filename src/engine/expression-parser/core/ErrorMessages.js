@@ -105,13 +105,26 @@ export const polygon_error_messages = {
 
 export const arc_error_messages = {
   MISSING_ARGS: () =>
-    `arc() needs more arguments.\nProvide points and radii.`,
+    `arc() needs more arguments.\narc(g, cx, cy, r, start, sweep)`,
 
   WRONG_COORD_COUNT: (count) =>
-    `arc() got ${count} values.\nNeed 4 or 6 values.`,
+    `arc() got ${count} values.\nNeed 5: cx, cy, r, start, sweep`,
 
   INVALID_GRAPH: (varName) =>
-    `'${varName}' is not a graph.\narc(graph, ...)`,
+    `'${varName}' is not a graph.\narc(graph, cx, cy, r, start, sweep)`,
+};
+
+// ============= Angle Error Messages =============
+
+export const angle_error_messages = {
+  MISSING_ARGS: (name) =>
+    `${name}() needs more arguments.\n${name}(g, vx, vy, p1x, p1y, p2x, p2y)`,
+
+  WRONG_COORD_COUNT: (name, count) =>
+    `${name}() got ${count} coordinates.\nNeed 6: vertex(2) + p1(2) + p2(2)`,
+
+  INVALID_GRAPH: (name, varName) =>
+    `'${varName}' is not a graph.\n${name}(graph, vertex, p1, p2)`,
 };
 
 // ============= Plot Error Messages =============
@@ -178,6 +191,7 @@ const messagesByType = {
   vec: vec_error_messages,
   polygon: polygon_error_messages,
   arc: arc_error_messages,
+  angle: angle_error_messages,
   plot: plot_error_messages,
   g2d: g2d_error_messages,
   assignment: assignment_error_messages,

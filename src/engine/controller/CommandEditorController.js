@@ -3,6 +3,7 @@
  *
  * Pure JS controller for command editing and execution.
  * Owns all execution logic - completely decoupled from React.
+ * Handles its own debouncing internally.
  */
 import { ExpressionPipelineService } from '../services/ExpressionPipelineService.js';
 import { ExpressionContext } from '../expression-parser/core/ExpressionContext.js';
@@ -10,7 +11,7 @@ import { CommandContext } from '../context/CommandContext.js';
 import { CommandExecutor } from '../context/CommandExecutor.js';
 
 export class CommandEditorController {
-    constructor(roboCanvas) {
+    constructor(roboCanvas, options = {}) {
         this.roboCanvas = roboCanvas;
 
         // Core services
@@ -23,6 +24,10 @@ export class CommandEditorController {
         this.errors = [];
         this.canPlayInfos = [];
         this.isExecuting = false;
+
+        // Debounce config
+        this.debounceMs = options.debounceMs ?? 500;
+        this._debounceTimer = null;
 
         // Event callbacks
         this.onErrorsChange = null;
@@ -38,10 +43,39 @@ export class CommandEditorController {
     }
 
     /**
-     * Update command models (called on every change, before debounced execution)
+     * Update command models and trigger debounced execution
+     * This is the main entry point for input changes
      */
     setCommandModels(commandModels) {
         this.commandModels = commandModels;
+        this._scheduleExecution();
+    }
+
+    /**
+     * Schedule debounced execution
+     * @private
+     */
+    _scheduleExecution() {
+        // Clear any pending execution
+        if (this._debounceTimer) {
+            clearTimeout(this._debounceTimer);
+        }
+
+        // Schedule new execution
+        this._debounceTimer = setTimeout(() => {
+            this._debounceTimer = null;
+            this.executeAll(this.commandModels);
+        }, this.debounceMs);
+    }
+
+    /**
+     * Cancel any pending debounced execution
+     */
+    cancelPendingExecution() {
+        if (this._debounceTimer) {
+            clearTimeout(this._debounceTimer);
+            this._debounceTimer = null;
+        }
     }
 
     /**
@@ -278,6 +312,7 @@ export class CommandEditorController {
      * Clean up
      */
     destroy() {
+        this.cancelPendingExecution();
         this.stop();
         this.commandExecutor.clearCommands();
         this.expressionContext = null;

@@ -2,15 +2,16 @@
  * Arc expression - represents a 2D arc
  *
  * Supports two input formats:
- * 1. arc(centerX, centerY, radius, startAngle, sweepAngle)
+ * 1. arc(graph, centerX, centerY, radius, startAngle, sweepAngle)
  *    - 5 values: center point, radius, and angles in degrees
- * 2. arc(startX, startY, endX, endY, rx, ry)
+ * 2. arc(graph, startX, startY, endX, endY, rx, ry)
  *    - 6 values: start point, end point, and ellipse radii
  *
  * The expression stores the arc data and can convert to either format.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { ArcCommand } from '../../commands/ArcCommand.js';
+import { arc_error_messages } from '../core/ErrorMessages.js';
 
 export class ArcExpression extends AbstractNonArithmeticExpression {
     static NAME = 'arc';
@@ -20,12 +21,21 @@ export class ArcExpression extends AbstractNonArithmeticExpression {
         this.subExpressions = subExpressions;
         this.coordinates = [];
         this.arcType = null; // 'center-angle' or 'endpoint'
+        this.graphExpression = null;
     }
 
     resolve(context) {
-        this.coordinates = [];
+        if (this.subExpressions.length < 2) {
+            this.dispatchError(arc_error_messages.MISSING_ARGS());
+        }
 
-        for (let i = 0; i < this.subExpressions.length; i++) {
+        // First arg is graph reference
+        this.subExpressions[0].resolve(context);
+        this.graphExpression = this.subExpressions[0];
+
+        // Remaining args are coordinates
+        this.coordinates = [];
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
 
             const resultExpression = this.subExpressions[i];
@@ -38,19 +48,21 @@ export class ArcExpression extends AbstractNonArithmeticExpression {
 
         // Determine arc type based on number of coordinates
         if (this.coordinates.length === 5) {
-            // arc(centerX, centerY, radius, startAngle, sweepAngle)
+            // arc(graph, centerX, centerY, radius, startAngle, sweepAngle)
             this.arcType = 'center-angle';
         } else if (this.coordinates.length === 6) {
-            // arc(startX, startY, endX, endY, rx, ry)
+            // arc(graph, startX, startY, endX, endY, rx, ry)
             this.arcType = 'endpoint';
-        } else if (this.coordinates.length === 5) {
-            // arc(startX, startY, endX, endY, radius) - circular arc
-            this.arcType = 'endpoint-circular';
         } else {
-            this.dispatchError(
-                'Arc expression requires 5 values (center, radius, angles) or 6 values (start, end, radii)'
-            );
+            this.dispatchError(arc_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
         }
+    }
+
+    getGrapher() {
+        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
+            return this.graphExpression.getGrapher();
+        }
+        return null;
     }
 
     getName() {
@@ -213,7 +225,7 @@ export class ArcExpression extends AbstractNonArithmeticExpression {
      */
     toCommand(options = {}) {
         const ep = this.getEndpointFormat();
-        return new ArcCommand(ep.start, ep.end, ep.rx, ep.ry, options);
+        return new ArcCommand(this.graphExpression, ep.start, ep.end, ep.rx, ep.ry, options);
     }
 
     /**

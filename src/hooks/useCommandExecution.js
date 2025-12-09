@@ -3,10 +3,10 @@
  *
  * Thin React bridge to CommandEditorController.
  * All execution logic lives in the controller - this hook just bridges to React state.
+ * Debouncing is handled by the controller, not by React.
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { CommandEditorController } from '../engine/controller/CommandEditorController.js';
-import { useDebounce } from './useDebounce.js';
 
 /**
  * Hook for connecting CommandEditor to the execution system
@@ -27,9 +27,9 @@ export function useCommandExecution(roboCanvas, options = {}) {
     // Controller instance (single ref, not recreated)
     const controllerRef = useRef(null);
 
-    // Initialize controller once
+    // Initialize controller once with debounce config
     if (!controllerRef.current) {
-        controllerRef.current = new CommandEditorController(null);
+        controllerRef.current = new CommandEditorController(null, { debounceMs });
     }
 
     const controller = controllerRef.current;
@@ -52,20 +52,13 @@ export function useCommandExecution(roboCanvas, options = {}) {
         };
     }, [controller]);
 
-    // Debounced execute
-    const [debouncedExecute, cancelDebounce] = useDebounce(
-        (commandModels) => controller.executeAll(commandModels),
-        debounceMs
-    );
-
     /**
      * Handle command change (from input)
-     * Updates command models immediately, triggers debounced execution
+     * Controller handles debouncing internally
      */
     const handleChange = useCallback((commandModels) => {
-        controller.setCommandModels(commandModels);  // Immediate update
-        debouncedExecute(commandModels);              // Debounced execution
-    }, [debouncedExecute, controller]);
+        controller.setCommandModels(commandModels);
+    }, [controller]);
 
     /**
      * Handle single command execution (from direct input)
@@ -78,25 +71,25 @@ export function useCommandExecution(roboCanvas, options = {}) {
      * Handle play single command
      */
     const handlePlaySingle = useCallback((commandModel) => {
-        cancelDebounce();
+        controller.cancelPendingExecution();
         controller.playSingle(commandModel.id);
-    }, [cancelDebounce, controller]);
+    }, [controller]);
 
     /**
      * Handle play up to command
      */
     const handlePlayUpTo = useCallback((commandModel) => {
-        cancelDebounce();
+        controller.cancelPendingExecution();
         controller.playUpTo(commandModel.id);
-    }, [cancelDebounce, controller]);
+    }, [controller]);
 
     /**
      * Handle execute all
      */
     const handleExecuteAll = useCallback((commandModels) => {
-        cancelDebounce();
+        controller.cancelPendingExecution();
         controller.executeAll(commandModels);
-    }, [cancelDebounce, controller]);
+    }, [controller]);
 
     /**
      * Handle stop
