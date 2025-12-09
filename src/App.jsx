@@ -8,7 +8,6 @@ import { IntrepreterFunctionTable } from './engine/expression-parser/core/Intrep
 
 function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isAnimated, setIsAnimated] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [roboCanvas, setRoboCanvas] = useState(null);
   const containerRef = useRef(null);
@@ -22,15 +21,17 @@ function App() {
   const {
     handleExecute: hookHandleExecute,
     handleExecuteAll: hookHandleExecuteAll,
+    handlePlaySingle: hookHandlePlaySingle,
+    handlePlayUpTo: hookHandlePlayUpTo,
     handleChange: hookHandleChange,
     handleStop: hookHandleStop,
     handlePause: hookHandlePause,
     handleResume: hookHandleResume,
     errors,
+    canPlayInfos,
     clearAndRerender
   } = useCommandExecution(roboCanvas, {
-    debounceMs: 500,
-    useAnimatedMode: isAnimated
+    debounceMs: 500
   });
 
   const handleToggleSidebar = () => {
@@ -80,22 +81,6 @@ function App() {
     };
   }, []);
 
-  const handleToggleAnimated = (e) => {
-    if (!roboCanvas) return;
-
-    const newAnimated = e.target.checked;
-    setIsAnimated(newAnimated);
-    roboCanvas.clearAll();
-
-    if (newAnimated) {
-      roboCanvas.useAnimatedDiagram();
-    } else {
-      roboCanvas.useStaticDiagram();
-    }
-
-    clearAndRerender();
-  };
-
   return (
     <div id="robo" className="robo-compass-div">
       {/* Top Header */}
@@ -106,15 +91,6 @@ function App() {
           </a>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px' }}>
-          <span style={{ color: 'white', fontSize: '14px' }}>Static</span>
-          <input
-            type="checkbox"
-            checked={isAnimated}
-            onChange={handleToggleAnimated}
-            style={{ cursor: 'pointer' }}
-          />
-          <span style={{ color: 'white', fontSize: '14px' }}>Animated</span>
-          <span style={{ color: '#888', margin: '0 10px' }}>|</span>
           <input
             type="checkbox"
             checked={showGrid}
@@ -132,6 +108,8 @@ function App() {
         <CommandEditor
           onExecute={hookHandleExecute}
           onExecuteAll={hookHandleExecuteAll}
+          onPlaySingle={hookHandlePlaySingle}
+          onPlayUpTo={hookHandlePlayUpTo}
           onStop={hookHandleStop}
           onPause={hookHandlePause}
           onResume={hookHandleResume}
@@ -139,6 +117,7 @@ function App() {
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isSidebarCollapsed}
           errors={errors}
+          canPlayInfos={canPlayInfos}
         />
 
         {/* Play Surface - RoboCanvas Container */}

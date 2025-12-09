@@ -186,4 +186,12 @@ export class LineExpression extends AbstractNonArithmeticExpression {
         // Pass graph expression, not grapher - grapher resolved at command init time
         return new LineCommand(this.graphExpression, pts[0], pts[1], options);
     }
+
+    /**
+     * Lines can be played (animated)
+     * @returns {boolean}
+     */
+    canPlay() {
+        return true;
+    }
 }

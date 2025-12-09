@@ -14,10 +14,12 @@ const CommandItem = ({
   onSelect,
   onUpdate,
   onDelete,
-  onPlay,
+  onPlaySingle,
+  onPlayUpTo,
   onSettings,
   onKeyDown,
-  error
+  error,
+  canPlay = false
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const inputRef = useRef(null);
@@ -76,14 +78,27 @@ const CommandItem = ({
           <DragHandle listeners={listeners} attributes={attributes} error={error} />
         </span>
 
-        <i
-          className="glyphicon glyphicon-play cmd-item-play"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPlay(command);
-          }}
-          title="Play"
-        />
+        {/* Show play buttons only if expression can play and has no error */}
+        {canPlay && !error && (
+          <div className="cmd-play-buttons">
+            <i
+              className="glyphicon glyphicon-play cmd-play-upto"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPlayUpTo(command);
+              }}
+              title="Play up to here"
+            />
+            <i
+              className="glyphicon glyphicon-play cmd-play-single"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPlaySingle(command);
+              }}
+              title="Play this only"
+            />
+          </div>
+        )}
 
         {isHovered && (
           <CommandActions

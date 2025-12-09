@@ -4,6 +4,7 @@
  * Creates a line shape via diagram.line()
  */
 import { BaseCommand } from './BaseCommand.js';
+import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
 
 export class LineCommand extends BaseCommand {
   /**
@@ -25,8 +26,9 @@ export class LineCommand extends BaseCommand {
 
   /**
    * Create line shape via diagram
+   * @returns {Promise}
    */
-  doInit() {
+  async doInit() {
     const { diagram } = this.commandContext;
 
     // Resolve grapher from expression at init time (after g2d command has run)
@@ -60,7 +62,7 @@ export class LineCommand extends BaseCommand {
       options.fill = this.fill;
     }
 
-    this.commandResult = diagram.line(
+    this.commandResult = await diagram.line(
       this.graphContainer,
       this.startPoint,
       this.endPoint,
@@ -104,5 +106,17 @@ export class LineCommand extends BaseCommand {
     const dx = this.endPoint.x - this.startPoint.x;
     const dy = this.endPoint.y - this.startPoint.y;
     return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /**
+   * Replay animation on existing shape
+   * @returns {Promise}
+   */
+  async playSingle() {
+    if (!this.commandResult) return;
+
+    this.commandResult.hide();
+    const effect = new MathShapeEffect(this.commandResult);
+    return effect.play();
   }
 }

@@ -19,14 +19,15 @@ export class ExpressionPipelineService {
      * @param {string} expressionStr - The expression string (e.g., "point(0,0)")
      * @param {ExpressionContext} context - Context for variable resolution
      * @param {Object} options - Command options {color, label, showLabel, offsetX, offsetY, expressionId}
-     * @returns {{ command: BaseCommand|null, expression: Expression|null, error: Error|null, label: string }}
+     * @returns {{ command: BaseCommand|null, expression: Expression|null, error: Error|null, label: string, canPlay: boolean }}
      */
     processExpression(expressionStr, context, options = {}) {
         const result = {
             command: null,
             expression: null,
             error: null,
-            label: ''
+            label: '',
+            canPlay: false
         };
 
         // Skip empty expressions
@@ -45,7 +46,10 @@ export class ExpressionPipelineService {
             // 3. Resolve variables in context
             expression.resolve(context);
 
-            // 4. Handle assignment expressions (variable binding)
+            // 4. Determine if expression can play
+            result.canPlay = typeof expression.canPlay === 'function' && expression.canPlay();
+
+            // 5. Handle assignment expressions (variable binding)
             if (expression instanceof AssignmentExpression) {
                 result.label = expression.getLabel();
 
@@ -105,12 +109,13 @@ export class ExpressionPipelineService {
      * Re-creates ExpressionContext for each batch to handle dependencies
      * @param {Array<CommandModel>} commandModels - Array of command models from CommandEditor
      * @param {ExpressionContext} freshContext - A fresh context (clears variables)
-     * @returns {{ commands: BaseCommand[], errors: Array<{index, id, error}>, context: ExpressionContext }}
+     * @returns {{ commands: BaseCommand[], errors: Array<{index, id, error}>, canPlayInfos: Array<{index, id, canPlay}>, context: ExpressionContext }}
      */
     processCommandList(commandModels, freshContext = new ExpressionContext()) {
         const result = {
             commands: [],
             errors: [],
+            canPlayInfos: [],
             context: freshContext
         };
 
@@ -135,6 +140,13 @@ export class ExpressionPipelineService {
                     error: processResult.error
                 });
             }
+
+            // Track canPlay info for each command
+            result.canPlayInfos.push({
+                index,
+                id: cmdModel.id,
+                canPlay: processResult.canPlay
+            });
 
             if (processResult.command) {
                 result.commands.push(processResult.command);

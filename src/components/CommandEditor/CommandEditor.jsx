@@ -17,13 +17,16 @@ import './CommandEditor.css';
 const CommandEditor = ({
   onExecute,
   onExecuteAll,
+  onPlaySingle,
+  onPlayUpTo,
   onStop,
   onPause,
   onResume,
   onChange,
   onToggleSidebar,
   isSidebarCollapsed,
-  errors = []
+  errors = [],
+  canPlayInfos = []
 }) => {
   const [commands, setCommands] = useState([createCommand(1)]);
   const [selectedId, setSelectedId] = useState(1);
@@ -104,10 +107,15 @@ const CommandEditor = ({
     }
   }, [commands, updateCommands]);
 
-  // Play single command
-  const handlePlay = useCallback((command) => {
-    onExecute?.(command);
-  }, [onExecute]);
+  // Play single command with animation
+  const handlePlaySingle = useCallback((command) => {
+    onPlaySingle?.(command);
+  }, [onPlaySingle]);
+
+  // Play up to command with animation
+  const handlePlayUpTo = useCallback((command) => {
+    onPlayUpTo?.(command);
+  }, [onPlayUpTo]);
 
   // Play all commands
   const handlePlayAll = useCallback(() => {
@@ -201,10 +209,12 @@ const CommandEditor = ({
                     onSelect={setSelectedId}
                     onUpdate={updateCommand}
                     onDelete={deleteCommand}
-                    onPlay={handlePlay}
+                    onPlaySingle={handlePlaySingle}
+                    onPlayUpTo={handlePlayUpTo}
                     onSettingsClick={handleSettingsClick}
                     onAddCommand={addCommand}
                     errors={errors}
+                    canPlayInfos={canPlayInfos}
                   />
                   <NewCommandButton onClick={() => addCommand()} />
                 </div>

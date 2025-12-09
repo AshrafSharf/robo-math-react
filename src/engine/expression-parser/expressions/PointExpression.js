@@ -165,4 +165,12 @@ export class PointExpression extends AbstractArithmeticExpression {
     toCommand(options = {}) {
         return new PointCommand(this.getGrapher(), this.getPoint(), options);
     }
+
+    /**
+     * Points can be played (animated)
+     * @returns {boolean}
+     */
+    canPlay() {
+        return true;
+    }
 }

@@ -78,17 +78,24 @@ export class BaseEffect extends ITweenEffect {
         // Support both number (duration) and object with onComplete
         let durationInSeconds = 1;
         let onComplete = () => {};
-        
+
         if (typeof options === 'number') {
             durationInSeconds = options;
         } else if (typeof options === 'object') {
             durationInSeconds = options.durationInSeconds || 1;
             onComplete = options.onComplete || (() => {});
         }
-        
+
         this.show();
-        const playContext = new PlayContext(durationInSeconds, onComplete, () => {});
-        this.doPlay(playContext);
+
+        // Return a Promise that resolves when animation completes
+        return new Promise((resolve) => {
+            const playContext = new PlayContext(durationInSeconds, () => {
+                onComplete();
+                resolve();
+            }, () => {});
+            this.doPlay(playContext);
+        });
     }
 
     doPlay(playContext) {

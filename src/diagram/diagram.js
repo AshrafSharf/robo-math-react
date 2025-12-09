@@ -34,9 +34,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} position - Position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {radius, strokeWidth}
-   * @returns {Object} Point shape
+   * @returns {Promise<Object>} Point shape
    */
-  point(graphContainer, position, color = DEFAULT_SHAPE_COLORS.point, options = {}) {
+  async point(graphContainer, position, color = DEFAULT_SHAPE_COLORS.point, options = {}) {
     const shape = this._createPoint(graphContainer, position, color, options);
     shape.renderEndState();
     shape.show();
@@ -51,9 +51,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Vector shape
+   * @returns {Promise<Object>} Vector shape
    */
-  vector(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
+  async vector(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
     const shape = this._createVector(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
@@ -67,9 +67,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} originalVector - Original vector definition {start: {x,y}, end: {x,y}}
    * @param {Object} targetPosition - Target position {x, y} or target vector {start: {x,y}, end: {x,y}}
    * @param {Object} options - Options including color, strokeWidth, dashed, dashPattern
-   * @returns {Object} The vector shape at target position
+   * @returns {Promise<Object>} The vector shape at target position
    */
-  moveVector(graphContainer, originalVector, targetPosition, options = {}) {
+  async moveVector(graphContainer, originalVector, targetPosition, options = {}) {
     const originalStart = originalVector.start;
     const originalEnd = originalVector.end;
     const targetStart = targetPosition.start || targetPosition;
@@ -110,9 +110,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
-   * @returns {Object} Line shape
+   * @returns {Promise<Object>} Line shape
    */
-  line(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
+  async line(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
     const shape = this._createLine(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
@@ -127,9 +127,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {mainRadius, markerLength, markerRadius, offset, strokeWidth}
-   * @returns {Object} Measurement indicator shape
+   * @returns {Promise<Object>} Measurement indicator shape
    */
-  measurementIndicator(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
+  async measurementIndicator(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
     const shape = this._createMeasurementIndicator(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
@@ -145,9 +145,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} domainMax - Maximum x value
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Plot shape
+   * @returns {Promise<Object>} Plot shape
    */
-  plot(graphContainer, equation, domainMin, domainMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
+  async plot(graphContainer, equation, domainMin, domainMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
     const shape = this._createPlot(graphContainer, equation, domainMin, domainMax, color, options);
     shape.renderEndState();
     shape.show();
@@ -164,9 +164,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} domainMax - Maximum x value
    * @param {Object} scope - Variable substitution map {a: 1, b: 2, c: 3}
    * @param {Object} options - Style options {color, strokeWidth, variable}
-   * @returns {Object} Plot shape
+   * @returns {Promise<Object>} Plot shape
    */
-  plotExpression(graphContainer, expression, domainMin, domainMax, scope = {}, options = {}) {
+  async plotExpression(graphContainer, expression, domainMin, domainMax, scope = {}, options = {}) {
     const { variable = 'x', color = 'blue', ...plotOptions } = options;
     const shape = this._createPlotFromExpression(
       graphContainer, expression, variable, scope,
@@ -187,9 +187,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} tMax - Maximum t value
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Parametric plot shape
+   * @returns {Promise<Object>} Parametric plot shape
    */
-  parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
+  async parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
     const shape = this._createParametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
     shape.renderEndState();
     shape.show();
@@ -204,9 +204,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} radius - Circle radius
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
-   * @returns {Object} Circle shape
+   * @returns {Promise<Object>} Circle shape
    */
-  circle(graphContainer, center, radius, color = DEFAULT_SHAPE_COLORS.circle, options = {}) {
+  async circle(graphContainer, center, radius, color = DEFAULT_SHAPE_COLORS.circle, options = {}) {
     const shape = this._createCircle(graphContainer, center, radius, color, options);
     shape.renderEndState();
     shape.show();
@@ -222,9 +222,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} ry - Vertical radius
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
-   * @returns {Object} Ellipse shape
+   * @returns {Promise<Object>} Ellipse shape
    */
-  ellipse(graphContainer, center, rx, ry, color = DEFAULT_SHAPE_COLORS.ellipse, options = {}) {
+  async ellipse(graphContainer, center, rx, ry, color = DEFAULT_SHAPE_COLORS.ellipse, options = {}) {
     const shape = this._createEllipse(graphContainer, center, rx, ry, color, options);
     shape.renderEndState();
     shape.show();
@@ -241,9 +241,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} ry - Vertical radius
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Arc shape
+   * @returns {Promise<Object>} Arc shape
    */
-  arc(graphContainer, start, end, rx, ry, color = DEFAULT_SHAPE_COLORS.arc, options = {}) {
+  async arc(graphContainer, start, end, rx, ry, color = DEFAULT_SHAPE_COLORS.arc, options = {}) {
     const shape = this._createArc(graphContainer, start, end, rx, ry, color, options);
     shape.renderEndState();
     shape.show();
@@ -258,9 +258,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y} in graph coordinates
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, angle, clockwise}
-   * @returns {Object} Arrow shape
+   * @returns {Promise<Object>} Arrow shape
    */
-  arrow(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.arrow, options = {}) {
+  async arrow(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.arrow, options = {}) {
     const shape = this._createArrow(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
@@ -274,9 +274,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Array<Object>} vertices - Array of vertices [{x, y}, ...]
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
-   * @returns {Object} Polygon shape
+   * @returns {Promise<Object>} Polygon shape
    */
-  polygon(graphContainer, vertices, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
+  async polygon(graphContainer, vertices, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
     const shape = this._createPolygon(graphContainer, vertices, color, options);
     shape.renderEndState();
     shape.show();
@@ -291,9 +291,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Array<Object>} points - Control points [{x, y}, ...]
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Curve shape
+   * @returns {Promise<Object>} Curve shape
    */
-  curve(graphContainer, type, points, color = DEFAULT_SHAPE_COLORS.curve, options = {}) {
+  async curve(graphContainer, type, points, color = DEFAULT_SHAPE_COLORS.curve, options = {}) {
     const shape = this._createCurve(graphContainer, type, points, color, options);
     shape.renderEndState();
     shape.show();
@@ -308,9 +308,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {string} latexString - LaTeX expression string
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {fontSize, scale}
-   * @returns {Object} LatexShape
+   * @returns {Promise<Object>} LatexShape
    */
-  texToSvg(graphContainer, position, latexString, color = 'black', options = {}) {
+  async texToSvg(graphContainer, position, latexString, color = 'black', options = {}) {
     const shape = this._createTexToSvg(graphContainer, position, latexString, color, options);
     shape.renderEndState();
     shape.show();
@@ -325,9 +325,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {string} latexString - LaTeX expression string
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {fontSize, rotation, offset}
-   * @returns {Object} Label shape
+   * @returns {Promise<Object>} Label shape
    */
-  labelOnPoint(graphContainer, point, latexString, color = 'black', options = {}) {
+  async labelOnPoint(graphContainer, point, latexString, color = 'black', options = {}) {
     const shape = this._createLabelOnPoint(graphContainer, point, latexString, color, options);
     shape.renderEndState();
     shape.show();
@@ -343,9 +343,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {string} latexString - LaTeX expression string
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {fontSize, offset}
-   * @returns {Object} Label shape
+   * @returns {Promise<Object>} Label shape
    */
-  labelBetweenPoints(graphContainer, start, end, latexString, color = 'black', options = {}) {
+  async labelBetweenPoints(graphContainer, start, end, latexString, color = 'black', options = {}) {
     const shape = this._createLabelBetweenPoints(graphContainer, start, end, latexString, color, options);
     shape.renderEndState();
     shape.show();
@@ -360,9 +360,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {string} latexString - LaTeX expression string
    * @param {string} color - Color name or hex (default: 'black')
    * @param {Object} options - Additional options {offsetInView, fontSize}
-   * @returns {Object} Label shape
+   * @returns {Promise<Object>} Label shape
    */
-  angleLabel(graphContainer, angleShape, latexString, color = 'black', options = {}) {
+  async angleLabel(graphContainer, angleShape, latexString, color = 'black', options = {}) {
     // Get angle center in view coordinates
     const viewCenter = angleShape.getAngleCenter();
     if (!viewCenter) {
@@ -397,9 +397,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} point2 - Second point {x, y} (if vertex is not array)
    * @param {string} angleType - Type of angle ('interior', 'exterior-first', 'exterior-second', 'reflex', 'opposite')
    * @param {Object} options - Additional options {radius, color, fill, fillOpacity, strokeWidth, showValue}
-   * @returns {Object} Angle shape
+   * @returns {Promise<Object>} Angle shape
    */
-  angle(graphContainer, vertex, point1, point2, angleType = 'interior', options = {}) {
+  async angle(graphContainer, vertex, point1, point2, angleType = 'interior', options = {}) {
     const color = options.color || options.stroke || DEFAULT_SHAPE_COLORS.angle;
     const shape = this._createAngle(graphContainer, vertex, point1, point2, angleType, color, options);
     shape.renderEndState();
@@ -416,9 +416,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} radius - Radius of angle arc (default 0.8)
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
+   * @returns {Promise<Object>} Angle shape
    */
-  interiorAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
+  async interiorAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
@@ -433,9 +433,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} size - Size of the square (default 0.5)
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
-   * @returns {Object} Right angle indicator shape
+   * @returns {Promise<Object>} Right angle indicator shape
    */
-  rightAngleIndicator(graphContainer, vector1, vector2, size = 0.5, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
+  async rightAngleIndicator(graphContainer, vector1, vector2, size = 0.5, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
@@ -450,9 +450,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} radius - Radius of angle arc (default 0.8)
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
+   * @returns {Promise<Object>} Angle shape
    */
-  exteriorAngleFirst(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
+  async exteriorAngleFirst(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
@@ -467,9 +467,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} radius - Radius of angle arc (default 0.8)
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
+   * @returns {Promise<Object>} Angle shape
    */
-  exteriorAngleSecond(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
+  async exteriorAngleSecond(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
@@ -484,9 +484,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} radius - Radius of angle arc (default 0.8)
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
+   * @returns {Promise<Object>} Angle shape
    */
-  reflexAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
+  async reflexAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
@@ -501,9 +501,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {number} radius - Radius of angle arc (default 0.8)
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options
-   * @returns {Object} Angle shape
+   * @returns {Promise<Object>} Angle shape
    */
-  oppositeAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
+  async oppositeAngle(graphContainer, vector1, vector2, radius = 0.8, color = DEFAULT_SHAPE_COLORS.angle, options = {}) {
     const vertex = vector1.start;
     const point1 = vector1.end;
     const point2 = vector2.end;
@@ -650,9 +650,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} vector2End - End point of second vector {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {fill, fillOpacity, showEdges, edgeWidth, strokeWidth}
-   * @returns {Object} Parallelogram shape
+   * @returns {Promise<Object>} Parallelogram shape
    */
-  parallelogram(graphContainer, origin, vector1End, vector2End, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
+  async parallelogram(graphContainer, origin, vector1End, vector2End, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
     const coords = [
       origin.x, origin.y,
       vector1End.x, vector1End.y,
@@ -679,9 +679,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, dashPattern}
-   * @returns {Object} Line shape with dash pattern
+   * @returns {Promise<Object>} Line shape with dash pattern
    */
-  dashedLine(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
+  async dashedLine(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
     const shape = graphContainer.line(start.x, start.y, end.x, end.y);
     shape.stroke(parseColor(color));
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
@@ -703,9 +703,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, dashPattern}
-   * @returns {Object} Vector shape with dash pattern
+   * @returns {Promise<Object>} Vector shape with dash pattern
    */
-  dashedVector(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
+  async dashedVector(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.vector, options = {}) {
     const shape = this._createDashedVector(graphContainer, start, end, color, options);
     shape.renderEndState();
     shape.show();
@@ -718,9 +718,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vectorShape - Vector shape object or {start, end} coordinates
    * @param {Object} options - Options including color, dashPattern, strokeWidth
-   * @returns {Object} Reversed vector shape
+   * @returns {Promise<Object>} Reversed vector shape
    */
-  reverseVector(graphContainer, vectorShape, options = {}) {
+  async reverseVector(graphContainer, vectorShape, options = {}) {
     let start, end;
 
     if (vectorShape.modelCoordinates) {
@@ -746,9 +746,9 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Object} graphContainer - The graph container to render on
    * @param {Array} vectorShapes - Array of vector shape objects
    * @param {Object} options - Options {chainColor, directColor, showChain, showDirect}
-   * @returns {Object} Object containing trace elements
+   * @returns {Promise<Object>} Object containing trace elements
    */
-  traceVectorPath(graphContainer, vectorShapes, options = {}) {
+  async traceVectorPath(graphContainer, vectorShapes, options = {}) {
     const vectorPaths = vectorShapes.map(shape => {
       if (shape.modelCoordinates) {
         const coords = shape.modelCoordinates;
@@ -775,7 +775,7 @@ export class StaticDiagram extends BaseDiagram {
     if (options.showChain !== false) {
       const chainColor = options.chainColor || '#888888';
       for (let i = 0; i < vectorPaths.length - 1; i++) {
-        const chainLine = this.dashedLine(
+        const chainLine = await this.dashedLine(
           graphContainer,
           vectorPaths[i].end,
           vectorPaths[i + 1].start,
@@ -788,7 +788,7 @@ export class StaticDiagram extends BaseDiagram {
 
     if (options.showDirect !== false) {
       const directColor = options.directColor || 'red';
-      elements.direct = this.dashedVector(
+      elements.direct = await this.dashedVector(
         graphContainer,
         directPath.start,
         directPath.end,
@@ -805,16 +805,18 @@ export class StaticDiagram extends BaseDiagram {
    * @param {Array} objectsToFocus - Array of shape objects to highlight
    * @param {number} unfocusedOpacity - Opacity for unfocused objects (0-1)
    * @param {number} duration - Animation duration in seconds
+   * @returns {Promise<void>}
    */
-  focus(objectsToFocus, unfocusedOpacity = 0.3, duration = 0.5) {
+  async focus(objectsToFocus, unfocusedOpacity = 0.3, duration = 0.5) {
     this.focusEffect.focus(objectsToFocus, this.objects, unfocusedOpacity, duration);
   }
   
   /**
    * Restore all objects from focus effect
    * @param {number} duration - Animation duration in seconds
+   * @returns {Promise<void>}
    */
-  restore(duration = 0.5) {
+  async restore(duration = 0.5) {
     this.focusEffect.restore(duration);
   }
   
@@ -831,9 +833,9 @@ export class StaticDiagram extends BaseDiagram {
   /**
    * Show a math text component instantly (no animation)
    * @param {MathTextComponent} mathComponent - The math text component to show
-   * @returns {MathTextComponent} The math text component
+   * @returns {Promise<MathTextComponent>} The math text component
    */
-  writeMathText(mathComponent) {
+  async writeMathText(mathComponent) {
     mathComponent.show();
     mathComponent.enableStroke();
     return mathComponent;
@@ -842,9 +844,9 @@ export class StaticDiagram extends BaseDiagram {
   /**
    * Hide marked parts in a math text component instantly
    * @param {MathTextComponent} mathComponent - The math text component
-   * @returns {MathTextComponent} The math text component
+   * @returns {Promise<MathTextComponent>} The math text component
    */
-  hideMathTextParts(mathComponent) {
+  async hideMathTextParts(mathComponent) {
     mathComponent.hideBBoxContent();
     return mathComponent;
   }
@@ -853,9 +855,9 @@ export class StaticDiagram extends BaseDiagram {
    * Show only the marked parts in a math text component instantly
    * @param {MathTextComponent} mathComponent - The math text component
    * @param {boolean} includeAll - Whether to include all content (default: false)
-   * @returns {MathTextComponent} The math text component
+   * @returns {Promise<MathTextComponent>} The math text component
    */
-  writeOnlyMathTextParts(mathComponent, includeAll = false) {
+  async writeOnlyMathTextParts(mathComponent, includeAll = false) {
     mathComponent.showOnlyBBox(includeAll);
     return mathComponent;
   }
@@ -863,9 +865,9 @@ export class StaticDiagram extends BaseDiagram {
   /**
    * Show everything except the marked parts in a math text component instantly
    * @param {MathTextComponent} mathComponent - The math text component
-   * @returns {MathTextComponent} The math text component
+   * @returns {Promise<MathTextComponent>} The math text component
    */
-  writeWithoutMathTextParts(mathComponent) {
+  async writeWithoutMathTextParts(mathComponent) {
     mathComponent.showWithoutBBox();
     return mathComponent;
   }

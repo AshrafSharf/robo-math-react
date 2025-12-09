@@ -4,6 +4,7 @@
  * Creates a point shape via diagram.point()
  */
 import { BaseCommand } from './BaseCommand.js';
+import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
 
 export class PointCommand extends BaseCommand {
   /**
@@ -21,11 +22,12 @@ export class PointCommand extends BaseCommand {
 
   /**
    * Create point shape via diagram
+   * @returns {Promise}
    */
-  doInit() {
+  async doInit() {
     const { diagram } = this.commandContext;
 
-    this.commandResult = diagram.point(
+    this.commandResult = await diagram.point(
       this.graphContainer,
       this.position,
       this.color,
@@ -53,5 +55,18 @@ export class PointCommand extends BaseCommand {
    */
   getPosition() {
     return this.position;
+  }
+
+  /**
+   * Replay animation on existing shape
+   * @returns {Promise}
+   */
+  async playSingle() {
+    if (!this.commandResult) return;
+
+    // Reset shape to start state and replay animation
+    this.commandResult.hide();
+    const effect = new MathShapeEffect(this.commandResult);
+    return effect.play();
   }
 }

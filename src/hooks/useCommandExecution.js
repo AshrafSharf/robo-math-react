@@ -1,14 +1,11 @@
 /**
  * useCommandExecution Hook
  *
- * Connects CommandEditor to the expression parser and command execution system.
- * Manages the full pipeline: parse -> eval -> resolve -> toCommand -> execute
+ * Thin React bridge to CommandEditorController.
+ * All execution logic lives in the controller - this hook just bridges to React state.
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { ExpressionPipelineService } from '../engine/services/ExpressionPipelineService.js';
-import { ExpressionContext } from '../engine/expression-parser/core/ExpressionContext.js';
-import { CommandContext } from '../engine/context/CommandContext.js';
-import { CommandExecutor } from '../engine/context/CommandExecutor.js';
+import { CommandEditorController } from '../engine/controller/CommandEditorController.js';
 import { useDebounce } from './useDebounce.js';
 
 /**
@@ -17,221 +14,143 @@ import { useDebounce } from './useDebounce.js';
  * @param {RoboCanvas} roboCanvas - RoboCanvas instance
  * @param {Object} options - Configuration options
  * @param {number} options.debounceMs - Debounce delay (default: 500ms)
- * @param {boolean} options.useAnimatedMode - Whether to use animated diagram
  * @returns {Object} Hook return value
  */
 export function useCommandExecution(roboCanvas, options = {}) {
-    const {
-        debounceMs = 500,
-        useAnimatedMode = false
-    } = options;
+    const { debounceMs = 500 } = options;
 
-    // State
+    // React state (UI only)
     const [isExecuting, setIsExecuting] = useState(false);
     const [errors, setErrors] = useState([]);
+    const [canPlayInfos, setCanPlayInfos] = useState([]);
 
-    // Refs for mutable objects
-    const pipelineServiceRef = useRef(new ExpressionPipelineService());
-    const commandExecutorRef = useRef(new CommandExecutor());
-    const expressionContextRef = useRef(new ExpressionContext());
-    const lastCommandsRef = useRef([]);
-    const roboCanvasRef = useRef(roboCanvas);
+    // Controller instance (single ref, not recreated)
+    const controllerRef = useRef(null);
 
-    // Keep roboCanvas ref up to date
+    // Initialize controller once
+    if (!controllerRef.current) {
+        controllerRef.current = new CommandEditorController(null);
+    }
+
+    const controller = controllerRef.current;
+
+    // Update roboCanvas reference when it changes
     useEffect(() => {
-        roboCanvasRef.current = roboCanvas;
-    }, [roboCanvas]);
+        controller.setRoboCanvas(roboCanvas);
+    }, [roboCanvas, controller]);
+
+    // Wire up controller callbacks to React state
+    useEffect(() => {
+        controller.onErrorsChange = setErrors;
+        controller.onCanPlayInfosChange = setCanPlayInfos;
+        controller.onExecutingChange = setIsExecuting;
+
+        return () => {
+            controller.onErrorsChange = null;
+            controller.onCanPlayInfosChange = null;
+            controller.onExecutingChange = null;
+        };
+    }, [controller]);
+
+    // Debounced execute
+    const [debouncedExecute, cancelDebounce] = useDebounce(
+        (commandModels) => controller.executeAll(commandModels),
+        debounceMs
+    );
 
     /**
-     * Get current diagram based on mode
+     * Handle command change (from input)
+     * Updates command models immediately, triggers debounced execution
      */
-    const getDiagram = useCallback(() => {
-        const canvas = roboCanvasRef.current;
-        if (!canvas) return null;
-        return canvas.diagram;
+    const handleChange = useCallback((commandModels) => {
+        controller.setCommandModels(commandModels);  // Immediate update
+        debouncedExecute(commandModels);              // Debounced execution
+    }, [debouncedExecute, controller]);
+
+    /**
+     * Handle single command execution (from direct input)
+     */
+    const handleExecute = useCallback((command) => {
+        // This is handled via handleChange with debounce
     }, []);
 
     /**
-     * Clear canvas and reset context
+     * Handle play single command
      */
-    const clearAndReset = useCallback(() => {
-        const canvas = roboCanvasRef.current;
-        if (canvas) {
-            canvas.clearAll();
-        }
-        expressionContextRef.current = new ExpressionContext();
-        commandExecutorRef.current.clearCommands();
-    }, []);
-
-    /**
-     * Execute all commands from scratch
-     * This is the core execution function
-     * Flow: parse → resolve → toCommand → (if no errors) → clear → execute
-     */
-    const executeAllCommands = useCallback((commandModels) => {
-        const canvas = roboCanvasRef.current;
-        if (!canvas) {
-            console.warn('Cannot execute: roboCanvas not set');
-            return;
-        }
-
-        // Create fresh context for variable resolution
-        const freshExprContext = new ExpressionContext();
-
-        // Process all commands through pipeline (parse, resolve, toCommand)
-        const pipelineResult = pipelineServiceRef.current.processCommandList(
-            commandModels,
-            freshExprContext
-        );
-
-        // Update errors state
-        setErrors(pipelineResult.errors);
-
-        // If any errors occurred during parse/resolve/toCommand, abort - don't clear canvas
-        if (pipelineResult.errors.length > 0 || pipelineResult.commands.length === 0) {
-            return;
-        }
-
-        // Only clear after successful compilation
-        clearAndReset();
-        expressionContextRef.current = freshExprContext;
-
-        // Create command context (graphContainer is null - commands specify their own graph)
-        const commandContext = new CommandContext(
-            getDiagram(),
-            null,  // No default graph - commands use their own via expression
-            freshExprContext
-        );
-
-        // Set up executor
-        const executor = commandExecutorRef.current;
-        executor.setCommands(pipelineResult.commands);
-        executor.setCommandContext(commandContext);
-
-        // Set up error handler for execution errors
-        executor.setOnError((error, command, index) => {
-            setErrors(prev => [...prev, { index, error }]);
-        });
-
-        // Execute based on mode
-        if (useAnimatedMode) {
-            setIsExecuting(true);
-            executor.setOnAllComplete(() => {
-                setIsExecuting(false);
-            });
-            executor.playAll();
-        } else {
-            // Static mode: draw all instantly
-            executor.drawAll();
-        }
-
-        // Store last commands for reference
-        lastCommandsRef.current = commandModels;
-    }, [getDiagram, clearAndReset, useAnimatedMode]);
-
-    /**
-     * Debounced version of executeAllCommands
-     */
-    const [debouncedExecute, cancelDebounce] = useDebounce(executeAllCommands, debounceMs);
-
-    /**
-     * Handle single command change (from expression edit)
-     * Re-executes ALL commands due to potential dependencies
-     */
-    const handleExecute = useCallback((changedCommand) => {
-        // Find this command in last commands and update
-        let found = false;
-        const updatedCommands = lastCommandsRef.current.map(cmd => {
-            if (cmd.id === changedCommand.id) {
-                found = true;
-                return changedCommand;
-            }
-            return cmd;
-        });
-
-        // If it's a new command, add it
-        if (!found) {
-            updatedCommands.push(changedCommand);
-        }
-
-        lastCommandsRef.current = updatedCommands;
-
-        // Use debounced execution
-        debouncedExecute(updatedCommands);
-    }, [debouncedExecute]);
-
-    /**
-     * Handle execute all (Play All button)
-     */
-    const handleExecuteAll = useCallback((commands) => {
+    const handlePlaySingle = useCallback((commandModel) => {
         cancelDebounce();
-        lastCommandsRef.current = commands;
-        executeAllCommands(commands);
-    }, [executeAllCommands, cancelDebounce]);
+        controller.playSingle(commandModel.id);
+    }, [cancelDebounce, controller]);
 
     /**
-     * Handle onChange from CommandEditor
+     * Handle play up to command
      */
-    const handleChange = useCallback((commands) => {
-        lastCommandsRef.current = commands;
-        debouncedExecute(commands);
-    }, [debouncedExecute]);
+    const handlePlayUpTo = useCallback((commandModel) => {
+        cancelDebounce();
+        controller.playUpTo(commandModel.id);
+    }, [cancelDebounce, controller]);
+
+    /**
+     * Handle execute all
+     */
+    const handleExecuteAll = useCallback((commandModels) => {
+        cancelDebounce();
+        controller.executeAll(commandModels);
+    }, [cancelDebounce, controller]);
 
     /**
      * Handle stop
      */
     const handleStop = useCallback(() => {
-        cancelDebounce();
-        commandExecutorRef.current.stop();
-        setIsExecuting(false);
-    }, [cancelDebounce]);
+        controller.stop();
+    }, [controller]);
 
     /**
      * Handle pause
      */
     const handlePause = useCallback(() => {
-        commandExecutorRef.current.pause();
-    }, []);
+        controller.pause();
+    }, [controller]);
 
     /**
      * Handle resume
      */
     const handleResume = useCallback(() => {
-        commandExecutorRef.current.resume();
-    }, []);
+        controller.resume();
+    }, [controller]);
 
     /**
-     * Force clear and re-render
+     * Clear and rerender
      */
     const clearAndRerender = useCallback(() => {
-        if (lastCommandsRef.current.length > 0) {
-            executeAllCommands(lastCommandsRef.current);
-        }
-    }, [executeAllCommands]);
+        controller.clearAndReset();
+    }, [controller]);
 
     // Cleanup on unmount
     useEffect(() => {
         return () => {
-            cancelDebounce();
-            commandExecutorRef.current.stop();
+            controller.destroy();
         };
-    }, [cancelDebounce]);
+    }, [controller]);
 
     return {
-        // Callbacks for CommandEditor
+        // State
+        isExecuting,
+        errors,
+        canPlayInfos,
+
+        // Handlers
         handleExecute,
         handleExecuteAll,
+        handlePlaySingle,
+        handlePlayUpTo,
         handleChange,
         handleStop,
         handlePause,
         handleResume,
+        clearAndRerender,
 
-        // State
-        isExecuting,
-        errors,
-        executionContext: expressionContextRef.current,
-
-        // Utilities
-        clearAndRerender
+        // Direct controller access (if needed)
+        controller
     };
 }

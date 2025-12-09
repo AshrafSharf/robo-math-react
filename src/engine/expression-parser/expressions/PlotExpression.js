@@ -93,4 +93,12 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
             options
         );
     }
+
+    /**
+     * Plots can be played (animated)
+     * @returns {boolean}
+     */
+    canPlay() {
+        return true;
+    }
 }

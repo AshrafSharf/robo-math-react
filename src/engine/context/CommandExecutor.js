@@ -76,17 +76,19 @@ export class CommandExecutor {
   /**
    * Play all commands sequentially
    * Each command's init() is called, then play()
+   * @returns {Promise}
    */
-  playAll() {
+  async playAll() {
     this.currentIndex = 0;
-    this.playTo(this.commands.length);
+    return this.playTo(this.commands.length);
   }
 
   /**
    * Play commands from current index up to (but not including) toIndex
    * @param {number} toIndex - Stop before this index
+   * @returns {Promise}
    */
-  playTo(toIndex) {
+  async playTo(toIndex) {
     if (!this.commandContext) {
       this.handleError(new Error('CommandContext not set. Call setCommandContext() first.'));
       return;
@@ -97,37 +99,26 @@ export class CommandExecutor {
 
     const endIndex = Math.min(toIndex, this.commands.length);
 
-    this.executeFromTo(this.currentIndex, endIndex);
+    return this.executeFromTo(this.currentIndex, endIndex);
   }
 
   /**
-   * Play a single command at the given index
-   * All previous commands are executed first (for dependency resolution)
+   * Play a single command at the given index (replay animation on existing shape)
+   * Non-destructive, idempotent - just replays the animation effect.
    *
    * @param {number} index - Command index to play
+   * @returns {Promise}
    */
-  playSingle(index) {
+  async playSingle(index) {
     if (index < 0 || index >= this.commands.length) {
       this.handleError(new Error(`Invalid command index: ${index}`));
       return;
     }
 
-    if (!this.commandContext) {
-      this.handleError(new Error('CommandContext not set. Call setCommandContext() first.'));
-      return;
-    }
-
-    // Direct draw all commands before this one (for dependencies)
-    this.drawTo(index);
-
-    // Now play the target command with animation
-    this.currentIndex = index;
     const command = this.commands[index];
 
     try {
-      this.initCommand(command);
-      command.play();
-      this.currentIndex = index + 1;
+      await command.playSingle();
 
       if (this.onCommandComplete) {
         this.onCommandComplete(command, index);
@@ -138,11 +129,36 @@ export class CommandExecutor {
   }
 
   /**
-   * Execute commands from startIndex to endIndex
+   * Play all commands from beginning up to and including the given index
+   *
+   * @param {number} index - Command index to play up to (inclusive)
+   * @returns {Promise}
+   */
+  async playUpTo(index) {
+    if (index < 0 || index >= this.commands.length) {
+      this.handleError(new Error(`Invalid command index: ${index}`));
+      return;
+    }
+
+    if (!this.commandContext) {
+      this.handleError(new Error('CommandContext not set. Call setCommandContext() first.'));
+      return;
+    }
+
+    this.currentIndex = 0;
+    this.isPlaying = true;
+    this.isPaused = false;
+
+    // Play from 0 up to and including index (so index + 1)
+    return this.executeFromTo(0, index + 1);
+  }
+
+  /**
+   * Execute commands from startIndex to endIndex (sequential, awaits each)
    * @param {number} startIndex
    * @param {number} endIndex
    */
-  executeFromTo(startIndex, endIndex) {
+  async executeFromTo(startIndex, endIndex) {
     for (let i = startIndex; i < endIndex; i++) {
       if (this.isPaused) {
         this.currentIndex = i;
@@ -152,8 +168,8 @@ export class CommandExecutor {
       const command = this.commands[i];
 
       try {
-        this.initCommand(command);
-        command.play();
+        await this.initCommand(command);
+        await command.play();  // Wait for animation to complete (may be no-op if animation happened during init)
 
         if (this.onCommandComplete) {
           this.onCommandComplete(command, i);
@@ -167,7 +183,7 @@ export class CommandExecutor {
     this.currentIndex = endIndex;
     this.isPlaying = false;
 
-    if (this.onAllComplete && this.currentIndex >= this.commands.length) {
+    if (this.onAllComplete) {
       this.onAllComplete();
     }
   }
@@ -175,10 +191,11 @@ export class CommandExecutor {
   /**
    * Initialize a command with context
    * @param {ICommand} command
+   * @returns {Promise}
    */
-  initCommand(command) {
+  async initCommand(command) {
     if (!command.getIsInitialized || !command.getIsInitialized()) {
-      command.init(this.commandContext);
+      await command.init(this.commandContext);
     }
   }
 
@@ -188,16 +205,18 @@ export class CommandExecutor {
 
   /**
    * Direct draw all commands (instant, no animation)
+   * @returns {Promise}
    */
-  drawAll() {
-    this.drawTo(this.commands.length);
+  async drawAll() {
+    await this.drawTo(this.commands.length);
   }
 
   /**
    * Direct draw commands up to (but not including) toIndex
    * @param {number} toIndex
+   * @returns {Promise}
    */
-  drawTo(toIndex) {
+  async drawTo(toIndex) {
     if (!this.commandContext) {
       this.handleError(new Error('CommandContext not set. Call setCommandContext() first.'));
       return;
@@ -209,7 +228,7 @@ export class CommandExecutor {
       const command = this.commands[i];
 
       try {
-        this.initCommand(command);
+        await this.initCommand(command);
         command.directPlay();
       } catch (err) {
         this.handleError(err, command, i);
@@ -234,11 +253,12 @@ export class CommandExecutor {
 
   /**
    * Resume playback from current index
+   * @returns {Promise}
    */
-  resume() {
+  async resume() {
     if (this.isPaused) {
       this.isPaused = false;
-      this.playTo(this.commands.length);
+      return this.playTo(this.commands.length);
     }
   }
 

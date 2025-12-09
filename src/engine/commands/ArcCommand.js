@@ -10,6 +10,7 @@
  * Alternative: can be defined by center point, radius, and angles
  */
 import { BaseCommand } from './BaseCommand.js';
+import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
 
 export class ArcCommand extends BaseCommand {
   /**
@@ -62,8 +63,9 @@ export class ArcCommand extends BaseCommand {
 
   /**
    * Create arc shape via diagram
+   * @returns {Promise}
    */
-  doInit() {
+  async doInit() {
     const { diagram, graphContainer } = this.commandContext;
 
     const options = {
@@ -74,7 +76,7 @@ export class ArcCommand extends BaseCommand {
       options.strokeWidth = this.strokeWidth;
     }
 
-    this.commandResult = diagram.arc(
+    this.commandResult = await diagram.arc(
       graphContainer,
       this.startPoint,
       this.endPoint,
@@ -136,5 +138,17 @@ export class ArcCommand extends BaseCommand {
    */
   isCircular() {
     return this.rx === this.ry;
+  }
+
+  /**
+   * Replay animation on existing shape
+   * @returns {Promise}
+   */
+  async playSingle() {
+    if (!this.commandResult) return;
+
+    this.commandResult.hide();
+    const effect = new MathShapeEffect(this.commandResult);
+    return effect.play();
   }
 }

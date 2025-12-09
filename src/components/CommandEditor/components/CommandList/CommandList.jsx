@@ -11,10 +11,12 @@ const CommandList = ({
   onSelect,
   onUpdate,
   onDelete,
-  onPlay,
+  onPlaySingle,
+  onPlayUpTo,
   onSettingsClick,
   onAddCommand,
-  errors = []
+  errors = [],
+  canPlayInfos = []
 }) => {
   const inputRefs = useRef({});
 
@@ -38,6 +40,7 @@ const CommandList = ({
     <>
       {commands.map((command, index) => {
         const errorForCommand = errors.find(e => e.index === index);
+        const canPlayInfo = canPlayInfos.find(c => c.index === index);
         return (
           <CommandItem
             key={command.id}
@@ -46,10 +49,12 @@ const CommandList = ({
             onSelect={onSelect}
             onUpdate={onUpdate}
             onDelete={onDelete}
-            onPlay={onPlay}
+            onPlaySingle={onPlaySingle}
+            onPlayUpTo={onPlayUpTo}
             onSettings={onSettingsClick}
             onKeyDown={handleKeyDownWithEnter}
             error={errorForCommand?.error}
+            canPlay={canPlayInfo?.canPlay ?? false}
             ref={(el) => {
               if (el) {
                 inputRefs.current[command.id] = el;

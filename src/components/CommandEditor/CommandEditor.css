@@ -437,24 +437,53 @@ font-size: 20px;
 
 }
 
-.cmd-item-play{
+/* Play buttons container */
+.cmd-play-buttons {
     position: absolute;
-    top: 1px;
-    bottom: 1px;
+    top: 0;
+    bottom: 0;
     right: 0;
     z-index: 2;
-    color: rgba(34,34,34,0.2);
-    font-size: 25px;
-    cursor: pointer;
+    display: flex;
+    flex-direction: column;
     background: #f9f9f9;
-    padding-top:15px;
-
 }
 
+/* Play up to button (top) - blue/teal color */
+.cmd-play-upto {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #17a2b8;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 8px;
+    border-bottom: 1px solid #e0e0e0;
+    transition: all 0.15s ease;
+}
 
+.cmd-play-upto:hover {
+    color: #fff;
+    background: #17a2b8;
+}
 
-.cmd-item-play:hover{
-    color: rgba(34,34,34,0.7);
+/* Play single button (bottom) - green color */
+.cmd-play-single {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #28a745;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 8px;
+    transition: all 0.15s ease;
+}
+
+.cmd-play-single:hover {
+    color: #fff;
+    background: #28a745;
 }
 
 

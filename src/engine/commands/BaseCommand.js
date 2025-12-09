@@ -46,11 +46,12 @@ export class BaseCommand {
    * Creates shapes via commandContext.diagram
    *
    * @param {CommandContext} commandContext - Contains diagram, graphContainer, expressionContext
+   * @returns {Promise}
    */
-  init(commandContext) {
+  async init(commandContext) {
     this.commandContext = commandContext;
     this.preInit();
-    this.doInit();
+    await this.doInit();
     this.postInit();
     this.isInitialized = true;
   }
@@ -65,8 +66,9 @@ export class BaseCommand {
   /**
    * Subclass implements - create shape via diagram
    * @abstract
+   * @returns {Promise}
    */
-  doInit() {
+  async doInit() {
     throw new Error('BaseCommand.doInit() must be implemented by subclass');
   }
 
@@ -78,15 +80,16 @@ export class BaseCommand {
   }
 
   /**
-   * Play the command - diagram handles animation mode internally
+   * Play the command - returns Promise that resolves when animation completes
+   * @returns {Promise}
    */
-  play() {
+  async play() {
     if (!this.isInitialized) {
       throw new Error('Command not initialized. Call init() first.');
     }
 
     this.prePlay();
-    this.doPlay();
+    await this.doPlay();
     this.postPlay();
   }
 
@@ -99,12 +102,15 @@ export class BaseCommand {
 
   /**
    * Subclass can override for custom play logic
-   * Default: diagram already handled animation during init
+   * Default: play the shape's attached effect (if any)
+   * @returns {Promise}
    */
-  doPlay() {
-    // For most commands, the diagram handles animation in init()
-    // Shape is already created and animated (or shown for static diagram)
-    // Override if custom play behavior needed
+  async doPlay() {
+    // If we have a commandResult with an attached effect, play it
+    if (this.commandResult && this.commandContext?.diagram?.playShapeEffect) {
+      return this.commandContext.diagram.playShapeEffect(this.commandResult);
+    }
+    return Promise.resolve();
   }
 
   /**
@@ -131,6 +137,17 @@ export class BaseCommand {
     }
 
     this.doDirectPlay();
+  }
+
+  /**
+   * Replay animation on existing shape (non-destructive, idempotent)
+   * Override in subclasses that have animatable shapes.
+   * Default is no-op (e.g., for graph containers).
+   * @returns {Promise}
+   */
+  async playSingle() {
+    // Default no-op - subclasses override if they have animations
+    return Promise.resolve();
   }
 
   /**

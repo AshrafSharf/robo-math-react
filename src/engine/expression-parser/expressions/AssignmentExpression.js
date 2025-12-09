@@ -50,4 +50,14 @@ export class AssignmentExpression extends AbstractNonArithmeticExpression {
 
         return labelName;
     }
+
+    /**
+     * Assignment expressions can play if their RHS expression can play.
+     * @returns {boolean}
+     */
+    canPlay() {
+        return this.rhsExpression && typeof this.rhsExpression.canPlay === 'function'
+            ? this.rhsExpression.canPlay()
+            : false;
+    }
 }

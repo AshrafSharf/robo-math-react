@@ -208,6 +208,15 @@ export class AbstractArithmeticExpression {
     getIndexedVariableAtomicValues(index) {
         return this.getVariableAtomicValues();
     }
+
+    /**
+     * Returns whether this expression can be played (animated).
+     * Override in subclasses that represent playable shapes.
+     * @returns {boolean}
+     */
+    canPlay() {
+        return false;
+    }
 }
 
 // Static references to be set later to avoid circular dependencies

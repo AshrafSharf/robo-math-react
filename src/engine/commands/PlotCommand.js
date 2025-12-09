@@ -4,6 +4,7 @@
  * Creates a plot shape via diagram.plot()
  */
 import { BaseCommand } from './BaseCommand.js';
+import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
 
 export class PlotCommand extends BaseCommand {
     /**
@@ -25,8 +26,9 @@ export class PlotCommand extends BaseCommand {
 
     /**
      * Create plot shape via diagram
+     * @returns {Promise}
      */
-    doInit() {
+    async doInit() {
         const { diagram } = this.commandContext;
 
         // Use graph's xRange if domain not specified
@@ -54,7 +56,7 @@ export class PlotCommand extends BaseCommand {
             options.strokeWidth = this.strokeWidth;
         }
 
-        this.commandResult = diagram.plot(
+        this.commandResult = await diagram.plot(
             this.graphContainer,
             this.equation,
             minX,
@@ -92,5 +94,17 @@ export class PlotCommand extends BaseCommand {
      */
     getDomain() {
         return { min: this.domainMin, max: this.domainMax };
+    }
+
+    /**
+     * Replay animation on existing shape
+     * @returns {Promise}
+     */
+    async playSingle() {
+        if (!this.commandResult) return;
+
+        this.commandResult.hide();
+        const effect = new MathShapeEffect(this.commandResult);
+        return effect.play();
     }
 }

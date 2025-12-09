@@ -143,14 +143,17 @@ export class RoboCanvas {
 
   /**
    * Switch to animated mode (queued animations)
+   * @param {boolean} clearCanvas - Whether to clear canvas when switching (default: true)
    */
-  useAnimatedDiagram() {
+  useAnimatedDiagram(clearCanvas = true) {
     if (!this.initialized) {
       throw new Error('RoboCanvas not initialized. Call await roboCanvas.init() first.');
     }
 
     if (!this.isAnimatedMode) {
-      this.diagram.clearAll();
+      if (clearCanvas) {
+        this.diagram.clearAll();
+      }
       this.diagram = this.animatedDiagram;
       this.diagram.setAnimateMode(true);
       this.isAnimatedMode = true;

@@ -215,4 +215,12 @@ export class ArcExpression extends AbstractNonArithmeticExpression {
         const ep = this.getEndpointFormat();
         return new ArcCommand(ep.start, ep.end, ep.rx, ep.ry, options);
     }
+
+    /**
+     * Arcs can be played (animated)
+     * @returns {boolean}
+     */
+    canPlay() {
+        return true;
+    }
 }

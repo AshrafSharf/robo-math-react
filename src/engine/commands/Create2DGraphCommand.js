@@ -29,11 +29,12 @@ export class Create2DGraphCommand extends BaseCommand {
 
     /**
      * Create graph container via diagram
+     * @returns {Promise}
      */
-    doInit() {
+    async doInit() {
         const { diagram } = this.commandContext;
 
-        // Create graph container
+        // Create graph container (sync operation but wrapped in async for consistency)
         const grapher = diagram.graphContainer(this.col, this.row, {
             width: this.width,
             height: this.height,

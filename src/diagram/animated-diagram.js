@@ -56,17 +56,21 @@ export class AnimatedDiagram extends BaseDiagram {
   }
   
   /**
-   * Internal method to play an effect immediately
+   * Play an effect and return a Promise
    * @param {BaseEffect} effect - Effect to play
+   * @returns {Promise} Resolves when animation completes
    */
   _playEffect(effect) {
     if (effect && effect.play) {
-      effect.play();
+      return effect.play();
     }
+    return Promise.resolve();
   }
-  
+
   /**
    * Apply animation mode logic to a shape
+   * In animate mode: hide shape, attach effect (but don't play yet)
+   * In static mode: render end state immediately
    * @param {Object} shape - The shape to apply mode logic to
    * @param {BaseEffect} effectInstance - Optional custom effect instance
    * @private
@@ -74,12 +78,27 @@ export class AnimatedDiagram extends BaseDiagram {
   _applyModeLogic(shape, effectInstance = null) {
     if (this.animateMode) {
       shape.hide();
-      const effect = effectInstance || new MathShapeEffect(shape);
-      this._playEffect(effect);
+      // Attach effect to shape for later playing
+      shape._effect = effectInstance || new MathShapeEffect(shape);
+      // Don't play yet - command.play() will call playShapeEffect()
     } else {
       shape.renderEndState();
       shape.show();
     }
+  }
+
+  /**
+   * Play the effect attached to a shape
+   * @param {Object} shape - Shape with attached effect
+   * @returns {Promise} Resolves when animation completes
+   */
+  async playShapeEffect(shape) {
+    if (shape && shape._effect) {
+      const effect = shape._effect;
+      shape._effect = null; // Clear to prevent double-play
+      return this._playEffect(effect);
+    }
+    return Promise.resolve();
   }
   
   /**
@@ -88,12 +107,15 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} position - Position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {radius, strokeWidth}
-   * @returns {Object} Point shape
+   * @returns {Promise<Object>} Point shape
    */
-  point(graphContainer, position, color = 'red', options = {}) {
+  async point(graphContainer, position, color = 'red', options = {}) {
     const shape = this._createPoint(graphContainer, position, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -104,15 +126,18 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Vector shape
+   * @returns {Promise<Object>} Vector shape
    */
-  vector(graphContainer, start, end, color = 'red', options = {}) {
+  async vector(graphContainer, start, end, color = 'red', options = {}) {
     const shape = this._createVector(graphContainer, start, end, color, options);
     shape.primitiveShape.attr('fill', null);
     shape.start = { x: start.x, y: start.y };
     shape.end = { x: end.x, y: end.y };
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -123,12 +148,15 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, dashPattern}
-   * @returns {Object} Vector shape with dash pattern
+   * @returns {Promise<Object>} Vector shape with dash pattern
    */
-  dashedVector(graphContainer, start, end, color = 'red', options = {}) {
+  async dashedVector(graphContainer, start, end, color = 'red', options = {}) {
     const shape = this._createDashedVector(graphContainer, start, end, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -137,9 +165,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vectorShape - Vector shape object or {start, end} coordinates
    * @param {Object} options - Options including color, dashPattern, strokeWidth
-   * @returns {Object} Reversed vector shape
+   * @returns {Promise<Object>} Reversed vector shape
    */
-  reverseVector(graphContainer, vectorShape, options = {}) {
+  async reverseVector(graphContainer, vectorShape, options = {}) {
     let start, end;
 
     if (vectorShape.modelCoordinates) {
@@ -171,6 +199,9 @@ export class AnimatedDiagram extends BaseDiagram {
     this._applyModeLogic(shape, reverseEffect);
     this.objects.push(shape);
 
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -180,9 +211,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} originalVector - Original vector definition {start: {x,y}, end: {x,y}}
    * @param {Object} targetPosition - Target position {x, y} or target vector {start: {x,y}, end: {x,y}}
    * @param {Object} options - Options including color, strokeWidth, dashed, dashPattern
-   * @returns {Object} The animated vector shape
+   * @returns {Promise<Object>} The animated vector shape
    */
-  moveVector(graphContainer, originalVector, targetPosition, options = {}) {
+  async moveVector(graphContainer, originalVector, targetPosition, options = {}) {
     const originalStart = originalVector.start;
     const originalEnd = originalVector.end;
     const targetStart = targetPosition.start || targetPosition;
@@ -208,6 +239,9 @@ export class AnimatedDiagram extends BaseDiagram {
     this._applyModeLogic(shape, moveEffect);
     this.objects.push(shape);
 
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -218,12 +252,15 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
-   * @returns {Object} Line shape
+   * @returns {Promise<Object>} Line shape
    */
-  line(graphContainer, start, end, color = 'black', options = {}) {
+  async line(graphContainer, start, end, color = 'black', options = {}) {
     const shape = this._createLine(graphContainer, start, end, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -234,9 +271,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {mainRadius, markerLength, markerRadius, offset, strokeWidth}
-   * @returns {Object} Measurement indicator shape
+   * @returns {Promise<Object>} Measurement indicator shape
    */
-  measurementIndicator(graphContainer, start, end, color = 'black', options = {}) {
+  async measurementIndicator(graphContainer, start, end, color = 'black', options = {}) {
     const shape = this._createMeasurementIndicator(graphContainer, start, end, color, options);
     // Measurement indicators always render instantly (no animation)
     shape.renderEndState();
@@ -253,12 +290,15 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {number} domainMax - Maximum x value
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Plot shape
+   * @returns {Promise<Object>} Plot shape
    */
-  plot(graphContainer, equation, domainMin, domainMax, color = 'green', options = {}) {
+  async plot(graphContainer, equation, domainMin, domainMax, color = 'green', options = {}) {
     const shape = this._createPlot(graphContainer, equation, domainMin, domainMax, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
 
@@ -271,9 +311,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {number} domainMax - Maximum x value
    * @param {Object} scope - Variable substitution map {a: 1, b: 2, c: 3}
    * @param {Object} options - Style options {color, strokeWidth, variable}
-   * @returns {Object} Plot shape
+   * @returns {Promise<Object>} Plot shape
    */
-  plotExpression(graphContainer, expression, domainMin, domainMax, scope = {}, options = {}) {
+  async plotExpression(graphContainer, expression, domainMin, domainMax, scope = {}, options = {}) {
     const { variable = 'x', color = 'blue', ...plotOptions } = options;
     const shape = this._createPlotFromExpression(
       graphContainer, expression, variable, scope,
@@ -281,6 +321,9 @@ export class AnimatedDiagram extends BaseDiagram {
     );
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
 
@@ -293,12 +336,15 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {number} tMax - Maximum t value
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Parametric plot shape
+   * @returns {Promise<Object>} Parametric plot shape
    */
-  parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = 'blue', options = {}) {
+  async parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = 'blue', options = {}) {
     const shape = this._createParametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -309,9 +355,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {number} radius - Circle radius
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill, stroke}
-   * @returns {Object} Circle shape
+   * @returns {Promise<Object>} Circle shape
    */
-  circle(graphContainer, center, radius, color = 'blue', options = {}) {
+  async circle(graphContainer, center, radius, color = 'blue', options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
@@ -321,6 +367,9 @@ export class AnimatedDiagram extends BaseDiagram {
     if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -332,9 +381,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {number} ry - Vertical radius
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
-   * @returns {Object} Ellipse shape
+   * @returns {Promise<Object>} Ellipse shape
    */
-  ellipse(graphContainer, center, rx, ry, color = 'red', options = {}) {
+  async ellipse(graphContainer, center, rx, ry, color = 'red', options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
@@ -344,6 +393,9 @@ export class AnimatedDiagram extends BaseDiagram {
     if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -356,12 +408,15 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {number} ry - Vertical radius
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Arc shape
+   * @returns {Promise<Object>} Arc shape
    */
-  arc(graphContainer, start, end, rx, ry, color = 'green', options = {}) {
+  async arc(graphContainer, start, end, rx, ry, color = 'green', options = {}) {
     const shape = this._createArc(graphContainer, start, end, rx, ry, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -371,9 +426,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Array<Object>} vertices - Array of vertices [{x, y}, ...]
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
-   * @returns {Object} Polygon shape
+   * @returns {Promise<Object>} Polygon shape
    */
-  polygon(graphContainer, vertices, color = 'orange', options = {}) {
+  async polygon(graphContainer, vertices, color = 'orange', options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
@@ -383,6 +438,9 @@ export class AnimatedDiagram extends BaseDiagram {
     if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -393,12 +451,15 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Array<Object>} points - Control points [{x, y}, ...]
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Object} Curve shape
+   * @returns {Promise<Object>} Curve shape
    */
-  curve(graphContainer, type, points, color = 'violet', options = {}) {
+  async curve(graphContainer, type, points, color = 'violet', options = {}) {
     const shape = this._createCurve(graphContainer, type, points, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -409,13 +470,16 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} end - End position {x, y} in graph coordinates
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, angle, clockwise}
-   * @returns {Object} Arrow shape
+   * @returns {Promise<Object>} Arrow shape
    */
-  arrow(graphContainer, start, end, color = 'red', options = {}) {
+  async arrow(graphContainer, start, end, color = 'red', options = {}) {
     const shape = this._createArrow(graphContainer, start, end, color, options);
     shape.primitiveShape.attr('fill', null);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -427,13 +491,16 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {Object} point2 - Second point {x, y} (if vertex is not array)
    * @param {string} angleType - Type of angle ('interior', 'exterior-first', 'exterior-second', 'reflex', 'opposite')
    * @param {Object} options - Additional options {radius, label, color, fillOpacity, strokeWidth, showValue}
-   * @returns {Object} Angle shape
+   * @returns {Promise<Object>} Angle shape
    */
-  angle(graphContainer, vertex, point1, point2, angleType = 'interior', options = {}) {
+  async angle(graphContainer, vertex, point1, point2, angleType = 'interior', options = {}) {
     const color = options.color || options.stroke || DEFAULT_SHAPE_COLORS.angle;
     const shape = this._createAngle(graphContainer, vertex, point1, point2, angleType, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
     return shape;
   }
   
@@ -444,14 +511,19 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {string} latexString - LaTeX expression string
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {fontSize, scale}
-   * @returns {Object} LatexShape
+   * @returns {Promise<Object>} LatexShape
    */
-  texToSvg(graphContainer, position, latexString, color = 'black', options = {}) {
+  async texToSvg(graphContainer, position, latexString, color = 'black', options = {}) {
     const shape = this._createTexToSvg(graphContainer, position, latexString, color, options);
-    // Use TexToSVGShapeEffect for animated drawing
-    shape.hide();
-    this._playEffect(new TexToSVGShapeEffect(shape));
     this.objects.push(shape);
+    if (this.animateMode) {
+      // Use TexToSVGShapeEffect for animated drawing
+      shape.hide();
+      await this._playEffect(new TexToSVGShapeEffect(shape));
+    } else {
+      shape.renderEndState();
+      shape.show();
+    }
     return shape;
   }
 
@@ -462,9 +534,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {string} latexString - LaTeX expression string
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {fontSize, rotation, offset}
-   * @returns {Object} Label shape
+   * @returns {Promise<Object>} Label shape
    */
-  labelOnPoint(graphContainer, point, latexString, color = 'black', options = {}) {
+  async labelOnPoint(graphContainer, point, latexString, color = 'black', options = {}) {
     const shape = this._createLabelOnPoint(graphContainer, point, latexString, color, options);
     // Labels always render instantly (no animation)
     shape.renderEndState();
@@ -481,9 +553,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {string} latexString - LaTeX expression string
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {fontSize, offset}
-   * @returns {Object} Label shape
+   * @returns {Promise<Object>} Label shape
    */
-  labelBetweenPoints(graphContainer, start, end, latexString, color = 'black', options = {}) {
+  async labelBetweenPoints(graphContainer, start, end, latexString, color = 'black', options = {}) {
     const shape = this._createLabelBetweenPoints(graphContainer, start, end, latexString, color, options);
     // Labels always render instantly (no animation)
     shape.renderEndState();
@@ -499,9 +571,9 @@ export class AnimatedDiagram extends BaseDiagram {
    * @param {string} latexString - LaTeX expression string
    * @param {string} color - Color name or hex (default: 'black')
    * @param {Object} options - Additional options {offsetInView, fontSize}
-   * @returns {Object} Label shape
+   * @returns {Promise<Object>} Label shape
    */
-  angleLabel(graphContainer, angleShape, latexString, color = 'black', options = {}) {
+  async angleLabel(graphContainer, angleShape, latexString, color = 'black', options = {}) {
     // Get angle center in view coordinates
     const viewCenter = angleShape.getAngleCenter();
     if (!viewCenter) {
@@ -531,30 +603,44 @@ export class AnimatedDiagram extends BaseDiagram {
   /**
    * Write a math text component with pen animation (override base class)
    * @param {MathTextComponent} mathComponent - Math text component to animate
-   * @returns {MathTextComponent} The math text component
+   * @returns {Promise<MathTextComponent>} The math text component
    */
-  writeMathText(mathComponent) {
-    this._playEffect(new WriteEffect(mathComponent));
+  async writeMathText(mathComponent) {
+    if (this.animateMode) {
+      await this._playEffect(new WriteEffect(mathComponent));
+    } else {
+      mathComponent.show();
+      mathComponent.enableStroke();
+    }
     return mathComponent;
   }
 
   /**
    * Animate writing a math text component with full write effect (alias)
    * @param {MathTextComponent} mathComponent - Math text component to animate
-   * @returns {AnimatedDiagram} - For chaining
+   * @returns {Promise<AnimatedDiagram>} - For chaining
    */
-  write(mathComponent) {
-    this._playEffect(new WriteEffect(mathComponent));
+  async write(mathComponent) {
+    if (this.animateMode) {
+      await this._playEffect(new WriteEffect(mathComponent));
+    } else {
+      mathComponent.show();
+      mathComponent.enableStroke();
+    }
     return this;
   }
 
   /**
    * Animate writing a math text component excluding bbox-marked sections
    * @param {MathTextComponent} mathComponent - Math text component to animate
-   * @returns {AnimatedDiagram} - For chaining
+   * @returns {Promise<AnimatedDiagram>} - For chaining
    */
-  writeWithout(mathComponent) {
-    this._playEffect(mathComponent.writeWithoutBBox());
+  async writeWithout(mathComponent) {
+    if (this.animateMode) {
+      await this._playEffect(mathComponent.writeWithoutBBox());
+    } else {
+      mathComponent.showWithoutBBox();
+    }
     return this;
   }
 
@@ -562,10 +648,14 @@ export class AnimatedDiagram extends BaseDiagram {
    * Animate writing only bbox-marked sections of a math text component
    * @param {MathTextComponent} mathComponent - Math text component to animate
    * @param {boolean} includeAll - Whether to include all content (default: false)
-   * @returns {AnimatedDiagram} - For chaining
+   * @returns {Promise<AnimatedDiagram>} - For chaining
    */
-  writeOnly(mathComponent, includeAll = false) {
-    this._playEffect(mathComponent.writeOnlyBBox(includeAll));
+  async writeOnly(mathComponent, includeAll = false) {
+    if (this.animateMode) {
+      await this._playEffect(mathComponent.writeOnlyBBox(includeAll));
+    } else {
+      mathComponent.showOnlyBBox(includeAll);
+    }
     return this;
   }
 
@@ -624,15 +714,16 @@ export class AnimatedDiagram extends BaseDiagram {
    * Zoom in with immediate animation
    * @param {Object} point - Point to zoom to {x, y}
    * @param {Object} options - Zoom options {scale, duration}
+   * @returns {Promise<AnimatedDiagram>}
    */
-  zoomIn(point, options = {}) {
+  async zoomIn(point, options = {}) {
     // Create and play zoom effect immediately
     const zoomEffect = new ZoomEffect(this, point, {
       scale: options.scale || 0.5,
       duration: options.duration || 1
     });
-    
-    this._playEffect(zoomEffect);
+
+    await this._playEffect(zoomEffect);
     console.log(`Zoomed in to point:`, point);
     return this;
   }
@@ -640,14 +731,15 @@ export class AnimatedDiagram extends BaseDiagram {
   /**
    * Zoom out with immediate animation
    * @param {Object} options - Zoom options {duration}
+   * @returns {Promise<AnimatedDiagram>}
    */
-  zoomOut(options = {}) {
+  async zoomOut(options = {}) {
     // Create and play zoom out effect immediately (point = null means zoom out)
     const zoomEffect = new ZoomEffect(this, null, {
       duration: options.duration || 1
     });
-    
-    this._playEffect(zoomEffect);
+
+    await this._playEffect(zoomEffect);
     console.log(`Zoomed out`);
     return this;
   }
@@ -699,14 +791,15 @@ export class AnimatedDiagram extends BaseDiagram {
    * Pan to a specific point with immediate animation
    * @param {Object} point - Point to pan to {x, y}
    * @param {Object} options - Pan options {duration}
+   * @returns {Promise<AnimatedDiagram>}
    */
-  panTo(point, options = {}) {
+  async panTo(point, options = {}) {
     // Create and play pan effect immediately
     const panEffect = new PanEffect(this, point, {
       duration: options.duration || 0.5
     });
-    
-    this._playEffect(panEffect);
+
+    await this._playEffect(panEffect);
     console.log(`Panned to point:`, point);
     return this;
   }
