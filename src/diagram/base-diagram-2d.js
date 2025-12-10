@@ -322,6 +322,72 @@ export class BaseDiagram2d {
     return shape;
   }
 
+  /**
+   * Create a MathTextComponent label positioned on a grapher using model coordinates.
+   * The label is absolutely positioned over the grapher with pen animation support.
+   *
+   * @param {Grapher} graphContainer - The grapher to position the label on
+   * @param {Object} position - Position in model coordinates {x, y}
+   * @param {string} latexString - LaTeX string to render
+   * @param {string} color - Text color
+   * @param {Object} options - Options {fontSize, background, offset}
+   *   - fontSize: Font size in pixels (default: 22)
+   *   - background: Background color (default: transparent)
+   *   - offset: Pixel offset {x, y} from calculated position (default: {x: 0, y: 0})
+   * @returns {MathTextComponent} Math text component (hidden, ready for animation)
+   * @protected
+   */
+  _createLabel(graphContainer, position, latexString, color, options = {}) {
+    // 1. Get grapher's top-left position relative to canvas
+    const grapherOffsetLeft = graphContainer.containerDOM.offsetLeft;
+    const grapherOffsetTop = graphContainer.containerDOM.offsetTop;
+
+    // 2. Convert model coords to view coords within grapher
+    const viewX = graphContainer.toViewX(position.x);
+    const viewY = graphContainer.toViewY(position.y);
+
+    // 3. Calculate absolute pixel position on canvas
+    const absoluteX = grapherOffsetLeft + viewX + (options.offset?.x || 0);
+    const absoluteY = grapherOffsetTop + viewY + (options.offset?.y || 0);
+
+    // 4. Create a pass-through coordinateMapper that returns pixel coords directly
+    const pixelCoordinateMapper = {
+      toPixel: (col, row) => ({ x: col, y: row })
+    };
+
+    // 5. Create MathTextComponent at absolute pixel position
+    const mathComponent = new MathTextComponent(
+      latexString,
+      absoluteX,
+      absoluteY,
+      pixelCoordinateMapper,
+      this.canvasSection,
+      {
+        fontSize: options.fontSize || 22,
+        stroke: parseColor(color),
+        fill: parseColor(color)
+      }
+    );
+
+    // 6. Apply background if specified
+    if (options.background) {
+      mathComponent.style({
+        'background-color': options.background,
+        'padding': '2px 4px',
+        'border-radius': '2px'
+      });
+    }
+
+    // 7. Hide and disable stroke for animation
+    mathComponent.hide();
+    mathComponent.disableStroke();
+
+    // 8. Track for cleanup
+    this.objects.push(mathComponent);
+
+    return mathComponent;
+  }
+
   // ============= MATH TEXT WRITE METHODS =============
 
   /**

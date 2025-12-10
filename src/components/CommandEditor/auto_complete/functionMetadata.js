@@ -137,6 +137,22 @@ export const FUNCTION_METADATA = {
     altSignatures: ['pll(g: Graph, line: Line, point: Point)', 'pll(g: Graph, line: Line, point: Point, length: number)'],
     category: 'Lines'
   },
+  xl: {
+    name: 'xl',
+    signature: '(g, line, amount)',
+    args: ['g: Graph', 'line: Line', 'amount: number'],
+    description: 'Extend line by amount',
+    altSignatures: ['xl(g, line, amount)', 'xl(g, line, startAmt, endAmt)'],
+    category: 'Lines'
+  },
+  ral: {
+    name: 'ral',
+    signature: '(g, length, angle)',
+    args: ['g: Graph', 'length: number', 'angle: number'],
+    description: 'Line from polar (radius, angle in degrees)',
+    altSignatures: ['ral(g, length, angle)', 'ral(g, length, angle, fromX, fromY)', 'ral(g, length, angle, fromPoint)'],
+    category: 'Lines'
+  },
 
   // === VECTORS ===
   perpv: {
@@ -153,6 +169,110 @@ export const FUNCTION_METADATA = {
     args: ['g: Graph', 'line: Line', 'point: Point'],
     description: 'Parallel vector through point',
     altSignatures: ['plv(g: Graph, line: Line, point: Point)', 'plv(g: Graph, line: Line, point: Point, length: number)'],
+    category: 'Vectors'
+  },
+  rav: {
+    name: 'rav',
+    signature: '(g, length, angle)',
+    args: ['g: Graph', 'length: number', 'angle: number'],
+    description: 'Vector from polar (radius, angle in degrees)',
+    altSignatures: ['rav(g, length, angle)', 'rav(g, length, angle, fromX, fromY)', 'rav(g, length, angle, fromPoint)'],
+    category: 'Vectors'
+  },
+  uv: {
+    name: 'uv',
+    signature: '(shape)',
+    args: ['shape: Line|Vec'],
+    description: 'Unit vector (normalized direction)',
+    altSignatures: ['uv(line)', 'uv(vec)', 'uv(p1, p2)', 'uv(g, line)'],
+    category: 'Vectors'
+  },
+  fwv: {
+    name: 'fwv',
+    signature: '(g, vec, dist)',
+    args: ['g: Graph', 'vec: Vec', 'dist: number'],
+    description: 'Shift vector forward along its direction',
+    altSignatures: ['fwv(g, vec, distance)', 'fwv(g, line, distance)'],
+    category: 'Vectors'
+  },
+  bwv: {
+    name: 'bwv',
+    signature: '(g, vec, dist)',
+    args: ['g: Graph', 'vec: Vec', 'dist: number'],
+    description: 'Shift vector backward (opposite direction)',
+    altSignatures: ['bwv(g, vec, distance)', 'bwv(g, line, distance)'],
+    category: 'Vectors'
+  },
+  pmv: {
+    name: 'pmv',
+    signature: '(g, vec, dist)',
+    args: ['g: Graph', 'vec: Vec', 'dist: number'],
+    description: 'Shift vector perpendicular (+left, -right)',
+    altSignatures: ['pmv(g, vec, distance)', 'pmv(g, line, distance)'],
+    category: 'Vectors'
+  },
+  cpv: {
+    name: 'cpv',
+    signature: '(g, vec, point)',
+    args: ['g: Graph', 'vec: Vec', 'point: Point'],
+    description: 'Copy vector to new starting point',
+    altSignatures: ['cpv(g, vec, point)', 'cpv(g, vec, x, y)'],
+    category: 'Vectors'
+  },
+  rvv: {
+    name: 'rvv',
+    signature: '(g, vec, point)',
+    args: ['g: Graph', 'vec: Vec', 'point: Point'],
+    description: 'Reverse vector at new starting point',
+    altSignatures: ['rvv(g, vec, point)', 'rvv(g, vec, x, y)'],
+    category: 'Vectors'
+  },
+  ttv: {
+    name: 'ttv',
+    signature: '(g, vecA, vecB)',
+    args: ['g: Graph', 'vecA: Vec', 'vecB: Vec'],
+    description: 'Place vecB tail at vecA tip (tip-to-tail)',
+    altSignatures: ['ttv(g, vecA, vecB)'],
+    category: 'Vectors'
+  },
+  addv: {
+    name: 'addv',
+    signature: '(g, vecA, vecB)',
+    args: ['g: Graph', 'vecA: Vec', 'vecB: Vec'],
+    description: 'Vector addition (A + B)',
+    altSignatures: ['addv(g, vecA, vecB)', 'addv(g, vecA, vecB, startPoint)'],
+    category: 'Vectors'
+  },
+  subv: {
+    name: 'subv',
+    signature: '(g, vecA, vecB)',
+    args: ['g: Graph', 'vecA: Vec', 'vecB: Vec'],
+    description: 'Vector subtraction (A - B)',
+    altSignatures: ['subv(g, vecA, vecB)', 'subv(g, vecA, vecB, startPoint)'],
+    category: 'Vectors'
+  },
+  scalev: {
+    name: 'scalev',
+    signature: '(g, vec, scalar)',
+    args: ['g: Graph', 'vec: Vec', 'scalar: number'],
+    description: 'Scale vector by scalar',
+    altSignatures: ['scalev(g, vec, scalar)', 'scalev(g, vec, scalar, startPoint)'],
+    category: 'Vectors'
+  },
+  prov: {
+    name: 'prov',
+    signature: '(g, vec, target)',
+    args: ['g: Graph', 'vec: Vec', 'target: Vec'],
+    description: 'Project vector onto target vector',
+    altSignatures: ['prov(g, vecToProject, vecTarget)'],
+    category: 'Vectors'
+  },
+  dcv: {
+    name: 'dcv',
+    signature: '(g, vec, ref)',
+    args: ['g: Graph', 'vec: Vec', 'ref: Vec'],
+    description: 'Decompose vector (parallel/perpendicular)',
+    altSignatures: ['dcv(g, vec, ref)', 'dcv(g, vec, ref, 1) for perpendicular'],
     category: 'Vectors'
   },
 
@@ -189,6 +309,30 @@ export const FUNCTION_METADATA = {
     altSignatures: ['ed(shape: Line|Arc|Vec)'],
     category: 'Coordinates'
   },
+  mid: {
+    name: 'mid',
+    signature: '(g, shape)',
+    args: ['g: Graph', 'shape: Shape'],
+    description: 'Midpoint/center (line→mid, circle→center, triangle→incenter)',
+    altSignatures: ['mid(g, line)', 'mid(g, circle)', 'mid(g, polygon)', 'mid(g, p1, p2)'],
+    category: 'Coordinates'
+  },
+  r2p: {
+    name: 'r2p',
+    signature: '(g, line, ratio)',
+    args: ['g: Graph', 'line: Line', 'ratio: number'],
+    description: 'Point at ratio along line (0=start, 1=end)',
+    altSignatures: ['r2p(g, line, ratio)', 'r2p(g, p1, p2, ratio)'],
+    category: 'Coordinates'
+  },
+  a2p: {
+    name: 'a2p',
+    signature: '(g, circle, angle)',
+    args: ['g: Graph', 'circle: Circle', 'angle: number'],
+    description: 'Point on circle at angle (degrees)',
+    altSignatures: ['a2p(g, circle, angle)', 'a2p(g, cx, cy, r, angle)'],
+    category: 'Coordinates'
+  },
 
   // === GRAPH ===
   g2d: {
@@ -205,6 +349,14 @@ export const FUNCTION_METADATA = {
     args: ['g: Graph', 'equation: string'],
     description: 'Plot a function equation',
     altSignatures: ['plot(g: Graph, equation: string)', 'plot(g: Graph, equation: string, domainMin: number, domainMax: number)'],
+    category: 'Graph'
+  },
+  label: {
+    name: 'label',
+    signature: '(g, "text", x, y)',
+    args: ['g: Graph', 'text: string', 'x: number', 'y: number'],
+    description: 'MathText label with pen animation on graph',
+    altSignatures: ['label(g, "latex", x, y)', 'label(g, "latex", point)'],
     category: 'Graph'
   },
 
@@ -412,6 +564,14 @@ export const FUNCTION_METADATA = {
     signature: '(p1, p2)',
     args: ['p1: Point', 'p2: Point'],
     description: 'Distance between two points',
+    category: 'Utilities'
+  },
+  mag: {
+    name: 'mag',
+    signature: '(shape)',
+    args: ['shape: Line|Vec|Point'],
+    description: 'Magnitude/length of shape or distance from origin',
+    altSignatures: ['mag(line)', 'mag(vec)', 'mag(point)', 'mag(p1, p2)'],
     category: 'Utilities'
   },
   pos: {

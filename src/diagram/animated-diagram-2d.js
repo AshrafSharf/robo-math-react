@@ -565,6 +565,27 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
   }
 
   /**
+   * Create a MathTextComponent label on a grapher with pen animation support
+   * Uses MathJax rendering positioned absolutely over the grapher
+   * @param {Object} graphContainer - The grapher to position the label on
+   * @param {Object} position - Position in model coordinates {x, y}
+   * @param {string} latexString - LaTeX expression string
+   * @param {string} color - Text color (default: 'black')
+   * @param {Object} options - Options {fontSize, background, offset}
+   * @returns {Promise<MathTextComponent>} Math text component
+   */
+  async label(graphContainer, position, latexString, color = 'black', options = {}) {
+    const mathComponent = this._createLabel(graphContainer, position, latexString, color, options);
+    if (this.animateMode) {
+      await this._playEffect(new WriteEffect(mathComponent));
+    } else {
+      mathComponent.show();
+      mathComponent.enableStroke();
+    }
+    return mathComponent;
+  }
+
+  /**
    * Create a label for an angle shape at its center with optional offset
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} angleShape - The angle shape object (from interiorAngle, exteriorAngle, etc.)

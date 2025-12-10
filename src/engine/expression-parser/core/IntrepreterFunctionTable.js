@@ -15,6 +15,17 @@ import { PLLExpression } from '../expressions/PLLExpression.js';
 import { PerpVExpression } from '../expressions/PerpVExpression.js';
 import { PLVExpression } from '../expressions/PLVExpression.js';
 import { RAVExpression } from '../expressions/RAVExpression.js';
+import { FWVExpression } from '../expressions/FWVExpression.js';
+import { BWVExpression } from '../expressions/BWVExpression.js';
+import { PMVExpression } from '../expressions/PMVExpression.js';
+import { CPVExpression } from '../expressions/CPVExpression.js';
+import { RVVExpression } from '../expressions/RVVExpression.js';
+import { TTVExpression } from '../expressions/TTVExpression.js';
+import { ADDVExpression } from '../expressions/ADDVExpression.js';
+import { SUBVExpression } from '../expressions/SUBVExpression.js';
+import { SCALEVExpression } from '../expressions/SCALEVExpression.js';
+import { PROVExpression } from '../expressions/PROVExpression.js';
+import { DCVExpression } from '../expressions/DCVExpression.js';
 import { AngleExpression } from '../expressions/AngleExpression.js';
 import { AngleXExpression } from '../expressions/AngleXExpression.js';
 import { AngleX2Expression } from '../expressions/AngleX2Expression.js';
@@ -39,6 +50,8 @@ import { UVExpression } from '../expressions/UVExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { VariableReferenceExpression } from '../expressions/VariableReferenceExpression.js';
+import { QuotedStringExpression } from '../expressions/QuotedStringExpression.js';
+import { LabelExpression } from '../expressions/LabelExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
 import { SubtractionExpression } from '../expressions/SubtractionExpression.js';
@@ -86,6 +99,7 @@ export class IntrepreterFunctionTable {
         // Primitives
         registerUnary('string', VariableReferenceExpression);
         registerUnary('numeric', NumericExpression);
+        registerUnary('quotedstring', QuotedStringExpression);
 
         // Geometry expressions
         registerMultiArg('point', PointExpression);
@@ -96,6 +110,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('polygon', PolygonExpression);
         registerMultiArg('g2d', Graph2DExpression);
         registerMultiArg('plot', PlotExpression);
+        registerMultiArg('label', LabelExpression);
 
         // Line utilities (short aliases)
         registerMultiArg('vl', VLExpression);      // vertical line
@@ -109,6 +124,17 @@ export class IntrepreterFunctionTable {
         registerMultiArg('perpv', PerpVExpression); // perpendicular vector
         registerMultiArg('plv', PLVExpression);    // parallel vector
         registerMultiArg('rav', RAVExpression);    // vector from radius and angle (polar)
+        registerMultiArg('fwv', FWVExpression);    // shift vector forward
+        registerMultiArg('bwv', BWVExpression);    // shift vector backward
+        registerMultiArg('pmv', PMVExpression);    // shift vector perpendicular
+        registerMultiArg('cpv', CPVExpression);    // copy vector at new position
+        registerMultiArg('rvv', RVVExpression);    // reverse vector at position
+        registerMultiArg('ttv', TTVExpression);    // tail at tip (for vector addition)
+        registerMultiArg('addv', ADDVExpression);  // add vectors
+        registerMultiArg('subv', SUBVExpression);  // subtract vectors
+        registerMultiArg('scalev', SCALEVExpression); // scale vector
+        registerMultiArg('prov', PROVExpression);  // project onto vector
+        registerMultiArg('dcv', DCVExpression);    // decompose vector
 
         // Angle expressions
         registerMultiArg('angle', AngleExpression);     // interior angle (default)

@@ -227,7 +227,25 @@ export class Grapher {
   yends() {
     return this.graphSheet2D.yends();
   }
-  
+
+  /**
+   * Convert model X coordinate to view (pixel) X coordinate
+   * @param {number} modelX - X coordinate in model space
+   * @returns {number} X coordinate in view/pixel space
+   */
+  toViewX(modelX) {
+    return this.graphSheet2D.toViewX(modelX);
+  }
+
+  /**
+   * Convert model Y coordinate to view (pixel) Y coordinate
+   * @param {number} modelY - Y coordinate in model space
+   * @returns {number} Y coordinate in view/pixel space
+   */
+  toViewY(modelY) {
+    return this.graphSheet2D.toViewY(modelY);
+  }
+
   hide(allChildItems) {
     this.mathScriptShapes.forEach((scriptShape) => {
       if (scriptShape.disableStroke) {

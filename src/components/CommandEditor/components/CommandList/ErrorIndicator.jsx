@@ -3,12 +3,22 @@ import { createPortal } from 'react-dom';
 
 /**
  * Error indicator with styled popup display using portal
+ * Click to copy error message to clipboard
  */
 const ErrorIndicator = ({ error }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+  const [copied, setCopied] = useState(false);
   const iconRef = useRef(null);
   const errorMessage = error?.message || (error ? String(error) : '');
+
+  const handleClick = async () => {
+    if (errorMessage) {
+      await navigator.clipboard.writeText(errorMessage);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
 
   useEffect(() => {
     if (showPopup && iconRef.current) {
@@ -25,7 +35,10 @@ const ErrorIndicator = ({ error }) => {
       className="error-indicator"
       onMouseEnter={() => setShowPopup(true)}
       onMouseLeave={() => setShowPopup(false)}
+      onClick={handleClick}
       ref={iconRef}
+      style={{ cursor: 'pointer' }}
+      title="Click to copy error"
     >
       <span className="error-indicator-icon">!</span>
 
@@ -39,7 +52,9 @@ const ErrorIndicator = ({ error }) => {
             transform: 'translateY(-50%)'
           }}
         >
-          <div className="error-popup-message">{errorMessage}</div>
+          <div className="error-popup-message">
+            {copied ? 'Copied!' : errorMessage}
+          </div>
         </div>,
         document.body
       )}

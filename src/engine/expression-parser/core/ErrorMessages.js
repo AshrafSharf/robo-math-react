@@ -204,6 +204,22 @@ export const reflect_error_messages = {
     `Variable '${varName}' not defined.\nDefine it before using.`,
 };
 
+// ============= Label Error Messages =============
+
+export const label_error_messages = {
+  MISSING_ARGS: () =>
+    `label() needs 3+ arguments.\nUsage: label(g, "text", x, y)`,
+
+  STRING_REQUIRED: () =>
+    `label() needs a string.\nSecond arg must be "quoted".`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `label() got ${count} coordinates.\nNeed exactly 2: x, y`,
+
+  GRAPH_REQUIRED: () =>
+    `label() needs a graph.\nFirst argument must be graph.`,
+};
+
 // ============= Assignment Error Messages =============
 
 export const assignment_error_messages = {
@@ -248,6 +264,7 @@ const messagesByType = {
   intersect: intersect_error_messages,
   project: project_error_messages,
   reflect: reflect_error_messages,
+  label: label_error_messages,
   assignment: assignment_error_messages,
 };
 

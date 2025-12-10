@@ -163,13 +163,13 @@ quotedstring "QuotedString"
     }
 
 DoubleStringCharacter
-
-  = !('"' / "\\" / LineTerminator) SourceCharacter { return text(); }
+  = "\\" char:. { return "\\" + char; }
+  / !('"' / LineTerminator) SourceCharacter { return text(); }
 
 
 SingleStringCharacter
-
-  = !("'" / "\\" / LineTerminator) SourceCharacter { return text(); }
+  = "\\" char:. { return "\\" + char; }
+  / !("'" / LineTerminator) SourceCharacter { return text(); }
 
 
 

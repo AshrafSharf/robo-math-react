@@ -79,6 +79,53 @@ Order matters - expressions must resolve sequentially for dependencies.
 
 **Parser Note:** `compass-parser.js` is generated from PEG.js grammar - do NOT edit directly
 
+### Regenerating the Parser
+
+The parser is generated from `compassgrammar.pegjs` using PEG.js with caching enabled. The generated file requires wrapping to work as an ES module.
+
+**Step 1: Generate with PEG.js**
+```bash
+cd src/engine/expression-parser/parser
+npx pegjs --cache -o compassgrammar.js compassgrammar.pegjs
+```
+
+**Step 2: Wrap for ES module compatibility**
+
+The generated `compassgrammar.js` uses CommonJS `module.exports`, but the project needs a global assignment. Transform it by:
+1. Removing the header (first 8 lines: generated comment + `"use strict";`)
+2. Removing the footer (last 5 lines: `module.exports = {...}`)
+3. Wrapping in an IIFE that assigns to `globalThis.robo.compass.CompassParser`
+
+```bash
+PARSER_DIR="src/engine/expression-parser/parser"
+total=$(wc -l < "$PARSER_DIR/compassgrammar.js" | tr -d ' ')
+content_lines=$((total - 8 - 5))
+
+{
+  echo 'var robo = globalThis.robo = globalThis.robo || {};'
+  echo 'robo.compass = robo.compass || {};'
+  echo 'robo.compass.CompassParser = (function() {'
+  echo ''
+  tail -n +9 "$PARSER_DIR/compassgrammar.js" | head -n $content_lines
+  echo ''
+  echo '  return {'
+  echo '    SyntaxError: peg$SyntaxError,'
+  echo '    parse:       peg$parse'
+  echo '  };'
+  echo '})();'
+} > "$PARSER_DIR/compass-parser.js"
+```
+
+**Step 3: Verify the parser works**
+```bash
+node -e "
+import('./src/engine/expression-parser/parser/index.js').then(({ parse }) => {
+  const result = parse('label(A, \"\\\\frac{\\\\cos(\\\\theta)}{\\\\sin(\\\\theta)}\")');
+  console.log(result[0].args[1].value);  // Should print: \frac{\cos(\theta)}{\sin(\theta)}
+});
+"
+```
+
 **expTable Keys:** The keys in `ExpressionInterpreter.expTable` match AST node names from the parser, not literal operator characters. For example, `a = 5` produces `{ name: 'assignment', ... }`, so the key is `'assignment'`. Arithmetic operators (`+`, `-`, `*`, `/`, `^`) are exceptions where the parser outputs literal symbols as node names.
 
 ### Geometry Utilities
