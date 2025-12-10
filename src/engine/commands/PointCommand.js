@@ -5,17 +5,19 @@
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
+import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 
 export class PointCommand extends BaseCommand {
   /**
    * Create a point command
-   * @param {Object} graphContainer - The graph container (Grapher) to render on
+   * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
    * @param {Object} position - Point position {x, y}
    * @param {Object} options - Additional options {radius}
    */
-  constructor(graphContainer, position, options = {}) {
+  constructor(graphExpression, position, options = {}) {
     super();
-    this.graphContainer = graphContainer;
+    this.graphExpression = graphExpression; // Resolved at init time
+    this.graphContainer = null; // Set at init time
     this.position = position; // {x, y}
     this.radius = options.radius || 4;
   }
@@ -26,6 +28,28 @@ export class PointCommand extends BaseCommand {
    */
   async doInit() {
     const { diagram } = this.commandContext;
+
+    // Resolve grapher from expression at init time (after g2d command has run)
+    if (!this.graphExpression) {
+      const err = new Error(common_error_messages.GRAPH_REQUIRED('point'));
+      err.expressionId = this.expressionId;
+      throw err;
+    }
+
+    if (typeof this.graphExpression.getGrapher !== 'function') {
+      const varName = this.graphExpression.variableName || 'first argument';
+      const err = new Error(common_error_messages.INVALID_GRAPH_TYPE(varName));
+      err.expressionId = this.expressionId;
+      throw err;
+    }
+
+    this.graphContainer = this.graphExpression.getGrapher();
+    if (!this.graphContainer) {
+      const varName = this.graphExpression.variableName || 'graph';
+      const err = new Error(common_error_messages.GRAPH_NOT_INITIALIZED(varName));
+      err.expressionId = this.expressionId;
+      throw err;
+    }
 
     this.commandResult = await diagram.point(
       this.graphContainer,

@@ -1,7 +1,11 @@
 /**
  * Line expression - represents a 2D line segment
- * Syntax: line(graph, x1, y1, x2, y2) or line(graph, point1, point2)
- * Optional last parameter extends the line length
+ *
+ * Syntax options:
+ *   line(graph, x1, y1, x2, y2)  - graph with coordinates
+ *   line(graph, point1, point2)  - graph with points
+ *
+ * Optional last parameter extends the line length.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { LineCommand } from '../../commands/LineCommand.js';
@@ -22,9 +26,13 @@ export class LineExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(line_error_messages.MISSING_ARGS());
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(line_error_messages.GRAPH_REQUIRED());
+        }
 
         // Remaining args are coordinates
         this.coordinates = [];
@@ -54,12 +62,7 @@ export class LineExpression extends AbstractNonArithmeticExpression {
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     /**
      * Get the line as a vector (dx, dy)
@@ -110,6 +113,14 @@ export class LineExpression extends AbstractNonArithmeticExpression {
 
     getName() {
         return LineExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'line'
+     */
+    getGeometryType() {
+        return 'line';
     }
 
     getVariableAtomicValues() {
@@ -184,7 +195,6 @@ export class LineExpression extends AbstractNonArithmeticExpression {
      */
     toCommand(options = {}) {
         const pts = this.getLinePoints();
-        // Pass graph expression, not grapher - grapher resolved at command init time
         return new LineCommand(this.graphExpression, pts[0], pts[1], options);
     }
 

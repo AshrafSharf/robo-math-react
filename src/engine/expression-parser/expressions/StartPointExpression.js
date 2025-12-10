@@ -1,17 +1,15 @@
 /**
  * StartPointExpression - extracts the start point from a line/arc/polygon expression
  *
- * Syntax options:
- *   st(lineOrArcOrPolygon)       - uses grapher from the source expression
- *   st(graph, lineOrArcOrPolygon) - uses explicit grapher
+ * Syntax:
+ *   st(graph, lineOrArcOrPolygon) - graph with source expression
  *
  * Returns two coordinate values (x, y). When used standalone, renders as a point.
  *
  * Examples:
  *   L = line(g, 0, 0, 5, 5)
- *   st(L)              // renders a point at (0, 0), uses g from L
- *   st(g2, L)          // renders a point at (0, 0) on graph g2
- *   line(g, st(L1), ed(L2))  // st() provides coordinates, doesn't render
+ *   st(g, L)              // renders a point at (0, 0)
+ *   line(g, st(g, L1), ed(g, L2))  // st() provides coordinates
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { PointCommand } from '../../commands/PointCommand.js';
@@ -28,8 +26,8 @@ export class StartPointExpression extends AbstractArithmeticExpression {
     }
 
     resolve(context) {
-        if (this.subExpressions.length < 1) {
-            this.dispatchError('st() requires an expression (line, arc, or polygon)');
+        if (this.subExpressions.length < 2) {
+            this.dispatchError('st() requires graph and source expression: st(graph, line/arc/polygon)');
         }
 
         // Resolve all subexpressions first
@@ -37,16 +35,15 @@ export class StartPointExpression extends AbstractArithmeticExpression {
             this.subExpressions[i].resolve(context);
         }
 
-        // Determine if first arg is a grapher or the source expression
-        // st(g, L) - 2 args, first is grapher
-        // st(L) - 1 arg, grapher comes from L
-        if (this.subExpressions.length >= 2 && this.isGraphExpression(this.subExpressions[0])) {
-            this.graphExpression = this.subExpressions[0];
-            this.sourceExpression = this.subExpressions[1];
-        } else {
-            this.sourceExpression = this.subExpressions[0];
-            // Graph will be derived from source expression in getGrapher()
+        // First arg must be graph
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError('st() requires graph as first argument');
         }
+
+        // Second arg is the source expression
+        this.sourceExpression = this._getResolvedExpression(context, this.subExpressions[1]);
 
         // Get start value from the expression
         const startValue = this.getPointValues(this.sourceExpression);
@@ -56,14 +53,6 @@ export class StartPointExpression extends AbstractArithmeticExpression {
         }
 
         this.coordinates = [startValue[0], startValue[1]];
-    }
-
-    /**
-     * Check if expression is a graph expression (g2d)
-     */
-    isGraphExpression(expr) {
-        // Check if it's a Graph2DExpression or has getGrapher that returns a grapher
-        return expr && expr.getName && expr.getName() === 'g2d';
     }
 
     /**
@@ -109,26 +98,13 @@ export class StartPointExpression extends AbstractArithmeticExpression {
         return `st(${this.coordinates[0]}, ${this.coordinates[1]})`;
     }
 
-    /**
-     * Get the grapher - uses explicit graph if provided, otherwise from source expression
-     */
-    getGrapher() {
-        // If explicit graph was provided, use it
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        // Otherwise derive from source expression
-        if (this.sourceExpression && typeof this.sourceExpression.getGrapher === 'function') {
-            return this.sourceExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractArithmeticExpression
 
     /**
      * Create a PointCommand - st() renders as a point when used standalone
      */
     toCommand(options = {}) {
-        return new PointCommand(this.getGrapher(), this.getPoint(), options);
+        return new PointCommand(this.graphExpression, this.getPoint(), options);
     }
 
     /**

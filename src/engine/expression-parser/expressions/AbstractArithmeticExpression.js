@@ -217,6 +217,31 @@ export class AbstractArithmeticExpression {
     canPlay() {
         return false;
     }
+
+    /**
+     * Get resolved expression (dereference variable references)
+     * @param {Object} context - The expression context
+     * @param {Object} expr - The expression to resolve
+     * @returns {Object} The resolved expression
+     */
+    _getResolvedExpression(context, expr) {
+        if (expr.getName() === 'variable') {
+            const varName = expr.getVariableName();
+            return context.getReference(varName) || expr;
+        }
+        return expr;
+    }
+
+    /**
+     * Get the grapher from direct graphExpression.
+     * @returns {Grapher|null}
+     */
+    getGrapher() {
+        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
+            return this.graphExpression.getGrapher();
+        }
+        return null;
+    }
 }
 
 // Static references to be set later to avoid circular dependencies

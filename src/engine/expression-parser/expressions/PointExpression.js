@@ -2,7 +2,7 @@
  * Point expression - represents a 2D point
  *
  * Syntax options:
- *   point(graph, x, y)     - using separate x and y values
+ *   point(graph, x, y)     - using graph with separate x and y values
  *   point(graph, expr)     - using an expression that returns 2 values (e.g., st(line), ed(line))
  *
  * Examples:
@@ -30,13 +30,17 @@ export class PointExpression extends AbstractArithmeticExpression {
             this.dispatchError(point_error_messages.MISSING_ARGS());
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
-        // Remaining args are coordinates - can be:
-        // - point(g, x, y) - two separate numeric values
-        // - point(g, expr) - one expression returning 2 values (e.g., st(line), ed(line))
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(point_error_messages.GRAPH_REQUIRED());
+        }
+
+        // Collect coordinates from remaining args
+        // - point(g, x, y) - separate numeric values
+        // - point(g, expr) - expression returning 2 values (e.g., st(line), ed(line))
         const coordinates = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
@@ -56,15 +60,18 @@ export class PointExpression extends AbstractArithmeticExpression {
         this.point = { x: coordinates[0], y: coordinates[1] };
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractArithmeticExpression
 
     getName() {
         return PointExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'point'
+     */
+    getGeometryType() {
+        return 'point';
     }
 
     getPoint() {
@@ -174,7 +181,7 @@ export class PointExpression extends AbstractArithmeticExpression {
      * @returns {PointCommand}
      */
     toCommand(options = {}) {
-        return new PointCommand(this.getGrapher(), this.getPoint(), options);
+        return new PointCommand(this.graphExpression, this.getPoint(), options);
     }
 
     /**

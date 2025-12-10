@@ -26,9 +26,9 @@ export class PLVExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(`plv() needs arguments.\nUsage: plv(g, line, point)`);
         }
 
-        // First arg is graph reference
+        // First arg is graph reference - resolve and store the actual expression
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         // Collect all atomic values from remaining subexpressions
         const allCoords = [];
@@ -78,15 +78,19 @@ export class PLVExpression extends AbstractNonArithmeticExpression {
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return PLVExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'line'
+     */
+    getGeometryType() {
+        return 'line';
     }
 
     getVariableAtomicValues() {

@@ -1,10 +1,10 @@
 /**
- * StaticDiagram class for 2D visualizations
+ * StaticDiagram2d class for 2D visualizations
  * Provides a clean API with dictionary-style parameters
  * All shapes render instantly (non-animated)
  */
 
-import { BaseDiagram } from './base-diagram.js';
+import { BaseDiagram2d } from './base-diagram-2d.js';
 import {
   parseColor,
   DEFAULT_SHAPE_COLORS
@@ -13,7 +13,7 @@ import { ParallelogramPrimitiveShape } from '../script-shapes/parallelogram-prim
 import { subtractVectors } from '../utils/vector-math-2d.js';
 import { FocusEffect } from '../effects/focus-effect.js';
 
-export class StaticDiagram extends BaseDiagram {
+export class StaticDiagram2d extends BaseDiagram2d {
   /**
    * @param {Object} coordinateMapper - Coordinate mapper for logical to pixel conversion
    * @param {HTMLElement} canvasSection - Parent DOM element for rendering

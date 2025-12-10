@@ -2,11 +2,10 @@
  * Polygon expression - represents a 2D polygon
  *
  * Syntax options:
- *   polygon(graph, point1, point2, point3, ...)     - using point expressions
- *   polygon(graph, x1, y1, x2, y2, x3, y3, ...)     - using raw coordinates
- *   polygon(graph, line1, line2, line3, ...)        - using line expressions (each line contributes 2 points)
+ *   polygon(graph, point1, point2, point3, ...) - graph with points
+ *   polygon(graph, x1, y1, x2, y2, x3, y3, ...) - graph with coordinates
  *
- * Requires at least 3 points (6 coordinate values after graph).
+ * Requires at least 3 points (6 coordinate values).
  * The polygon is auto-closed if the first and last points differ.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
@@ -28,9 +27,13 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(polygon_error_messages.MISSING_ARGS());
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(polygon_error_messages.GRAPH_REQUIRED());
+        }
 
         // Remaining args are coordinates
         this.coordinates = [];
@@ -76,15 +79,18 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
         this.coordinates.push(firstY);
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return PolygonExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'polygon'
+     */
+    getGeometryType() {
+        return 'polygon';
     }
 
     getVariableAtomicValues() {

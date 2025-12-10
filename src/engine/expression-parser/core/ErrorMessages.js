@@ -63,13 +63,13 @@ export const point_error_messages = {
 
 export const circle_error_messages = {
   MISSING_ARGS: () =>
-    `circle() needs 4 arguments.\nUsage: circle(g, x, y, radius)`,
+    `circle() needs at least radius.\nUsage: circle(r) or circle(r, x, y) or circle(r, point)`,
 
   WRONG_COORD_COUNT: (count) =>
-    `circle() got ${count} values.\nNeed 3: x, y, radius`,
+    `circle() got ${count} values.\nNeed 1 (radius) or 3 (radius, x, y)`,
 
   INVALID_GRAPH: (varName) =>
-    `'${varName}' is not a graph.\ncircle(graph, x, y, radius)`,
+    `'${varName}' is not a graph.\ncircle(g, r) or circle(g, r, x, y)`,
 };
 
 // ============= Vector Error Messages =============
@@ -153,6 +153,57 @@ export const g2d_error_messages = {
     `Invalid size values.\nWidth and height must be positive.`,
 };
 
+// ============= Intersect Error Messages =============
+
+export const intersect_error_messages = {
+  WRONG_ARG_COUNT: (count) =>
+    `intersect() needs 2-3 arguments.\nGot ${count}. Usage: intersect(obj1, obj2)`,
+
+  INDEX_NOT_NUMBER: () =>
+    `Index must be a number.\nintersect(obj1, obj2, index)`,
+
+  INDEX_LESS_THAN_ONE: () =>
+    `Index must be >= 1.\nIntersection indices are 1-based.`,
+
+  INVALID_COMBINATION: (type1, type2) =>
+    `Cannot intersect ${type1} with ${type2}.\nUse line, circle, or polygon.`,
+
+  VARIABLE_NOT_FOUND: (varName) =>
+    `Variable '${varName}' not defined.\nDefine it before using.`,
+};
+
+// ============= Project Error Messages =============
+
+export const project_error_messages = {
+  WRONG_ARG_COUNT: (count) =>
+    `project() needs 2 arguments.\nGot ${count}. Usage: project(line, point)`,
+
+  FIRST_ARG_NOT_LINE: (type) =>
+    `First arg must be line/vec.\nGot ${type} instead.`,
+
+  SECOND_ARG_NOT_POINT: (type) =>
+    `Second arg must be a point.\nGot ${type} instead.`,
+
+  VARIABLE_NOT_FOUND: (varName) =>
+    `Variable '${varName}' not defined.\nDefine it before using.`,
+};
+
+// ============= Reflect Error Messages =============
+
+export const reflect_error_messages = {
+  WRONG_ARG_COUNT: (count) =>
+    `reflect() needs 2 arguments.\nGot ${count}. Usage: reflect(line, point)`,
+
+  FIRST_ARG_NOT_LINE: (type) =>
+    `First arg must be line/vec.\nGot ${type} instead.`,
+
+  SECOND_ARG_NOT_POINT: (type) =>
+    `Second arg must be a point.\nGot ${type} instead.`,
+
+  VARIABLE_NOT_FOUND: (varName) =>
+    `Variable '${varName}' not defined.\nDefine it before using.`,
+};
+
 // ============= Assignment Error Messages =============
 
 export const assignment_error_messages = {
@@ -194,6 +245,9 @@ const messagesByType = {
   angle: angle_error_messages,
   plot: plot_error_messages,
   g2d: g2d_error_messages,
+  intersect: intersect_error_messages,
+  project: project_error_messages,
+  reflect: reflect_error_messages,
   assignment: assignment_error_messages,
 };
 

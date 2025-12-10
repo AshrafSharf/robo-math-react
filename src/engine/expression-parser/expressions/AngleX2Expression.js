@@ -31,11 +31,14 @@ export class AngleX2Expression extends AbstractNonArithmeticExpression {
             this.dispatchError(angle_error_messages.MISSING_ARGS(AngleX2Expression.NAME));
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
-        // Collect all atomic values from remaining subexpressions
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(AngleX2Expression.NAME));
+        }
+
         const allCoords = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
@@ -45,7 +48,6 @@ export class AngleX2Expression extends AbstractNonArithmeticExpression {
             }
         }
 
-        // Handle different input formats (6/7 = points, 8/9 = two lines)
         if (allCoords.length === 8 || allCoords.length === 9) {
             const line1 = { start: { x: allCoords[0], y: allCoords[1] }, end: { x: allCoords[2], y: allCoords[3] } };
             const line2 = { start: { x: allCoords[4], y: allCoords[5] }, end: { x: allCoords[6], y: allCoords[7] } };
@@ -61,15 +63,19 @@ export class AngleX2Expression extends AbstractNonArithmeticExpression {
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return AngleX2Expression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'angle'
+     */
+    getGeometryType() {
+        return 'angle';
     }
 
     getVariableAtomicValues() {

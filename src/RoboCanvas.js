@@ -17,8 +17,8 @@
 
 import { PenTracerImpl } from './pen/pen-tracer-impl.js';
 import { LogicalCoordinateMapper } from './mathtext/components/logical-coordinate-mapper.js';
-import { StaticDiagram } from './diagram/diagram.js';
-import { AnimatedDiagram } from './diagram/animated-diagram.js';
+import { StaticDiagram2d } from './diagram/static-diagram-2d.js';
+import { AnimatedDiagram2d } from './diagram/animated-diagram-2d.js';
 import { TweenMax, Power2 } from 'gsap';
 
 export class RoboCanvas {
@@ -106,8 +106,8 @@ export class RoboCanvas {
 
       // Create both diagram instances (no shared Grapher - created on demand)
       console.log('Creating static and animated diagram instances...');
-      this.staticDiagram = new StaticDiagram(coordinateMapper, this.canvasSection, this);
-      this.animatedDiagram = new AnimatedDiagram(coordinateMapper, this.canvasSection, this);
+      this.staticDiagram = new StaticDiagram2d(coordinateMapper, this.canvasSection, this);
+      this.animatedDiagram = new AnimatedDiagram2d(coordinateMapper, this.canvasSection, this);
 
       // Start with static diagram
       this.diagram = this.staticDiagram;

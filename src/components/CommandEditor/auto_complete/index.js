@@ -11,7 +11,7 @@
 export { FUNCTION_METADATA, getAllFunctionNames, getFunctionsByCategory, getCategories, CATEGORY_ORDER } from './functionMetadata';
 export { extractVariables, createVariableProvider } from './variableContext';
 export { createRoboCanvasCompletions, roboCanvasCompletions, getCompletionsForPrefix } from './completionSource';
-export { signatureHelpField, signatureHelpTheme, getFunctionInfo } from './signatureHelp';
+export { signatureHelpField, signatureHelpTheme, getFunctionInfo, clearSignatureTooltips } from './signatureHelp';
 
 // Import styles
 import './styles.css';

@@ -1,6 +1,6 @@
 /**
- * BaseDiagram - Abstract base class for StaticDiagram and AnimatedDiagram
- * Contains common code shared between static and animated diagram implementations
+ * BaseDiagram2d - Abstract base class for StaticDiagram2d and AnimatedDiagram2d
+ * Contains common code shared between static and animated 2D diagram implementations
  */
 
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
@@ -8,7 +8,7 @@ import { parseColor } from './style_helper.js';
 import { Grapher } from '../blocks/grapher.js';
 import { compile } from 'mathjs';
 
-export class BaseDiagram {
+export class BaseDiagram2d {
   /**
    * @param {Object} coordinateMapper - Coordinate mapper for logical to pixel conversion
    * @param {HTMLElement} canvasSection - Parent DOM element for rendering
@@ -327,7 +327,7 @@ export class BaseDiagram {
   /**
    * Show a math text component (no animation in base class)
    * @param {MathTextComponent} mathComponent - The math text component to show
-   * @returns {BaseDiagram} - For chaining
+   * @returns {BaseDiagram2d} - For chaining
    */
   write(mathComponent) {
     mathComponent.show();
@@ -338,7 +338,7 @@ export class BaseDiagram {
   /**
    * Show everything except bbox-marked sections (no animation in base class)
    * @param {MathTextComponent} mathComponent - The math text component
-   * @returns {BaseDiagram} - For chaining
+   * @returns {BaseDiagram2d} - For chaining
    */
   writeWithout(mathComponent) {
     mathComponent.showWithoutBBox();
@@ -349,7 +349,7 @@ export class BaseDiagram {
    * Show only bbox-marked sections (no animation in base class)
    * @param {MathTextComponent} mathComponent - The math text component
    * @param {boolean} includeAll - Whether to include all content (default: false)
-   * @returns {BaseDiagram} - For chaining
+   * @returns {BaseDiagram2d} - For chaining
    */
   writeOnly(mathComponent, includeAll = false) {
     mathComponent.showOnlyBBox(includeAll);

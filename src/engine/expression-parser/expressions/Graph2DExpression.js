@@ -69,7 +69,8 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
     }
 
     getVariableAtomicValues() {
-        return [this.row, this.col, this.width, this.height];
+        // Graph doesn't contribute coordinates - it's a container, not a geometric value
+        return [];
     }
 
     toCommand(options = {}) {

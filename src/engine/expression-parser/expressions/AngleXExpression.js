@@ -2,10 +2,8 @@
  * AngleX (Exterior Angle First) expression - creates an exterior angle at first vector
  *
  * Syntax:
- *   anglex(graph, vertex, point1, point2)          - using points
- *   anglex(graph, vertex, point1, point2, radius)  - with custom radius
- *   anglex(graph, vx, vy, p1x, p1y, p2x, p2y)      - using raw coordinates
- *   anglex(graph, vx, vy, p1x, p1y, p2x, p2y, radius)
+ *   anglex(graph, vertex, point1, point2)          - graph with points
+ *   anglex(graph, vertex, point1, point2, radius)  - graph with custom radius
  *
  * Collects 6 coordinates (vertex + point1 + point2) + optional radius
  */
@@ -31,9 +29,13 @@ export class AngleXExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(angle_error_messages.MISSING_ARGS(AngleXExpression.NAME));
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(AngleXExpression.NAME));
+        }
 
         // Collect all atomic values from remaining subexpressions
         const allCoords = [];
@@ -61,15 +63,19 @@ export class AngleXExpression extends AbstractNonArithmeticExpression {
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return AngleXExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'angle'
+     */
+    getGeometryType() {
+        return 'angle';
     }
 
     getVariableAtomicValues() {

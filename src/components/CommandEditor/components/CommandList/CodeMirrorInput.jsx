@@ -5,7 +5,7 @@ import { javascript } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
 import { completionStatus } from '@codemirror/autocomplete';
-import { roboCanvasAutocomplete } from '../../auto_complete';
+import { roboCanvasAutocomplete, clearSignatureTooltips } from '../../auto_complete';
 
 /**
  * CodeMirror-based input component with single-line editing and autocomplete
@@ -139,6 +139,10 @@ const CodeMirrorInput = forwardRef(({
             if (update.view.hasFocus) {
               onFocusRef.current?.();
             } else {
+              // Clear signature tooltips on blur
+              update.view.dispatch({
+                effects: clearSignatureTooltips.of(null)
+              });
               onBlurRef.current?.();
             }
           }

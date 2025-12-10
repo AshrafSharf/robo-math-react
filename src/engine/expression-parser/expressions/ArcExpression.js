@@ -6,8 +6,6 @@
  *    - 5 values: center point, radius, and angles in degrees
  * 2. arc(graph, startX, startY, endX, endY, rx, ry)
  *    - 6 values: start point, end point, and ellipse radii
- *
- * The expression stores the arc data and can convert to either format.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { ArcCommand } from '../../commands/ArcCommand.js';
@@ -29,9 +27,13 @@ export class ArcExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(arc_error_messages.MISSING_ARGS());
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(arc_error_messages.GRAPH_REQUIRED());
+        }
 
         // Remaining args are coordinates
         this.coordinates = [];
@@ -48,25 +50,28 @@ export class ArcExpression extends AbstractNonArithmeticExpression {
 
         // Determine arc type based on number of coordinates
         if (this.coordinates.length === 5) {
-            // arc(graph, centerX, centerY, radius, startAngle, sweepAngle)
+            // arc(g, centerX, centerY, radius, startAngle, sweepAngle)
             this.arcType = 'center-angle';
         } else if (this.coordinates.length === 6) {
-            // arc(graph, startX, startY, endX, endY, rx, ry)
+            // arc(g, startX, startY, endX, endY, rx, ry)
             this.arcType = 'endpoint';
         } else {
             this.dispatchError(arc_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return ArcExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'circle'
+     */
+    getGeometryType() {
+        return 'circle';
     }
 
     getVariableAtomicValues() {

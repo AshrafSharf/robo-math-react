@@ -1,6 +1,10 @@
 /**
  * Circle expression - represents a 2D circle
- * Syntax: circle(graph, centerX, centerY, radius) or circle(graph, point, radius)
+ *
+ * Syntax options (radius first, center defaults to origin):
+ *   circle(graph, radius)             - center at (0, 0)
+ *   circle(graph, radius, centerX, centerY) - graph with coordinates
+ *   circle(graph, radius, point)      - graph with point
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { CircleCommand } from '../../commands/CircleCommand.js';
@@ -21,12 +25,16 @@ export class CircleExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(circle_error_messages.MISSING_ARGS());
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
-        // Remaining args are coordinates
-        this.coordinates = [];
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(circle_error_messages.GRAPH_REQUIRED());
+        }
+
+        // Collect all atomic values from remaining args
+        const allCoords = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
 
@@ -34,24 +42,40 @@ export class CircleExpression extends AbstractNonArithmeticExpression {
             const atomicValues = resultExpression.getVariableAtomicValues();
 
             for (let j = 0; j < atomicValues.length; j++) {
-                this.coordinates.push(atomicValues[j]);
+                allCoords.push(atomicValues[j]);
             }
         }
 
-        if (this.coordinates.length !== 3) {
-            this.dispatchError(circle_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
+        // Parse coords: radius first, then optional center
+        // 1 coord  = radius only, center (0, 0)
+        // 3 coords = radius + centerX + centerY  OR  radius + point(2 coords)
+        if (allCoords.length === 1) {
+            // circle(g, r) - center at origin
+            const radius = allCoords[0];
+            this.coordinates = [0, 0, radius];
+        } else if (allCoords.length === 3) {
+            // circle(g, r, x, y) OR circle(g, r, point)
+            const radius = allCoords[0];
+            const centerX = allCoords[1];
+            const centerY = allCoords[2];
+            this.coordinates = [centerX, centerY, radius];
+        } else {
+            this.dispatchError(circle_error_messages.WRONG_COORD_COUNT(allCoords.length));
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return CircleExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'circle'
+     */
+    getGeometryType() {
+        return 'circle';
     }
 
     getVariableAtomicValues() {

@@ -22,9 +22,9 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('plot() requires at least 2 arguments: graph, equation');
         }
 
-        // First arg is graph reference
+        // First arg is graph reference - resolve and store the actual expression
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         // Second arg is equation (should be a string/variable containing equation)
         this.subExpressions[1].resolve(context);
@@ -56,12 +56,7 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return PlotExpression.NAME;
@@ -86,7 +81,7 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
      */
     toCommand(options = {}) {
         return new PlotCommand(
-            this.getGrapher(),
+            this.graphExpression,
             this.equation,
             this.domainMin,
             this.domainMax,

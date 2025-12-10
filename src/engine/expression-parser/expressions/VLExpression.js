@@ -27,9 +27,9 @@ export class VLExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(`vl() needs 2+ arguments.\nUsage: vl(g, x) or vl(g, x, y1, y2)`);
         }
 
-        // First arg is graph reference
+        // First arg is graph reference - resolve and store the actual expression
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         // Collect remaining values
         const values = [];
@@ -69,15 +69,19 @@ export class VLExpression extends AbstractNonArithmeticExpression {
         this.coordinates = [line.start.x, line.start.y, line.end.x, line.end.y];
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return VLExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'line'
+     */
+    getGeometryType() {
+        return 'line';
     }
 
     getVariableAtomicValues() {

@@ -2,16 +2,15 @@
  * Vec expression - represents a 2D vector (arrow)
  *
  * Syntax options:
- *   vec(graph, x1, y1, x2, y2)   - using raw coordinates
- *   vec(graph, point1, point2)   - using point expressions
- *   vec(graph, st(L), ed(L))     - using start/end point expressions
+ *   vec(graph, x1, y1, x2, y2)   - graph with coordinates
+ *   vec(graph, point1, point2)   - graph with point expressions
  *
  * Similar to line but renders with an arrowhead.
  *
  * Examples:
  *   g = g2d(0, 0, 5, 5)
  *   vec(g, 0, 0, 3, 2)           // vector from origin to (3,2)
- *   vec(g, point(1,1), point(4,3))  // vector between two points
+ *   vec(g, A, B)                 // vector between points A and B
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
@@ -32,9 +31,13 @@ export class VecExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(vec_error_messages.MISSING_ARGS());
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(vec_error_messages.GRAPH_REQUIRED());
+        }
 
         // Remaining args are coordinates
         this.coordinates = [];
@@ -54,12 +57,7 @@ export class VecExpression extends AbstractNonArithmeticExpression {
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     /**
      * Get the vector as a direction (dx, dy)
@@ -82,6 +80,14 @@ export class VecExpression extends AbstractNonArithmeticExpression {
 
     getName() {
         return VecExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'line'
+     */
+    getGeometryType() {
+        return 'line';
     }
 
     getVariableAtomicValues() {

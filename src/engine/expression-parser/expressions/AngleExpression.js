@@ -2,10 +2,9 @@
  * Angle (Interior Angle) expression - creates an interior angle
  *
  * Syntax:
- *   angle(graph, vertex, point1, point2)          - using points
- *   angle(graph, vertex, point1, point2, radius)  - with custom radius
- *   angle(graph, vx, vy, p1x, p1y, p2x, p2y)      - using raw coordinates
- *   angle(graph, vx, vy, p1x, p1y, p2x, p2y, radius)
+ *   angle(graph, vertex, point1, point2)          - graph with points
+ *   angle(graph, vertex, point1, point2, radius)  - graph with custom radius
+ *   angle(graph, vx, vy, p1x, p1y, p2x, p2y)      - graph with raw coordinates
  *
  * Collects 6 coordinates (vertex + point1 + point2) + optional radius
  */
@@ -31,9 +30,13 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(angle_error_messages.MISSING_ARGS(AngleExpression.NAME));
         }
 
-        // First arg is graph reference
+        // First arg must be graph
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this.subExpressions[0];
+        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
+            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(AngleExpression.NAME));
+        }
 
         // Collect all atomic values from remaining subexpressions
         const allCoords = [];
@@ -89,15 +92,18 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
         }
     }
 
-    getGrapher() {
-        if (this.graphExpression && typeof this.graphExpression.getGrapher === 'function') {
-            return this.graphExpression.getGrapher();
-        }
-        return null;
-    }
+    // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
         return AngleExpression.NAME;
+    }
+
+    /**
+     * Get geometry type for intersection detection
+     * @returns {string} 'angle'
+     */
+    getGeometryType() {
+        return 'angle';
     }
 
     getVariableAtomicValues() {

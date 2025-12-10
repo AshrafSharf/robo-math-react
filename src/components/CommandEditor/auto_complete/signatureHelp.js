@@ -5,12 +5,13 @@
 
 import { StateField, StateEffect } from '@codemirror/state';
 import { showTooltip, EditorView } from '@codemirror/view';
+import { completionStatus } from '@codemirror/autocomplete';
 import { FUNCTION_METADATA } from './functionMetadata';
 
 /**
  * Parse the text before cursor to find function context.
  * @param {string} text - Text before cursor
- * @returns {Object|null} { funcName, argIndex } or null
+ * @returns {Object|null} { funcName, argIndex, openParenPos } or null
  */
 function parseFunctionContext(text) {
   let depth = 0;
@@ -49,7 +50,7 @@ function parseFunctionContext(text) {
   return {
     funcName: funcMatch[1].toLowerCase(),
     argIndex,
-    funcStart
+    openParenPos: funcStart  // Position of opening paren for stable tooltip placement
   };
 }
 
@@ -144,10 +145,15 @@ function getSignatureTooltip(state) {
     arrow: false,
     create: () => ({
       dom: createSignatureTooltip(funcMeta, context.argIndex),
-      offset: { x: 100, y: -10 }
+      offset: { x: 100, y: 60 }
     })
   }];
 }
+
+/**
+ * Effect to clear signature tooltips (used on blur)
+ */
+export const clearSignatureTooltips = StateEffect.define();
 
 /**
  * StateField that manages signature help tooltips.
@@ -158,6 +164,19 @@ export const signatureHelpField = StateField.define({
   },
 
   update(tooltips, tr) {
+    // Check for clear effect (triggered on blur)
+    for (let effect of tr.effects) {
+      if (effect.is(clearSignatureTooltips)) {
+        return [];
+      }
+    }
+
+    // Hide signature help when autocomplete dropdown is active to avoid UI clutter
+    const autocompleteActive = completionStatus(tr.state) === 'active';
+    if (autocompleteActive) {
+      return [];
+    }
+
     // Recompute tooltips on any change or selection change
     if (tr.docChanged || tr.selection) {
       return getSignatureTooltip(tr.state);

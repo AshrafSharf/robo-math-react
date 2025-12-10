@@ -1,10 +1,10 @@
 /**
- * AnimatedDiagram class extending BaseDiagram
+ * AnimatedDiagram2d class extending BaseDiagram2d
  * Shapes are created and animated immediately
  * Step control handled through direct method calls
  */
 
-import { BaseDiagram } from './base-diagram.js';
+import { BaseDiagram2d } from './base-diagram-2d.js';
 import { TexToSVGShapeEffect } from '../effects/shape-effects/tex-to-svg-shape-effect.js';
 import { MathShapeEffect } from '../effects/shape-effects/math-shape-effect.js';
 import { ReverseVectorEffect } from '../effects/reverse-vector-effect.js';
@@ -14,7 +14,7 @@ import { PanEffect } from '../effects/pan-effect.js';
 import { DEFAULT_SHAPE_COLORS } from './style_helper.js';
 import { WriteEffect } from '../mathtext/effects/write-effect.js';
 
-export class AnimatedDiagram extends BaseDiagram {
+export class AnimatedDiagram2d extends BaseDiagram2d {
   /**
    * @param {Object} coordinateMapper - Coordinate mapper for logical to pixel conversion
    * @param {HTMLElement} canvasSection - Parent DOM element for rendering
@@ -822,7 +822,7 @@ export class AnimatedDiagram extends BaseDiagram {
   /**
    * Set initialization callback to be called when slide is shown
    * @param {Function} callback - Initialization function that receives the diagram instance
-   * @returns {AnimatedDiagram} - For chaining
+   * @returns {AnimatedDiagram2d} - For chaining
    */
   onReady(callback) {
     this.initCallback = callback;
@@ -982,7 +982,7 @@ export class AnimatedDiagram extends BaseDiagram {
    * Clean up resources (simplified)
    */
   destroy() {
-    console.log('AnimatedDiagram: Starting cleanup');
+    console.log('AnimatedDiagram2d: Starting cleanup');
     
     // Stop any current animations
     this.stopAnimation();
@@ -1003,7 +1003,7 @@ export class AnimatedDiagram extends BaseDiagram {
     this.initialized = false;
     this.generator = null;
     
-    console.log('AnimatedDiagram: Cleanup completed');
+    console.log('AnimatedDiagram2d: Cleanup completed');
   }
   
 }

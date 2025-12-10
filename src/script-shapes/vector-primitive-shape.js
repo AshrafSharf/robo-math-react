@@ -56,22 +56,19 @@ export class VectorPrimitiveShape extends GeomPrimitiveShape {
   }
 
   disableStroke() {
-    console.log('🔧 disableStroke called - removing arrow head');
     this.removeArrowHead();
-    console.log('🔧 Setting stroke-dasharray to hide stroke');
     this.primitiveShape.attr('stroke-dasharray', '0,10000');
-    // Also explicitly remove the marker-end attribute to ensure arrow head is hidden
     this.primitiveShape.attr('marker-end', 'none');
-    console.log('🔧 Disabled stroke and removed marker-end');
   }
 
   addArrowToDefs() {
     const arrowId = this.getArrowId();
     this.removeArrowHead();
-    const newArrowMarker = $(`#scriptArrowHead`, this.svgRootD3Selection.node()).clone();
+    const svgNode = this.svgRootD3Selection.node();
+    const newArrowMarker = $(`#scriptArrowHead`, svgNode).clone();
     newArrowMarker.attr("id", arrowId);
     newArrowMarker.children().attr("stroke", `${this.styleObj.stroke}`);
-    $("defs", this.svgRootD3Selection.node()).append(newArrowMarker);
+    $("defs", svgNode).append(newArrowMarker);
     this.primitiveShape.attr(this.getMarkerPosition(), `url(#${arrowId})`);
   }
 
