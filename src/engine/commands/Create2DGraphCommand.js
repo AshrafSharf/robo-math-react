@@ -7,20 +7,20 @@ import { BaseCommand } from './BaseCommand.js';
 
 export class Create2DGraphCommand extends BaseCommand {
     /**
-     * Create a 2D graph command
-     * @param {number} row - Logical row coordinate
-     * @param {number} col - Logical column coordinate
-     * @param {number} width - Graph width in pixels
-     * @param {number} height - Graph height in pixels
+     * Create a 2D graph command using logical coordinate bounds
+     * @param {number} row1 - Start row (top)
+     * @param {number} col1 - Start column (left)
+     * @param {number} row2 - End row (bottom)
+     * @param {number} col2 - End column (right)
      * @param {Object} options - Additional options {xRange, yRange, showGrid}
      * @param {Object} expression - Reference to Graph2DExpression for storing grapher
      */
-    constructor(row, col, width, height, options = {}, expression = null) {
+    constructor(row1, col1, row2, col2, options = {}, expression = null) {
         super();
-        this.row = row;
-        this.col = col;
-        this.width = width;
-        this.height = height;
+        this.row1 = row1;
+        this.col1 = col1;
+        this.row2 = row2;
+        this.col2 = col2;
         this.xRange = options.xRange || [-10, 10];
         this.yRange = options.yRange || [-10, 10];
         this.showGrid = options.showGrid !== false;
@@ -34,10 +34,8 @@ export class Create2DGraphCommand extends BaseCommand {
     async doInit() {
         const { diagram } = this.commandContext;
 
-        // Create graph container (sync operation but wrapped in async for consistency)
-        const grapher = diagram.graphContainer(this.col, this.row, {
-            width: this.width,
-            height: this.height,
+        // Create graph container using bounds-based API
+        const grapher = diagram.graphContainer(this.row1, this.col1, this.row2, this.col2, {
             xRange: this.xRange,
             yRange: this.yRange,
             showGrid: this.showGrid

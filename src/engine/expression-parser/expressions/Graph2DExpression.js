@@ -1,5 +1,7 @@
 /**
- * Graph2DExpression - creates a 2D graph container
+ * Graph2DExpression - creates a 2D graph container using logical coordinate bounds
+ *
+ * Syntax: g2d(row1, col1, row2, col2, [xMin, xMax, yMin, yMax, showGrid])
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { Create2DGraphCommand } from '../../commands/Create2DGraphCommand.js';
@@ -10,11 +12,11 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        // Resolved values
-        this.row = 0;
-        this.col = 0;
-        this.width = 600;
-        this.height = 400;
+        // Resolved values - bounds-based
+        this.row1 = 0;
+        this.col1 = 0;
+        this.row2 = 10;
+        this.col2 = 8;
         this.xRange = [-10, 10];
         this.yRange = [-10, 10];
         this.showGrid = true;
@@ -30,15 +32,15 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
             values.push(...expr.getVariableAtomicValues());
         }
 
-        // Required: row, col, width, height
+        // Required: row1, col1, row2, col2
         if (values.length < 4) {
-            this.dispatchError('2d() requires at least 4 arguments: row, col, width, height');
+            this.dispatchError('g2d() requires at least 4 arguments: row1, col1, row2, col2');
         }
 
-        this.row = values[0];
-        this.col = values[1];
-        this.width = values[2];
-        this.height = values[3];
+        this.row1 = values[0];
+        this.col1 = values[1];
+        this.row2 = values[2];
+        this.col2 = values[3];
 
         // Optional: xMin, xMax (indices 4, 5)
         if (values.length >= 6) {
@@ -75,7 +77,7 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
 
     toCommand(options = {}) {
         return new Create2DGraphCommand(
-            this.row, this.col, this.width, this.height,
+            this.row1, this.col1, this.row2, this.col2,
             { xRange: this.xRange, yRange: this.yRange, showGrid: this.showGrid },
             this  // Pass expression reference so command can set grapher
         );

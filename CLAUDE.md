@@ -23,7 +23,7 @@ npm run test:expressions  # Run expression parser tests
 App.jsx → RoboCanvas → Diagram/AnimatedDiagram → Grapher/MathTextComponent
 ```
 
-**RoboCanvas** (`src/RoboCanvas.js`): Main canvas controller with Jupyter-notebook style layout. Creates an infinite vertical scroll area with logical coordinate system (8 columns × 200 rows). Supports both static and animated modes via `useStaticDiagram()` / `useAnimatedDiagram()`.
+**RoboCanvas** (`src/RoboCanvas.js`): Main canvas controller with Jupyter-notebook style layout. Creates an infinite vertical scroll area with logical coordinate system (200 rows × 8 columns). Uses (row, col) ordering like spreadsheets. Supports both static and animated modes via `useStaticDiagram()` / `useAnimatedDiagram()`.
 
 **Diagram** (`src/diagram/diagram.js`): Base class providing static rendering API for shapes (point, line, circle, vector, polygon, angle, etc.) and math text. All methods take a graphContainer as first parameter.
 
@@ -144,11 +144,32 @@ import('./src/engine/expression-parser/parser/index.js').then(({ parse }) => {
 
 ## Coordinate Systems
 
-- **Logical coordinates**: Grid-based positioning (col, row) for layout
+- **Logical coordinates**: Grid-based positioning using **(row, col)** ordering - like spreadsheets
 - **Model coordinates**: Mathematical coordinates (x, y) within a graph
 - **View coordinates**: Pixel coordinates in SVG
 
-`LogicalCoordinateMapper` converts logical → pixel coordinates for component placement.
+### Logical Coordinate API (row, col)
+
+**graphContainer** - bounds-based sizing:
+```javascript
+// graphContainer(row1, col1, row2, col2, options)
+// Creates graph spanning from (row1, col1) to (row2, col2)
+const gc = diagram.graphContainer(0, 0, 16, 8, { xRange: [-10, 10], yRange: [-10, 10] });
+```
+
+**mathText** - row-first positioning:
+```javascript
+// mathText(text, row, col, options)
+diagram.mathText('x^2', 3, 2, { fontSize: 32 });  // row 3, col 2
+```
+
+**g2d expression** - bounds-based:
+```javascript
+// g2d(row1, col1, row2, col2, [xMin, xMax, yMin, yMax, showGrid])
+G = g2d(0, 0, 16, 8, -10, 10, -10, 10, 1)
+```
+
+`LogicalCoordinateMapper` converts logical (row, col) → pixel (x, y) coordinates.
 `Graphsheet2d` converts model ↔ view coordinates within graphs.
 
 ## Plugin Initialization

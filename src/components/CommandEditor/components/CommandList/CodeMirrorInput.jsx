@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { EditorView, keymap } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Prec } from '@codemirror/state';
 import { javascript } from '@codemirror/lang-javascript';
 import { defaultKeymap } from '@codemirror/commands';
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
-import { completionStatus } from '@codemirror/autocomplete';
+import { completionStatus, acceptCompletion } from '@codemirror/autocomplete';
 import { roboCanvasAutocomplete, clearSignatureTooltips } from '../../auto_complete';
 
 /**
@@ -67,21 +67,23 @@ const CodeMirrorInput = forwardRef(({
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         // Add robo-canvas autocomplete with variable support
         ...roboCanvasAutocomplete(variableProvider, currentLineIndex),
-        keymap.of([
-          ...defaultKeymap,
+        // Highest priority keymap for Enter to add new command
+        Prec.highest(keymap.of([
           {
             key: 'Enter',
             run: (view) => {
-              // If autocomplete is active, let it handle Enter
+              // If autocomplete is active, accept the completion
               if (completionStatus(view.state) === 'active') {
-                return false;
+                return acceptCompletion(view);
               }
-              // Prevent new line, trigger parent handler
-              const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
-              onKeyDownRef.current?.(event);
+              // Trigger parent handler to add new command below
+              onKeyDownRef.current?.(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
               return true;
             }
           },
+        ])),
+        keymap.of([
+          ...defaultKeymap,
           {
             key: 'ArrowUp',
             run: (view) => {
@@ -149,10 +151,7 @@ const CodeMirrorInput = forwardRef(({
         }),
         EditorView.domEventHandlers({
           keydown: (event, view) => {
-            // Let our custom keymaps handle these
-            if (['Enter', 'ArrowUp', 'ArrowDown', 'Tab'].includes(event.key)) {
-              return false;
-            }
+            // Let keymaps handle special keys
             return false;
           }
         }),

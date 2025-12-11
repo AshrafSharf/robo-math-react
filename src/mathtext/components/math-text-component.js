@@ -19,12 +19,12 @@ import { SelectionUnit } from '../models/selection-unit.js';
 import $ from '../utils/dom-query.js';
 
 export class MathTextComponent {
-  constructor(text, col, row, coordinateMapper, parentDOM, options = {}) {
+  constructor(text, row, col, coordinateMapper, parentDOM, options = {}) {
     // Store coordinateMapper for internal use
     this.coordinateMapper = coordinateMapper;
 
-    // Convert logical coordinates to pixel coordinates
-    const pixelCoords = this.coordinateMapper.toPixel(col, row);
+    // Convert logical coordinates to pixel coordinates (row, col order)
+    const pixelCoords = this.coordinateMapper.toPixel(row, col);
 
     // Create component state internally
     this.componentState = {

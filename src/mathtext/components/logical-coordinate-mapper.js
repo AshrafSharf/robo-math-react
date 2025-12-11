@@ -1,87 +1,91 @@
 /**
  * LogicalCoordinateMapper
- * Converts between logical coordinate system and pixel coordinates
+ * Converts between logical coordinate system (row, col) and pixel coordinates
  * Useful for grid-based layouts where you want to work in logical units
  *
- * Example: Map a 8×16 logical grid to a 400×800 pixel container
+ * Convention: (row, col) ordering - like spreadsheets
+ * - row maps to vertical (Y) position
+ * - col maps to horizontal (X) position
+ *
+ * Example: Map a 200×8 logical grid (rows×cols) to a 5000×200 pixel container
  */
 export class LogicalCoordinateMapper {
   /**
    * @param {number} pixelWidth - Width of container in pixels
    * @param {number} pixelHeight - Height of container in pixels
-   * @param {number} logicalWidth - Width in logical units (e.g., 8)
-   * @param {number} logicalHeight - Height in logical units (e.g., 16)
+   * @param {number} logicalCols - Number of columns (horizontal units)
+   * @param {number} logicalRows - Number of rows (vertical units)
    */
-  constructor(pixelWidth, pixelHeight, logicalWidth, logicalHeight) {
+  constructor(pixelWidth, pixelHeight, logicalCols, logicalRows) {
     this.pixelWidth = pixelWidth;
     this.pixelHeight = pixelHeight;
-    this.logicalWidth = logicalWidth;
-    this.logicalHeight = logicalHeight;
+    this.logicalCols = logicalCols;
+    this.logicalRows = logicalRows;
 
-    // Calculate scale factors
-    this.scaleX = pixelWidth / logicalWidth;
-    this.scaleY = pixelHeight / logicalHeight;
+    // Calculate scale factors (pixels per logical unit)
+    this.scaleCol = pixelWidth / logicalCols;   // pixels per column
+    this.scaleRow = pixelHeight / logicalRows;  // pixels per row
   }
 
   /**
-   * Convert logical X coordinate to pixel X
-   * @param {number} logicalX - X coordinate in logical units
-   * @returns {number} X coordinate in pixels
-   */
-  toPixelX(logicalX) {
-    return logicalX * this.scaleX;
-  }
-
-  /**
-   * Convert logical Y coordinate to pixel Y
-   * @param {number} logicalY - Y coordinate in logical units
+   * Convert logical row to pixel Y
+   * @param {number} row - Row coordinate in logical units
    * @returns {number} Y coordinate in pixels
    */
-  toPixelY(logicalY) {
-    return logicalY * this.scaleY;
+  toPixelY(row) {
+    return row * this.scaleRow;
   }
 
   /**
-   * Convert logical coordinates to pixel coordinates
-   * @param {number} logicalX - X coordinate in logical units
-   * @param {number} logicalY - Y coordinate in logical units
+   * Convert logical column to pixel X
+   * @param {number} col - Column coordinate in logical units
+   * @returns {number} X coordinate in pixels
+   */
+  toPixelX(col) {
+    return col * this.scaleCol;
+  }
+
+  /**
+   * Convert logical coordinates (row, col) to pixel coordinates
+   * @param {number} row - Row coordinate in logical units
+   * @param {number} col - Column coordinate in logical units
    * @returns {Object} {x, y} in pixels
    */
-  toPixel(logicalX, logicalY) {
+  toPixel(row, col) {
     return {
-      x: this.toPixelX(logicalX),
-      y: this.toPixelY(logicalY)
+      x: this.toPixelX(col),
+      y: this.toPixelY(row)
     };
   }
 
   /**
-   * Convert pixel X coordinate to logical X
-   * @param {number} pixelX - X coordinate in pixels
-   * @returns {number} X coordinate in logical units
+   * Convert pixel Y coordinate to logical row
+   * @param {number} pixelY - Y coordinate in pixels
+   * @returns {number} Row coordinate in logical units
    */
-  toLogicalX(pixelX) {
-    return pixelX / this.scaleX;
+  toLogicalRow(pixelY) {
+    return pixelY / this.scaleRow;
   }
 
   /**
-   * Convert pixel Y coordinate to logical Y
-   * @param {number} pixelY - Y coordinate in pixels
-   * @returns {number} Y coordinate in logical units
+   * Convert pixel X coordinate to logical column
+   * @param {number} pixelX - X coordinate in pixels
+   * @returns {number} Column coordinate in logical units
    */
-  toLogicalY(pixelY) {
-    return pixelY / this.scaleY;
+  toLogicalCol(pixelX) {
+    return pixelX / this.scaleCol;
   }
 
   /**
    * Convert pixel coordinates to logical coordinates
    * @param {number} pixelX - X coordinate in pixels
    * @param {number} pixelY - Y coordinate in pixels
-   * @returns {Object} {x, y} in logical units
+   * @returns {Object} {row, col} in logical units
    */
   toLogical(pixelX, pixelY) {
     return {
-      x: this.toLogicalX(pixelX),
-      y: this.toLogicalY(pixelY)
+      row: this.toLogicalRow(pixelY),
+      col: this.toLogicalCol(pixelX)
     };
   }
 
@@ -94,18 +98,18 @@ export class LogicalCoordinateMapper {
   updateDimensions(pixelWidth, pixelHeight) {
     this.pixelWidth = pixelWidth;
     this.pixelHeight = pixelHeight;
-    this.scaleX = pixelWidth / this.logicalWidth;
-    this.scaleY = pixelHeight / this.logicalHeight;
+    this.scaleCol = pixelWidth / this.logicalCols;
+    this.scaleRow = pixelHeight / this.logicalRows;
   }
 
   /**
    * Get the pixel size of one logical unit
-   * @returns {Object} {width, height} in pixels per logical unit
+   * @returns {Object} {col, row} pixels per logical unit
    */
   getLogicalUnitSize() {
     return {
-      width: this.scaleX,
-      height: this.scaleY
+      col: this.scaleCol,
+      row: this.scaleRow
     };
   }
 
@@ -117,10 +121,10 @@ export class LogicalCoordinateMapper {
     return {
       pixelWidth: this.pixelWidth,
       pixelHeight: this.pixelHeight,
-      logicalWidth: this.logicalWidth,
-      logicalHeight: this.logicalHeight,
-      scaleX: this.scaleX,
-      scaleY: this.scaleY
+      logicalCols: this.logicalCols,
+      logicalRows: this.logicalRows,
+      scaleCol: this.scaleCol,
+      scaleRow: this.scaleRow
     };
   }
 }

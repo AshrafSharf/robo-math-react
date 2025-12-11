@@ -6,12 +6,13 @@
  * Layout:
  * - Single scrollable canvas_section with logical coordinate system
  * - Multiple text cells (mathText) and graph cells (graphContainer) can be placed anywhere
+ * - Coordinates use (row, col) ordering - like spreadsheets
  *
  * Usage:
  *   const roboCanvas = new RoboCanvas(document.getElementById('container'));
  *   await roboCanvas.init();
- *   roboCanvas.diagram.mathText('x^2', 2, 3);
- *   const gc = roboCanvas.diagram.graphContainer(0, 5, {width: 600, height: 400});
+ *   roboCanvas.diagram.mathText('x^2', 3, 2);  // row 3, col 2
+ *   const gc = roboCanvas.diagram.graphContainer(0, 0, 16, 8);  // bounds: row 0-16, col 0-8
  *   roboCanvas.diagram.point(gc, {x: 0, y: 0});
  */
 

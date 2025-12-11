@@ -43,17 +43,17 @@ export class BaseDiagram2d {
   /**
    * Create a MathTextComponent (hidden by default with stroke disabled)
    * @param {string} text - LaTeX mathematical expression
-   * @param {number} col - Logical column coordinate
    * @param {number} row - Logical row coordinate
+   * @param {number} col - Logical column coordinate
    * @param {Object} options - Rendering options {fontSize, stroke, fill}
    * @returns {MathTextComponent} Math text component (hidden)
    * @protected
    */
-  _createMathText(text, col, row, options = {}) {
+  _createMathText(text, row, col, options = {}) {
     const mathComponent = new MathTextComponent(
       text,
-      col,
       row,
+      col,
       this.coordinateMapper,
       this.canvasSection,
       {
@@ -351,15 +351,17 @@ export class BaseDiagram2d {
     const absoluteY = grapherOffsetTop + viewY + (options.offset?.y || 0);
 
     // 4. Create a pass-through coordinateMapper that returns pixel coords directly
+    // Note: MathTextComponent now expects (row, col) and toPixel returns {x, y}
+    // Since we're passing pixel values directly, row->y and col->x
     const pixelCoordinateMapper = {
-      toPixel: (col, row) => ({ x: col, y: row })
+      toPixel: (row, col) => ({ x: col, y: row })
     };
 
-    // 5. Create MathTextComponent at absolute pixel position
+    // 5. Create MathTextComponent at absolute pixel position (row=Y, col=X)
     const mathComponent = new MathTextComponent(
       latexString,
-      absoluteX,
-      absoluteY,
+      absoluteY,  // row (Y position)
+      absoluteX,  // col (X position)
       pixelCoordinateMapper,
       this.canvasSection,
       {
@@ -493,38 +495,46 @@ export class BaseDiagram2d {
   // ============= CELL CREATION METHODS (JUPYTER-STYLE) =============
 
   /**
-   * Create a graph container cell at logical coordinates
+   * Create a graph container cell using logical coordinate bounds
    * Similar to creating a graph cell in a Jupyter notebook
-   * @param {number} col - Logical column coordinate
-   * @param {number} row - Logical row coordinate
-   * @param {Object} options - Graph options {width, height, showGrid, xRange, yRange}
+   * @param {number} row1 - Start row (top)
+   * @param {number} col1 - Start column (left)
+   * @param {number} row2 - End row (bottom)
+   * @param {number} col2 - End column (right)
+   * @param {Object} options - Graph options {showGrid, xRange, yRange}
    * @returns {Grapher} Graph container instance for drawing
    */
-  graphContainer(col, row, options = {}) {
+  graphContainer(row1, col1, row2, col2, options = {}) {
     if (!this.coordinateMapper || !this.canvasSection) {
       throw new Error('graphContainer requires coordinateMapper and canvasSection to be initialized');
     }
 
     // Convert logical coordinates to pixel coordinates
-    const pixelCoords = this.coordinateMapper.toPixel(col, row);
-    console.log(`graphContainer: col=${col}, row=${row} -> pixel(${pixelCoords.x}, ${pixelCoords.y})`);
+    const pixelCoords = this.coordinateMapper.toPixel(row1, col1);
+
+    // Calculate dimensions from logical bounds
+    const unitSize = this.coordinateMapper.getLogicalUnitSize();
+    const width = (col2 - col1) * unitSize.col;
+    const height = (row2 - row1) * unitSize.row;
+
+    console.log(`graphContainer: (${row1},${col1}) to (${row2},${col2}) -> pixel(${pixelCoords.x}, ${pixelCoords.y}), size(${width}x${height})`);
 
     // Create container div at position
     const containerDOM = document.createElement('div');
-    containerDOM.id = `graph-container-${col}-${row}`;
+    containerDOM.id = `graph-container-${row1}-${col1}-${row2}-${col2}`;
     containerDOM.style.position = 'absolute';
     containerDOM.style.left = pixelCoords.x + 'px';
     containerDOM.style.top = pixelCoords.y + 'px';
-    containerDOM.style.width = (options.width || 600) + 'px';
-    containerDOM.style.height = (options.height || 400) + 'px';
+    containerDOM.style.width = width + 'px';
+    containerDOM.style.height = height + 'px';
     containerDOM.style.border = '1px solid red'; // Debug border
     this.canvasSection.appendChild(containerDOM);
     console.log(`graphContainer: appended to canvasSection, id=${this.canvasSection.id}`);
 
     // Create Grapher instance in this container
     const grapher = new Grapher(containerDOM, {
-      width: options.width || 600,
-      height: options.height || 400,
+      width: width,
+      height: height,
       showGrid: options.showGrid !== false,
       xRange: options.xRange || [-10, 10],
       yRange: options.yRange || [-10, 10]
@@ -543,13 +553,13 @@ export class BaseDiagram2d {
    * Create mathematical text using MathJax rendering
    * Similar to creating a text cell in a Jupyter notebook
    * @param {string} text - LaTeX mathematical expression
-   * @param {number} col - Logical column coordinate
    * @param {number} row - Logical row coordinate
+   * @param {number} col - Logical column coordinate
    * @param {Object} options - Rendering options {fontSize, stroke, fill}
    * @returns {MathTextComponent} Math text component
    */
-  mathText(text, col, row, options = {}) {
-    const mathComponent = this._createMathText(text, col, row, options);
+  mathText(text, row, col, options = {}) {
+    const mathComponent = this._createMathText(text, row, col, options);
     this.objects.push(mathComponent);
     return mathComponent;
   }

@@ -41,7 +41,7 @@ export function roboCanvasAutocomplete(variableProvider = null, currentLineIndex
       activateOnTyping: true,
       closeOnBlur: true,
       maxRenderedOptions: 50,
-      defaultKeymap: true,
+      defaultKeymap: false,  // We handle Enter manually
       icons: false  // Disable default icons, we style with CSS
     }),
     signatureHelpField,

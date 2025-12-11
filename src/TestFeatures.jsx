@@ -18,10 +18,10 @@ function TestFeatures() {
 
   // Form state for creating components
   const [newName, setNewName] = useState('');
-  const [newCol, setNewCol] = useState('0');
-  const [newRow, setNewRow] = useState('0');
-  const [newWidth, setNewWidth] = useState('600');
-  const [newHeight, setNewHeight] = useState('400');
+  const [newRow1, setNewRow1] = useState('0');
+  const [newCol1, setNewCol1] = useState('0');
+  const [newRow2, setNewRow2] = useState('16');
+  const [newCol2, setNewCol2] = useState('8');
   const [newLatex, setNewLatex] = useState('x^2');
 
   // Expression plotting state
@@ -77,36 +77,38 @@ function TestFeatures() {
       return;
     }
 
-    const col = parseFloat(newCol);
-    const row = parseFloat(newRow);
+    const row1 = parseFloat(newRow1);
+    const col1 = parseFloat(newCol1);
 
     if (createType === 'graph') {
-      const width = parseFloat(newWidth);
-      const height = parseFloat(newHeight);
+      const row2 = parseFloat(newRow2);
+      const col2 = parseFloat(newCol2);
 
-      const gc = roboCanvas.diagram.graphContainer(col, row, {
-        width,
-        height,
+      // Use bounds-based API: graphContainer(row1, col1, row2, col2, options)
+      const gc = roboCanvas.diagram.graphContainer(row1, col1, row2, col2, {
         showGrid: true,
         xRange: [-10, 10],
         yRange: [-10, 10]
       });
 
       componentsMapRef.current[newName] = gc;
-      console.log(`Created graph container: ${newName}`);
+      console.log(`Created graph container: ${newName} from (${row1},${col1}) to (${row2},${col2})`);
     } else {
-      const mathComponent = roboCanvas.diagram.mathText(newLatex, col, row, {
+      // Use row-first API: mathText(text, row, col, options)
+      const mathComponent = roboCanvas.diagram.mathText(newLatex, row1, col1, {
         fontSize: 32,
         stroke: '#000000'
       });
 
       componentsMapRef.current[newName] = mathComponent;
-      console.log(`Created math text: ${newName}`);
+      console.log(`Created math text: ${newName} at (${row1},${col1})`);
     }
 
     setNewName('');
-    setNewCol('0');
-    setNewRow('0');
+    setNewRow1('0');
+    setNewCol1('0');
+    setNewRow2('16');
+    setNewCol2('8');
     setShowCreateModal(false);
     setComponentsCount(prev => prev + 1);
   };
@@ -579,16 +581,17 @@ function TestFeatures() {
               />
             </div>
 
-            {/* Position */}
+            {/* Position - Start point (row1, col1) */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
-                  Column (X):
+                  Row 1 (top):
                 </label>
                 <input
                   type="number"
-                  value={newCol}
-                  onChange={(e) => setNewCol(e.target.value)}
+                  step="0.1"
+                  value={newRow1}
+                  onChange={(e) => setNewRow1(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '8px',
@@ -600,12 +603,13 @@ function TestFeatures() {
               </div>
               <div>
                 <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
-                  Row (Y):
+                  Col 1 (left):
                 </label>
                 <input
                   type="number"
-                  value={newRow}
-                  onChange={(e) => setNewRow(e.target.value)}
+                  step="0.1"
+                  value={newCol1}
+                  onChange={(e) => setNewCol1(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '8px',
@@ -617,17 +621,18 @@ function TestFeatures() {
               </div>
             </div>
 
-            {/* Graph-specific options */}
+            {/* Graph-specific options - End point (row2, col2) */}
             {createType === 'graph' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Width:
+                    Row 2 (bottom):
                   </label>
                   <input
                     type="number"
-                    value={newWidth}
-                    onChange={(e) => setNewWidth(e.target.value)}
+                    step="0.1"
+                    value={newRow2}
+                    onChange={(e) => setNewRow2(e.target.value)}
                     style={{
                       width: '100%',
                       padding: '8px',
@@ -639,12 +644,13 @@ function TestFeatures() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px' }}>
-                    Height:
+                    Col 2 (right):
                   </label>
                   <input
                     type="number"
-                    value={newHeight}
-                    onChange={(e) => setNewHeight(e.target.value)}
+                    step="0.1"
+                    value={newCol2}
+                    onChange={(e) => setNewCol2(e.target.value)}
                     style={{
                       width: '100%',
                       padding: '8px',

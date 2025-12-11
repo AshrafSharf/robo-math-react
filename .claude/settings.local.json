@@ -16,7 +16,8 @@
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(npx pegjs:*)"
+      "Bash(npx pegjs:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
