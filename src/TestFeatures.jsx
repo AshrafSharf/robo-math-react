@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { RoboCanvas } from './RoboCanvas.js';
 import { AnimationSpeedManager } from './mathtext/animation-speed-manager.js';
+import { TransformCopy } from './mathtext/utils/transform-copy.js';
+import { MathTextMoveEffect } from './effects/math-text-move-effect.js';
 
 function TestFeatures() {
   const [isAnimated, setIsAnimated] = useState(false);
@@ -22,13 +24,20 @@ function TestFeatures() {
   const [newCol1, setNewCol1] = useState('0');
   const [newRow2, setNewRow2] = useState('16');
   const [newCol2, setNewCol2] = useState('8');
-  const [newLatex, setNewLatex] = useState('x^2');
+  const [newLatex, setNewLatex] = useState('\\tan(\\theta)=\\frac{\\bbox[0px]{\\sin(\\theta)}}{\\bbox[0px]{\\cos(\\theta)}}');
 
   // Expression plotting state
   const [expressionInput, setExpressionInput] = useState('x^2');
   const [scopeInput, setScopeInput] = useState('{}');
   const [domainMin, setDomainMin] = useState('-5');
   const [domainMax, setDomainMax] = useState('5');
+
+  // TransformCopy state
+  const [cloneTargetX, setCloneTargetX] = useState('200');
+  const [cloneTargetY, setCloneTargetY] = useState('300');
+  const [cloneBboxIndex, setCloneBboxIndex] = useState('0');
+  const [cloneSpacing, setCloneSpacing] = useState('20');
+  const [bboxSectionCount, setBboxSectionCount] = useState(0);
 
   // Initialize RoboCanvas
   useEffect(() => {
@@ -270,6 +279,148 @@ function TestFeatures() {
     AnimationSpeedManager.setSpeedMultiplier(newSpeed);
   };
 
+  // TransformCopy handlers
+  const transformCopyRef = useRef(null);
+
+  const handleDetectBbox = () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isMathText(component)) {
+      alert(`"${componentName}" is not a MathText component. Create a text with \\bbox first.`);
+      return;
+    }
+
+    // Create TransformCopy instance and cache it
+    transformCopyRef.current = new TransformCopy(component, containerRef.current);
+    const sections = transformCopyRef.current.extractBBoxSections();
+    setBboxSectionCount(sections.length);
+
+    if (sections.length === 0) {
+      alert('No bbox sections found. Use \\bbox[0px]{content} in your LaTeX.');
+    } else {
+      console.log(`Found ${sections.length} bbox section(s):`, sections);
+      alert(`Found ${sections.length} bbox section(s). Use Clone or Clone All to copy them.`);
+    }
+  };
+
+  const handleCloneBbox = () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isMathText(component)) {
+      alert(`"${componentName}" is not a MathText component.`);
+      return;
+    }
+
+    // Create or reuse TransformCopy instance
+    if (!transformCopyRef.current || transformCopyRef.current.mathTextComponent !== component) {
+      transformCopyRef.current = new TransformCopy(component, containerRef.current);
+    }
+
+    const x = parseFloat(cloneTargetX);
+    const y = parseFloat(cloneTargetY);
+    const index = parseInt(cloneBboxIndex);
+
+    const clonedComponent = transformCopyRef.current.createCloneAt(index, x, y);
+
+    if (clonedComponent) {
+      // Show the cloned component (it's hidden by default)
+      clonedComponent.show();
+      console.log(`Cloned bbox section ${index} to (${x}, ${y})`);
+    } else {
+      alert(`Failed to clone bbox section ${index}. Check console for details.`);
+    }
+  };
+
+  const handleCloneAllBbox = () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isMathText(component)) {
+      alert(`"${componentName}" is not a MathText component.`);
+      return;
+    }
+
+    // Create or reuse TransformCopy instance
+    if (!transformCopyRef.current || transformCopyRef.current.mathTextComponent !== component) {
+      transformCopyRef.current = new TransformCopy(component, containerRef.current);
+    }
+
+    const x = parseFloat(cloneTargetX);
+    const y = parseFloat(cloneTargetY);
+    const spacing = parseFloat(cloneSpacing);
+
+    const clonedComponents = transformCopyRef.current.createAllClonesAt(x, y, {
+      horizontalSpacing: spacing
+    });
+
+    // Show all cloned components
+    clonedComponents.forEach(comp => comp.show());
+    console.log(`Cloned ${clonedComponents.length} bbox sections starting at (${x}, ${y}) with spacing ${spacing}`);
+  };
+
+  // Store active effects for cleanup
+  const effectsRef = useRef([]);
+
+  const handleClearClones = () => {
+    // Clear TransformCopy clones
+    if (transformCopyRef.current) {
+      transformCopyRef.current.clearClones();
+    }
+
+    // Clear effect clones
+    effectsRef.current.forEach(effect => {
+      effect.stop();
+      effect.remove();
+    });
+    effectsRef.current = [];
+
+    console.log('Cleared all cloned components and effects');
+  };
+
+  const handleAnimateClone = async () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component) {
+      alert(`Component "${componentName}" not found`);
+      return;
+    }
+    if (!isMathText(component)) {
+      alert(`"${componentName}" is not a MathText component.`);
+      return;
+    }
+
+    const x = parseFloat(cloneTargetX);
+    const y = parseFloat(cloneTargetY);
+    const index = parseInt(cloneBboxIndex);
+
+    console.log(`Animating bbox section ${index} to (${x}, ${y}) using MathTextMoveEffect`);
+
+    // Create the effect
+    const effect = new MathTextMoveEffect(
+      component,
+      index,
+      x,
+      y,
+      containerRef.current,
+      { duration: 0.8 }
+    );
+
+    // Track effect for cleanup
+    effectsRef.current.push(effect);
+
+    // Play the effect (returns a Promise)
+    await effect.play();
+
+    console.log(`Animation complete for bbox section ${index}`);
+  };
+
   return (
     <div id="robo" className="robo-compass-div">
       {/* Top Header */}
@@ -459,6 +610,132 @@ function TestFeatures() {
             fontSize: '12px'
           }}>
             Plot Expr
+          </button>
+        </div>
+
+        {/* TransformCopy Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', borderLeft: '1px solid #ccc', paddingLeft: '10px' }}>
+          <button onClick={handleDetectBbox} style={{
+            padding: '4px 8px',
+            border: '1px solid #795548',
+            backgroundColor: '#795548',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '11px'
+          }}>
+            Detect
+          </button>
+          <span style={{ fontSize: '11px', color: '#666' }}>
+            ({bboxSectionCount})
+          </span>
+          <input
+            type="text"
+            value={cloneTargetX}
+            onChange={(e) => setCloneTargetX(e.target.value)}
+            placeholder="X"
+            title="Target X position"
+            style={{
+              padding: '4px 4px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '11px',
+              width: '40px',
+              fontFamily: 'monospace',
+              textAlign: 'center'
+            }}
+          />
+          <input
+            type="text"
+            value={cloneTargetY}
+            onChange={(e) => setCloneTargetY(e.target.value)}
+            placeholder="Y"
+            title="Target Y position"
+            style={{
+              padding: '4px 4px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '11px',
+              width: '40px',
+              fontFamily: 'monospace',
+              textAlign: 'center'
+            }}
+          />
+          <select
+            value={cloneBboxIndex}
+            onChange={(e) => setCloneBboxIndex(e.target.value)}
+            title="BBox section index"
+            style={{
+              padding: '4px 4px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '11px',
+              width: '45px'
+            }}
+          >
+            {Array.from({ length: Math.max(bboxSectionCount, 1) }, (_, i) => (
+              <option key={i} value={i}>{i}</option>
+            ))}
+          </select>
+          <button onClick={handleCloneBbox} style={{
+            padding: '4px 8px',
+            border: '1px solid #009688',
+            backgroundColor: '#009688',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '11px'
+          }}>
+            Clone
+          </button>
+          <button onClick={handleAnimateClone} style={{
+            padding: '4px 8px',
+            border: '1px solid #9c27b0',
+            backgroundColor: '#9c27b0',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '11px'
+          }}>
+            Animate
+          </button>
+          <input
+            type="text"
+            value={cloneSpacing}
+            onChange={(e) => setCloneSpacing(e.target.value)}
+            placeholder="Gap"
+            title="Spacing between clones"
+            style={{
+              padding: '4px 4px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '11px',
+              width: '35px',
+              fontFamily: 'monospace',
+              textAlign: 'center'
+            }}
+          />
+          <button onClick={handleCloneAllBbox} style={{
+            padding: '4px 8px',
+            border: '1px solid #00796b',
+            backgroundColor: '#00796b',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '11px'
+          }}>
+            Clone All
+          </button>
+          <button onClick={handleClearClones} style={{
+            padding: '4px 8px',
+            border: '1px solid #f44336',
+            backgroundColor: '#f44336',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '11px'
+          }}>
+            Clear
           </button>
         </div>
 

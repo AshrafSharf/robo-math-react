@@ -581,4 +581,98 @@ export class MathTextComponent {
     });
     return this;
   }
+
+  /**
+   * Create a MathTextComponent from a cloned SVG element
+   * Used by TransformCopy to create identical copies at different positions
+   *
+   * @param {SVGSVGElement} sourceSvg - The source SVG element to clone
+   * @param {number} pixelX - Target X pixel coordinate
+   * @param {number} pixelY - Target Y pixel coordinate
+   * @param {HTMLElement} parentDOM - Parent DOM element to append to
+   * @param {Object} options - Options from source {fontSize, stroke, fill}
+   * @returns {MathTextComponent} A new MathTextComponent with cloned SVG
+   */
+  static fromSVGClone(sourceSvg, pixelX, pixelY, parentDOM, options = {}) {
+    // Create instance without calling normal constructor
+    const instance = Object.create(MathTextComponent.prototype);
+
+    // Initialize properties
+    instance.parentDOM = parentDOM;
+    instance.visible = false;
+    instance.strokeColor = options.stroke || '#000000';
+    instance.fillColor = options.fill || '#000000';
+    instance.fontSizeValue = options.fontSize || 22;
+    instance.mathNodes = [];
+    instance.renderedSVG = null;
+    instance.highLightedSections = {
+      fBoxBounds: [],
+      semiColonBounds: [],
+      angleBracketBounds: []
+    };
+
+    // Create component state
+    instance.componentState = {
+      componentId: `math-text-clone-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      content: '[cloned]',
+      left: pixelX,
+      top: pixelY
+    };
+
+    // Create the container div at target position
+    instance.containerDOM = $('<div>').attr({
+      'id': instance.componentState.componentId,
+      'class': instance.getComponentClass()
+    }).css({
+      'position': 'absolute',
+      'left': pixelX + 'px',
+      'top': pixelY + 'px',
+      'font-size': instance.fontSizeValue + 'px',
+      'display': 'none'
+    })[0];
+    $(parentDOM).append(instance.containerDOM);
+
+    // Clone the source SVG entirely (preserves all attributes)
+    const clonedSvg = sourceSvg.cloneNode(true);
+
+    // Generate new unique IDs for all elements to avoid conflicts
+    const allElements = clonedSvg.querySelectorAll('[id]');
+    allElements.forEach(el => {
+      el.id = `${el.id}-clone-${Math.random().toString(36).substr(2, 5)}`;
+    });
+
+    // Append cloned SVG to container
+    $(instance.containerDOM).append(clonedSvg);
+
+    // Build math nodes for animation from cloned SVG
+    instance.renderMathFromClone(clonedSvg);
+
+    // Apply stroke color
+    instance.applyStrokeColor();
+
+    // Start with strokes disabled for write animation
+    instance.disableStroke();
+
+    // Store size
+    instance.componentState.size = {
+      width: parseInt($(instance.containerDOM).width()),
+      height: parseInt($(instance.containerDOM).height())
+    };
+
+    // Create overlay layer
+    instance.createOverlaySVGLayer();
+
+    return instance;
+  }
+
+  /**
+   * Build mathGraphNode from already-rendered SVG (for cloned components)
+   * @param {SVGSVGElement} svgElement - The SVG element to process
+   */
+  renderMathFromClone(svgElement) {
+    const svgString = svgElement.outerHTML;
+    const mathNodeBuilder = new MathNodeBuilder(svgString);
+    mathNodeBuilder.process(this.componentState.componentId + "_math_node", this.getFontStroke());
+    this.mathGraphNode = mathNodeBuilder.rootMathGrapNode;
+  }
 }

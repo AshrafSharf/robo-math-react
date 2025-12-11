@@ -564,6 +564,45 @@ export class BaseDiagram2d {
     return mathComponent;
   }
 
+  /**
+   * Create a MathTextComponent by cloning an existing MathTextComponent's SVG
+   * Used by TransformCopy to create identical copies at different positions
+   *
+   * @param {MathTextComponent} sourceMathText - The source MathTextComponent to clone from
+   * @param {number} row - Logical row coordinate for the clone
+   * @param {number} col - Logical column coordinate for the clone
+   * @returns {MathTextComponent} A new MathTextComponent with cloned SVG
+   */
+  mathTextFromClone(sourceMathText, row, col) {
+    // Get source SVG element
+    const sourceSvg = sourceMathText.getMathSVGRoot()[0];
+    if (!sourceSvg) {
+      console.error('mathTextFromClone: Source MathTextComponent has no SVG');
+      return null;
+    }
+
+    // Convert logical coordinates to pixel coordinates
+    const pixelCoords = this.coordinateMapper.toPixel(row, col);
+
+    // Create clone using factory method, preserving source options
+    const clonedComponent = MathTextComponent.fromSVGClone(
+      sourceSvg,
+      pixelCoords.x,
+      pixelCoords.y,
+      this.canvasSection,
+      {
+        fontSize: sourceMathText.fontSizeValue,
+        stroke: sourceMathText.strokeColor,
+        fill: sourceMathText.fillColor
+      }
+    );
+
+    // Track for cleanup
+    this.objects.push(clonedComponent);
+
+    return clonedComponent;
+  }
+
   // ============= CLEANUP METHODS =============
 
   /**
