@@ -43,6 +43,7 @@ export class RoboCanvas {
     this.diagram = null;
     this.isAnimatedMode = false;
     this.penTracer = null;
+    this.annotationLayer = null;
 
     // Create layout
     this._createLayout();
@@ -53,16 +54,21 @@ export class RoboCanvas {
    * @private
    */
   _createLayout() {
-    // Clear container
-    this.containerElement.innerHTML = '';
-
-    // Use the container element directly as the canvas section
-    // CSS handles positioning/overflow via .robo-shell-main-playsurface
+    // Note: Don't clear innerHTML - React manages children (AnnotationLayer, GridOverlay)
+    // Just set up the canvas section properties
     const canvasHeight = this.options.logicalHeight * 100;  // 200 × 100 = 20000px
     this.canvasSection = this.containerElement;
     this.canvasSection.id = 'robo-canvas-section';
     this.canvasSection.style.minHeight = canvasHeight + 'px';
     this.canvasSection.style.position = 'relative';
+  }
+
+  /**
+   * Set the annotation layer SVG element (called by React)
+   * @param {SVGSVGElement} svgElement
+   */
+  setAnnotationLayer(svgElement) {
+    this.annotationLayer = svgElement;
   }
 
   /**
@@ -268,15 +274,27 @@ export class RoboCanvas {
   }
 
   /**
+   * Get the annotation layer SVG
+   * @returns {SVGSVGElement}
+   */
+  getAnnotationLayer() {
+    return this.annotationLayer;
+  }
+
+  /**
    * Destroy the canvas and clean up resources
    */
   destroy() {
+    this.penTracer?.destroy();
+    this.penTracer = null;
     this.staticDiagram?.destroy();
     this.animatedDiagram?.destroy();
     this.staticDiagram = null;
     this.animatedDiagram = null;
     this.diagram = null;
-    this.containerElement.innerHTML = '';
+    // Don't clear innerHTML - React manages children (AnnotationLayer, GridOverlay)
+    // Just clear our reference
+    this.annotationLayer = null;
     this.initialized = false;
   }
 }

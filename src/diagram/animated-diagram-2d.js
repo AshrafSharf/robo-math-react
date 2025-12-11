@@ -13,6 +13,7 @@ import { ZoomEffect } from '../effects/zoom-effect.js';
 import { PanEffect } from '../effects/pan-effect.js';
 import { DEFAULT_SHAPE_COLORS } from './style_helper.js';
 import { WriteEffect } from '../mathtext/effects/write-effect.js';
+import { MathTextRectEffect } from '../effects/math-text-rect-effect.js';
 
 export class AnimatedDiagram2d extends BaseDiagram2d {
   /**
@@ -678,6 +679,27 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
       mathComponent.showOnlyBBox(includeAll);
     }
     return this;
+  }
+
+  /**
+   * Draw a rectangle around a bbox section with pen animation
+   * @param {MathTextComponent} mathTextComponent - Math text component with bbox sections
+   * @param {number} sectionIndex - Index of the bbox section to highlight
+   * @param {Object} options - Styling options {stroke, strokeWidth, fill, padding}
+   * @returns {Promise<MathTextRectShape|null>} The rect shape, or null if invalid
+   */
+  async sectionRect(mathTextComponent, sectionIndex, options = {}) {
+    const shape = this._createSectionRect(mathTextComponent, sectionIndex, options);
+    if (!shape) {
+      return null;
+    }
+
+    if (this.animateMode) {
+      await this._playEffect(new MathTextRectEffect(shape));
+    } else {
+      shape.renderEndState();
+    }
+    return shape;
   }
 
   /**

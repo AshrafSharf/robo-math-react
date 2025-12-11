@@ -16,14 +16,15 @@ export class PenTracerImpl {
     this.penLayerGroup = null;
     this.purePenMoveLayerGroup = null;
     this.lastVisitedTweenNode = null;
+    this.unregisterPenEvent = null;
   }
 
   init() {
     this.createPenLayerDOM();
     this.createSVGLayers();
-    
-    // Register for pen position events
-    RoboEventManager.register(PenEvent.POSITION_EVENT_NAME, (penEvent) => {
+
+    // Register for pen position events (store unregister function for cleanup)
+    this.unregisterPenEvent = RoboEventManager.register(PenEvent.POSITION_EVENT_NAME, (penEvent) => {
       this.updatePenCoordinates(penEvent.screenPoint);
     });
   }
@@ -79,6 +80,7 @@ export class PenTracerImpl {
   }
 
   updatePenCoordinates(screenPoint) {
+    if (!this.penLayerSVGElement) return;
     const handSel = this.penLayerSVGElement.querySelector('#hand');
     if (handSel && screenPoint) {
       const svgPoint = InLineSvgUtil.screenToSVG(this.penLayerSVGElement, screenPoint.x, screenPoint.y);
@@ -112,5 +114,21 @@ export class PenTracerImpl {
     if (handSel) {
       handSel.style.display = 'block';
     }
+  }
+
+  destroy() {
+    // Unregister event listener
+    if (this.unregisterPenEvent) {
+      this.unregisterPenEvent();
+      this.unregisterPenEvent = null;
+    }
+    // Remove DOM element
+    if (this.penLayerSVGElement) {
+      this.penLayerSVGElement.remove();
+      this.penLayerSVGElement = null;
+    }
+    this.penLayerGroup = null;
+    this.purePenMoveLayerGroup = null;
+    this.purePenTraceNode = null;
   }
 }

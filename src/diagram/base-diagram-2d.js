@@ -7,6 +7,8 @@ import { MathTextComponent } from '../mathtext/components/math-text-component.js
 import { parseColor } from './style_helper.js';
 import { Grapher } from '../blocks/grapher.js';
 import { compile } from 'mathjs';
+import { MathTextRectShape } from '../script-shapes/math-text-rect-shape.js';
+import { TextSectionManager } from '../mathtext/utils/text-section-manager.js';
 
 export class BaseDiagram2d {
   /**
@@ -323,6 +325,60 @@ export class BaseDiagram2d {
   }
 
   /**
+   * Create a rectangle shape around a bbox section in a MathTextComponent
+   * The rect renders on the annotation layer using canvas-relative coordinates
+   *
+   * @param {MathTextComponent} mathTextComponent - The math text component containing bbox sections
+   * @param {number} sectionIndex - Index of the bbox section to draw rect around
+   * @param {Object} options - Styling options
+   * @param {string} options.stroke - Stroke color (default: '#333')
+   * @param {number} options.strokeWidth - Stroke width (default: 2)
+   * @param {string} options.fill - Fill color (default: 'transparent')
+   * @param {number} options.padding - Padding around bounds (default: 2)
+   * @returns {MathTextRectShape|null} The created shape, or null if invalid
+   * @protected
+   */
+  _createSectionRect(mathTextComponent, sectionIndex, options = {}) {
+    // Get section manager and extract canvas-relative bounds
+    const sectionManager = new TextSectionManager(mathTextComponent, this.canvasSection);
+    const bounds = sectionManager.getCanvasBounds(sectionIndex);
+
+    if (!bounds) {
+      console.error(`BaseDiagram2d._createSectionRect: Invalid section index ${sectionIndex}`);
+      return null;
+    }
+
+    // Get annotation layer from roboCanvas
+    const annotationLayer = this.roboCanvas.getAnnotationLayer();
+
+    // Canvas-relative bounds for annotation layer
+    const rectBounds = {
+      x: bounds.minX,
+      y: bounds.minY,
+      width: bounds.width,
+      height: bounds.height
+    };
+
+    // Apply color parsing
+    const styleOptions = {
+      stroke: options.stroke ? parseColor(options.stroke) : '#333',
+      strokeWidth: options.strokeWidth || 2,
+      fill: options.fill ? parseColor(options.fill) : 'transparent',
+      fillOpacity: options.fillOpacity || 0,
+      padding: options.padding !== undefined ? options.padding : 2
+    };
+
+    // Create the rect shape on annotation layer
+    const rectShape = new MathTextRectShape(annotationLayer, rectBounds, styleOptions);
+    rectShape.create();
+
+    // Track for cleanup
+    this.objects.push(rectShape);
+
+    return rectShape;
+  }
+
+  /**
    * Create a MathTextComponent label positioned on a grapher using model coordinates.
    * The label is absolutely positioned over the grapher with pen animation support.
    *
@@ -565,8 +621,8 @@ export class BaseDiagram2d {
   }
 
   /**
-   * Create a MathTextComponent by cloning an existing MathTextComponent's SVG
-   * Used by TransformCopy to create identical copies at different positions
+   * Create a MathTextComponent by cloning an existing MathTextComponent's SVG.
+   * Creates identical copies at different logical positions with the same styling.
    *
    * @param {MathTextComponent} sourceMathText - The source MathTextComponent to clone from
    * @param {number} row - Logical row coordinate for the clone

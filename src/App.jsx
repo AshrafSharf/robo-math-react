@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import CommandEditor from './components/CommandEditor';
 import RoboCanvasGridOverlay from './components/RoboCanvasGridOverlay';
+import AnnotationLayer from './components/AnnotationLayer';
 import './App.css';
 import { RoboCanvas } from './RoboCanvas.js';
 import { useCommandExecution } from './hooks/useCommandExecution.js';
@@ -38,6 +39,13 @@ function App() {
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
+
+  // Callback when annotation layer SVG is ready
+  const handleAnnotationLayerReady = useCallback((svgElement) => {
+    if (roboCanvas) {
+      roboCanvas.setAnnotationLayer(svgElement);
+    }
+  }, [roboCanvas]);
 
   // Initialize RoboCanvas
   useEffect(() => {
@@ -127,6 +135,7 @@ function App() {
           ref={containerRef}
           className={`robo-shell-main-playsurface ${isSidebarCollapsed ? 'expanded' : ''}`}
         >
+          <AnnotationLayer onLayerReady={handleAnnotationLayerReady} />
           <RoboCanvasGridOverlay
             pixelsPerUnit={25}
             visible={showGrid}

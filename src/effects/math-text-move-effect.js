@@ -6,7 +6,7 @@
  */
 
 import { BaseEffect } from './base-effect.js';
-import { TransformCopy } from '../mathtext/utils/transform-copy.js';
+import { TextSectionManager } from '../mathtext/utils/text-section-manager.js';
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
 import { TweenMax, Power2 } from 'gsap';
 
@@ -35,7 +35,7 @@ export class MathTextMoveEffect extends BaseEffect {
 
     // Will be set when clone is created
     this.clonedComponent = null;
-    this.transformCopy = null;
+    this.textSectionManager = null;
     this.startX = null;
     this.startY = null;
     this.endX = null;
@@ -46,17 +46,17 @@ export class MathTextMoveEffect extends BaseEffect {
     // Active tween for stopping
     this.activeTween = null;
 
-    // Initialize transform copy and calculate positions
+    // Initialize TextSectionManager and calculate positions
     this._init();
   }
 
   /**
-   * Initialize TransformCopy and calculate start/end positions
+   * Initialize TextSectionManager and calculate start/end positions
    */
   _init() {
-    this.transformCopy = new TransformCopy(this.sourceMathText, this.parentDOM);
+    this.textSectionManager = new TextSectionManager(this.sourceMathText, this.parentDOM);
 
-    const sections = this.transformCopy.extractBBoxSections();
+    const sections = this.textSectionManager.extractBBoxSections();
     if (this.bboxIndex < 0 || this.bboxIndex >= sections.length) {
       console.error(`MathTextMoveEffect: Invalid bbox index ${this.bboxIndex}`);
       return;
@@ -85,7 +85,7 @@ export class MathTextMoveEffect extends BaseEffect {
   _createClone() {
     if (this.clonedComponent) return;
 
-    const sections = this.transformCopy.extractBBoxSections();
+    const sections = this.textSectionManager.extractBBoxSections();
     if (this.bboxIndex < 0 || this.bboxIndex >= sections.length) {
       return;
     }
@@ -104,7 +104,7 @@ export class MathTextMoveEffect extends BaseEffect {
       return;
     }
 
-    const filteredSvg = this.transformCopy.createFilteredSVG(sourceSvg, paths, section.bounds);
+    const filteredSvg = this.textSectionManager.createFilteredSVG(sourceSvg, paths, section.bounds);
 
     this.clonedComponent = MathTextComponent.fromSVGClone(
       filteredSvg,

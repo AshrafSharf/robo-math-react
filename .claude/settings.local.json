@@ -17,7 +17,8 @@
       "Bash(xargs kill:*)",
       "mcp__ide__getDiagnostics",
       "Bash(npx pegjs:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

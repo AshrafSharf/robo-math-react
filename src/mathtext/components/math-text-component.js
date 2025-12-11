@@ -95,7 +95,6 @@ export class MathTextComponent {
       width: parseInt($(this.containerDOM).width()),
       height: parseInt($(this.containerDOM).height())
     };
-    this.createOverlaySVGLayer();
     // Bounds are extracted in extractHighLightSections, but paths are NOT removed
     // To remove fbox paths, call removeFBoxPaths() explicitly
   }
@@ -121,16 +120,7 @@ export class MathTextComponent {
     $(this.containerDOM).html(originalHtml);
     return postSVGRoot.outerHTML;
   }
-  
-  createOverlaySVGLayer() {
-    const mathTextOverlayLayerId = "overlayLayer" + this.generateId();
-    $(this.containerDOM).append(`<svg id="${mathTextOverlayLayerId}" class="mathTextOverlayLayer" width="100%" height="100%"
-        xmlns="http://www.w3.org/2000/svg">
-            </svg>
-        `);
-    this.overlaySVGLayerElement = $(`#${mathTextOverlayLayerId}`)[0];
-  }
-  
+
   generateId() {
     return Math.random().toString(36).substr(2, 9);
   }
@@ -138,11 +128,7 @@ export class MathTextComponent {
   getMathSVGRoot() {
     return $(this.containerDOM).find('svg');
   }
-  
-  getOverlayMathSVGRoot() {
-    return this.overlaySVGLayerElement;
-  }
-  
+
   renderFallback() {
     console.log('Rendering fallback for:', this.componentState.content);
     // Create a simple text element as fallback
@@ -383,20 +369,6 @@ export class MathTextComponent {
              bounds2.bottom < bounds1.top);
   }
 
-  getOverlayMathSVGRoot() {
-    // Create or return overlay SVG for selection visualization
-    let overlay = $('.overlay-svg', this.containerDOM)[0];
-    if (!overlay) {
-      const svg = $("svg", this.containerDOM)[0];
-      if (svg) {
-        overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        overlay.setAttribute('class', 'overlay-svg');
-        svg.appendChild(overlay);
-      }
-    }
-    return overlay;
-  }
-
   getFBoxHighlightBounds() {
     // Pure getter - returns only the bounds, does NOT remove paths
     if (!this.highLightedSections.fBoxBoundsDescriptors) {
@@ -583,8 +555,8 @@ export class MathTextComponent {
   }
 
   /**
-   * Create a MathTextComponent from a cloned SVG element
-   * Used by TransformCopy to create identical copies at different positions
+   * Create a MathTextComponent from a cloned SVG element.
+   * Creates identical copies at different positions with the same styling.
    *
    * @param {SVGSVGElement} sourceSvg - The source SVG element to clone
    * @param {number} pixelX - Target X pixel coordinate
@@ -658,9 +630,6 @@ export class MathTextComponent {
       width: parseInt($(instance.containerDOM).width()),
       height: parseInt($(instance.containerDOM).height())
     };
-
-    // Create overlay layer
-    instance.createOverlaySVGLayer();
 
     return instance;
   }

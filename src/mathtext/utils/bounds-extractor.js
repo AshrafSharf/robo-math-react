@@ -1,4 +1,5 @@
 import { Bounds2 } from '../../geom/Bounds2.js';
+import { TextSection } from '../models/text-section.js';
 
 export class BoundsExtractor {
   static SEMI_COLON = "MJMAIN-3B";
@@ -187,11 +188,7 @@ export class BoundsExtractor {
 
       console.log(`  Found ${pathsInBBox.length} paths within this bbox region`);
 
-      boundsList.push({
-        bounds: bounds,
-        paths: pathsInBBox,
-        mpaddedElement: mpaddedGroup
-      });
+      boundsList.push(new TextSection(bounds, pathsInBBox, mpaddedGroup));
     });
 
     console.log(`Total bbox regions found: ${boundsList.length}`);

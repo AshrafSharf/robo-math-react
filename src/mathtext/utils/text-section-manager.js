@@ -4,7 +4,7 @@ import { MathTextComponent } from '../components/math-text-component.js';
 import { TweenMax, Power2 } from 'gsap';
 
 /**
- * TransformCopy - Extracts bbox-marked sections from MathTextComponent
+ * TextSectionManager - Extracts bbox-marked sections from MathTextComponent
  * and creates cloned MathTextComponent instances at new pixel coordinates.
  *
  * The clones are identical to the source (same font size, stroke, SVG structure)
@@ -13,14 +13,14 @@ import { TweenMax, Power2 } from 'gsap';
  * Usage:
  * ```javascript
  * const mathText = diagram.mathText('x + \\bbox[0px]{y} = \\bbox[0px]{z}', 0, 0);
- * const transformCopy = new TransformCopy(mathText, parentDOM);
+ * const copyMoveTo = new TextSectionManager(mathText, parentDOM);
  *
  * // Clone first bbox section to pixel position (200, 300)
- * const clonedComponent = transformCopy.createCloneAt(0, 200, 300);
+ * const clonedComponent = copyMoveTo.createCloneAt(0, 200, 300);
  * clonedComponent.show(); // Show the cloned math text
  * ```
  */
-export class TransformCopy {
+export class TextSectionManager {
   /**
    * @param {MathTextComponent} mathTextComponent - The source math text component
    * @param {HTMLElement} parentDOM - Parent DOM element for cloned components
@@ -28,28 +28,28 @@ export class TransformCopy {
   constructor(mathTextComponent, parentDOM) {
     this.mathTextComponent = mathTextComponent;
     this.parentDOM = parentDOM || mathTextComponent.parentDOM;
-    this.cachedSections = null;
+    this.textSections = null;
     this.clonedComponents = [];
   }
 
   /**
    * Extract all bbox-marked sections from the math text component
-   * @returns {Array<{bounds: Bounds2, paths: Element[]}>} Array of bbox descriptors
+   * @returns {TextSection[]} Array of TextSection instances
    */
   extractBBoxSections() {
-    if (this.cachedSections) {
-      return this.cachedSections;
+    if (this.textSections) {
+      return this.textSections;
     }
 
-    this.cachedSections = this.mathTextComponent.getBBoxDescriptors();
-    return this.cachedSections;
+    this.textSections = this.mathTextComponent.getBBoxDescriptors();
+    return this.textSections;
   }
 
   /**
    * Clear cached sections (call if math text content changes)
    */
   clearCache() {
-    this.cachedSections = null;
+    this.textSections = null;
   }
 
   /**
@@ -65,7 +65,7 @@ export class TransformCopy {
     const sections = this.extractBBoxSections();
 
     if (bboxIndex < 0 || bboxIndex >= sections.length) {
-      console.error(`TransformCopy: Invalid bbox index ${bboxIndex}. Available sections: ${sections.length}`);
+      console.error(`TextSectionManager: Invalid bbox index ${bboxIndex}. Available sections: ${sections.length}`);
       return null;
     }
 
@@ -73,14 +73,14 @@ export class TransformCopy {
     const { bounds, paths } = section;
 
     if (!paths || paths.length === 0) {
-      console.warn(`TransformCopy: No paths found in bbox section ${bboxIndex}`);
+      console.warn(`TextSectionManager: No paths found in bbox section ${bboxIndex}`);
       return null;
     }
 
     // Get source SVG and clone it
     const sourceSvg = this.mathTextComponent.getMathSVGRoot()[0];
     if (!sourceSvg) {
-      console.error('TransformCopy: Source MathTextComponent has no SVG');
+      console.error('TextSectionManager: Source MathTextComponent has no SVG');
       return null;
     }
 
@@ -90,15 +90,15 @@ export class TransformCopy {
     const internalOffsetX = bounds.minX - containerRect.left;
     const internalOffsetY = bounds.minY - containerRect.top;
 
-    console.log('TransformCopy: Container rect:', containerRect);
-    console.log('TransformCopy: Bounds:', { minX: bounds.minX, minY: bounds.minY });
-    console.log('TransformCopy: Internal offset:', { x: internalOffsetX, y: internalOffsetY });
+    console.log('TextSectionManager: Container rect:', containerRect);
+    console.log('TextSectionManager: Bounds:', { minX: bounds.minX, minY: bounds.minY });
+    console.log('TextSectionManager: Internal offset:', { x: internalOffsetX, y: internalOffsetY });
 
     // Adjust target position to compensate for internal offset
     const adjustedX = pixelX - internalOffsetX;
     const adjustedY = pixelY - internalOffsetY;
 
-    console.log('TransformCopy: Adjusted position:', { x: adjustedX, y: adjustedY });
+    console.log('TextSectionManager: Adjusted position:', { x: adjustedX, y: adjustedY });
 
     // Create a filtered SVG containing only the bbox section paths (no counter-translation needed now)
     const filteredSvg = this.createFilteredSVG(sourceSvg, paths, bounds);
@@ -145,7 +145,7 @@ export class TransformCopy {
     const sections = this.extractBBoxSections();
 
     if (bboxIndex < 0 || bboxIndex >= sections.length) {
-      console.error(`TransformCopy: Invalid bbox index ${bboxIndex}. Available sections: ${sections.length}`);
+      console.error(`TextSectionManager: Invalid bbox index ${bboxIndex}. Available sections: ${sections.length}`);
       return Promise.resolve(null);
     }
 
@@ -153,14 +153,14 @@ export class TransformCopy {
     const { bounds, paths } = section;
 
     if (!paths || paths.length === 0) {
-      console.warn(`TransformCopy: No paths found in bbox section ${bboxIndex}`);
+      console.warn(`TextSectionManager: No paths found in bbox section ${bboxIndex}`);
       return Promise.resolve(null);
     }
 
     // Get source SVG and clone it
     const sourceSvg = this.mathTextComponent.getMathSVGRoot()[0];
     if (!sourceSvg) {
-      console.error('TransformCopy: Source MathTextComponent has no SVG');
+      console.error('TextSectionManager: Source MathTextComponent has no SVG');
       return Promise.resolve(null);
     }
 
@@ -182,8 +182,8 @@ export class TransformCopy {
     const endX = targetX - internalOffsetX;
     const endY = targetY - internalOffsetY;
 
-    console.log('TransformCopy animate: Start:', { x: startX, y: startY });
-    console.log('TransformCopy animate: End:', { x: endX, y: endY });
+    console.log('TextSectionManager animate: Start:', { x: startX, y: startY });
+    console.log('TextSectionManager animate: End:', { x: endX, y: endY });
 
     // Create a filtered SVG containing only the bbox section paths
     const filteredSvg = this.createFilteredSVG(sourceSvg, paths, bounds);
@@ -314,7 +314,7 @@ export class TransformCopy {
   }
 
   /**
-   * Get bounds for a specific bbox section
+   * Get bounds for a specific bbox section (CTM-based, SVG internal coordinates)
    * @param {number} bboxIndex - Index of the bbox section
    * @returns {Bounds2|null} Bounds of the section, or null if invalid index
    */
@@ -327,7 +327,71 @@ export class TransformCopy {
   }
 
   /**
-   * Get all cloned components created by this TransformCopy instance
+   * Get client/screen bounds for a specific bbox section relative to mathText container
+   * Uses getBoundingClientRect for accurate screen positioning
+   * @param {number} bboxIndex - Index of the bbox section
+   * @returns {{x: number, y: number, width: number, height: number}|null} Bounds relative to mathText container
+   */
+  getClientBounds(bboxIndex) {
+    const sections = this.extractBBoxSections();
+    if (bboxIndex < 0 || bboxIndex >= sections.length) {
+      return null;
+    }
+
+    const { paths } = sections[bboxIndex];
+    if (!paths || paths.length === 0) {
+      return null;
+    }
+
+    // Calculate bounds from paths using getBoundingClientRect
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    paths.forEach(path => {
+      const pathRect = path.getBoundingClientRect();
+      minX = Math.min(minX, pathRect.left);
+      minY = Math.min(minY, pathRect.top);
+      maxX = Math.max(maxX, pathRect.right);
+      maxY = Math.max(maxY, pathRect.bottom);
+    });
+
+    // Convert to mathText container-relative coordinates
+    const mathTextRect = this.mathTextComponent.containerDOM.getBoundingClientRect();
+
+    return {
+      x: minX - mathTextRect.left,
+      y: minY - mathTextRect.top,
+      width: maxX - minX,
+      height: maxY - minY
+    };
+  }
+
+  /**
+   * Get bounds for a specific bbox section relative to the canvas section (parent of mathText).
+   * This is used for drawing on the annotation layer which is positioned at canvas level.
+   * @param {number} bboxIndex - Index of the bbox section
+   * @returns {Bounds2|null} Bounds relative to canvas section, or null if invalid
+   */
+  getCanvasBounds(bboxIndex) {
+    // Get bounds relative to mathText container
+    const clientBounds = this.getClientBounds(bboxIndex);
+    if (!clientBounds) {
+      return null;
+    }
+
+    // Get the mathText container's position in the canvas (its CSS left/top values)
+    const containerLeft = this.mathTextComponent.componentState.left || 0;
+    const containerTop = this.mathTextComponent.componentState.top || 0;
+
+    // Add container position to get canvas-relative coordinates
+    return Bounds2.rect(
+      containerLeft + clientBounds.x,
+      containerTop + clientBounds.y,
+      clientBounds.width,
+      clientBounds.height
+    );
+  }
+
+  /**
+   * Get all cloned components created by this TextSectionManager instance
    * @returns {MathTextComponent[]} Array of cloned components
    */
   getClonedComponents() {
@@ -368,10 +432,11 @@ export class TransformCopy {
         maxY = Math.max(maxY, bbox.y + bbox.height);
       } catch (e) {
         // getBBox can throw if element is not rendered
-        console.warn('TransformCopy: Could not get bbox for path', e);
+        console.warn('TextSectionManager: Could not get bbox for path', e);
       }
     });
 
     return { minX, minY, maxX, maxY };
   }
+
 }

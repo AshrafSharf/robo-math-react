@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import { RoboCanvas } from './RoboCanvas.js';
 import { AnimationSpeedManager } from './mathtext/animation-speed-manager.js';
-import { TransformCopy } from './mathtext/utils/transform-copy.js';
+import { TextSectionManager } from './mathtext/utils/text-section-manager.js';
 import { MathTextMoveEffect } from './effects/math-text-move-effect.js';
+import AnnotationLayer from './components/AnnotationLayer';
 
 function TestFeatures() {
   const [isAnimated, setIsAnimated] = useState(false);
   const [speed, setSpeed] = useState(1.0);
+  const [roboCanvas, setRoboCanvas] = useState(null);
   const roboCanvasRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -32,12 +34,19 @@ function TestFeatures() {
   const [domainMin, setDomainMin] = useState('-5');
   const [domainMax, setDomainMax] = useState('5');
 
-  // TransformCopy state
+  // TextSectionManager state
   const [cloneTargetX, setCloneTargetX] = useState('200');
   const [cloneTargetY, setCloneTargetY] = useState('300');
   const [cloneBboxIndex, setCloneBboxIndex] = useState('0');
   const [cloneSpacing, setCloneSpacing] = useState('20');
   const [bboxSectionCount, setBboxSectionCount] = useState(0);
+
+  // Callback when annotation layer SVG is ready
+  const handleAnnotationLayerReady = useCallback((svgElement) => {
+    if (roboCanvas) {
+      roboCanvas.setAnnotationLayer(svgElement);
+    }
+  }, [roboCanvas]);
 
   // Initialize RoboCanvas
   useEffect(() => {
@@ -45,16 +54,17 @@ function TestFeatures() {
 
     const initRoboCanvas = async () => {
       try {
-        const roboCanvas = new RoboCanvas(containerRef.current, {
+        const canvas = new RoboCanvas(containerRef.current, {
           canvasWidth: 1200,
           logicalWidth: 8,
           logicalHeight: 200
         });
 
-        await roboCanvas.init();
-        roboCanvas.useStaticDiagram();
+        await canvas.init();
+        canvas.useStaticDiagram();
 
-        roboCanvasRef.current = roboCanvas;
+        roboCanvasRef.current = canvas;
+        setRoboCanvas(canvas);
         console.log('TestFeatures: RoboCanvas initialized');
       } catch (error) {
         console.error('TestFeatures: RoboCanvas initialization failed', error);
@@ -68,6 +78,7 @@ function TestFeatures() {
       if (roboCanvasRef.current) {
         roboCanvasRef.current.destroy();
         roboCanvasRef.current = null;
+        setRoboCanvas(null);
       }
     };
   }, []);
@@ -279,7 +290,7 @@ function TestFeatures() {
     AnimationSpeedManager.setSpeedMultiplier(newSpeed);
   };
 
-  // TransformCopy handlers
+  // TextSectionManager handlers
   const transformCopyRef = useRef(null);
 
   const handleDetectBbox = () => {
@@ -293,8 +304,8 @@ function TestFeatures() {
       return;
     }
 
-    // Create TransformCopy instance and cache it
-    transformCopyRef.current = new TransformCopy(component, containerRef.current);
+    // Create TextSectionManager instance and cache it
+    transformCopyRef.current = new TextSectionManager(component, containerRef.current);
     const sections = transformCopyRef.current.extractBBoxSections();
     setBboxSectionCount(sections.length);
 
@@ -317,9 +328,9 @@ function TestFeatures() {
       return;
     }
 
-    // Create or reuse TransformCopy instance
+    // Create or reuse TextSectionManager instance
     if (!transformCopyRef.current || transformCopyRef.current.mathTextComponent !== component) {
-      transformCopyRef.current = new TransformCopy(component, containerRef.current);
+      transformCopyRef.current = new TextSectionManager(component, containerRef.current);
     }
 
     const x = parseFloat(cloneTargetX);
@@ -348,9 +359,9 @@ function TestFeatures() {
       return;
     }
 
-    // Create or reuse TransformCopy instance
+    // Create or reuse TextSectionManager instance
     if (!transformCopyRef.current || transformCopyRef.current.mathTextComponent !== component) {
-      transformCopyRef.current = new TransformCopy(component, containerRef.current);
+      transformCopyRef.current = new TextSectionManager(component, containerRef.current);
     }
 
     const x = parseFloat(cloneTargetX);
@@ -370,7 +381,7 @@ function TestFeatures() {
   const effectsRef = useRef([]);
 
   const handleClearClones = () => {
-    // Clear TransformCopy clones
+    // Clear TextSectionManager clones
     if (transformCopyRef.current) {
       transformCopyRef.current.clearClones();
     }
@@ -383,6 +394,38 @@ function TestFeatures() {
     effectsRef.current = [];
 
     console.log('Cleared all cloned components and effects');
+  };
+
+  const handleDrawRects = async () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component || !isMathText(component)) return;
+
+    const index = parseInt(cloneBboxIndex);
+    await roboCanvasRef.current.staticDiagram.sectionRect(component, index, {
+      stroke: '#ff0000',
+      strokeWidth: 2,
+      padding: 3
+    });
+  };
+
+  const handleAnimateRect = async () => {
+    const component = componentsMapRef.current[componentName];
+    if (!component || !isMathText(component)) return;
+
+    const index = parseInt(cloneBboxIndex);
+
+    // Use animated diagram - pen traced
+    roboCanvasRef.current.animatedDiagram.setAnimateMode(true);
+    await roboCanvasRef.current.animatedDiagram.sectionRect(component, index, {
+      stroke: '#ff0000',
+      strokeWidth: 2,
+      padding: 3
+    });
+  };
+
+  const handleClearRects = () => {
+    // Diagram tracks shapes - use clearAll or specific removal if needed
+    console.log('Use diagram.clearAll() to clear shapes');
   };
 
   const handleAnimateClone = async () => {
@@ -613,7 +656,7 @@ function TestFeatures() {
           </button>
         </div>
 
-        {/* TransformCopy Controls */}
+        {/* TextSectionManager Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', borderLeft: '1px solid #ccc', paddingLeft: '10px' }}>
           <button onClick={handleDetectBbox} style={{
             padding: '4px 8px',
@@ -737,6 +780,39 @@ function TestFeatures() {
           }}>
             Clear
           </button>
+          <button onClick={handleDrawRects} style={{
+            padding: '4px 8px',
+            border: '1px solid #ff9800',
+            backgroundColor: '#ff9800',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '11px'
+          }}>
+            Rect
+          </button>
+          <button onClick={handleAnimateRect} style={{
+            padding: '4px 8px',
+            border: '1px solid #e91e63',
+            backgroundColor: '#e91e63',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '11px'
+          }}>
+            AnimateRect
+          </button>
+          <button onClick={handleClearRects} style={{
+            padding: '4px 8px',
+            border: '1px solid #607d8b',
+            backgroundColor: '#607d8b',
+            color: 'white',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '11px'
+          }}>
+            ✕
+          </button>
         </div>
 
         <button onClick={handleClearAll} style={{
@@ -780,11 +856,13 @@ function TestFeatures() {
       </div>
 
       {/* Canvas Container */}
-      <div className="robo-shell-main" style={{ top: 0 }}>
+      <div className="robo-shell-main" style={{ overflow: 'auto' }}>
         <div
           ref={containerRef}
-          className="robo-shell-main-playsurface expanded"
-        />
+          className="robo-shell-main-playsurface"
+        >
+          <AnnotationLayer onLayerReady={handleAnnotationLayerReady} />
+        </div>
       </div>
 
       {/* Create Component Modal */}
