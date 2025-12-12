@@ -94,12 +94,6 @@ export class TranslateEffect extends BaseEffect {
             return;
         }
 
-        console.log('TranslateEffect: Starting GSAP animation', {
-            dx: this.dx,
-            dy: this.dy,
-            duration: this.duration
-        });
-
         const self = this;
         const targetDx = this.dx;
         const targetDy = this.dy;
@@ -130,7 +124,6 @@ export class TranslateEffect extends BaseEffect {
                 updatePath(clonePath, generateLinePath(viewCoords));
             },
             onComplete: () => {
-                console.log('TranslateEffect: GSAP animation complete');
                 removeElement(self.clone);
                 self.clone = null;
                 self.tween = null;

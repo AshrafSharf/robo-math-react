@@ -94,12 +94,6 @@ export class RotateEffect extends BaseEffect {
             return;
         }
 
-        console.log('RotateEffect: Starting GSAP animation', {
-            angle: this.angle,
-            center: this.center,
-            duration: this.duration
-        });
-
         const self = this;
         const targetAngle = this.angle;
         const center = this.center;
@@ -133,7 +127,6 @@ export class RotateEffect extends BaseEffect {
                 updatePath(clonePath, generateLinePath(viewCoords));
             },
             onComplete: () => {
-                console.log('RotateEffect: GSAP animation complete');
                 removeElement(self.clone);
                 self.clone = null;
                 self.tween = null;

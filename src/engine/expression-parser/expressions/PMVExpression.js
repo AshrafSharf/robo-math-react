@@ -13,7 +13,7 @@
  *   pmv(g, V, -1)                // vector shifted 1 unit downward
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { VectorCommand } from '../../commands/VectorCommand.js';
+import { PMVCommand } from '../../commands/PMVCommand.js';
 import { VectorUtil } from '../../../geom/VectorUtil.js';
 
 export class PMVExpression extends AbstractNonArithmeticExpression {
@@ -24,6 +24,9 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
         this.subExpressions = subExpressions;
         this.coordinates = []; // [x1, y1, x2, y2]
         this.graphExpression = null;
+        this.originalShapeVarName = null;
+        this.dx = 0;
+        this.dy = 0;
     }
 
     resolve(context) {
@@ -42,8 +45,10 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('pmv() requires graph as first argument');
         }
 
-        // Second arg is vector/line
+        // Second arg is vector/line - store variable name for registry lookup
         const sourceExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.originalShapeVarName = this.subExpressions[1].variableName || sourceExpr.variableName;
+
         const startVal = sourceExpr.getStartValue ? sourceExpr.getStartValue() : sourceExpr.getVariableAtomicValues().slice(0, 2);
         const endVal = sourceExpr.getEndValue ? sourceExpr.getEndValue() : sourceExpr.getVariableAtomicValues().slice(2, 4);
 
@@ -53,6 +58,11 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
         // Third arg is distance
         const distExpr = this._getResolvedExpression(context, this.subExpressions[2]);
         const distance = distExpr.getVariableAtomicValues()[0];
+
+        // Compute perpendicular dx, dy (90° CCW rotation of unit vector × distance)
+        const dir = VectorUtil.getUnitVector(start, end);
+        this.dx = -dir.y * distance;  // perpendicular x = -y
+        this.dy = dir.x * distance;   // perpendicular y = x
 
         // Use VectorUtil to shift perpendicular
         const result = VectorUtil.shiftPerpendicular(start, end, distance);
@@ -100,8 +110,18 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        const pts = this.getVectorPoints();
-        return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
+        const shiftedData = {
+            start: { x: this.coordinates[0], y: this.coordinates[1] },
+            end: { x: this.coordinates[2], y: this.coordinates[3] }
+        };
+        return new PMVCommand(
+            this.graphExpression,
+            this.originalShapeVarName,
+            shiftedData,
+            this.dx,
+            this.dy,
+            options
+        );
     }
 
     canPlay() {

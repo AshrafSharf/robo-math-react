@@ -61,7 +61,8 @@
 .robo-cmd-editor .robo-cmd-menu-bar .play-all,
 .robo-cmd-editor .robo-cmd-menu-bar .pause-all,
 .robo-cmd-editor .robo-cmd-menu-bar .resume-all,
-.robo-cmd-editor .robo-cmd-menu-bar .stop-all {
+.robo-cmd-editor .robo-cmd-menu-bar .stop-all,
+.robo-cmd-editor .robo-cmd-menu-bar .import-btn {
     transition: opacity 0.15s ease-out;
 }
 
@@ -69,7 +70,8 @@
 .robo-cmd-editor.collapsed .play-all,
 .robo-cmd-editor.collapsed .pause-all,
 .robo-cmd-editor.collapsed .resume-all,
-.robo-cmd-editor.collapsed .stop-all {
+.robo-cmd-editor.collapsed .stop-all,
+.robo-cmd-editor.collapsed .import-btn {
     opacity: 0;
     pointer-events: none;
     width: 0;

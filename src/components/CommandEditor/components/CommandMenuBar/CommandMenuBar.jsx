@@ -9,6 +9,7 @@ const CommandMenuBar = ({
   onPause,
   onResume,
   onDeleteAll,
+  onImport,
   onToggleSidebar,
   isExecuting,
   isPaused,
@@ -61,6 +62,14 @@ const CommandMenuBar = ({
         title="Stop"
       >
         <i className="glyphicon glyphicon-stop" />
+      </a>
+
+      <a
+        className="btn btn-default import-btn pull-left"
+        onClick={onImport}
+        title="Import Expressions"
+      >
+        <i className="glyphicon glyphicon-import" />
       </a>
 
       <a

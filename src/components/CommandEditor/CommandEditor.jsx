@@ -5,6 +5,7 @@ import CommandMenuBar from './components/CommandMenuBar/CommandMenuBar';
 import CommandList from './components/CommandList/CommandList';
 import SettingsPanel from './components/SettingsPanel/SettingsPanel';
 import NewCommandButton from './components/NewCommandButton/NewCommandButton';
+import ImportModal from './components/ImportModal/ImportModal';
 import { CommandProvider } from './context/CommandContext';
 import { createCommand, getNextId } from './utils/commandModel';
 import './CommandEditor.css';
@@ -30,6 +31,7 @@ const CommandEditor = ({
   const [commands, setCommands] = useState([createCommand(1)]);
   const [selectedId, setSelectedId] = useState(1);
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const containerRef = useRef(null);
@@ -158,6 +160,26 @@ const CommandEditor = ({
     onToggleSidebar?.();
   }, [onToggleSidebar]);
 
+  // Open import modal
+  const handleOpenImport = useCallback(() => {
+    setImportModalOpen(true);
+  }, []);
+
+  // Import expressions from modal
+  const handleImport = useCallback((lines) => {
+    // Create commands for each line
+    let currentId = getNextId(commands);
+    const newCommands = lines.map((expression, index) => {
+      const cmd = createCommand(currentId + index);
+      cmd.expression = expression;
+      return cmd;
+    });
+
+    // Replace all commands with imported ones
+    updateCommands(newCommands);
+    setSelectedId(newCommands[0]?.id || 1);
+  }, [commands, updateCommands]);
+
   return (
     <CommandProvider value={{
       commands,
@@ -176,6 +198,7 @@ const CommandEditor = ({
             onPause={handlePause}
             onResume={handleResume}
             onDeleteAll={handleDeleteAll}
+            onImport={handleOpenImport}
             onToggleSidebar={handleToggleSidebar}
             isExecuting={isExecuting}
             isPaused={isPaused}
@@ -220,6 +243,12 @@ const CommandEditor = ({
             anchorElement={selectedCommandRef.current || containerRef.current}
           />
         )}
+
+        <ImportModal
+          isOpen={importModalOpen}
+          onClose={() => setImportModalOpen(false)}
+          onImport={handleImport}
+        />
       </div>
     </CommandProvider>
   );

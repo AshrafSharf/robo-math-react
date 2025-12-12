@@ -177,7 +177,6 @@ export class TexSVGScriptShape extends BaseStylableSubject {
       const modelY = modelCoordinates[i + 1];
       const x = this.graphsheet2d.toViewX(modelX);
       const y = this.graphsheet2d.toViewY(modelY);
-      console.log(`🔧 Converting (${modelX}, ${modelY}) -> (${x}, ${y})`);
       coordinates.push(x);
       coordinates.push(y);
     }
