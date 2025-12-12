@@ -401,7 +401,7 @@ function TestFeatures() {
     if (!component || !isMathText(component)) return;
 
     const index = parseInt(cloneBboxIndex);
-    await roboCanvasRef.current.staticDiagram.sectionRect(component, index, {
+    await roboCanvasRef.current.staticDiagram.annotateSectionRect(component, index, {
       stroke: '#ff0000',
       strokeWidth: 2,
       padding: 3
@@ -416,7 +416,7 @@ function TestFeatures() {
 
     // Use animated diagram - pen traced
     roboCanvasRef.current.animatedDiagram.setAnimateMode(true);
-    await roboCanvasRef.current.animatedDiagram.sectionRect(component, index, {
+    await roboCanvasRef.current.animatedDiagram.annotateSectionRect(component, index, {
       stroke: '#ff0000',
       strokeWidth: 2,
       padding: 3

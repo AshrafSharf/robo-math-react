@@ -338,7 +338,7 @@ export class BaseDiagram2d {
    * @returns {MathTextRectShape|null} The created shape, or null if invalid
    * @protected
    */
-  _createSectionRect(mathTextComponent, sectionIndex, options = {}) {
+  _createAnnotateSectionRect(mathTextComponent, sectionIndex, options = {}) {
     // Get section manager and extract canvas-relative bounds
     const sectionManager = new TextSectionManager(mathTextComponent, this.canvasSection);
     const bounds = sectionManager.getCanvasBounds(sectionIndex);

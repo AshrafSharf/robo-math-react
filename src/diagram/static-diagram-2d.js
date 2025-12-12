@@ -889,17 +889,17 @@ export class StaticDiagram2d extends BaseDiagram2d {
     return mathComponent;
   }
 
-  // ============= SECTION RECT METHODS =============
+  // ============= ANNOTATION METHODS =============
 
   /**
-   * Draw a rectangle around a bbox section in a MathTextComponent (instant, no animation)
+   * Draw a rectangle around a bbox section on the annotation layer (instant, no animation)
    * @param {MathTextComponent} mathTextComponent - The math text component with bbox sections
    * @param {number} sectionIndex - Index of the bbox section to highlight
    * @param {Object} options - Styling options {stroke, strokeWidth, fill, padding}
    * @returns {Promise<MathTextRectShape|null>} The rect shape, or null if invalid
    */
-  async sectionRect(mathTextComponent, sectionIndex, options = {}) {
-    const shape = this._createSectionRect(mathTextComponent, sectionIndex, options);
+  async annotateSectionRect(mathTextComponent, sectionIndex, options = {}) {
+    const shape = this._createAnnotateSectionRect(mathTextComponent, sectionIndex, options);
     if (shape) {
       shape.renderEndState();
     }

@@ -682,14 +682,14 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
   }
 
   /**
-   * Draw a rectangle around a bbox section with pen animation
+   * Draw a rectangle around a bbox section on the annotation layer with pen animation
    * @param {MathTextComponent} mathTextComponent - Math text component with bbox sections
    * @param {number} sectionIndex - Index of the bbox section to highlight
    * @param {Object} options - Styling options {stroke, strokeWidth, fill, padding}
    * @returns {Promise<MathTextRectShape|null>} The rect shape, or null if invalid
    */
-  async sectionRect(mathTextComponent, sectionIndex, options = {}) {
-    const shape = this._createSectionRect(mathTextComponent, sectionIndex, options);
+  async annotateSectionRect(mathTextComponent, sectionIndex, options = {}) {
+    const shape = this._createAnnotateSectionRect(mathTextComponent, sectionIndex, options);
     if (!shape) {
       return null;
     }
