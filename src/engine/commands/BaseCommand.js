@@ -30,7 +30,10 @@ export class BaseCommand {
     this.labelOffsetX = 0;
     this.labelOffsetY = 0;
 
-    // Command context (set during init)
+    // Diagram2d instance (set by CommandExecutor before init)
+    this.diagram2d = null;
+
+    // Command context (set during init) - contains shapeRegistry
     this.commandContext = null;
 
     // State tracking
@@ -43,7 +46,7 @@ export class BaseCommand {
 
   /**
    * Initialize command - must be called before play()
-   * Creates shapes via commandContext.diagram
+   * Creates shapes via this.diagram2d (set by CommandExecutor)
    *
    * @param {CommandContext} commandContext - Contains diagram, graphContainer, expressionContext
    * @returns {Promise}
@@ -73,10 +76,14 @@ export class BaseCommand {
   }
 
   /**
-   * Called after doInit() - override for post-initialization logic
+   * Called after doInit() - register shape in registry if this is an assignment
    */
   postInit() {
-    // Subclass can override
+    // Register commandResult in shapeRegistry if this command has a label
+    // (labels are only set for assignment expressions like P = point(...))
+    if (this.labelName && this.commandResult) {
+      this.commandContext.shapeRegistry[this.labelName] = this.commandResult;
+    }
   }
 
   /**
@@ -102,15 +109,11 @@ export class BaseCommand {
 
   /**
    * Subclass can override for custom play logic
-   * Default: play the shape's attached effect (if any)
+   * Default: calls playSingle() to animate the shape
    * @returns {Promise}
    */
   async doPlay() {
-    // If we have a commandResult with an attached effect, play it
-    if (this.commandResult && this.commandContext?.diagram?.playShapeEffect) {
-      return this.commandContext.diagram.playShapeEffect(this.commandResult);
-    }
-    return Promise.resolve();
+    return this.playSingle();
   }
 
   /**
@@ -176,7 +179,7 @@ export class BaseCommand {
    */
   displayLabel() {
     const position = this.getLabelPosition();
-    if (position && this.commandContext && this.commandContext.diagram) {
+    if (position && this.diagram2d) {
       // Use diagram's label method if available
       // For now, labels are handled by the shape options
     }

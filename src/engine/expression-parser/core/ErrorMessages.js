@@ -204,6 +204,50 @@ export const reflect_error_messages = {
     `Variable '${varName}' not defined.\nDefine it before using.`,
 };
 
+// ============= Rotate Error Messages =============
+
+export const rotate_error_messages = {
+  WRONG_ARG_COUNT: (count) =>
+    `rotate() needs 3-5 args.\nGot ${count}. rotate(g, shape, angle)`,
+
+  GRAPH_REQUIRED: () =>
+    `rotate() needs a graph.\nFirst argument must be graph.`,
+
+  INVALID_SHAPE: (type) =>
+    `Cannot rotate ${type}.\nUse point, line, vec, circle, polygon.`,
+
+  ANGLE_NOT_NUMBER: () =>
+    `Angle must be a number.\nrotate(g, shape, degrees)`,
+
+  INVALID_CENTER: () =>
+    `Invalid rotation center.\nUse point or (cx, cy) coords.`,
+
+  VARIABLE_NOT_FOUND: (varName) =>
+    `Variable '${varName}' not defined.\nDefine it before using.`,
+};
+
+// ============= Translate Error Messages =============
+
+export const translate_error_messages = {
+  WRONG_ARG_COUNT: (count) =>
+    `translate() needs 4 args.\nGot ${count}. translate(g, shape, dx, dy)`,
+
+  GRAPH_REQUIRED: () =>
+    `translate() needs a graph.\nFirst argument must be graph.`,
+
+  INVALID_SHAPE: (type) =>
+    `Cannot translate ${type}.\nUse point, line, vec, circle, polygon.`,
+
+  DX_NOT_NUMBER: () =>
+    `dx must be a number.\ntranslate(g, shape, dx, dy)`,
+
+  DY_NOT_NUMBER: () =>
+    `dy must be a number.\ntranslate(g, shape, dx, dy)`,
+
+  VARIABLE_NOT_FOUND: (varName) =>
+    `Variable '${varName}' not defined.\nDefine it before using.`,
+};
+
 // ============= Label Error Messages =============
 
 export const label_error_messages = {
@@ -264,6 +308,8 @@ const messagesByType = {
   intersect: intersect_error_messages,
   project: project_error_messages,
   reflect: reflect_error_messages,
+  rotate: rotate_error_messages,
+  translate: translate_error_messages,
   label: label_error_messages,
   assignment: assignment_error_messages,
 };

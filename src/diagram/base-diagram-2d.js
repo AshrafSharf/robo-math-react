@@ -43,35 +43,6 @@ export class BaseDiagram2d {
   }
 
   /**
-   * Create a MathTextComponent (hidden by default with stroke disabled)
-   * @param {string} text - LaTeX mathematical expression
-   * @param {number} row - Logical row coordinate
-   * @param {number} col - Logical column coordinate
-   * @param {Object} options - Rendering options {fontSize, stroke, fill}
-   * @returns {MathTextComponent} Math text component (hidden)
-   * @protected
-   */
-  _createMathText(text, row, col, options = {}) {
-    const mathComponent = new MathTextComponent(
-      text,
-      row,
-      col,
-      this.coordinateMapper,
-      this.canvasSection,
-      {
-        fontSize: options.fontSize || 32,
-        stroke: options.stroke || '#000000',
-        fill: options.fill || '#000000'
-      }
-    );
-
-    mathComponent.hide();
-    mathComponent.disableStroke();
-
-    return mathComponent;
-  }
-
-  /**
    * Create an angle shape (without rendering)
    * @protected
    */
@@ -603,60 +574,6 @@ export class BaseDiagram2d {
     this.graphContainers.push({ grapher, containerDOM });
 
     return grapher;
-  }
-
-  /**
-   * Create mathematical text using MathJax rendering
-   * Similar to creating a text cell in a Jupyter notebook
-   * @param {string} text - LaTeX mathematical expression
-   * @param {number} row - Logical row coordinate
-   * @param {number} col - Logical column coordinate
-   * @param {Object} options - Rendering options {fontSize, stroke, fill}
-   * @returns {MathTextComponent} Math text component
-   */
-  mathText(text, row, col, options = {}) {
-    const mathComponent = this._createMathText(text, row, col, options);
-    this.objects.push(mathComponent);
-    return mathComponent;
-  }
-
-  /**
-   * Create a MathTextComponent by cloning an existing MathTextComponent's SVG.
-   * Creates identical copies at different logical positions with the same styling.
-   *
-   * @param {MathTextComponent} sourceMathText - The source MathTextComponent to clone from
-   * @param {number} row - Logical row coordinate for the clone
-   * @param {number} col - Logical column coordinate for the clone
-   * @returns {MathTextComponent} A new MathTextComponent with cloned SVG
-   */
-  mathTextFromClone(sourceMathText, row, col) {
-    // Get source SVG element
-    const sourceSvg = sourceMathText.getMathSVGRoot()[0];
-    if (!sourceSvg) {
-      console.error('mathTextFromClone: Source MathTextComponent has no SVG');
-      return null;
-    }
-
-    // Convert logical coordinates to pixel coordinates
-    const pixelCoords = this.coordinateMapper.toPixel(row, col);
-
-    // Create clone using factory method, preserving source options
-    const clonedComponent = MathTextComponent.fromSVGClone(
-      sourceSvg,
-      pixelCoords.x,
-      pixelCoords.y,
-      this.canvasSection,
-      {
-        fontSize: sourceMathText.fontSizeValue,
-        stroke: sourceMathText.strokeColor,
-        fill: sourceMathText.fillColor
-      }
-    );
-
-    // Track for cleanup
-    this.objects.push(clonedComponent);
-
-    return clonedComponent;
   }
 
   // ============= CLEANUP METHODS =============

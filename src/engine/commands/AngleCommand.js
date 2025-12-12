@@ -35,8 +35,6 @@ export class AngleCommand extends BaseCommand {
    * @returns {Promise}
    */
   async doInit() {
-    const { diagram } = this.commandContext;
-
     // Resolve grapher from expression at init time
     if (!this.graphExpression) {
       const err = new Error(common_error_messages.GRAPH_REQUIRED('angle'));
@@ -71,7 +69,7 @@ export class AngleCommand extends BaseCommand {
       options.fill = this.fill;
     }
 
-    this.commandResult = await diagram.angle(
+    this.commandResult = this.diagram2d.angle(
       this.graphContainer,
       this.vertex,
       this.point1,

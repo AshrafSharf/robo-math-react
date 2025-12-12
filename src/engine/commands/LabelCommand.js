@@ -30,8 +30,6 @@ export class LabelCommand extends BaseCommand {
    * @returns {Promise}
    */
   async doInit() {
-    const { diagram } = this.commandContext;
-
     // Resolve grapher from expression at init time
     if (!this.graphExpression) {
       const err = new Error(common_error_messages.GRAPH_REQUIRED('label'));
@@ -55,8 +53,7 @@ export class LabelCommand extends BaseCommand {
     }
 
     // Create the label using diagram's label method
-    // This returns a MathTextComponent (hidden, ready for animation)
-    this.commandResult = await diagram.label(
+    this.commandResult = this.diagram2d.label(
       this.graphContainer,
       this.position,
       this.latexString,

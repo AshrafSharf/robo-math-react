@@ -127,19 +127,15 @@ export class CommandEditorController {
             return;
         }
 
-        // Clear after successful compilation and ensure static mode
+        // Clear after successful compilation
         this.clearAndReset();
-        this.roboCanvas.useStaticDiagram();
         this.expressionContext = freshExprContext;
 
         // Create command context
-        const commandContext = new CommandContext(
-            this.getDiagram(),
-            null,
-            freshExprContext
-        );
+        const commandContext = new CommandContext();
 
         // Set up executor
+        this.commandExecutor.setDiagram2d(this.getDiagram());
         this.commandExecutor.setCommands(pipelineResult.commands);
         this.commandExecutor.setCommandContext(commandContext);
 
@@ -181,9 +177,8 @@ export class CommandEditorController {
             return;
         }
 
-        // Clear and switch to animated diagram
+        // Clear canvas
         this.roboCanvas.clearAll();
-        this.roboCanvas.useAnimatedDiagram();
 
         // Re-process to get fresh commands (needed because we cleared)
         const freshExprContext = new ExpressionContext();
@@ -202,27 +197,22 @@ export class CommandEditorController {
 
         if (commandIndex === -1) {
             console.warn('Command not found:', commandId);
-            this.roboCanvas.useStaticDiagram();
             return;
         }
 
         // Abort if errors up to this index
         const hasErrorsUpTo = pipelineResult.errors.some(e => e.index <= commandIndex);
         if (hasErrorsUpTo) {
-            this.roboCanvas.useStaticDiagram();
             return;
         }
 
         this.expressionContext = freshExprContext;
 
-        // Create command context with animated diagram
-        const commandContext = new CommandContext(
-            this.getDiagram(),
-            null,
-            freshExprContext
-        );
+        // Create command context
+        const commandContext = new CommandContext();
 
         // Set up executor
+        this.commandExecutor.setDiagram2d(this.getDiagram());
         this.commandExecutor.setCommands(pipelineResult.commands);
         this.commandExecutor.setCommandContext(commandContext);
 
@@ -236,8 +226,6 @@ export class CommandEditorController {
         await this.commandExecutor.playUpTo(commandIndex);
 
         this._setExecuting(false);
-        // Shapes remain visible in animated mode
-        // executeAll() explicitly switches back to static mode
     }
 
     /**
@@ -250,9 +238,8 @@ export class CommandEditorController {
             return;
         }
 
-        // Clear and switch to animated diagram
+        // Clear canvas
         this.roboCanvas.clearAll();
-        this.roboCanvas.useAnimatedDiagram();
 
         // Re-process to get fresh commands
         const freshExprContext = new ExpressionContext();
@@ -266,20 +253,16 @@ export class CommandEditorController {
 
         // Abort if errors
         if (pipelineResult.errors.length > 0 || pipelineResult.commands.length === 0) {
-            this.roboCanvas.useStaticDiagram();
             return;
         }
 
         this.expressionContext = freshExprContext;
 
-        // Create command context with animated diagram
-        const commandContext = new CommandContext(
-            this.getDiagram(),
-            null,
-            freshExprContext
-        );
+        // Create command context
+        const commandContext = new CommandContext();
 
         // Set up executor
+        this.commandExecutor.setDiagram2d(this.getDiagram());
         this.commandExecutor.setCommands(pipelineResult.commands);
         this.commandExecutor.setCommandContext(commandContext);
 

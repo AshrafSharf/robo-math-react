@@ -32,10 +32,8 @@ export class Create2DGraphCommand extends BaseCommand {
      * @returns {Promise}
      */
     async doInit() {
-        const { diagram } = this.commandContext;
-
         // Create graph container using bounds-based API
-        const grapher = diagram.graphContainer(this.row1, this.col1, this.row2, this.col2, {
+        const grapher = this.diagram2d.graphContainer(this.row1, this.col1, this.row2, this.col2, {
             xRange: this.xRange,
             yRange: this.yRange,
             showGrid: this.showGrid

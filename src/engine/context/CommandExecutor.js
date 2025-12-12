@@ -17,7 +17,10 @@ export class CommandExecutor {
     // List of commands to execute
     this.commands = [];
 
-    // Execution context
+    // Diagram2d instance
+    this.diagram2d = null;
+
+    // Shared context for commands (shapeRegistry)
     this.commandContext = null;
 
     // Current playback state
@@ -53,6 +56,14 @@ export class CommandExecutor {
   }
 
   /**
+   * Set the diagram2d instance
+   * @param {Diagram2d} diagram2d
+   */
+  setDiagram2d(diagram2d) {
+    this.diagram2d = diagram2d;
+  }
+
+  /**
    * Set the command context
    * @param {CommandContext} context
    */
@@ -65,6 +76,9 @@ export class CommandExecutor {
    */
   clearCommands() {
     this.commands = [];
+    if (this.commandContext) {
+      this.commandContext.shapeRegistry = {};
+    }
     this.currentIndex = 0;
     this.stop();
   }
@@ -195,6 +209,8 @@ export class CommandExecutor {
    */
   async initCommand(command) {
     if (!command.getIsInitialized || !command.getIsInitialized()) {
+      // Set diagram2d on command before init
+      command.diagram2d = this.diagram2d;
       await command.init(this.commandContext);
     }
   }

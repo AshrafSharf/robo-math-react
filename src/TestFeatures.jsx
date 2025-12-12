@@ -61,7 +61,6 @@ function TestFeatures() {
         });
 
         await canvas.init();
-        canvas.useStaticDiagram();
 
         roboCanvasRef.current = canvas;
         setRoboCanvas(canvas);
@@ -115,7 +114,7 @@ function TestFeatures() {
       console.log(`Created graph container: ${newName} from (${row1},${col1}) to (${row2},${col2})`);
     } else {
       // Use row-first API: mathText(text, row, col, options)
-      const mathComponent = roboCanvas.diagram.mathText(newLatex, row1, col1, {
+      const mathComponent = roboCanvas.mathText(newLatex, row1, col1, {
         fontSize: 32,
         stroke: '#000000'
       });
@@ -275,12 +274,7 @@ function TestFeatures() {
     const newAnimated = e.target.checked;
     setIsAnimated(newAnimated);
     roboCanvasRef.current.clearAll();
-
-    if (newAnimated) {
-      roboCanvasRef.current.useAnimatedDiagram();
-    } else {
-      roboCanvasRef.current.useStaticDiagram();
-    }
+    // Single Diagram2d - no mode switching needed
   };
 
   // Handle speed change

@@ -27,8 +27,6 @@ export class PointCommand extends BaseCommand {
    * @returns {Promise}
    */
   async doInit() {
-    const { diagram } = this.commandContext;
-
     // Resolve grapher from expression at init time (after g2d command has run)
     if (!this.graphExpression) {
       const err = new Error(common_error_messages.GRAPH_REQUIRED('point'));
@@ -51,7 +49,7 @@ export class PointCommand extends BaseCommand {
       throw err;
     }
 
-    this.commandResult = await diagram.point(
+    this.commandResult = this.diagram2d.point(
       this.graphContainer,
       this.position,
       this.color,

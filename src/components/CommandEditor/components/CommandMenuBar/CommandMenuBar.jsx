@@ -5,7 +5,6 @@ import React from 'react';
  */
 const CommandMenuBar = ({
   onPlayAll,
-  onPlayUpTo,
   onStop,
   onPause,
   onResume,
@@ -13,8 +12,7 @@ const CommandMenuBar = ({
   onToggleSidebar,
   isExecuting,
   isPaused,
-  isSidebarCollapsed,
-  canPlayUpTo = false
+  isSidebarCollapsed
 }) => {
   return (
     <div className="robo-cmd-menu-bar">
@@ -27,22 +25,13 @@ const CommandMenuBar = ({
       </a>
 
       {!isExecuting ? (
-        <>
-          <a
-            className="btn btn-default play-all pull-left"
-            onClick={onPlayAll}
-            title="Play All"
-          >
-            <i className="glyphicon glyphicon-play" />
-          </a>
-          <a
-            className={`btn btn-default play-upto pull-left ${!canPlayUpTo ? 'disabled' : ''}`}
-            onClick={canPlayUpTo ? onPlayUpTo : undefined}
-            title="Play Up To Selected"
-          >
-            <i className="glyphicon glyphicon-play" />
-          </a>
-        </>
+        <a
+          className="btn btn-default play-all pull-left"
+          onClick={onPlayAll}
+          title="Play All"
+        >
+          <i className="glyphicon glyphicon-play" />
+        </a>
       ) : (
         <>
           {!isPaused ? (

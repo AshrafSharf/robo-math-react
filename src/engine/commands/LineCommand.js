@@ -30,8 +30,6 @@ export class LineCommand extends BaseCommand {
    * @returns {Promise}
    */
   async doInit() {
-    const { diagram } = this.commandContext;
-
     // Resolve grapher from expression at init time (after g2d command has run)
     if (!this.graphExpression) {
       const err = new Error(common_error_messages.GRAPH_REQUIRED('line'));
@@ -65,7 +63,7 @@ export class LineCommand extends BaseCommand {
       options.fill = this.fill;
     }
 
-    this.commandResult = await diagram.line(
+    this.commandResult = this.diagram2d.line(
       this.graphContainer,
       this.startPoint,
       this.endPoint,
@@ -122,4 +120,6 @@ export class LineCommand extends BaseCommand {
     const effect = new MathShapeEffect(this.commandResult);
     return effect.play();
   }
+
+  
 }

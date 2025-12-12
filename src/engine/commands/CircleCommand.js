@@ -30,8 +30,6 @@ export class CircleCommand extends BaseCommand {
      * @returns {Promise}
      */
     async doInit() {
-        const { diagram } = this.commandContext;
-
         // Resolve grapher from expression at init time (after g2d command has run)
         if (!this.graphExpression) {
             const err = new Error(common_error_messages.GRAPH_REQUIRED('circle'));
@@ -65,7 +63,7 @@ export class CircleCommand extends BaseCommand {
             options.fill = this.fill;
         }
 
-        this.commandResult = await diagram.circle(
+        this.commandResult = this.diagram2d.circle(
             this.graphContainer,
             this.center,
             this.radius,

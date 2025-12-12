@@ -23,7 +23,6 @@ function App() {
     handleExecute: hookHandleExecute,
     handleExecuteAll: hookHandleExecuteAll,
     handlePlaySingle: hookHandlePlaySingle,
-    handlePlayUpTo: hookHandlePlayUpTo,
     handlePlayAll: hookHandlePlayAll,
     handleChange: hookHandleChange,
     handleStop: hookHandleStop,
@@ -70,7 +69,6 @@ function App() {
           return;
         }
 
-        canvasInstance.useStaticDiagram();
         setRoboCanvas(canvasInstance);
         console.log('App: RoboCanvas initialized');
       } catch (error) {
@@ -118,7 +116,6 @@ function App() {
           onExecute={hookHandleExecute}
           onExecuteAll={hookHandleExecuteAll}
           onPlaySingle={hookHandlePlaySingle}
-          onPlayUpTo={hookHandlePlayUpTo}
           onPlayAll={hookHandlePlayAll}
           onStop={hookHandleStop}
           onPause={hookHandlePause}

@@ -31,8 +31,6 @@ export class PlotCommand extends BaseCommand {
      * @returns {Promise}
      */
     async doInit() {
-        const { diagram } = this.commandContext;
-
         // Resolve grapher from expression at init time (after g2d command has run)
         if (!this.graphExpression) {
             const err = new Error(common_error_messages.GRAPH_REQUIRED('plot'));
@@ -80,7 +78,7 @@ export class PlotCommand extends BaseCommand {
             options.strokeWidth = this.strokeWidth;
         }
 
-        this.commandResult = await diagram.plot(
+        this.commandResult = this.diagram2d.plot(
             this.graphContainer,
             this.equation,
             minX,

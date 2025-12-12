@@ -59,7 +59,6 @@
 /* Hide menu bar buttons when collapsed */
 .robo-cmd-editor .robo-cmd-menu-bar .delete-all,
 .robo-cmd-editor .robo-cmd-menu-bar .play-all,
-.robo-cmd-editor .robo-cmd-menu-bar .play-upto,
 .robo-cmd-editor .robo-cmd-menu-bar .pause-all,
 .robo-cmd-editor .robo-cmd-menu-bar .resume-all,
 .robo-cmd-editor .robo-cmd-menu-bar .stop-all {
@@ -68,7 +67,6 @@
 
 .robo-cmd-editor.collapsed .delete-all,
 .robo-cmd-editor.collapsed .play-all,
-.robo-cmd-editor.collapsed .play-upto,
 .robo-cmd-editor.collapsed .pause-all,
 .robo-cmd-editor.collapsed .resume-all,
 .robo-cmd-editor.collapsed .stop-all {
@@ -78,20 +76,6 @@
     padding: 0;
     border: none;
     overflow: hidden;
-}
-
-/* Play Up To button styling */
-.robo-cmd-menu-bar .play-upto .glyphicon {
-    color: #17a2b8;
-}
-
-.robo-cmd-menu-bar .play-upto.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.robo-cmd-menu-bar .play-upto.disabled .glyphicon {
-    color: #999;
 }
 
 /* Only toggle button visible when collapsed */

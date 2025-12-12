@@ -71,8 +71,6 @@ export class ArcCommand extends BaseCommand {
    * @returns {Promise}
    */
   async doInit() {
-    const { diagram } = this.commandContext;
-
     // Resolve grapher from expression at init time (after g2d command has run)
     if (!this.graphExpression) {
       const err = new Error(common_error_messages.GRAPH_REQUIRED('arc'));
@@ -103,7 +101,7 @@ export class ArcCommand extends BaseCommand {
       options.strokeWidth = this.strokeWidth;
     }
 
-    this.commandResult = await diagram.arc(
+    this.commandResult = this.diagram2d.arc(
       this.graphContainer,
       this.startPoint,
       this.endPoint,

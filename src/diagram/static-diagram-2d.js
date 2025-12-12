@@ -283,7 +283,7 @@ export class StaticDiagram2d extends BaseDiagram2d {
     this.objects.push(shape);
     return shape;
   }
-  
+
   /**
    * Create a curve
    * @param {Object} graphContainer - The graph container to render on

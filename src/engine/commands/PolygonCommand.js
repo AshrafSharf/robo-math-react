@@ -28,8 +28,6 @@ export class PolygonCommand extends BaseCommand {
      * @returns {Promise}
      */
     async doInit() {
-        const { diagram } = this.commandContext;
-
         // Resolve grapher from expression at init time (after g2d command has run)
         if (!this.graphExpression) {
             const err = new Error(common_error_messages.GRAPH_REQUIRED('polygon'));
@@ -63,7 +61,7 @@ export class PolygonCommand extends BaseCommand {
             options.fill = this.fill;
         }
 
-        this.commandResult = await diagram.polygon(
+        this.commandResult = this.diagram2d.polygon(
             this.graphContainer,
             this.vertices,
             this.color,

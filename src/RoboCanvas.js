@@ -11,15 +11,15 @@
  * Usage:
  *   const roboCanvas = new RoboCanvas(document.getElementById('container'));
  *   await roboCanvas.init();
- *   roboCanvas.diagram.mathText('x^2', 3, 2);  // row 3, col 2
+ *   roboCanvas.mathText('x^2', 3, 2);  // row 3, col 2
  *   const gc = roboCanvas.diagram.graphContainer(0, 0, 16, 8);  // bounds: row 0-16, col 0-8
  *   roboCanvas.diagram.point(gc, {x: 0, y: 0});
  */
 
 import { PenTracerImpl } from './pen/pen-tracer-impl.js';
 import { LogicalCoordinateMapper } from './mathtext/components/logical-coordinate-mapper.js';
-import { StaticDiagram2d } from './diagram/static-diagram-2d.js';
-import { AnimatedDiagram2d } from './diagram/animated-diagram-2d.js';
+import { Diagram2d } from './diagram/diagram-2d.js';
+import { MathTextComponent } from './mathtext/components/math-text-component.js';
 import { TweenMax, Power2 } from 'gsap';
 
 export class RoboCanvas {
@@ -41,7 +41,8 @@ export class RoboCanvas {
 
     this.initialized = false;
     this.diagram = null;
-    this.isAnimatedMode = false;
+    this.coordinateMapper = null;
+    this.mathTextObjects = [];
     this.penTracer = null;
     this.annotationLayer = null;
 
@@ -103,7 +104,7 @@ export class RoboCanvas {
       const PIXELS_PER_UNIT = 25;
       const pixelWidth = this.options.logicalWidth * PIXELS_PER_UNIT;
       const pixelHeight = this.options.logicalHeight * PIXELS_PER_UNIT;
-      const coordinateMapper = new LogicalCoordinateMapper(
+      this.coordinateMapper = new LogicalCoordinateMapper(
         pixelWidth,
         pixelHeight,
         this.options.logicalWidth,
@@ -111,15 +112,10 @@ export class RoboCanvas {
       );
       console.log(`Coordinate Mapper: ${this.options.logicalWidth}×${this.options.logicalHeight} logical → ${pixelWidth}×${pixelHeight}px (${PIXELS_PER_UNIT}px per unit)`);
 
-      // Create both diagram instances (no shared Grapher - created on demand)
-      console.log('Creating static and animated diagram instances...');
-      this.staticDiagram = new StaticDiagram2d(coordinateMapper, this.canvasSection, this);
-      this.animatedDiagram = new AnimatedDiagram2d(coordinateMapper, this.canvasSection, this);
-
-      // Start with static diagram
-      this.diagram = this.staticDiagram;
-      this.isAnimatedMode = false;
-      console.log('Diagram instances created');
+      // Create single diagram instance
+      console.log('Creating diagram instance...');
+      this.diagram = new Diagram2d(this.coordinateMapper, this.canvasSection, this);
+      console.log('Diagram instance created');
 
       this.initialized = true;
       console.log('RoboCanvas initialized successfully');
@@ -131,44 +127,6 @@ export class RoboCanvas {
   }
 
 
-  /**
-   * Switch to static mode (instant rendering, no animations)
-   */
-  useStaticDiagram() {
-    if (!this.initialized) {
-      throw new Error('RoboCanvas not initialized. Call await roboCanvas.init() first.');
-    }
-
-    if (this.isAnimatedMode) {
-      this.diagram.clearAll();
-      this.diagram = this.staticDiagram;
-      this.isAnimatedMode = false;
-      console.log('✅ Switched to static diagram');
-      console.log('✅ this.diagram is now:', this.diagram.constructor.name);
-    }
-  }
-
-  /**
-   * Switch to animated mode (queued animations)
-   * @param {boolean} clearCanvas - Whether to clear canvas when switching (default: true)
-   */
-  useAnimatedDiagram(clearCanvas = true) {
-    if (!this.initialized) {
-      throw new Error('RoboCanvas not initialized. Call await roboCanvas.init() first.');
-    }
-
-    if (!this.isAnimatedMode) {
-      if (clearCanvas) {
-        this.diagram.clearAll();
-      }
-      this.diagram = this.animatedDiagram;
-      this.diagram.setAnimateMode(true);
-      this.isAnimatedMode = true;
-      console.log('✅ Switched to animated diagram');
-      console.log('✅ this.diagram is now:', this.diagram.constructor.name);
-      console.log('✅ this.diagram.animateMode:', this.diagram.animateMode);
-    }
-  }
 
 
   /**
@@ -192,6 +150,39 @@ export class RoboCanvas {
    */
   clearAll() {
     this.diagram.clearAll();
+    // Clear mathText objects
+    this.mathTextObjects.forEach(obj => obj.remove?.());
+    this.mathTextObjects = [];
+  }
+
+  // ============= MATH TEXT METHODS =============
+
+  /**
+   * Create a MathTextComponent at logical coordinates
+   * @param {string} text - LaTeX mathematical expression
+   * @param {number} row - Logical row coordinate
+   * @param {number} col - Logical column coordinate
+   * @param {Object} options - Rendering options {fontSize, stroke, fill}
+   * @returns {MathTextComponent} Math text component
+   */
+  mathText(text, row, col, options = {}) {
+    const mathComponent = new MathTextComponent(
+      text,
+      row,
+      col,
+      this.coordinateMapper,
+      this.canvasSection,
+      {
+        fontSize: options.fontSize || 32,
+        stroke: options.stroke || '#000000',
+        fill: options.fill || '#000000'
+      }
+    );
+
+    mathComponent.hide();
+    mathComponent.disableStroke();
+    this.mathTextObjects.push(mathComponent);
+    return mathComponent;
   }
 
   /**

@@ -36,6 +36,8 @@ import { ArcExpression } from '../expressions/ArcExpression.js';
 import { IntersectExpression } from '../expressions/IntersectExpression.js';
 import { ProjectExpression } from '../expressions/ProjectExpression.js';
 import { ReflectExpression } from '../expressions/ReflectExpression.js';
+import { RotateExpression } from '../expressions/RotateExpression.js';
+import { TranslateExpression } from '../expressions/TranslateExpression.js';
 import { CircleExpression } from '../expressions/CircleExpression.js';
 import { PolygonExpression } from '../expressions/PolygonExpression.js';
 import { XPointExpression } from '../expressions/XPointExpression.js';
@@ -163,6 +165,10 @@ export class IntrepreterFunctionTable {
         // Point transformations
         registerMultiArg('project', ProjectExpression);   // project point onto line
         registerMultiArg('reflect', ReflectExpression);   // reflect point across line
+
+        // Shape transformations
+        registerMultiArg('rotate', RotateExpression);     // rotate shape around center
+        registerMultiArg('translate', TranslateExpression); // translate shape by dx, dy
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

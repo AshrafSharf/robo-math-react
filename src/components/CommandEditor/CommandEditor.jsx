@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import CommandMenuBar from './components/CommandMenuBar/CommandMenuBar';
@@ -17,7 +17,6 @@ const CommandEditor = ({
   onExecute,
   onExecuteAll,
   onPlaySingle,
-  onPlayUpTo,
   onPlayAll,
   onStop,
   onPause,
@@ -108,23 +107,6 @@ const CommandEditor = ({
     onPlaySingle?.(command);
   }, [onPlaySingle]);
 
-  // Compute if PlayUpTo is available for selected command
-  const canPlayUpTo = useMemo(() => {
-    const selectedIndex = commands.findIndex(c => c.id === selectedId);
-    if (selectedIndex === -1) return false;
-    const canPlayInfo = canPlayInfos.find(c => c.index === selectedIndex);
-    const error = errors.find(e => e.index === selectedIndex);
-    return canPlayInfo?.canPlay && !error;
-  }, [commands, selectedId, canPlayInfos, errors]);
-
-  // Play up to selected command from header bar
-  const handlePlayUpToFromHeader = useCallback(() => {
-    const selectedCommand = commands.find(c => c.id === selectedId);
-    if (selectedCommand) {
-      onPlayUpTo?.(selectedCommand);
-    }
-  }, [commands, selectedId, onPlayUpTo]);
-
   // Play all commands with animation
   const handlePlayAll = useCallback(() => {
     setIsExecuting(true);
@@ -190,7 +172,6 @@ const CommandEditor = ({
         <div className="robo-cmdeditor-container robo-animate">
           <CommandMenuBar
             onPlayAll={handlePlayAll}
-            onPlayUpTo={handlePlayUpToFromHeader}
             onStop={handleStop}
             onPause={handlePause}
             onResume={handleResume}
@@ -199,7 +180,6 @@ const CommandEditor = ({
             isExecuting={isExecuting}
             isPaused={isPaused}
             isSidebarCollapsed={isSidebarCollapsed}
-            canPlayUpTo={canPlayUpTo}
           />
 
           <div className="robo-cmd-panel" id="cmd-panel">

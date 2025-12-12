@@ -32,30 +32,11 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
     this.initCallback = null;
     this.initialized = false;
 
-    // Animation mode flag - true for animations, false for instant rendering
-    this.animateMode = true;
-
     // Generator navigation properties
     this.currentStep = -1;
     this.generator = null;
   }
-  
-  /**
-   * Set animation mode
-   * @param {boolean} enabled - True for animations, false for instant rendering
-   */
-  setAnimateMode(enabled) {
-    this.animateMode = enabled;
-  }
-  
-  /**
-   * Get current animation mode
-   * @returns {boolean} Current animation mode
-   */
-  getAnimateMode() {
-    return this.animateMode;
-  }
-  
+
   /**
    * Play an effect and return a Promise
    * @param {BaseEffect} effect - Effect to play
@@ -67,108 +48,68 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
     }
     return Promise.resolve();
   }
-
-  /**
-   * Apply animation mode logic to a shape
-   * In animate mode: hide shape, attach effect (but don't play yet)
-   * In static mode: render end state immediately
-   * @param {Object} shape - The shape to apply mode logic to
-   * @param {BaseEffect} effectInstance - Optional custom effect instance
-   * @private
-   */
-  _applyModeLogic(shape, effectInstance = null) {
-    if (this.animateMode) {
-      shape.hide();
-      // Attach effect to shape for later playing
-      shape._effect = effectInstance || new MathShapeEffect(shape);
-      // Don't play yet - command.play() will call playShapeEffect()
-    } else {
-      shape.renderEndState();
-      shape.show();
-    }
-  }
-
-  /**
-   * Play the effect attached to a shape
-   * @param {Object} shape - Shape with attached effect
-   * @returns {Promise} Resolves when animation completes
-   */
-  async playShapeEffect(shape) {
-    if (shape && shape._effect) {
-      const effect = shape._effect;
-      shape._effect = null; // Clear to prevent double-play
-      return this._playEffect(effect);
-    }
-    return Promise.resolve();
-  }
   
   /**
-   * Create a point (hidden by default for fragment control)
+   * Create a point
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} position - Position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {radius, strokeWidth}
-   * @returns {Promise<Object>} Point shape
+   * @returns {Object} Point shape
    */
-  async point(graphContainer, position, color = 'red', options = {}) {
+  point(graphContainer, position, color = 'red', options = {}) {
     const shape = this._createPoint(graphContainer, position, color, options);
-    this._applyModeLogic(shape);
+    shape.renderEndState();
+    shape.show();
     this.objects.push(shape);
-    if (this.animateMode) {
-      await this.playShapeEffect(shape);
-    }
     return shape;
   }
   
   /**
-   * Create a vector (hidden by default for fragment control)
+   * Create a vector
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y}
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
-   * @returns {Promise<Object>} Vector shape
+   * @returns {Object} Vector shape
    */
-  async vector(graphContainer, start, end, color = 'red', options = {}) {
+  vector(graphContainer, start, end, color = 'red', options = {}) {
     const shape = this._createVector(graphContainer, start, end, color, options);
     shape.primitiveShape.attr('fill', null);
     shape.start = { x: start.x, y: start.y };
     shape.end = { x: end.x, y: end.y };
-    this._applyModeLogic(shape);
+    shape.renderEndState();
+    shape.show();
     this.objects.push(shape);
-    if (this.animateMode) {
-      await this.playShapeEffect(shape);
-    }
     return shape;
   }
   
   /**
-   * Create a dashed vector with immediate animation
+   * Create a dashed vector
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y}
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, dashPattern}
-   * @returns {Promise<Object>} Vector shape with dash pattern
+   * @returns {Object} Vector shape with dash pattern
    */
-  async dashedVector(graphContainer, start, end, color = 'red', options = {}) {
+  dashedVector(graphContainer, start, end, color = 'red', options = {}) {
     const shape = this._createDashedVector(graphContainer, start, end, color, options);
-    this._applyModeLogic(shape);
+    shape.renderEndState();
+    shape.show();
     this.objects.push(shape);
-    if (this.animateMode) {
-      await this.playShapeEffect(shape);
-    }
     return shape;
   }
   
   /**
-   * Create a reversed vector (pointing in opposite direction) with flip animation
+   * Create a reversed vector (pointing in opposite direction)
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} vectorShape - Vector shape object or {start, end} coordinates
    * @param {Object} options - Options including color, dashPattern, strokeWidth
-   * @returns {Promise<Object>} Reversed vector shape
+   * @returns {Object} Reversed vector shape
    */
-  async reverseVector(graphContainer, vectorShape, options = {}) {
+  reverseVector(graphContainer, vectorShape, options = {}) {
     let start, end;
 
     if (vectorShape.modelCoordinates) {
@@ -179,11 +120,6 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
       start = vectorShape.start;
       end = vectorShape.end;
     }
-
-    const displacement = {
-      x: end.x - start.x,
-      y: end.y - start.y
-    };
 
     const shape = graphContainer.vector(end.x, end.y, start.x, start.y);
     const color = options.color || 'red';
@@ -196,34 +132,35 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
       shape.primitiveShape.attr('stroke-dasharray', dashPattern);
     }
 
-    const reverseEffect = new ReverseVectorEffect(shape, start, end, displacement);
-    this._applyModeLogic(shape, reverseEffect);
+    shape.renderEndState();
+    shape.show();
     this.objects.push(shape);
-
-    if (this.animateMode) {
-      await this.playShapeEffect(shape);
-    }
     return shape;
   }
   
   /**
-   * Create a vector at original position and animate it moving to target position
+   * Create a vector at target position
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} originalVector - Original vector definition {start: {x,y}, end: {x,y}}
    * @param {Object} targetPosition - Target position {x, y} or target vector {start: {x,y}, end: {x,y}}
    * @param {Object} options - Options including color, strokeWidth, dashed, dashPattern
-   * @returns {Promise<Object>} The animated vector shape
+   * @returns {Object} The vector shape
    */
-  async moveVector(graphContainer, originalVector, targetPosition, options = {}) {
+  moveVector(graphContainer, originalVector, targetPosition, options = {}) {
     const originalStart = originalVector.start;
     const originalEnd = originalVector.end;
     const targetStart = targetPosition.start || targetPosition;
 
+    // Calculate displacement
+    const dx = targetStart.x - originalStart.x;
+    const dy = targetStart.y - originalStart.y;
+
+    // Create vector at target position
     const shape = graphContainer.vector(
-      originalStart.x,
-      originalStart.y,
-      originalEnd.x,
-      originalEnd.y
+      targetStart.x,
+      targetStart.y,
+      originalEnd.x + dx,
+      originalEnd.y + dy
     );
 
     const color = options.color || 'blue';
@@ -236,32 +173,26 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
       shape.primitiveShape.attr('stroke-dasharray', dashPattern);
     }
 
-    const moveEffect = new MoveVectorEffect(shape, originalStart, targetStart);
-    this._applyModeLogic(shape, moveEffect);
+    shape.renderEndState();
+    shape.show();
     this.objects.push(shape);
-
-    if (this.animateMode) {
-      await this.playShapeEffect(shape);
-    }
     return shape;
   }
   
   /**
-   * Create a line segment with immediate animation
+   * Create a line segment
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} start - Start position {x, y}
    * @param {Object} end - End position {x, y}
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth, fill}
-   * @returns {Promise<Object>} Line shape
+   * @returns {Object} Line shape
    */
-  async line(graphContainer, start, end, color = 'black', options = {}) {
+  line(graphContainer, start, end, color = 'black', options = {}) {
     const shape = this._createLine(graphContainer, start, end, color, options);
-    this._applyModeLogic(shape);
+    shape.renderEndState();
+    shape.show();
     this.objects.push(shape);
-    if (this.animateMode) {
-      await this.playShapeEffect(shape);
-    }
     return shape;
   }
   
