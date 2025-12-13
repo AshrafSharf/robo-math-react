@@ -8,10 +8,10 @@ import { RHS3DDiagram } from './rhs_diagram3d.js';
 import { TweenMax, TimelineMax } from 'gsap';
 import { createEffectsManager } from './effects_manager3d.js';
 
-// Import all RHS animators
-import { fadeInPoint } from './native/animator/rhs_point_animator.js';
+// Import animators
+import { fadeInPoint } from './common/animator/point_animator.js';
+import { animateLine } from './common/animator/line_animator.js';
 import { animateVectorGrowth } from './native/animator/rhs_vector_animator.js';
-import { animateLine } from './native/animator/rhs_line_animator.js';
 import { animateDashedLineSequential } from './native/animator/rhs_dashed_line_animator.js';
 import { fadeInPolygon } from './native/animator/rhs_polygon_animator.js';
 import { fadeInParallelogram } from './native/animator/rhs_parallelogram_animator.js';

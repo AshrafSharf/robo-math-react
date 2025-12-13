@@ -3,11 +3,12 @@
  * Master animator that provides unified animation interface for all LHS objects
  */
 
-import { fadeInLine, animateThinLine, animateLine, animateDashedThickLine } from './lhs_line_animator.js';
+import { fadeInLine, animateThinLine, animateLine } from '../../common/animator/line_animator.js';
+import { fadeInPoint, animatePointScale, animatePointBounce } from '../../common/animator/point_animator.js';
+import { animateDashedLineSequential } from './lhs_dashed_line_animator.js';
 import { fadeInPlane, animatePlaneScale, animatePlaneParametricSweep } from './lhs_plane_animator.js';
 import { fadeInVector, animateVectorGrowth, animateVectorComponents } from './lhs_vector_animator.js';
 import { fadeInArc, animateArcRadius, animateArcSweep } from './lhs_angle_animator.js';
-import { fadeInPoint, animatePointScale, animatePointBounce } from './lhs_point_animator.js';
 import { fadeInLabel, animateLabelScale, animateLabelSlide } from './lhs_label_animator.js';
 
 /**
@@ -48,13 +49,7 @@ export function animateLHSObject(meshObject, objectType, options = {}) {
             return fallbackToFade ? fadeInLine(meshObject, animationOptions) : null;
             
         case 'dashedLine':
-            if (animationType === 'draw') {
-                const { start, end } = animationOptions;
-                if (start && end) {
-                    return animateDashedThickLine(meshObject, start, end, animationOptions);
-                }
-            }
-            return fallbackToFade ? fadeInLine(meshObject, animationOptions) : null;
+            return animateDashedLineSequential(meshObject, animationOptions);
             
         case 'plane':
             if (animationType === 'sweep') {

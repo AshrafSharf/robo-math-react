@@ -5,6 +5,7 @@
  */
 
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { line, thinLine } from './lhs_line.js';
 import { label } from './lhs_label.js';
 import { point } from './lhs_point.js';
@@ -14,7 +15,7 @@ import { point } from './lhs_point.js';
  * @param {THREE.Scene} scene - The Three.js scene to set up
  * @param {Object} options - Configuration options
  */
-export async function setupCoordinateSystem(scene, options = {}) {
+export function setupCoordinateSystem(scene, options = {}) {
     const {
         // Camera options
         cameraPosition = { x: -15, y: 12, z: -15 },
@@ -69,7 +70,6 @@ export async function setupCoordinateSystem(scene, options = {}) {
     // Create OrbitControls if not exists
     let controls = scene.userData?.controls;
     if (!controls && enableInteraction) {
-        const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
         controls = new OrbitControls(camera, renderer.domElement);
         scene.userData.controls = controls;
     }
@@ -239,12 +239,12 @@ export function coordinateSystem(scene, options = {}) {
                 coordGroup.add(xTick);
                 
                 // X-axis tick label
-                const xTickLabel = label(i.toString(), 
+                const xTickLabel = label(i.toString(),
                     { x: i, y: -0.3, z: -0.3 },
                     {
-                        fontSize: 18,
+                        fontSize: 28,
                         color: labelColor,
-                        scale: 0.02
+                        scale: 0.03
                     }
                 );
                 if (xTickLabel && smartLabels) {
@@ -269,9 +269,9 @@ export function coordinateSystem(scene, options = {}) {
                 const yTickLabel = label(i.toString(),
                     { x: -0.3, y: i, z: -0.3 },
                     {
-                        fontSize: 18,
+                        fontSize: 28,
                         color: labelColor,
-                        scale: 0.02
+                        scale: 0.03
                     }
                 );
                 if (yTickLabel && smartLabels) {
@@ -296,9 +296,9 @@ export function coordinateSystem(scene, options = {}) {
                 const zTickLabel = label(i.toString(),
                     { x: -0.3, y: -0.3, z: i },
                     {
-                        fontSize: 18,
+                        fontSize: 28,
                         color: labelColor,
-                        scale: 0.02
+                        scale: 0.03
                     }
                 );
                 if (zTickLabel && smartLabels) {

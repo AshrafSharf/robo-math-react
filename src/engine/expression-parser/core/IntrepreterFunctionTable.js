@@ -51,6 +51,8 @@ import { MagExpression } from '../expressions/MagExpression.js';
 import { UVExpression } from '../expressions/UVExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
 import { Graph3DExpression } from '../expressions/Graph3DExpression.js';
+import { Point3DExpression } from '../expressions/3d/Point3DExpression.js';
+import { Line3DExpression } from '../expressions/3d/Line3DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { VariableReferenceExpression } from '../expressions/VariableReferenceExpression.js';
 import { QuotedStringExpression } from '../expressions/QuotedStringExpression.js';
@@ -113,6 +115,8 @@ export class IntrepreterFunctionTable {
         registerMultiArg('polygon', PolygonExpression);
         registerMultiArg('g2d', Graph2DExpression);
         registerMultiArg('g3d', Graph3DExpression);
+        registerMultiArg('point3d', Point3DExpression);
+        registerMultiArg('line3d', Line3DExpression);
         registerMultiArg('plot', PlotExpression);
         registerMultiArg('label', LabelExpression);
 

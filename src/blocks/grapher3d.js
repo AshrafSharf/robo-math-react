@@ -37,7 +37,7 @@ export class Grapher3D {
         this.init();
     }
 
-    async init() {
+    init() {
         const id = IdUtil.getID();
 
         // Create container div
@@ -81,7 +81,7 @@ export class Grapher3D {
             ? setupRHSCoordinateSystem
             : setupLHSCoordinateSystem;
 
-        await setupCoordinateSystem(this.scene, {
+        setupCoordinateSystem(this.scene, {
             axesRange: axesRange,
             showGrid: this.options.showGrid !== false,
             showAxes: true,

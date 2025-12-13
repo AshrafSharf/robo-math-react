@@ -60,7 +60,7 @@ export function thinLine(start, end, options = {}) {
 export function line(start, end, options = {}) {
     const {
         color = 0x000000,         // Black by default
-        radius = 0.05,            // Cylinder radius
+        radius = 0.06,            // Cylinder radius
         opacity = 1.0,            // Fully opaque
         segments = 8              // Cylinder segments
     } = options;

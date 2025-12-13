@@ -59,6 +59,41 @@ export const point_error_messages = {
     `Power not supported for points.\nUse multiply instead.`,
 };
 
+// ============= Point3D Error Messages =============
+
+export const point3d_error_messages = {
+  MISSING_ARGS: () =>
+    `point3d() needs 4 arguments.\nUsage: point3d(g, x, y, z)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `point3d() got ${count} coordinates.\nNeed exactly 3: x, y, z`,
+
+  GRAPH_REQUIRED: () =>
+    `point3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  DIVIDE_BY_POINT: () =>
+    `Cannot divide point3d by point3d.\nUse a number instead.`,
+
+  MULTIPLY_BY_POINT: () =>
+    `Cannot multiply point3d by point3d.\nUse a number instead.`,
+
+  POWER_NOT_SUPPORTED: () =>
+    `Power not supported for point3d.\nUse multiply instead.`,
+};
+
+// ============= Line3D Error Messages =============
+
+export const line3d_error_messages = {
+  MISSING_ARGS: () =>
+    `line3d() needs 7 arguments.\nUsage: line3d(g, x1,y1,z1, x2,y2,z2)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `line3d() got ${count} coordinates.\nNeed exactly 6: x1,y1,z1,x2,y2,z2`,
+
+  GRAPH_REQUIRED: () =>
+    `line3d() needs a g3d graph.\nFirst argument must be g3d.`,
+};
+
 // ============= Circle Error Messages =============
 
 export const circle_error_messages = {
@@ -298,6 +333,8 @@ export const arithmetic_error_messages = {
 const messagesByType = {
   line: line_error_messages,
   point: point_error_messages,
+  point3d: point3d_error_messages,
+  line3d: line3d_error_messages,
   circle: circle_error_messages,
   vec: vec_error_messages,
   polygon: polygon_error_messages,

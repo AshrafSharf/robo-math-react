@@ -101,7 +101,7 @@ export class LHS3DDiagram extends BaseDiagram3D {
     segment3dByTwoPoints(start, end, label = '', color = 0x00ff00, options = {}) {
         const segmentGroup = lhsLine(start, end, {
             color: this.parseColor(color),
-            radius: options.radius || 0.02,
+            radius: options.radius || 0.05,
             ...options
         });
         
@@ -168,7 +168,7 @@ export class LHS3DDiagram extends BaseDiagram3D {
         const lineGroup = lhsLine(point1, point2, {
             color: this.parseColor(color),
             length: options.length || 20,
-            radius: options.radius || 0.02,
+            radius: options.radius || 0.05,
             ...options
         });
         

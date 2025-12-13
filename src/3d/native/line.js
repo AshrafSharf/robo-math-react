@@ -15,7 +15,7 @@ import * as THREE from 'three';
 export function line(start, end, options = {}) {
     const {
         color = 0x000000,
-        radius = 0.02,
+        radius = 0.06,
         opacity = 1.0
     } = options;
     

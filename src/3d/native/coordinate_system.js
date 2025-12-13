@@ -5,6 +5,7 @@
  */
 
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { line, thinLine } from './line.js';
 import { label } from './label.js';
 import { point } from './point.js';
@@ -14,7 +15,7 @@ import { point } from './point.js';
  * @param {THREE.Scene} scene - The Three.js scene to set up
  * @param {Object} options - Configuration options
  */
-export async function setupCoordinateSystem(scene, options = {}) {
+export function setupCoordinateSystem(scene, options = {}) {
     const {
         // Camera options
         cameraPosition = { x: 15, y: 12, z: 15 },
@@ -68,7 +69,6 @@ export async function setupCoordinateSystem(scene, options = {}) {
     // Create OrbitControls
     let controls = scene.userData?.controls;
     if (!controls && enableInteraction) {
-        const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
         controls = new OrbitControls(camera, renderer.domElement);
         scene.userData.controls = controls;
     }
