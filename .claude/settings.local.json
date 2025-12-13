@@ -18,7 +18,9 @@
       "mcp__ide__getDiagnostics",
       "Bash(npx pegjs:*)",
       "Bash(grep:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(wc:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

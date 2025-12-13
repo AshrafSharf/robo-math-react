@@ -75,10 +75,13 @@ export class CommandExecutor {
    * Clear all commands
    */
   clearCommands() {
-    this.commands = [];
-    if (this.commandContext) {
-      this.commandContext.shapeRegistry = {};
+    if (this.commands.length === 0) return;
+
+    for (const command of this.commands) {
+      command.clear();
     }
+    this.commands = [];
+    this.commandContext.shapeRegistry = {};
     this.currentIndex = 0;
     this.stop();
   }

@@ -50,6 +50,7 @@ import { A2PExpression } from '../expressions/A2PExpression.js';
 import { MagExpression } from '../expressions/MagExpression.js';
 import { UVExpression } from '../expressions/UVExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
+import { Graph3DExpression } from '../expressions/Graph3DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { VariableReferenceExpression } from '../expressions/VariableReferenceExpression.js';
 import { QuotedStringExpression } from '../expressions/QuotedStringExpression.js';
@@ -111,6 +112,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('circle', CircleExpression);
         registerMultiArg('polygon', PolygonExpression);
         registerMultiArg('g2d', Graph2DExpression);
+        registerMultiArg('g3d', Graph3DExpression);
         registerMultiArg('plot', PlotExpression);
         registerMultiArg('label', LabelExpression);
 

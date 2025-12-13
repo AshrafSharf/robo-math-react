@@ -131,11 +131,12 @@ export class CommandEditorController {
         this.clearAndReset();
         this.expressionContext = freshExprContext;
 
-        // Create command context
-        const commandContext = new CommandContext();
+        // Create command context with layout dependencies
+        const diagram = this.getDiagram();
+        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection);
 
         // Set up executor
-        this.commandExecutor.setDiagram2d(this.getDiagram());
+        this.commandExecutor.setDiagram2d(diagram);
         this.commandExecutor.setCommands(pipelineResult.commands);
         this.commandExecutor.setCommandContext(commandContext);
 
@@ -208,11 +209,12 @@ export class CommandEditorController {
 
         this.expressionContext = freshExprContext;
 
-        // Create command context
-        const commandContext = new CommandContext();
+        // Create command context with layout dependencies
+        const diagram = this.getDiagram();
+        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection);
 
         // Set up executor
-        this.commandExecutor.setDiagram2d(this.getDiagram());
+        this.commandExecutor.setDiagram2d(diagram);
         this.commandExecutor.setCommands(pipelineResult.commands);
         this.commandExecutor.setCommandContext(commandContext);
 
@@ -258,11 +260,12 @@ export class CommandEditorController {
 
         this.expressionContext = freshExprContext;
 
-        // Create command context
-        const commandContext = new CommandContext();
+        // Create command context with layout dependencies
+        const diagram = this.getDiagram();
+        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection);
 
         // Set up executor
-        this.commandExecutor.setDiagram2d(this.getDiagram());
+        this.commandExecutor.setDiagram2d(diagram);
         this.commandExecutor.setCommands(pipelineResult.commands);
         this.commandExecutor.setCommandContext(commandContext);
 
