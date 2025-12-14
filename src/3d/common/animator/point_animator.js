@@ -16,7 +16,9 @@ import * as THREE from 'three';
  * @param {number} options.fromScale - Starting scale (default: 0)
  * @param {number} options.toScale - Target scale (default: 1)
  * @param {Function} options.onComplete - Callback when animation completes
- * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
+ * @param {PenTracer} options.pen - Optional pen tracer for pen following
+ * @param {THREE.Camera} options.camera - Camera for 3D projection
+ * @param {HTMLElement} options.canvas - Renderer canvas element
  * @returns {Object} GSAP tween object
  */
 export function animatePointScale(pointMesh, options = {}) {
@@ -26,7 +28,9 @@ export function animatePointScale(pointMesh, options = {}) {
         fromScale = 0,
         toScale = 1,
         onComplete = null,
-        penTracker = null
+        pen = null,
+        camera = null,
+        canvas = null
     } = options;
 
     // Set initial scale
@@ -39,8 +43,8 @@ export function animatePointScale(pointMesh, options = {}) {
         ease: ease,
         onUpdate: () => {
             // Pen moves to point and stays there during scale animation
-            if (penTracker) {
-                penTracker.emitPosition(pointMesh);
+            if (pen && camera && canvas) {
+                pen.emitFromWorld3D(pointMesh.position, camera, canvas);
             }
         },
         onComplete: onComplete
@@ -115,7 +119,9 @@ export function animatePointPulse(pointMesh, options = {}) {
  * @param {number} options.fromOpacity - Starting opacity (default: 0)
  * @param {number} options.toOpacity - Target opacity (default: 1)
  * @param {Function} options.onComplete - Callback when animation completes
- * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
+ * @param {PenTracer} options.pen - Optional pen tracer for pen following
+ * @param {THREE.Camera} options.camera - Camera for 3D projection
+ * @param {HTMLElement} options.canvas - Renderer canvas element
  * @returns {Object} GSAP tween object
  */
 export function fadeInPoint(pointMesh, options = {}) {
@@ -125,7 +131,9 @@ export function fadeInPoint(pointMesh, options = {}) {
         fromOpacity = 0,
         toOpacity = 1,
         onComplete = null,
-        penTracker = null
+        pen = null,
+        camera = null,
+        canvas = null
     } = options;
 
     pointMesh.material.transparent = true;
@@ -137,8 +145,8 @@ export function fadeInPoint(pointMesh, options = {}) {
             ease: ease,
             onUpdate: () => {
                 // Pen stays at point during fade in
-                if (penTracker) {
-                    penTracker.emitPosition(pointMesh);
+                if (pen && camera && canvas) {
+                    pen.emitFromWorld3D(pointMesh.position, camera, canvas);
                 }
             },
             onComplete: onComplete
@@ -146,10 +154,10 @@ export function fadeInPoint(pointMesh, options = {}) {
     };
 
     // Move pen to point first, then fade in
-    if (penTracker) {
+    if (pen && camera && canvas) {
         const worldPos = new THREE.Vector3();
         pointMesh.getWorldPosition(worldPos);
-        penTracker.moveTo(worldPos, startFadeIn);
+        pen.moveToWorld3D(worldPos, camera, canvas, startFadeIn);
     } else {
         startFadeIn();
     }

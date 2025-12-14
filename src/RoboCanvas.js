@@ -16,7 +16,7 @@
  *   roboCanvas.diagram.point(gc, {x: 0, y: 0});
  */
 
-import { PenTracerImpl } from './pen/pen-tracer-impl.js';
+import { PenTracer } from './pen/pen-tracer.js';
 import { LogicalCoordinateMapper } from './mathtext/components/logical-coordinate-mapper.js';
 import { Diagram2d } from './diagram/diagram-2d.js';
 import { MathTextComponent } from './mathtext/components/math-text-component.js';
@@ -93,7 +93,7 @@ export class RoboCanvas {
 
       // Initialize pen tracer
       console.log('Initializing pen tracer...');
-      this.penTracer = new PenTracerImpl(document.body);
+      this.penTracer = new PenTracer(document.body);
       this.penTracer.init();
       console.log('Pen tracer initialized');
 

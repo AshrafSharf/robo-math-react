@@ -14,7 +14,9 @@ import * as THREE from 'three';
  * @param {number} options.duration - Animation duration (default: 1)
  * @param {string} options.ease - GSAP easing function
  * @param {Function} options.onComplete - Callback when animation completes
- * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
+ * @param {PenTracer} options.pen - Optional pen tracer for pen following
+ * @param {THREE.Camera} options.camera - Camera for 3D projection
+ * @param {HTMLElement} options.canvas - Renderer canvas element
  * @returns {Object} GSAP tween object
  */
 export function animateThinLine(lineObj, options = {}) {
@@ -22,7 +24,9 @@ export function animateThinLine(lineObj, options = {}) {
         duration = 1,
         ease = "Power2.easeInOut",
         onComplete = null,
-        penTracker = null
+        pen = null,
+        camera = null,
+        canvas = null
     } = options;
 
     const positions = lineObj.geometry.attributes.position.array;
@@ -63,9 +67,9 @@ export function animateThinLine(lineObj, options = {}) {
                 lineObj.geometry.attributes.position.needsUpdate = true;
 
                 // Emit pen position at current drawing point
-                if (penTracker) {
+                if (pen && camera && canvas) {
                     const currentPos = new THREE.Vector3(animatedEnd.x, animatedEnd.y, animatedEnd.z);
-                    penTracker.emitWorldPosition(currentPos);
+                    pen.emitFromWorld3D(currentPos, camera, canvas);
                 }
             },
             onComplete: onComplete
@@ -73,8 +77,8 @@ export function animateThinLine(lineObj, options = {}) {
     };
 
     // Move pen to start position first, then draw
-    if (penTracker) {
-        penTracker.moveTo(startVec3, startDrawing);
+    if (pen && camera && canvas) {
+        pen.moveToWorld3D(startVec3, camera, canvas, startDrawing);
     } else {
         startDrawing();
     }
@@ -94,7 +98,9 @@ export function animateThinLine(lineObj, options = {}) {
  * @param {number} options.duration - Animation duration (default: 1)
  * @param {string} options.ease - GSAP easing function
  * @param {Function} options.onComplete - Callback when animation completes
- * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
+ * @param {PenTracer} options.pen - Optional pen tracer for pen following
+ * @param {THREE.Camera} options.camera - Camera for 3D projection
+ * @param {HTMLElement} options.canvas - Renderer canvas element
  * @returns {Object} GSAP tween object
  */
 export function animateLine(cylinder, options = {}) {
@@ -102,7 +108,9 @@ export function animateLine(cylinder, options = {}) {
         duration = 1,
         ease = "Power2.easeOut",
         onComplete = null,
-        penTracker = null
+        pen = null,
+        camera = null,
+        canvas = null
     } = options;
 
     // Store original state (cylinder is at midpoint with full length)
@@ -139,12 +147,12 @@ export function animateLine(cylinder, options = {}) {
                 cylinder.scale.y = 0.001 + (originalScaleY - 0.001) * animData.t;
 
                 // Emit pen position at current tip of the line
-                if (penTracker) {
+                if (pen && camera && canvas) {
                     // Calculate current tip position: start + direction * currentLength
                     const currentTip = startPosition.clone().add(
                         direction.clone().multiplyScalar(halfLength * 2 * animData.t)
                     );
-                    penTracker.emitWorldPosition(currentTip);
+                    pen.emitFromWorld3D(currentTip, camera, canvas);
                 }
             },
             onComplete: () => {
@@ -156,8 +164,8 @@ export function animateLine(cylinder, options = {}) {
     };
 
     // Move pen to start position first, then draw
-    if (penTracker) {
-        penTracker.moveTo(startPosition, startDrawing);
+    if (pen && camera && canvas) {
+        pen.moveToWorld3D(startPosition, camera, canvas, startDrawing);
     } else {
         startDrawing();
     }

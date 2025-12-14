@@ -49,6 +49,11 @@ export class Create3DGraphCommand extends BaseCommand {
             }
         );
 
+        // Set pen reference on grapher
+        if (this.commandContext.pen) {
+            grapher.setPen(this.commandContext.pen);
+        }
+
         // Store reference in expression for variable access
         if (this.expression) {
             this.expression.setGrapher(grapher);

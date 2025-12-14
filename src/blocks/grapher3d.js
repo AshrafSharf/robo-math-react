@@ -10,7 +10,6 @@ import { setupCoordinateSystem as setupLHSCoordinateSystem } from '../3d/lhs/lhs
 import { setupCoordinateSystem as setupRHSCoordinateSystem } from '../3d/native/coordinate_system.js';
 import { Diagram3DFactory } from '../3d/diagram_3d_factory.js';
 import { IdUtil } from '../shared/utils/id-util.js';
-import { Pen3DTracker } from '../events/pen-3d-tracker.js';
 
 export class Grapher3D {
     constructor(containerElement, options = {}) {
@@ -34,8 +33,8 @@ export class Grapher3D {
         // Container DOM
         this.containerDOM = null;
 
-        // Pen tracker (lazy initialized)
-        this._penTracker = null;
+        // Pen reference (set externally)
+        this._pen = null;
 
         // Initialize
         this.init();
@@ -228,15 +227,39 @@ export class Grapher3D {
     }
 
     /**
-     * Get pen tracker for this 3D graph
-     * Used by animators to emit pen position events
-     * @returns {Pen3DTracker} Pen tracker instance
+     * Set the pen tracer reference
+     * @param {PenTracer} pen - The global pen tracer instance
      */
-    getPenTracker() {
-        if (!this._penTracker) {
-            this._penTracker = new Pen3DTracker(this.camera, this.renderer.domElement);
+    setPen(pen) {
+        this._pen = pen;
+        // Also store in scene.userData for animated diagrams
+        if (this.scene) {
+            this.scene.userData.pen = pen;
         }
-        return this._penTracker;
+    }
+
+    /**
+     * Get the pen tracer
+     * @returns {PenTracer} Pen tracer instance
+     */
+    getPen() {
+        return this._pen;
+    }
+
+    /**
+     * Get the camera for 3D projection
+     * @returns {THREE.Camera} The camera
+     */
+    getCamera() {
+        return this.camera;
+    }
+
+    /**
+     * Get the renderer canvas element
+     * @returns {HTMLElement} The canvas element
+     */
+    getCanvas() {
+        return this.renderer ? this.renderer.domElement : null;
     }
 
     /**

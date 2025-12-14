@@ -12,13 +12,17 @@ export class Math3DShapeEffect extends BaseEffect {
      * @param {THREE.Object3D} object3d - The Three.js object to animate
      * @param {string} shapeType - Type of shape: 'point', 'line', 'vector', etc.
      * @param {Object} options - Additional options
-     * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
+     * @param {PenTracer} options.pen - Optional pen tracer for pen following
+     * @param {THREE.Camera} options.camera - Camera for 3D projection
+     * @param {HTMLElement} options.canvas - Renderer canvas element
      */
     constructor(object3d, shapeType = 'generic', options = {}) {
         super();
         this.object3d = object3d;
         this.shapeType = shapeType;
-        this.penTracker = options.penTracker || null;
+        this.pen = options.pen || null;
+        this.camera = options.camera || null;
+        this.canvas = options.canvas || null;
     }
 
     toEndState() {
@@ -52,7 +56,9 @@ export class Math3DShapeEffect extends BaseEffect {
                 case 'point':
                     fadeInPoint(this.object3d, {
                         duration: 0.5,
-                        penTracker: this.penTracker,
+                        pen: this.pen,
+                        camera: this.camera,
+                        canvas: this.canvas,
                         onComplete
                     });
                     break;
@@ -60,7 +66,9 @@ export class Math3DShapeEffect extends BaseEffect {
                 case 'line':
                     animateLine(this.object3d, {
                         duration: 0.8,
-                        penTracker: this.penTracker,
+                        pen: this.pen,
+                        camera: this.camera,
+                        canvas: this.canvas,
                         onComplete
                     });
                     break;

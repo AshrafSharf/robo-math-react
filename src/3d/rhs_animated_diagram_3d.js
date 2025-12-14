@@ -19,34 +19,27 @@ import { animatePlaneParametricSweep } from './native/animator/rhs_plane_animato
 import { fadeInLabel } from './native/animator/rhs_label_animator.js';
 import { animateVectorMovement, animateReverseVectorCreation, animateVectorSlide } from './native/animator/rhs_movement_animator.js';
 import { animateBoxProduct } from './native/animator/rhs_extrude_animator.js';
-import { Pen3DTracker } from '../events/pen-3d-tracker.js';
 
 export class RHSAnimatedDiagram extends RHS3DDiagram {
     constructor(scene, animationDuration = 1) {
         super(scene);
         this.animationDuration = animationDuration; // Default animation duration in seconds
         this.effectsManager = createEffectsManager(this); // Create effects manager for this animated diagram
-        this._penTracker = null; // Lazy initialized pen tracker
     }
 
     /**
-     * Get pen tracker for this diagram (lazy initialized)
-     * Uses camera and renderer from scene.userData
-     * @returns {Pen3DTracker|null} Pen tracker or null if not available
+     * Get pen options for animators
+     * Reads pen from scene.userData (set by grapher3d.setPen)
+     * @returns {Object} { pen, camera, canvas } or empty object
      */
-    getPenTracker() {
-        if (!this._penTracker) {
-            const camera = this.scene.userData.camera;
-            const renderer = this.scene.userData.renderer;
-            console.log('[RHSAnimatedDiagram.getPenTracker] camera:', camera ? 'present' : 'null', 'renderer:', renderer ? 'present' : 'null');
-            if (camera && renderer) {
-                this._penTracker = new Pen3DTracker(camera, renderer.domElement);
-                console.log('[RHSAnimatedDiagram.getPenTracker] created pen tracker');
-            } else {
-                console.warn('[RHSAnimatedDiagram.getPenTracker] cannot create pen tracker - missing camera or renderer');
-            }
+    _getPenOptions() {
+        const pen = this.scene.userData.pen;
+        const camera = this.scene.userData.camera;
+        const renderer = this.scene.userData.renderer;
+        if (pen && camera && renderer) {
+            return { pen, camera, canvas: renderer.domElement };
         }
-        return this._penTracker;
+        return {};
     }
 
     /**
@@ -71,7 +64,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
         // Fade in the point with pen tracking
         fadeInPoint(pointMesh, {
             duration: duration,
-            penTracker: this.getPenTracker(),
+            ...this._getPenOptions(),
             onComplete: () => {
                 // Fade in label after point
                 if (pointMesh.label) {
@@ -108,7 +101,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
         animateLine(segmentMesh, {
             duration: duration,
             ease: "power2.out",
-            penTracker: this.getPenTracker(),
+            ...this._getPenOptions(),
             onComplete: () => {
                 // Fade in label after segment
                 if (segmentMesh.label) {

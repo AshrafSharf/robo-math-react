@@ -133,7 +133,8 @@ export class CommandEditorController {
 
         // Create command context with layout dependencies
         const diagram = this.getDiagram();
-        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection);
+        const pen = this.roboCanvas?.penTracer || null;
+        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection, pen);
 
         // Set up executor
         this.commandExecutor.setDiagram2d(diagram);
@@ -211,7 +212,8 @@ export class CommandEditorController {
 
         // Create command context with layout dependencies
         const diagram = this.getDiagram();
-        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection);
+        const pen = this.roboCanvas?.penTracer || null;
+        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection, pen);
 
         // Set up executor
         this.commandExecutor.setDiagram2d(diagram);
@@ -262,7 +264,8 @@ export class CommandEditorController {
 
         // Create command context with layout dependencies
         const diagram = this.getDiagram();
-        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection);
+        const pen = this.roboCanvas?.penTracer || null;
+        const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection, pen);
 
         // Set up executor
         this.commandExecutor.setDiagram2d(diagram);
