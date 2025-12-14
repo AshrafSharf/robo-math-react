@@ -81,8 +81,8 @@ export class Point3DCommand extends Base3DCommand {
     async playSingle() {
         if (!this.commandResult) return;
 
-        // Use 3D-specific effect for animation
-        const effect = new Math3DShapeEffect(this.commandResult, 'point');
+        const penTracker = this.graphContainer.getPenTracker();
+        const effect = new Math3DShapeEffect(this.commandResult, 'point', { penTracker });
         return effect.play();
     }
 }

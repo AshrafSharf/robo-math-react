@@ -11,13 +11,18 @@ import * as THREE from 'three';
  * Animates a thinLine drawing effect by interpolating from start to end
  * @param {THREE.Line} lineObj - The thin line object
  * @param {Object} options - Animation options
+ * @param {number} options.duration - Animation duration (default: 1)
+ * @param {string} options.ease - GSAP easing function
+ * @param {Function} options.onComplete - Callback when animation completes
+ * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
  * @returns {Object} GSAP tween object
  */
 export function animateThinLine(lineObj, options = {}) {
     const {
         duration = 1,
         ease = "Power2.easeInOut",
-        onComplete = null
+        onComplete = null,
+        penTracker = null
     } = options;
 
     const positions = lineObj.geometry.attributes.position.array;
@@ -28,10 +33,9 @@ export function animateThinLine(lineObj, options = {}) {
     }
     const originalPositions = lineObj.geometry.userData.originalPositions;
 
-    // Get the end position from stored original
-    const endX = originalPositions[3];
-    const endY = originalPositions[4];
-    const endZ = originalPositions[5];
+    // Get start and end positions
+    const startVec3 = new THREE.Vector3(positions[0], positions[1], positions[2]);
+    const endVec3 = new THREE.Vector3(originalPositions[3], originalPositions[4], originalPositions[5]);
 
     // Collapse to start point initially
     positions[3] = positions[0];
@@ -39,26 +43,41 @@ export function animateThinLine(lineObj, options = {}) {
     positions[5] = positions[2];
     lineObj.geometry.attributes.position.needsUpdate = true;
 
-    // Animate to end position
-    const animatedEnd = {
-        x: positions[0],
-        y: positions[1],
-        z: positions[2]
+    const startDrawing = () => {
+        // Animate to end position
+        const animatedEnd = {
+            x: positions[0],
+            y: positions[1],
+            z: positions[2]
+        };
+
+        TweenMax.to(animatedEnd, duration, {
+            x: endVec3.x,
+            y: endVec3.y,
+            z: endVec3.z,
+            ease: ease,
+            onUpdate: function() {
+                positions[3] = animatedEnd.x;
+                positions[4] = animatedEnd.y;
+                positions[5] = animatedEnd.z;
+                lineObj.geometry.attributes.position.needsUpdate = true;
+
+                // Emit pen position at current drawing point
+                if (penTracker) {
+                    const currentPos = new THREE.Vector3(animatedEnd.x, animatedEnd.y, animatedEnd.z);
+                    penTracker.emitWorldPosition(currentPos);
+                }
+            },
+            onComplete: onComplete
+        });
     };
 
-    return TweenMax.to(animatedEnd, duration, {
-        x: endX,
-        y: endY,
-        z: endZ,
-        ease: ease,
-        onUpdate: function() {
-            positions[3] = animatedEnd.x;
-            positions[4] = animatedEnd.y;
-            positions[5] = animatedEnd.z;
-            lineObj.geometry.attributes.position.needsUpdate = true;
-        },
-        onComplete: onComplete
-    });
+    // Move pen to start position first, then draw
+    if (penTracker) {
+        penTracker.moveTo(startVec3, startDrawing);
+    } else {
+        startDrawing();
+    }
 }
 
 /**
@@ -72,13 +91,18 @@ export function animateThinLine(lineObj, options = {}) {
  *
  * @param {THREE.Mesh} cylinder - The cylinder mesh
  * @param {Object} options - Animation options
+ * @param {number} options.duration - Animation duration (default: 1)
+ * @param {string} options.ease - GSAP easing function
+ * @param {Function} options.onComplete - Callback when animation completes
+ * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
  * @returns {Object} GSAP tween object
  */
 export function animateLine(cylinder, options = {}) {
     const {
         duration = 1,
         ease = "Power2.easeOut",
-        onComplete = null
+        onComplete = null,
+        penTracker = null
     } = options;
 
     // Store original state (cylinder is at midpoint with full length)
@@ -96,26 +120,47 @@ export function animateLine(cylinder, options = {}) {
     // Start position: move cylinder to the start point
     const startPosition = originalPosition.clone().sub(direction.clone().multiplyScalar(halfLength));
 
+    // End position: the tip of the line at full length
+    const endPosition = originalPosition.clone().add(direction.clone().multiplyScalar(halfLength));
+
     // Set initial state: at start position, zero scale
     cylinder.position.copy(startPosition);
     cylinder.scale.y = 0.001;
 
-    // Animate: move position toward midpoint AND scale up together
-    const animData = { t: 0 };
+    const startDrawing = () => {
+        // Animate: move position toward midpoint AND scale up together
+        const animData = { t: 0 };
 
-    return TweenMax.to(animData, duration, {
-        t: 1,
-        ease: ease,
-        onUpdate: () => {
-            cylinder.position.lerpVectors(startPosition, originalPosition, animData.t);
-            cylinder.scale.y = 0.001 + (originalScaleY - 0.001) * animData.t;
-        },
-        onComplete: () => {
-            cylinder.position.copy(originalPosition);
-            cylinder.scale.y = originalScaleY;
-            if (onComplete) onComplete();
-        }
-    });
+        TweenMax.to(animData, duration, {
+            t: 1,
+            ease: ease,
+            onUpdate: () => {
+                cylinder.position.lerpVectors(startPosition, originalPosition, animData.t);
+                cylinder.scale.y = 0.001 + (originalScaleY - 0.001) * animData.t;
+
+                // Emit pen position at current tip of the line
+                if (penTracker) {
+                    // Calculate current tip position: start + direction * currentLength
+                    const currentTip = startPosition.clone().add(
+                        direction.clone().multiplyScalar(halfLength * 2 * animData.t)
+                    );
+                    penTracker.emitWorldPosition(currentTip);
+                }
+            },
+            onComplete: () => {
+                cylinder.position.copy(originalPosition);
+                cylinder.scale.y = originalScaleY;
+                if (onComplete) onComplete();
+            }
+        });
+    };
+
+    // Move pen to start position first, then draw
+    if (penTracker) {
+        penTracker.moveTo(startPosition, startDrawing);
+    } else {
+        startDrawing();
+    }
 }
 
 /**

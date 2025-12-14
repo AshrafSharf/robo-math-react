@@ -11,6 +11,12 @@ import * as THREE from 'three';
  * Animates a point appearing with scale effect
  * @param {THREE.Mesh} pointMesh - The point sphere
  * @param {Object} options - Animation options
+ * @param {number} options.duration - Animation duration (default: 0.5)
+ * @param {string} options.ease - GSAP easing function
+ * @param {number} options.fromScale - Starting scale (default: 0)
+ * @param {number} options.toScale - Target scale (default: 1)
+ * @param {Function} options.onComplete - Callback when animation completes
+ * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
  * @returns {Object} GSAP tween object
  */
 export function animatePointScale(pointMesh, options = {}) {
@@ -19,7 +25,8 @@ export function animatePointScale(pointMesh, options = {}) {
         ease = "Back.easeOut",
         fromScale = 0,
         toScale = 1,
-        onComplete = null
+        onComplete = null,
+        penTracker = null
     } = options;
 
     // Set initial scale
@@ -30,6 +37,12 @@ export function animatePointScale(pointMesh, options = {}) {
         y: toScale,
         z: toScale,
         ease: ease,
+        onUpdate: () => {
+            // Pen moves to point and stays there during scale animation
+            if (penTracker) {
+                penTracker.emitPosition(pointMesh);
+            }
+        },
         onComplete: onComplete
     });
 }
@@ -97,6 +110,12 @@ export function animatePointPulse(pointMesh, options = {}) {
  * Fade in animation for points
  * @param {THREE.Mesh} pointMesh - The point sphere
  * @param {Object} options - Animation options
+ * @param {number} options.duration - Animation duration (default: 0.5)
+ * @param {string} options.ease - GSAP easing function
+ * @param {number} options.fromOpacity - Starting opacity (default: 0)
+ * @param {number} options.toOpacity - Target opacity (default: 1)
+ * @param {Function} options.onComplete - Callback when animation completes
+ * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
  * @returns {Object} GSAP tween object
  */
 export function fadeInPoint(pointMesh, options = {}) {
@@ -105,15 +124,33 @@ export function fadeInPoint(pointMesh, options = {}) {
         ease = "Power2.easeInOut",
         fromOpacity = 0,
         toOpacity = 1,
-        onComplete = null
+        onComplete = null,
+        penTracker = null
     } = options;
 
     pointMesh.material.transparent = true;
     pointMesh.material.opacity = fromOpacity;
 
-    return TweenMax.to(pointMesh.material, duration, {
-        opacity: toOpacity,
-        ease: ease,
-        onComplete: onComplete
-    });
+    const startFadeIn = () => {
+        TweenMax.to(pointMesh.material, duration, {
+            opacity: toOpacity,
+            ease: ease,
+            onUpdate: () => {
+                // Pen stays at point during fade in
+                if (penTracker) {
+                    penTracker.emitPosition(pointMesh);
+                }
+            },
+            onComplete: onComplete
+        });
+    };
+
+    // Move pen to point first, then fade in
+    if (penTracker) {
+        const worldPos = new THREE.Vector3();
+        pointMesh.getWorldPosition(worldPos);
+        penTracker.moveTo(worldPos, startFadeIn);
+    } else {
+        startFadeIn();
+    }
 }

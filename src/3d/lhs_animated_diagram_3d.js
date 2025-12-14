@@ -19,6 +19,7 @@ import { animateArcDraw, fadeInArc } from './lhs/animator/lhs_arc_animator.js';
 import { animateVectorMovement, animateReverseVectorCreation, animateVectorSlide } from './lhs/animator/lhs_movement_animator.js';
 import { animateBoxProduct, fadeInBoxProduct } from './lhs/animator/extrude_animator.js';
 import { TraceAnimator } from './lhs/lhs_trace_animator.js';
+import { Pen3DTracker } from '../events/pen-3d-tracker.js';
 
 export class LHSAnimatedDiagram extends LHS3DDiagram {
     constructor(scene, animationDuration = 1) {
@@ -26,6 +27,27 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
         this.animationDuration = animationDuration; // Default animation duration in seconds
         this.effectsManager = createEffectsManager(this); // Create effects manager for this animated diagram
         this.traceAnimator = new TraceAnimator(scene); // For trace animations
+        this._penTracker = null; // Lazy initialized pen tracker
+    }
+
+    /**
+     * Get pen tracker for this diagram (lazy initialized)
+     * Uses camera and renderer from scene.userData
+     * @returns {Pen3DTracker|null} Pen tracker or null if not available
+     */
+    getPenTracker() {
+        if (!this._penTracker) {
+            const camera = this.scene.userData.camera;
+            const renderer = this.scene.userData.renderer;
+            console.log('[LHSAnimatedDiagram.getPenTracker] camera:', camera ? 'present' : 'null', 'renderer:', renderer ? 'present' : 'null');
+            if (camera && renderer) {
+                this._penTracker = new Pen3DTracker(camera, renderer.domElement);
+                console.log('[LHSAnimatedDiagram.getPenTracker] created pen tracker');
+            } else {
+                console.warn('[LHSAnimatedDiagram.getPenTracker] cannot create pen tracker - missing camera or renderer');
+            }
+        }
+        return this._penTracker;
     }
     
     /**
@@ -75,18 +97,19 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
      */
     point3d(position, label = '', color = 0xff0000, options = {}) {
         const duration = options.animationDuration || this.animationDuration;
-        
+
         // Create point
         const pointMesh = super.point3d(position, label, color, options);
-        
+
         // Hide label initially
         if (pointMesh.label) {
             pointMesh.label.visible = false;
         }
-        
-        // Fade in the point
+
+        // Fade in the point with pen tracking
         fadeInPoint(pointMesh, {
             duration: duration,
+            penTracker: this.getPenTracker(),
             onComplete: () => {
                 // Fade in label after point
                 if (pointMesh.label) {
@@ -95,7 +118,7 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
                 }
             }
         });
-        
+
         return pointMesh;
     }
     
@@ -146,20 +169,20 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
      */
     segment3dByTwoPoints(start, end, label = '', color = 0x00ff00, options = {}) {
         const duration = options.animationDuration || this.animationDuration;
-        
+
         // Create segment
         const segmentMesh = super.segment3dByTwoPoints(start, end, label, color, options);
-        
+
         // Hide label initially
         if (segmentMesh.label) {
             segmentMesh.label.visible = false;
         }
-        
-        // Animate line drawing from start to end
-        // The line function returns a cylinder mesh directly
+
+        // Animate line drawing from start to end with pen tracking
         animateLine(segmentMesh, {
             duration: duration,
             ease: "power2.out",
+            penTracker: this.getPenTracker(),
             onComplete: () => {
                 // Fade in label after line
                 if (segmentMesh.label) {
@@ -168,7 +191,7 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
                 }
             }
         });
-        
+
         return segmentMesh;
     }
     

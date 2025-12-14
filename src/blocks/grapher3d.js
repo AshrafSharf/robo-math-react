@@ -10,6 +10,7 @@ import { setupCoordinateSystem as setupLHSCoordinateSystem } from '../3d/lhs/lhs
 import { setupCoordinateSystem as setupRHSCoordinateSystem } from '../3d/native/coordinate_system.js';
 import { Diagram3DFactory } from '../3d/diagram_3d_factory.js';
 import { IdUtil } from '../shared/utils/id-util.js';
+import { Pen3DTracker } from '../events/pen-3d-tracker.js';
 
 export class Grapher3D {
     constructor(containerElement, options = {}) {
@@ -32,6 +33,9 @@ export class Grapher3D {
 
         // Container DOM
         this.containerDOM = null;
+
+        // Pen tracker (lazy initialized)
+        this._penTracker = null;
 
         // Initialize
         this.init();
@@ -221,6 +225,18 @@ export class Grapher3D {
      */
     getObjects() {
         return this.diagram3d ? this.diagram3d.getObjects() : [];
+    }
+
+    /**
+     * Get pen tracker for this 3D graph
+     * Used by animators to emit pen position events
+     * @returns {Pen3DTracker} Pen tracker instance
+     */
+    getPenTracker() {
+        if (!this._penTracker) {
+            this._penTracker = new Pen3DTracker(this.camera, this.renderer.domElement);
+        }
+        return this._penTracker;
     }
 
     /**

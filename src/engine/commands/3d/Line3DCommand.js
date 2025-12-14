@@ -107,7 +107,8 @@ export class Line3DCommand extends Base3DCommand {
     async playSingle() {
         if (!this.commandResult) return;
 
-        const effect = new Math3DShapeEffect(this.commandResult, 'line');
+        const penTracker = this.graphContainer.getPenTracker();
+        const effect = new Math3DShapeEffect(this.commandResult, 'line', { penTracker });
         return effect.play();
     }
 }

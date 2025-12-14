@@ -4,18 +4,21 @@
  * Uses common animator classes, similar to how MathShapeEffect works for 2D.
  */
 import { BaseEffect } from '../base-effect.js';
-import { animatePointScale } from '../../3d/common/animator/point_animator.js';
+import { animatePointScale, fadeInPoint } from '../../3d/common/animator/point_animator.js';
 import { animateLine } from '../../3d/common/animator/line_animator.js';
 
 export class Math3DShapeEffect extends BaseEffect {
     /**
      * @param {THREE.Object3D} object3d - The Three.js object to animate
      * @param {string} shapeType - Type of shape: 'point', 'line', 'vector', etc.
+     * @param {Object} options - Additional options
+     * @param {Pen3DTracker} options.penTracker - Optional pen tracker for pen following
      */
-    constructor(object3d, shapeType = 'generic') {
+    constructor(object3d, shapeType = 'generic', options = {}) {
         super();
         this.object3d = object3d;
         this.shapeType = shapeType;
+        this.penTracker = options.penTracker || null;
     }
 
     toEndState() {
@@ -47,8 +50,9 @@ export class Math3DShapeEffect extends BaseEffect {
 
             switch (this.shapeType) {
                 case 'point':
-                    animatePointScale(this.object3d, {
+                    fadeInPoint(this.object3d, {
                         duration: 0.5,
+                        penTracker: this.penTracker,
                         onComplete
                     });
                     break;
@@ -56,6 +60,7 @@ export class Math3DShapeEffect extends BaseEffect {
                 case 'line':
                     animateLine(this.object3d, {
                         duration: 0.8,
+                        penTracker: this.penTracker,
                         onComplete
                     });
                     break;
