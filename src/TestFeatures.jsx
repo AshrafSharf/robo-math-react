@@ -200,8 +200,8 @@ function TestFeatures() {
     }
 
     await roboCanvasRef.current.scrollToComponent(component);
-    // Plot y = x^2
-    roboCanvasRef.current.diagram.plot(component, (x) => x * x, -10, 10, 'purple', { strokeWidth: 2 });
+    // Plot y = x^2 using function callback
+    roboCanvasRef.current.diagram.plotFunction(component, (x) => x * x, -10, 10, 'purple', { strokeWidth: 2 });
   };
 
   const handleTestCircle = async () => {
@@ -254,13 +254,14 @@ function TestFeatures() {
     }
 
     await roboCanvasRef.current.scrollToComponent(component);
-    roboCanvasRef.current.diagram.plotExpression(
+    roboCanvasRef.current.diagram.plot(
       component,
       expressionInput,
       parseFloat(domainMin),
       parseFloat(domainMax),
       scope,
-      { color: 'purple', strokeWidth: 2 }
+      'purple',
+      { strokeWidth: 2 }
     );
   };
 

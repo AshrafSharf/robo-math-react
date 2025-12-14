@@ -215,17 +215,17 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
   }
   
   /**
-   * Create a function plot with immediate animation
+   * Create a function plot from a callback function with immediate animation
    * @param {Object} graphContainer - The graph container to render on
-   * @param {Function} equation - Function that takes x and returns y
+   * @param {Function} func - Function that takes x and returns y
    * @param {number} domainMin - Minimum x value
    * @param {number} domainMax - Maximum x value
    * @param {string} color - Color name or hex
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Promise<Object>} Plot shape
    */
-  async plot(graphContainer, equation, domainMin, domainMax, color = 'green', options = {}) {
-    const shape = this._createPlot(graphContainer, equation, domainMin, domainMax, color, options);
+  async plotFunction(graphContainer, func, domainMin, domainMax, color = 'green', options = {}) {
+    const shape = this._createPlotFunction(graphContainer, func, domainMin, domainMax, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
     if (this.animateMode) {
@@ -235,18 +235,19 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
   }
 
   /**
-   * Plot a mathematical expression string with animation
+   * Create a plot from expression string with variable scope
    * Uses math.js for parsing - supports standard math syntax
    * @param {Object} graphContainer - The graph container to render on
    * @param {string} expression - Math expression like "a*x^2 + b*x + c" or "sin(x)"
    * @param {number} domainMin - Minimum x value
    * @param {number} domainMax - Maximum x value
    * @param {Object} scope - Variable substitution map {a: 1, b: 2, c: 3}
-   * @param {Object} options - Style options {color, strokeWidth, variable}
+   * @param {string} color - Color name or hex
+   * @param {Object} options - Style options {strokeWidth, variable}
    * @returns {Promise<Object>} Plot shape
    */
-  async plotExpression(graphContainer, expression, domainMin, domainMax, scope = {}, options = {}) {
-    const { variable = 'x', color = 'blue', ...plotOptions } = options;
+  async plot(graphContainer, expression, domainMin, domainMax, scope = {}, color = 'green', options = {}) {
+    const { variable = 'x', ...plotOptions } = options;
     const shape = this._createPlotFromExpression(
       graphContainer, expression, variable, scope,
       domainMin, domainMax, color, plotOptions

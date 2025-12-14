@@ -15,6 +15,7 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
         this.equation = '';
         this.domainMin = null;
         this.domainMax = null;
+        this.scope = {};  // Variable scope for math.js evaluation
     }
 
     resolve(context) {
@@ -30,8 +31,11 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
         this.subExpressions[1].resolve(context);
         const equationExpr = this.subExpressions[1];
 
-        // Get the equation string - could be from getEquation() or as a string value
-        if (typeof equationExpr.getEquation === 'function') {
+        // Get the equation string - could be from various expression types
+        if (typeof equationExpr.getStringValue === 'function') {
+            // QuotedStringExpression - e.g., plot(g, "x^2")
+            this.equation = equationExpr.getStringValue();
+        } else if (typeof equationExpr.getEquation === 'function') {
             this.equation = equationExpr.getEquation();
         } else if (typeof equationExpr.getValue === 'function') {
             this.equation = equationExpr.getValue();
@@ -54,6 +58,10 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
             if (minValues.length > 0) this.domainMin = minValues[0];
             if (maxValues.length > 0) this.domainMax = maxValues[0];
         }
+
+        // Extract all numeric variables from context for math.js scope
+        // This allows expressions like: a=10, b=5, plot(g, a*x^2 + b)
+        this.scope = context.getReferencesCopyAsPrimitiveValues();
     }
 
     // getGrapher() inherited from AbstractNonArithmeticExpression
@@ -75,6 +83,14 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
     }
 
     /**
+     * Get the variable scope for math.js evaluation
+     * @returns {Object} Scope with variable values like {a: 10, b: 5}
+     */
+    getScope() {
+        return this.scope;
+    }
+
+    /**
      * Create a PlotCommand from this expression
      * @param {Object} options - Command options {strokeWidth}
      * @returns {PlotCommand}
@@ -85,6 +101,7 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
             this.equation,
             this.domainMin,
             this.domainMax,
+            this.scope,
             options
         );
     }

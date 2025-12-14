@@ -99,11 +99,11 @@ export class BaseDiagram2d {
   }
 
   /**
-   * Create a plot shape (without rendering)
+   * Create a plot shape from a function callback (without rendering)
    * @protected
    */
-  _createPlot(graphContainer, equation, domainMin, domainMax, color, options = {}) {
-    const shape = graphContainer.plot(equation, domainMin, domainMax);
+  _createPlotFunction(graphContainer, func, domainMin, domainMax, color, options = {}) {
+    const shape = graphContainer.plot(func, domainMin, domainMax);
     this._applyStyle(shape, color, options);
     return shape;
   }
@@ -130,7 +130,7 @@ export class BaseDiagram2d {
    */
   _createPlotFromExpression(graphContainer, expression, variable, scope, domainMin, domainMax, color, options = {}) {
     const func = this.compileExpression(expression, variable, scope);
-    return this._createPlot(graphContainer, func, domainMin, domainMax, color, options);
+    return this._createPlotFunction(graphContainer, func, domainMin, domainMax, color, options);
   }
 
   /**

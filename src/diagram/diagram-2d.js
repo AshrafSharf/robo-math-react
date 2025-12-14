@@ -76,10 +76,10 @@ export class Diagram2d extends BaseDiagram2d {
   }
 
   /**
-   * Create a function plot
+   * Create a function plot from a callback function
    */
-  plot(graphContainer, equation, domainMin, domainMax, color = 'green', options = {}) {
-    const shape = this._createPlot(graphContainer, equation, domainMin, domainMax, color, options);
+  plotFunction(graphContainer, func, domainMin, domainMax, color = 'green', options = {}) {
+    const shape = this._createPlotFunction(graphContainer, func, domainMin, domainMax, color, options);
     shape.renderEndState();
     shape.show();
     this.objects.push(shape);
@@ -87,10 +87,17 @@ export class Diagram2d extends BaseDiagram2d {
   }
 
   /**
-   * Plot a mathematical expression string
+   * Create a plot from expression string with variable scope
+   * @param {Object} graphContainer - The graph container
+   * @param {string} expression - Math expression like "a*x^2 + b"
+   * @param {number} domainMin - Minimum x value
+   * @param {number} domainMax - Maximum x value
+   * @param {Object} scope - Variable values like {a: 2, b: 3}
+   * @param {string} color - Plot color
+   * @param {Object} options - Additional options
    */
-  plotExpression(graphContainer, expression, domainMin, domainMax, scope = {}, options = {}) {
-    const { variable = 'x', color = 'blue', ...plotOptions } = options;
+  plot(graphContainer, expression, domainMin, domainMax, scope = {}, color = 'green', options = {}) {
+    const { variable = 'x', ...plotOptions } = options;
     const shape = this._createPlotFromExpression(
       graphContainer, expression, variable, scope,
       domainMin, domainMax, color, plotOptions

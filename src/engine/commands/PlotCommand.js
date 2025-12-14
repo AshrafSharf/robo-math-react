@@ -14,15 +14,17 @@ export class PlotCommand extends BaseCommand {
      * @param {string} equation - The equation to plot (e.g., "x^2", "sin(x)")
      * @param {number} domainMin - Minimum x value (or null to use graph's xRange)
      * @param {number} domainMax - Maximum x value (or null to use graph's xRange)
+     * @param {Object} scope - Variable values for math.js evaluation (e.g., {a: 10, b: 5})
      * @param {Object} options - Additional options {strokeWidth}
      */
-    constructor(graphExpression, equation, domainMin = null, domainMax = null, options = {}) {
+    constructor(graphExpression, equation, domainMin = null, domainMax = null, scope = {}, options = {}) {
         super();
         this.graphExpression = graphExpression; // Resolved at init time
         this.graphContainer = null; // Set at init time
         this.equation = equation;
         this.domainMin = domainMin;
         this.domainMax = domainMax;
+        this.scope = scope;  // Variable scope for math.js
         this.strokeWidth = options.strokeWidth || null;
     }
 
@@ -83,23 +85,10 @@ export class PlotCommand extends BaseCommand {
             this.equation,
             minX,
             maxX,
+            this.scope,
             this.color,
             options
         );
-    }
-
-    /**
-     * No animation - plot already created in doInit()
-     */
-    doPlay() {
-        // Plot animation is handled by diagram
-    }
-
-    /**
-     * Plot already visible from doInit()
-     */
-    doDirectPlay() {
-        // Nothing extra needed
     }
 
     /**
