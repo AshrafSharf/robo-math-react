@@ -261,7 +261,7 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
   }
 
   /**
-   * Create a parametric plot with immediate animation
+   * Create a parametric plot from function callbacks with immediate animation
    * @param {Object} graphContainer - The graph container to render on
    * @param {Function} xFunction - Function that takes t and returns x
    * @param {Function} yFunction - Function that takes t and returns y
@@ -271,8 +271,33 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Promise<Object>} Parametric plot shape
    */
-  async parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = 'blue', options = {}) {
-    const shape = this._createParametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
+  async parametricPlotFunction(graphContainer, xFunction, yFunction, tMin, tMax, color = 'blue', options = {}) {
+    const shape = this._createParametricPlotFunction(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
+    this._applyModeLogic(shape);
+    this.objects.push(shape);
+    if (this.animateMode) {
+      await this.playShapeEffect(shape);
+    }
+    return shape;
+  }
+
+  /**
+   * Create a parametric plot from expression strings with animation
+   * Uses math.js for parsing - variable is 't'
+   * @param {Object} graphContainer - The graph container to render on
+   * @param {string} xExpression - x(t) expression like "cos(t)" or "r*cos(t)"
+   * @param {string} yExpression - y(t) expression like "sin(t)" or "r*sin(t)"
+   * @param {number} tMin - Minimum t value
+   * @param {number} tMax - Maximum t value
+   * @param {Object} scope - Variable substitution map {r: 5, a: 2}
+   * @param {string} color - Color name or hex
+   * @param {Object} options - Style options {strokeWidth}
+   * @returns {Promise<Object>} Parametric plot shape
+   */
+  async parametricPlot(graphContainer, xExpression, yExpression, tMin, tMax, scope = {}, color = 'blue', options = {}) {
+    const shape = this._createParametricPlotFromExpression(
+      graphContainer, xExpression, yExpression, tMin, tMax, scope, color, options
+    );
     this._applyModeLogic(shape);
     this.objects.push(shape);
     if (this.animateMode) {

@@ -109,10 +109,31 @@ export class Diagram2d extends BaseDiagram2d {
   }
 
   /**
-   * Create a parametric plot
+   * Create a parametric plot from function callbacks
    */
-  parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = 'blue', options = {}) {
-    const shape = this._createParametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
+  parametricPlotFunction(graphContainer, xFunction, yFunction, tMin, tMax, color = 'blue', options = {}) {
+    const shape = this._createParametricPlotFunction(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
+    shape.renderEndState();
+    shape.show();
+    this.objects.push(shape);
+    return shape;
+  }
+
+  /**
+   * Create a parametric plot from expression strings
+   * @param {Object} graphContainer - The graph container
+   * @param {string} xExpression - x(t) expression like "cos(t)"
+   * @param {string} yExpression - y(t) expression like "sin(t)"
+   * @param {number} tMin - Minimum t value
+   * @param {number} tMax - Maximum t value
+   * @param {Object} scope - Variable values like {r: 5}
+   * @param {string} color - Plot color
+   * @param {Object} options - Additional options
+   */
+  parametricPlot(graphContainer, xExpression, yExpression, tMin, tMax, scope = {}, color = 'blue', options = {}) {
+    const shape = this._createParametricPlotFromExpression(
+      graphContainer, xExpression, yExpression, tMin, tMax, scope, color, options
+    );
     shape.renderEndState();
     shape.show();
     this.objects.push(shape);

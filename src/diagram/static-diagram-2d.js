@@ -180,7 +180,7 @@ export class StaticDiagram2d extends BaseDiagram2d {
   }
 
   /**
-   * Create a parametric plot
+   * Create a parametric plot from function callbacks
    * @param {Object} graphContainer - The graph container to render on
    * @param {Function} xFunction - Function that takes t and returns x
    * @param {Function} yFunction - Function that takes t and returns y
@@ -190,8 +190,31 @@ export class StaticDiagram2d extends BaseDiagram2d {
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Promise<Object>} Parametric plot shape
    */
-  async parametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
-    const shape = this._createParametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
+  async parametricPlotFunction(graphContainer, xFunction, yFunction, tMin, tMax, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
+    const shape = this._createParametricPlotFunction(graphContainer, xFunction, yFunction, tMin, tMax, color, options);
+    shape.renderEndState();
+    shape.show();
+    this.objects.push(shape);
+    return shape;
+  }
+
+  /**
+   * Create a parametric plot from expression strings
+   * Uses math.js for parsing - variable is 't'
+   * @param {Object} graphContainer - The graph container to render on
+   * @param {string} xExpression - x(t) expression like "cos(t)" or "r*cos(t)"
+   * @param {string} yExpression - y(t) expression like "sin(t)" or "r*sin(t)"
+   * @param {number} tMin - Minimum t value
+   * @param {number} tMax - Maximum t value
+   * @param {Object} scope - Variable substitution map {r: 5, a: 2}
+   * @param {string} color - Color name or hex
+   * @param {Object} options - Style options {strokeWidth}
+   * @returns {Promise<Object>} Parametric plot shape
+   */
+  async parametricPlot(graphContainer, xExpression, yExpression, tMin, tMax, scope = {}, color = DEFAULT_SHAPE_COLORS.plot, options = {}) {
+    const shape = this._createParametricPlotFromExpression(
+      graphContainer, xExpression, yExpression, tMin, tMax, scope, color, options
+    );
     shape.renderEndState();
     shape.show();
     this.objects.push(shape);

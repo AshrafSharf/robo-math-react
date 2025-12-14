@@ -9,7 +9,11 @@ line3d(k,0,0,0,3,4,5)
 point3d(k,3,-5,-2)
 
 
- g = g2d(0,0,16,8)
-  plot(g, "x^2")
-  plot(g, "sin(x)")
-  plot(g, "2*x + 1")
+g = g2d(0,0,16,8)
+plot(g, "x^2")
+plot(g, "sin(x)")
+plot(g, "2*x + 1")
+
+  g = g2d(0,0,16,20)
+  paraplot(g, "cos(t)", "sin(t)", 0, 6.28)          
+  paraplot(g, "t*cos(t)", "t*sin(t)", 0, 18.84)      

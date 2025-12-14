@@ -217,13 +217,31 @@ export class BaseDiagram2d {
   }
 
   /**
-   * Create a parametric plot shape (without rendering)
+   * Create a parametric plot shape from function callbacks (without rendering)
    * @protected
    */
-  _createParametricPlot(graphContainer, xFunction, yFunction, tMin, tMax, color, options = {}) {
+  _createParametricPlotFunction(graphContainer, xFunction, yFunction, tMin, tMax, color, options = {}) {
     const shape = graphContainer.parametricPlot(xFunction, yFunction, tMin, tMax);
     this._applyStyle(shape, color, options);
     return shape;
+  }
+
+  /**
+   * Create a parametric plot from expression strings (without rendering)
+   * @param {Object} graphContainer - The graph container
+   * @param {string} xExpression - x(t) expression like "cos(t)"
+   * @param {string} yExpression - y(t) expression like "sin(t)"
+   * @param {number} tMin - Minimum t value
+   * @param {number} tMax - Maximum t value
+   * @param {Object} scope - Variable substitutions like {a: 2, r: 3}
+   * @param {string} color - Color
+   * @param {Object} options - Options
+   * @protected
+   */
+  _createParametricPlotFromExpression(graphContainer, xExpression, yExpression, tMin, tMax, scope, color, options = {}) {
+    const xFunc = this.compileExpression(xExpression, 't', scope);
+    const yFunc = this.compileExpression(yExpression, 't', scope);
+    return this._createParametricPlotFunction(graphContainer, xFunc, yFunc, tMin, tMax, color, options);
   }
 
   /**

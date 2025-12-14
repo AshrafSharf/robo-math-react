@@ -54,6 +54,7 @@ import { Graph3DExpression } from '../expressions/Graph3DExpression.js';
 import { Point3DExpression } from '../expressions/3d/Point3DExpression.js';
 import { Line3DExpression } from '../expressions/3d/Line3DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
+import { ParametricPlotExpression } from '../expressions/ParametricPlotExpression.js';
 import { VariableReferenceExpression } from '../expressions/VariableReferenceExpression.js';
 import { QuotedStringExpression } from '../expressions/QuotedStringExpression.js';
 import { LabelExpression } from '../expressions/LabelExpression.js';
@@ -118,6 +119,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('point3d', Point3DExpression);
         registerMultiArg('line3d', Line3DExpression);
         registerMultiArg('plot', PlotExpression);
+        registerMultiArg('paraplot', ParametricPlotExpression);
         registerMultiArg('label', LabelExpression);
 
         // Line utilities (short aliases)
