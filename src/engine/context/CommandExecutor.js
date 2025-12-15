@@ -358,6 +358,7 @@ export class CommandExecutor {
     if (styleOptions.fill !== undefined) command.fill = styleOptions.fill;
     if (styleOptions.strokeWidth !== undefined) command.strokeWidth = styleOptions.strokeWidth;
     if (styleOptions.strokeOpacity !== undefined) command.strokeOpacity = styleOptions.strokeOpacity;
+    if (styleOptions.fillOpacity !== undefined) command.fillOpacity = styleOptions.fillOpacity;
 
     // Clear old shape and re-init with new style
     command.clear();

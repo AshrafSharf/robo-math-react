@@ -1,5 +1,6 @@
 g=g2d(1,2,20,30)
 l1=line(g,4,5,point(g,2,3))
+point(g,2,3)
 rotate(g,l1,90)
 l=label(g,"\frac{\sin(\theta)}{\cos(\theta)}",-2,4)
 

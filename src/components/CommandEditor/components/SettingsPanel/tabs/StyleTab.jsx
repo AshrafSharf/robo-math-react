@@ -16,12 +16,12 @@ const OPACITY_PRESETS = [0, 0.25, 0.5, 0.75, 1];
  * - font: fontSize + fontColor
  * - null: no style controls
  */
-const StyleTab = ({ command, expressionType, onUpdate, onColorChange, onFillColorChange, onStrokeWidthChange, onStrokeOpacityChange }) => {
+const StyleTab = ({ command, expressionType, onUpdate, onColorChange, onFillColorChange, onStrokeWidthChange, onStrokeOpacityChange, onFillOpacityChange }) => {
   const strokeColor = command.color || '#DC3912';
   const fillColor = command.fillColor || 'none';
   const strokeWidth = command.strokeWidth ?? 2;
   const strokeOpacity = command.strokeOpacity ?? 1;
-  const fillOpacity = command.fillOpacity ?? 0.3;
+  const fillOpacity = command.fillOpacity ?? 1;
   const hasFill = fillColor && fillColor !== 'none' && fillColor !== 'transparent';
 
   const styleType = getStyleType(expressionType);
@@ -35,7 +35,7 @@ const StyleTab = ({ command, expressionType, onUpdate, onColorChange, onFillColo
     );
   }
 
-  // fill: single color picker (for point - sets both stroke and fill)
+  // fill: single color picker + opacity (for point - sets both stroke and fill)
   if (styleType === 'fill') {
     return (
       <div className="style-tab compact">
@@ -47,6 +47,27 @@ const StyleTab = ({ command, expressionType, onUpdate, onColorChange, onFillColo
           }}
           label="Color:"
         />
+        <div className="compact-controls-row">
+          <div className="compact-control opacity-presets">
+            <label>Opacity</label>
+            <div className="preset-buttons">
+              {OPACITY_PRESETS.map(o => (
+                <button
+                  key={o}
+                  type="button"
+                  className={`preset-btn ${fillOpacity === o ? 'active' : ''}`}
+                  onClick={() => {
+                    // Apply to both fill and stroke opacity for points
+                    if (onFillOpacityChange) onFillOpacityChange(o);
+                    if (onStrokeOpacityChange) onStrokeOpacityChange(o);
+                  }}
+                >
+                  {o}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

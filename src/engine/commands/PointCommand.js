@@ -21,6 +21,8 @@ export class PointCommand extends BaseCommand {
     this.position = position; // {x, y}
     this.radius = options.radius || 4;
     this.fill = options.fill !== undefined ? options.fill : true; // Points are filled by default
+    this.fillOpacity = options.fillOpacity ?? null;
+    this.strokeOpacity = options.strokeOpacity ?? null;
   }
 
   /**
@@ -50,15 +52,24 @@ export class PointCommand extends BaseCommand {
       throw err;
     }
 
+    const options = {
+      radius: this.radius,
+      label: this.labelName,
+      fill: this.fill
+    };
+
+    if (this.fillOpacity !== null) {
+      options.fillOpacity = this.fillOpacity;
+    }
+    if (this.strokeOpacity !== null) {
+      options.strokeOpacity = this.strokeOpacity;
+    }
+
     this.commandResult = this.diagram2d.point(
       this.graphContainer,
       this.position,
       this.color,
-      {
-        radius: this.radius,
-        label: this.labelName,
-        fill: this.fill
-      }
+      options
     );
   }
 

@@ -3,7 +3,6 @@ import G2DOptionsPanel from '../panels/G2DOptionsPanel';
 import P2DOptionsPanel from '../panels/P2DOptionsPanel';
 import LineOptionsPanel from '../panels/LineOptionsPanel';
 import CircleOptionsPanel from '../panels/CircleOptionsPanel';
-import PointOptionsPanel from '../panels/PointOptionsPanel';
 import VectorOptionsPanel from '../panels/VectorOptionsPanel';
 import AngleOptionsPanel from '../panels/AngleOptionsPanel';
 import PolygonOptionsPanel from '../panels/PolygonOptionsPanel';
@@ -22,7 +21,6 @@ const PANEL_MAP = {
   segment: LineOptionsPanel,
   ray: LineOptionsPanel,
   circle: CircleOptionsPanel,
-  point: PointOptionsPanel,
   vec: VectorOptionsPanel,
   angle: AngleOptionsPanel,
   polygon: PolygonOptionsPanel,

@@ -56,7 +56,6 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
   // Point - fill style (single color for both stroke and fill)
   point: {
     _style: 'fill',
-    radius: { type: 'number', min: 2, max: 20, default: 4, label: 'Radius' },
   },
 
   // Vector - stroke style
@@ -150,8 +149,13 @@ export function getExpressionSchema(expressionType) {
 
 /**
  * List of expression types that have options panels
+ * Only includes types with actual options (not just _style)
  */
-export const EXPRESSION_TYPES_WITH_OPTIONS = Object.keys(EXPRESSION_OPTIONS_SCHEMA);
+export const EXPRESSION_TYPES_WITH_OPTIONS = Object.keys(EXPRESSION_OPTIONS_SCHEMA).filter(type => {
+  const schema = EXPRESSION_OPTIONS_SCHEMA[type];
+  // Check if there are any keys other than _style
+  return Object.keys(schema).some(key => key !== '_style');
+});
 
 /**
  * Get style type for expression

@@ -146,6 +146,12 @@ export class TexSVGScriptShape extends BaseStylableSubject {
     return this;
   }
 
+  fillOpacity(value) {
+    this.setStyle({ 'fill-opacity': value });
+    this.renderEndState();
+    return this;
+  }
+
   fill(value) {
     this.setStyle({ 'fill': value });
     this.renderEndState();

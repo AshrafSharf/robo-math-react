@@ -41,6 +41,7 @@ export class BaseDiagram2d {
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
     if (options.strokeOpacity !== undefined) shape.strokeOpacity(options.strokeOpacity);
     if (options.fill) shape.fill(options.fill);
+    if (options.fillOpacity !== undefined) shape.fillOpacity(options.fillOpacity);
   }
 
   /**

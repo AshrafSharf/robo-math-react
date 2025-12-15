@@ -161,6 +161,19 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     }
   };
 
+  // Handle fill opacity change - save to registry and redraw single command
+  const handleFillOpacityChange = (fillOpacity) => {
+    if (!command?.id) return;
+
+    // Update the registry with the new fill opacity
+    ExpressionOptionsRegistry.setById(command.id, { fillOpacity });
+
+    // Redraw just this command with new fill opacity (no full canvas redraw)
+    if (onRedrawSingle) {
+      onRedrawSingle({ fillOpacity });
+    }
+  };
+
   // Switch to a valid tab if current tab becomes disabled
   useEffect(() => {
     if (activeTab === 'expression' && !hasOptionsPanel(expressionType)) {
@@ -249,6 +262,7 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
             onFillColorChange={handleFillColorChange}
             onStrokeWidthChange={handleStrokeWidthChange}
             onStrokeOpacityChange={handleStrokeOpacityChange}
+            onFillOpacityChange={handleFillOpacityChange}
           />
         )}
 

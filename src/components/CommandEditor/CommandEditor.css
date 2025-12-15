@@ -66,39 +66,87 @@
     transition: opacity 0.15s ease-out;
 }
 
+/* Hide delete and import when collapsed */
 .robo-cmd-editor.collapsed .delete-all,
-.robo-cmd-editor.collapsed .play-all,
-.robo-cmd-editor.collapsed .pause-all,
-.robo-cmd-editor.collapsed .resume-all,
-.robo-cmd-editor.collapsed .stop-all,
 .robo-cmd-editor.collapsed .import-btn {
-    opacity: 0;
-    pointer-events: none;
-    width: 0;
-    padding: 0;
-    border: none;
-    overflow: hidden;
+    display: none !important;
 }
 
-/* Only toggle button visible when collapsed */
-.robo-cmd-editor.collapsed .resize-btn {
+/* Collapsed menu bar - vertical layout at top */
+.robo-cmd-editor.collapsed .robo-cmd-menu-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     width: 50px;
-    height: 50px;
+    height: auto;
     border-right: none;
-    border-left: none;
+    border-bottom: none;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* All buttons in collapsed state - base styles */
+.robo-cmd-editor.collapsed .robo-cmd-menu-bar a {
+    width: 50px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    background: #f5f5f5;
     float: none;
 }
 
-.robo-cmd-editor.collapsed .robo-cmd-menu-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 50px;
-    border-right: none;
+/* Toggle button when collapsed */
+.robo-cmd-editor.collapsed .resize-btn {
+    order: 1;
+    background: #e8e8e8;
+}
+
+/* Play/Pause/Resume buttons when collapsed */
+.robo-cmd-editor.collapsed .play-all,
+.robo-cmd-editor.collapsed .pause-all,
+.robo-cmd-editor.collapsed .resume-all {
+    opacity: 1;
+    pointer-events: auto;
+    overflow: visible;
+    order: 2;
+}
+
+/* Stop button when collapsed */
+.robo-cmd-editor.collapsed .stop-all {
+    opacity: 1;
+    pointer-events: auto;
+    overflow: visible;
+    order: 3;
+}
+
+/* Green play icon when collapsed */
+.robo-cmd-editor.collapsed .play-all .glyphicon-play,
+.robo-cmd-editor.collapsed .resume-all .glyphicon-play {
+    color: #28a745;
+    font-size: 22px;
+}
+
+/* Pause icon when collapsed */
+.robo-cmd-editor.collapsed .pause-all .glyphicon-pause {
+    color: #ffc107;
+    font-size: 22px;
+}
+
+/* Dark stop icon when collapsed */
+.robo-cmd-editor.collapsed .stop-all .glyphicon-stop {
+    color: #333;
+    font-size: 20px;
+}
+
+/* Expand chevron icon when collapsed */
+.robo-cmd-editor.collapsed .resize-btn .glyphicon {
+    font-size: 20px;
+    color: #333;
 }
 
 
@@ -1274,10 +1322,10 @@ margin-top: 10px;
     padding: 10px 8px;
     border: none;
     background: transparent;
-    color: #666;
+    color: #333;
     cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     transition: all 0.2s ease;
     text-align: center;
     border-bottom: 2px solid transparent;
