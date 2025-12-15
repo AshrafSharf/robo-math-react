@@ -15,7 +15,7 @@ export class AngleCommand extends BaseCommand {
    * @param {Object} point1 - First ray endpoint {x, y}
    * @param {Object} point2 - Second ray endpoint {x, y}
    * @param {string} angleType - Type of angle ('interior', 'exterior-first', 'exterior-second', 'reflex', 'right', 'opposite')
-   * @param {Object} options - Additional options {radius, strokeWidth, fill}
+   * @param {Object} options - Additional options {radius, strokeWidth, fill, fillOpacity, showArc}
    */
   constructor(graphExpression, vertex, point1, point2, angleType, options = {}) {
     super();
@@ -28,6 +28,8 @@ export class AngleCommand extends BaseCommand {
     this.radius = options.radius || 0.8;
     this.strokeWidth = options.strokeWidth || null;
     this.fill = options.fill || null;
+    this.fillOpacity = options.fillOpacity !== undefined ? options.fillOpacity : null;
+    this.showArc = options.showArc !== undefined ? options.showArc : true;
   }
 
   /**
@@ -67,6 +69,12 @@ export class AngleCommand extends BaseCommand {
     }
     if (this.fill) {
       options.fill = this.fill;
+    }
+    if (this.fillOpacity !== null) {
+      options.fillOpacity = this.fillOpacity;
+    }
+    if (this.showArc !== undefined) {
+      options.showArc = this.showArc;
     }
 
     this.commandResult = this.diagram2d.angle(

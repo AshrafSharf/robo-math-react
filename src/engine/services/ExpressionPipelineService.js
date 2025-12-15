@@ -8,6 +8,34 @@ import { parse } from '../expression-parser/parser/index.js';
 import { ExpressionInterpreter } from '../expression-parser/core/ExpressionInterpreter.js';
 import { ExpressionContext } from '../expression-parser/core/ExpressionContext.js';
 import { AssignmentExpression } from '../expression-parser/expressions/AssignmentExpression.js';
+import { ExpressionOptionsRegistry } from '../expression-parser/core/ExpressionOptionsRegistry.js';
+
+/**
+ * Map expression names to their normalized type for options lookup
+ */
+const EXPRESSION_TYPE_MAP = {
+    'g2d': 'g2d',
+    'p2d': 'p2d',
+    'g3d': 'g3d',
+    'point': 'point',
+    'line': 'line',
+    'segment': 'segment',
+    'ray': 'ray',
+    'circle': 'circle',
+    'ellipse': 'ellipse',
+    'arc': 'arc',
+    'vec': 'vec',
+    'angle': 'angle',
+    'anglex': 'angle',
+    'anglex2': 'angle',
+    'angler': 'angle',
+    'anglert': 'angle',
+    'angleo': 'angle',
+    'label': 'label',
+    'polygon': 'polygon',
+    'plot': 'plot',
+    'paraplot': 'paraplot',
+};
 
 export class ExpressionPipelineService {
     constructor() {
@@ -79,14 +107,73 @@ export class ExpressionPipelineService {
      * @private
      */
     _createCommand(expression, options, label) {
-        const command = expression.toCommand({
-            radius: options.radius,
-            strokeWidth: options.strokeWidth
-        });
+        // Get the expression type and look up type-specific options
+        const expressionName = expression.getName ? expression.getName().toLowerCase() : null;
+        const normalizedType = expressionName ? EXPRESSION_TYPE_MAP[expressionName] : null;
 
-        // Apply command options
-        if (options.color) {
-            command.setColor(options.color);
+        // Get options from registry by item ID (includes type defaults + instance overrides)
+        const registryOptions = options.expressionId
+            ? ExpressionOptionsRegistry.getById(options.expressionId, normalizedType)
+            : {};
+
+        if (normalizedType === 'g2d') {
+            console.log('🔍 G2D registryOptions:', JSON.stringify(registryOptions, null, 2));
+        }
+
+        // Merge type-specific options for command creation
+        const commandOptions = {
+            // Point options
+            radius: registryOptions.radius,
+            fill: registryOptions.fill,
+
+            // Line/shape stroke options
+            strokeWidth: registryOptions.strokeWidth,
+            dashPattern: registryOptions.dashPattern,
+
+            // Fill options (circle, polygon, angle, ellipse)
+            fillOpacity: registryOptions.fillOpacity,
+
+            // Vector options
+            arrowSize: registryOptions.arrowSize,
+
+            // Angle options
+            showArc: registryOptions.showArc,
+
+            // Label options
+            fontSize: registryOptions.fontSize,
+            fontColor: registryOptions.fontColor,
+
+            // Plot options
+            samples: registryOptions.samples,
+
+            // G2D options
+            showGrid: registryOptions.showGrid,
+            xMin: registryOptions.xMin,
+            xMax: registryOptions.xMax,
+            yMin: registryOptions.yMin,
+            yMax: registryOptions.yMax,
+            xScaleType: registryOptions.xScaleType,
+            yScaleType: registryOptions.yScaleType,
+            xDivisions: registryOptions.xDivisions,
+            yDivisions: registryOptions.yDivisions,
+            xLogBase: registryOptions.xLogBase,
+            yLogBase: registryOptions.yLogBase,
+            xPiMultiplier: registryOptions.xPiMultiplier,
+            yPiMultiplier: registryOptions.yPiMultiplier,
+
+            // P2D (polar) options
+            rMax: registryOptions.rMax,
+            radialLines: registryOptions.radialLines,
+            concentricCircles: registryOptions.concentricCircles,
+            angleLabels: registryOptions.angleLabels,
+        };
+
+        const command = expression.toCommand(commandOptions);
+
+        // Apply command options - color from registry takes precedence
+        const color = registryOptions.color || options.color;
+        if (color) {
+            command.setColor(color);
         }
         if (label) {
             command.setLabelName(label);
@@ -130,6 +217,7 @@ export class ExpressionPipelineService {
                     offsetX: cmdModel.offsetX,
                     offsetY: cmdModel.offsetY,
                     expressionId: cmdModel.id
+                    // Note: expression-specific options are now fetched from ExpressionOptionsRegistry by ID
                 }
             );
 

@@ -76,9 +76,29 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        // Use options range if provided, otherwise use expression values
+        const xRange = (options.xMin !== undefined && options.xMax !== undefined)
+            ? [options.xMin, options.xMax]
+            : this.xRange;
+        const yRange = (options.yMin !== undefined && options.yMax !== undefined)
+            ? [options.yMin, options.yMax]
+            : this.yRange;
+
         return new Create2DGraphCommand(
             this.row1, this.col1, this.row2, this.col2,
-            { xRange: this.xRange, yRange: this.yRange, showGrid: this.showGrid },
+            {
+                xRange,
+                yRange,
+                showGrid: options.showGrid !== undefined ? options.showGrid : this.showGrid,
+                xScaleType: options.xScaleType,
+                yScaleType: options.yScaleType,
+                xDivisions: options.xDivisions,
+                yDivisions: options.yDivisions,
+                xLogBase: options.xLogBase,
+                yLogBase: options.yLogBase,
+                xPiMultiplier: options.xPiMultiplier,
+                yPiMultiplier: options.yPiMultiplier,
+            },
             this  // Pass expression reference so command can set grapher
         );
     }

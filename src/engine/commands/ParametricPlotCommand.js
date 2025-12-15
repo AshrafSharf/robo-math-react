@@ -16,7 +16,7 @@ export class ParametricPlotCommand extends BaseCommand {
      * @param {number} tMin - Minimum t value
      * @param {number} tMax - Maximum t value
      * @param {Object} scope - Variable values for math.js evaluation (e.g., {r: 5, a: 2})
-     * @param {Object} options - Additional options {strokeWidth}
+     * @param {Object} options - Additional options {strokeWidth, samples}
      */
     constructor(graphExpression, xEquation, yEquation, tMin = 0, tMax = 2 * Math.PI, scope = {}, options = {}) {
         super();
@@ -28,6 +28,7 @@ export class ParametricPlotCommand extends BaseCommand {
         this.tMax = tMax;
         this.scope = scope;  // Variable scope for math.js
         this.strokeWidth = options.strokeWidth || null;
+        this.samples = options.samples || null;
     }
 
     /**
@@ -63,6 +64,9 @@ export class ParametricPlotCommand extends BaseCommand {
 
         if (this.strokeWidth) {
             options.strokeWidth = this.strokeWidth;
+        }
+        if (this.samples) {
+            options.samples = this.samples;
         }
 
         this.commandResult = this.diagram2d.parametricPlot(

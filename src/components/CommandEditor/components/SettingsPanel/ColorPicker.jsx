@@ -1,93 +1,130 @@
-import React, { useState } from 'react';
-
-const PRESET_COLORS = [
-  '#990099',
-  '#109618',
-  '#FF9900',
-  '#DC3912',
-  '#3366CC',
-  '#000000',
-  '#DD4477',
-  '#0099C6',
-  '#6633CC'
-];
-
-const MORE_COLORS = [
-  '#2B2301',
-  '#5F9DA1',
-  '#E94C6F',
-  '#542733',
-  '#5A6A62',
-  '#1FDA9A',
-  '#E74700',
-  '#2B9464',
-  '#F5DF65',
-  '#59323C',
-  '#BFF073',
-  '#20457C'
-];
+import React, { useState, useRef } from 'react';
 
 /**
- * Color picker with preset colors and custom color input
+ * All colors in a single array for carousel
+ * Note: No white at start or end of array
  */
-const ColorPicker = ({ selectedColor, onChange }) => {
-  const [showMoreColors, setShowMoreColors] = useState(false);
+const ALL_COLORS = [
+  '#DC3912',  // dark-red (default)
+  '#FF0000',  // red
+  '#FF9900',  // orange
+  '#FFD700',  // yellow
+  '#109618',  // green
+  '#90EE90',  // light green
+  '#0099C6',  // teal
+  '#3366CC',  // blue
+  '#4169E1',  // royal blue
+  '#6633CC',  // violet
+  '#990099',  // purple
+  '#DD4477',  // pink
+  '#FF00FF',  // magenta
+  '#8B4513',  // brown
+  '#000000',  // black
+];
+
+const VISIBLE_COUNT = 9; // Number of colors visible at once
+
+/**
+ * Color picker carousel with arrows
+ * @param {string} selectedColor - Currently selected color
+ * @param {function} onChange - Callback when color changes
+ * @param {string} label - Label to display (default: "Color:")
+ * @param {boolean} allowNone - Whether to show a "none" option (for fill colors)
+ */
+const ColorPicker = ({ selectedColor, onChange, label = "Color:", allowNone = false }) => {
+  const [scrollIndex, setScrollIndex] = useState(0);
+  const customColorRef = useRef(null);
+
+  // Build colors array with optional "none" at start
+  const colors = allowNone ? ['none', ...ALL_COLORS] : ALL_COLORS;
+  const maxScroll = Math.max(0, colors.length - VISIBLE_COUNT);
+
+  const isColorSelected = (color) => {
+    if (color === 'none') {
+      return !selectedColor || selectedColor === 'none' || selectedColor === 'transparent';
+    }
+    return selectedColor?.toLowerCase() === color.toLowerCase();
+  };
+
+  const scrollLeft = () => {
+    setScrollIndex(Math.max(0, scrollIndex - 1));
+  };
+
+  const scrollRight = () => {
+    setScrollIndex(Math.min(maxScroll, scrollIndex + 1));
+  };
+
+  // Get visible colors based on scroll position
+  const visibleColors = colors.slice(scrollIndex, scrollIndex + VISIBLE_COUNT);
+
+  const canScrollLeft = scrollIndex > 0;
+  const canScrollRight = scrollIndex < maxScroll;
+
+  // Get current color for the custom picker display
+  const currentColorValue = selectedColor && selectedColor !== 'none' && selectedColor !== 'transparent'
+    ? selectedColor
+    : '#000000';
+
+  const openCustomPicker = () => {
+    customColorRef.current?.click();
+  };
 
   return (
-    <div className="color-div">
-      <div className="option-title">Color:</div>
-
-      <ul className="color-box">
-        {PRESET_COLORS.map((color) => (
-          <li
-            key={color}
-            data-color={color}
-            className={selectedColor === color ? 'glyphicon-ok selected' : ''}
-            style={{ backgroundColor: color }}
-            onClick={() => onChange(color)}
-          >
-            {selectedColor === color && (
-              <i className="glyphicon glyphicon-ok" />
-            )}
-          </li>
-        ))}
-
-        {/* Custom color picker */}
-        <li className="custom-color-control">
+    <div className="color-picker-container">
+      {/* Header row: Label + Custom color picker */}
+      <div className="color-picker-header">
+        <span className="color-picker-label">{label}</span>
+        <button
+          className="custom-color-btn"
+          onClick={openCustomPicker}
+          title="Pick custom color"
+        >
+          <span className="color-preview" style={{ backgroundColor: currentColorValue }}></span>
+          <span className="picker-icon">+</span>
           <input
+            ref={customColorRef}
             type="color"
-            id="customColor"
-            value={selectedColor}
+            value={currentColorValue}
             onChange={(e) => onChange(e.target.value)}
+            className="hidden-color-input"
           />
-        </li>
-      </ul>
+        </button>
+      </div>
 
-      {/* More colors toggle */}
-      <i
-        className={`glyphicon glyphicon-chevron-${showMoreColors ? 'down' : 'right'} more-colors`}
-        onClick={() => setShowMoreColors(!showMoreColors)}
-        style={{ cursor: 'pointer' }}
-      />
+      {/* Color carousel */}
+      <div className="color-carousel">
+        <button
+          className={`carousel-arrow ${!canScrollLeft ? 'disabled' : ''}`}
+          onClick={scrollLeft}
+          disabled={!canScrollLeft}
+        >
+          &#8249;
+        </button>
 
-      {/* Additional colors */}
-      {showMoreColors && (
-        <ul className="color-box more-color-box">
-          {MORE_COLORS.map((color) => (
+        <ul className="color-box color-row">
+          {visibleColors.map((color) => (
             <li
               key={color}
-              data-color={color}
-              className={selectedColor === color ? 'glyphicon-ok selected' : ''}
-              style={{ backgroundColor: color }}
+              className={`color-swatch ${color === 'none' ? 'none-swatch' : ''} ${isColorSelected(color) ? 'selected' : ''}`}
+              style={color !== 'none' ? { backgroundColor: color } : undefined}
               onClick={() => onChange(color)}
+              title={color === 'none' ? 'No fill' : color}
             >
-              {selectedColor === color && (
-                <i className="glyphicon glyphicon-ok" />
+              {isColorSelected(color) && (
+                <span className={`checkmark ${color === 'none' ? 'checkmark-dark' : ''}`}>&#10003;</span>
               )}
             </li>
           ))}
         </ul>
-      )}
+
+        <button
+          className={`carousel-arrow ${!canScrollRight ? 'disabled' : ''}`}
+          onClick={scrollRight}
+          disabled={!canScrollRight}
+        >
+          &#8250;
+        </button>
+      </div>
     </div>
   );
 };

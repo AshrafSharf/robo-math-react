@@ -12,7 +12,7 @@ export class PolygonCommand extends BaseCommand {
      * Create a polygon command
      * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
      * @param {Array<{x: number, y: number}>} vertices - Array of vertex positions
-     * @param {Object} options - Additional options {strokeWidth, fill}
+     * @param {Object} options - Additional options {strokeWidth, fill, fillOpacity}
      */
     constructor(graphExpression, vertices, options = {}) {
         super();
@@ -21,6 +21,7 @@ export class PolygonCommand extends BaseCommand {
         this.vertices = vertices; // [{x, y}, ...]
         this.strokeWidth = options.strokeWidth || null;
         this.fill = options.fill || null;
+        this.fillOpacity = options.fillOpacity !== undefined ? options.fillOpacity : null;
     }
 
     /**
@@ -59,6 +60,9 @@ export class PolygonCommand extends BaseCommand {
         }
         if (this.fill) {
             options.fill = this.fill;
+        }
+        if (this.fillOpacity !== null) {
+            options.fillOpacity = this.fillOpacity;
         }
 
         this.commandResult = this.diagram2d.polygon(

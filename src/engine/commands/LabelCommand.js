@@ -14,7 +14,7 @@ export class LabelCommand extends BaseCommand {
    * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
    * @param {string} latexString - LaTeX string to render
    * @param {Object} position - Position in model coordinates {x, y}
-   * @param {Object} options - Additional options {fontSize, background, offset}
+   * @param {Object} options - Additional options {fontSize, fontColor, background, offset}
    */
   constructor(graphExpression, latexString, position, options = {}) {
     super();
@@ -22,7 +22,14 @@ export class LabelCommand extends BaseCommand {
     this.graphContainer = null;
     this.latexString = latexString;
     this.position = position;
-    this.options = options;
+    // Merge options with explicit fontSize/fontColor if provided
+    this.options = { ...options };
+    if (options.fontSize !== undefined) {
+      this.options.fontSize = options.fontSize;
+    }
+    if (options.fontColor !== undefined) {
+      this.options.fontColor = options.fontColor;
+    }
   }
 
   /**

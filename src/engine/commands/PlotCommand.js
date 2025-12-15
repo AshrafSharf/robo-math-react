@@ -15,7 +15,7 @@ export class PlotCommand extends BaseCommand {
      * @param {number} domainMin - Minimum x value (or null to use graph's xRange)
      * @param {number} domainMax - Maximum x value (or null to use graph's xRange)
      * @param {Object} scope - Variable values for math.js evaluation (e.g., {a: 10, b: 5})
-     * @param {Object} options - Additional options {strokeWidth}
+     * @param {Object} options - Additional options {strokeWidth, samples}
      */
     constructor(graphExpression, equation, domainMin = null, domainMax = null, scope = {}, options = {}) {
         super();
@@ -26,6 +26,7 @@ export class PlotCommand extends BaseCommand {
         this.domainMax = domainMax;
         this.scope = scope;  // Variable scope for math.js
         this.strokeWidth = options.strokeWidth || null;
+        this.samples = options.samples || null;
     }
 
     /**
@@ -78,6 +79,9 @@ export class PlotCommand extends BaseCommand {
 
         if (this.strokeWidth) {
             options.strokeWidth = this.strokeWidth;
+        }
+        if (this.samples) {
+            options.samples = this.samples;
         }
 
         this.commandResult = this.diagram2d.plot(

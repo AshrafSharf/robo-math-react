@@ -177,10 +177,23 @@ export const signatureHelpField = StateField.define({
       return [];
     }
 
-    // Recompute tooltips on any change or selection change
-    if (tr.docChanged || tr.selection) {
+    // Only show signature help when user is actively typing (document changed)
+    // Don't show on selection-only changes (like clicking/focusing)
+    if (tr.docChanged) {
       return getSignatureTooltip(tr.state);
     }
+
+    // Keep existing tooltips if document didn't change, but clear on pure selection changes
+    // This allows tooltips to persist while navigating with arrows after typing
+    if (tr.selection && !tr.docChanged) {
+      // If there are existing tooltips and cursor moved, recompute to update arg highlighting
+      if (tooltips.length > 0) {
+        return getSignatureTooltip(tr.state);
+      }
+      // Otherwise don't show new tooltips on click/focus
+      return [];
+    }
+
     return tooltips;
   },
 

@@ -13,7 +13,7 @@ export class VectorCommand extends BaseCommand {
      * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
      * @param {Object} startPoint - Start position {x, y}
      * @param {Object} endPoint - End position {x, y}
-     * @param {Object} options - Additional options {strokeWidth}
+     * @param {Object} options - Additional options {strokeWidth, arrowSize}
      */
     constructor(graphExpression, startPoint, endPoint, options = {}) {
         super();
@@ -22,6 +22,7 @@ export class VectorCommand extends BaseCommand {
         this.startPoint = startPoint; // {x, y}
         this.endPoint = endPoint;     // {x, y}
         this.strokeWidth = options.strokeWidth || null;
+        this.arrowSize = options.arrowSize || null;
     }
 
     /**
@@ -57,6 +58,9 @@ export class VectorCommand extends BaseCommand {
 
         if (this.strokeWidth) {
             options.strokeWidth = this.strokeWidth;
+        }
+        if (this.arrowSize) {
+            options.arrowSize = this.arrowSize;
         }
 
         this.commandResult = this.diagram2d.vector(

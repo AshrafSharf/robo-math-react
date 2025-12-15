@@ -20,7 +20,8 @@
       "Bash(grep:*)",
       "Bash(git checkout:*)",
       "Bash(wc:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

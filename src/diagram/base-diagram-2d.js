@@ -6,6 +6,7 @@
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
 import { parseColor } from './style_helper.js';
 import { Grapher } from '../blocks/grapher.js';
+import { PolarGrapher } from '../blocks/polar-grapher.js';
 import { compile } from 'mathjs';
 import { MathTextRectShape } from '../script-shapes/math-text-rect-shape.js';
 import { TextSectionManager } from '../mathtext/utils/text-section-manager.js';
@@ -582,10 +583,76 @@ export class BaseDiagram2d {
       height: height,
       showGrid: options.showGrid !== false,
       xRange: options.xRange || [-10, 10],
-      yRange: options.yRange || [-10, 10]
+      yRange: options.yRange || [-10, 10],
+      // Scale type options
+      xScaleType: options.xScaleType,
+      yScaleType: options.yScaleType,
+      xDivisions: options.xDivisions,
+      yDivisions: options.yDivisions,
+      xLogBase: options.xLogBase,
+      yLogBase: options.yLogBase,
+      xPiMultiplier: options.xPiMultiplier,
+      yPiMultiplier: options.yPiMultiplier
     });
 
     // Attach outer containerDOM for scrolling (grapher has its own inner containerDOM)
+    grapher.containerDOM = containerDOM;
+
+    // Track for cleanup
+    this.graphContainers.push({ grapher, containerDOM });
+
+    return grapher;
+  }
+
+  /**
+   * Create a polar graph container cell using logical coordinate bounds
+   * Similar to graphContainer but uses polar coordinate system
+   * @param {number} row1 - Start row (top)
+   * @param {number} col1 - Start column (left)
+   * @param {number} row2 - End row (bottom)
+   * @param {number} col2 - End column (right)
+   * @param {Object} options - Polar graph options {showGrid, rMax, radialLines, concentricCircles, angleLabels}
+   * @returns {PolarGrapher} Polar graph container instance for drawing
+   */
+  polarGraphContainer(row1, col1, row2, col2, options = {}) {
+    if (!this.coordinateMapper || !this.canvasSection) {
+      throw new Error('polarGraphContainer requires coordinateMapper and canvasSection to be initialized');
+    }
+
+    // Convert logical coordinates to pixel coordinates
+    const pixelCoords = this.coordinateMapper.toPixel(row1, col1);
+
+    // Calculate dimensions from logical bounds
+    const unitSize = this.coordinateMapper.getLogicalUnitSize();
+    const width = (col2 - col1) * unitSize.col;
+    const height = (row2 - row1) * unitSize.row;
+
+    console.log(`polarGraphContainer: (${row1},${col1}) to (${row2},${col2}) -> pixel(${pixelCoords.x}, ${pixelCoords.y}), size(${width}x${height})`);
+
+    // Create container div at position
+    const containerDOM = document.createElement('div');
+    containerDOM.id = `polar-graph-container-${row1}-${col1}-${row2}-${col2}`;
+    containerDOM.style.position = 'absolute';
+    containerDOM.style.left = pixelCoords.x + 'px';
+    containerDOM.style.top = pixelCoords.y + 'px';
+    containerDOM.style.width = width + 'px';
+    containerDOM.style.height = height + 'px';
+    containerDOM.style.border = '1px solid blue'; // Debug border (blue for polar)
+    this.canvasSection.appendChild(containerDOM);
+    console.log(`polarGraphContainer: appended to canvasSection, id=${this.canvasSection.id}`);
+
+    // Create PolarGrapher instance in this container
+    const grapher = new PolarGrapher(containerDOM, {
+      width: width,
+      height: height,
+      showGrid: options.showGrid !== false,
+      rMax: options.rMax || 10,
+      radialLines: options.radialLines || 12,
+      concentricCircles: options.concentricCircles || 5,
+      angleLabels: options.angleLabels !== false
+    });
+
+    // Attach outer containerDOM for scrolling
     grapher.containerDOM = containerDOM;
 
     // Track for cleanup

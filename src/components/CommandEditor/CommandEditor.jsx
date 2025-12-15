@@ -41,7 +41,7 @@ const CommandEditor = ({
   // Controller handles debouncing internally - no throttle needed here
   const updateCommands = useCallback((newCommands) => {
     setCommands(newCommands);
-    onChange?.(newCommands);
+    if (onChange) onChange(newCommands);
   }, [onChange]);
 
   // Add new command
@@ -79,9 +79,9 @@ const CommandEditor = ({
     updateCommands(newCommands);
 
     // Trigger direct play if expression changed
-    if (updates.expression !== undefined) {
+    if (updates.expression !== undefined && onExecute) {
       const command = newCommands.find(c => c.id === id);
-      onExecute?.(command);
+      onExecute(command);
     }
   }, [commands, updateCommands, onExecute]);
 
@@ -106,33 +106,33 @@ const CommandEditor = ({
 
   // Play single command with animation
   const handlePlaySingle = useCallback((command) => {
-    onPlaySingle?.(command);
+    if (onPlaySingle) onPlaySingle(command);
   }, [onPlaySingle]);
 
   // Play all commands with animation
   const handlePlayAll = useCallback(() => {
     setIsExecuting(true);
     setIsPaused(false);
-    onPlayAll?.();
+    if (onPlayAll) onPlayAll();
   }, [onPlayAll]);
 
   // Stop execution
   const handleStop = useCallback(() => {
     setIsExecuting(false);
     setIsPaused(false);
-    onStop?.();
+    if (onStop) onStop();
   }, [onStop]);
 
   // Pause execution
   const handlePause = useCallback(() => {
     setIsPaused(true);
-    onPause?.();
+    if (onPause) onPause();
   }, [onPause]);
 
   // Resume execution
   const handleResume = useCallback(() => {
     setIsPaused(false);
-    onResume?.();
+    if (onResume) onResume();
   }, [onResume]);
 
   // Open settings panel
@@ -157,7 +157,7 @@ const CommandEditor = ({
 
   // Toggle sidebar visibility
   const handleToggleSidebar = useCallback(() => {
-    onToggleSidebar?.();
+    if (onToggleSidebar) onToggleSidebar();
   }, [onToggleSidebar]);
 
   // Open import modal
@@ -177,7 +177,7 @@ const CommandEditor = ({
 
     // Replace all commands with imported ones
     updateCommands(newCommands);
-    setSelectedId(newCommands[0]?.id || 1);
+    setSelectedId(newCommands[0] ? newCommands[0].id : 1);
   }, [commands, updateCommands]);
 
   return (
@@ -238,7 +238,13 @@ const CommandEditor = ({
         {settingsPanelOpen && (
           <SettingsPanel
             command={commands.find(c => c.id === selectedId)}
-            onUpdate={(updates) => updateCommand(selectedId, updates)}
+            onUpdate={(updates) => {
+              // Get current command and merge updates to pass to onExecute
+              const currentCmd = commands.find(c => c.id === selectedId);
+              if (currentCmd) {
+                updateCommand(selectedId, updates);
+              }
+            }}
             onClose={() => setSettingsPanelOpen(false)}
             anchorElement={selectedCommandRef.current || containerRef.current}
           />

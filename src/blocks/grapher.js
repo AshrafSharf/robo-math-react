@@ -11,7 +11,7 @@ import { GridOptions } from '../geom/graphing/grid-options.js';
 import { ZoomUtils } from '../utils/zoom-utils.js';
 import { IdUtil } from '../shared/utils/id-util.js';
 import { ComponentState } from './component-state.js';
-import { XLinearScale, YLinearScale } from '../geom/graphing/graph-scales.js';
+import { getXScaleBuilder, getYScaleBuilder } from '../geom/graphing/graph-scales.js';
 
 // Shape imports
 import { PointPrimitiveShape } from '../script-shapes/point-primitive-shape.js';
@@ -80,17 +80,44 @@ export class Grapher {
   }
   
   initGraph(options = {}) {
-    // Default scale is [-10, 10] for both axes
-    const xRange = options.xRange || [-10, 10];
-    const yRange = options.yRange || [-10, 10];
-    
-    // Create scale builders
-    this.xScaleBuilder = (width) => XLinearScale(xRange, width);
-    this.yScaleBuilder = (height) => YLinearScale(yRange, height);
-    
+    console.log('🔧 Grapher.initGraph options:', options);
+    // Default scale is [-5, 5] for both axes
+    const xRange = options.xRange || [-5, 5];
+    const yRange = options.yRange || [-5, 5];
+
+    // Get scale types and options
+    const xScaleType = options.xScaleType || 'linear';
+    const yScaleType = options.yScaleType || 'linear';
+    const xScaleOptions = { logBase: options.xLogBase || '10' };
+    const yScaleOptions = { logBase: options.yLogBase || '10' };
+
+    // Create scale builders using the appropriate scale type
+    const xBuilder = getXScaleBuilder(xScaleType, xScaleOptions);
+    const yBuilder = getYScaleBuilder(yScaleType, yScaleOptions);
+    this.xScaleBuilder = (width) => xBuilder(xRange, width);
+    this.yScaleBuilder = (height) => yBuilder(yRange, height);
+
     // Initialize grid options
     this.gridOptions = new GridOptions();
-    
+
+    // Copy scale type options from input options
+    console.log('🎨 Grapher options:', JSON.stringify({
+      xScaleType: options.xScaleType,
+      yScaleType: options.yScaleType,
+      xDivisions: options.xDivisions,
+      yDivisions: options.yDivisions,
+      xLogBase: options.xLogBase,
+      yLogBase: options.yLogBase
+    }));
+    if (options.xScaleType) this.gridOptions.xScaleType = options.xScaleType;
+    if (options.yScaleType) this.gridOptions.yScaleType = options.yScaleType;
+    if (options.xDivisions !== undefined) this.gridOptions.xDivisions = options.xDivisions;
+    if (options.yDivisions !== undefined) this.gridOptions.yDivisions = options.yDivisions;
+    if (options.xLogBase) this.gridOptions.xLogBase = options.xLogBase;
+    if (options.yLogBase) this.gridOptions.yLogBase = options.yLogBase;
+    if (options.xPiMultiplier) this.gridOptions.xPiMultiplier = options.xPiMultiplier;
+    if (options.yPiMultiplier) this.gridOptions.yPiMultiplier = options.yPiMultiplier;
+
     // Create SVG container
     this.svgContainer = $(`<svg id="graph-${this.componentState.componentId}" width="100%" height="100%" style="overflow: hidden;" xmlns="http://www.w3.org/2000/svg"></svg>`);
     this.svgContainer.html(` <defs>

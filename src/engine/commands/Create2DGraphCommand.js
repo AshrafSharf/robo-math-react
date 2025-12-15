@@ -12,11 +12,12 @@ export class Create2DGraphCommand extends BaseCommand {
      * @param {number} col1 - Start column (left)
      * @param {number} row2 - End row (bottom)
      * @param {number} col2 - End column (right)
-     * @param {Object} options - Additional options {xRange, yRange, showGrid}
+     * @param {Object} options - Additional options including scale settings
      * @param {Object} expression - Reference to Graph2DExpression for storing grapher
      */
     constructor(row1, col1, row2, col2, options = {}, expression = null) {
         super();
+        console.log('🏗️ Create2DGraphCommand constructor - options:', JSON.stringify(options));
         this.row1 = row1;
         this.col1 = col1;
         this.row2 = row2;
@@ -24,6 +25,23 @@ export class Create2DGraphCommand extends BaseCommand {
         this.xRange = options.xRange || [-10, 10];
         this.yRange = options.yRange || [-10, 10];
         this.showGrid = options.showGrid !== false;
+
+        // Scale type options
+        this.xScaleType = options.xScaleType || 'linear';
+        this.yScaleType = options.yScaleType || 'linear';
+        this.xDivisions = options.xDivisions || 10;
+        this.yDivisions = options.yDivisions || 10;
+        this.xLogBase = options.xLogBase || '10';
+        this.yLogBase = options.yLogBase || '10';
+        this.xPiMultiplier = options.xPiMultiplier || 'pi';
+        this.yPiMultiplier = options.yPiMultiplier || 'pi';
+
+        // Legacy options (for backward compatibility)
+        this.tickSize = options.tickSize || null;
+        this.usePiLabels = options.usePiLabels || false;
+        this.xPiScale = options.xPiScale || null;
+        this.yPiScale = options.yPiScale || null;
+
         this.expression = expression;  // Reference to Graph2DExpression
     }
 
@@ -32,12 +50,39 @@ export class Create2DGraphCommand extends BaseCommand {
      * @returns {Promise}
      */
     async doInit() {
-        // Create graph container using bounds-based API
-        const grapher = this.diagram2d.graphContainer(this.row1, this.col1, this.row2, this.col2, {
+        // Build options object with all grid settings
+        const graphOptions = {
             xRange: this.xRange,
             yRange: this.yRange,
-            showGrid: this.showGrid
-        });
+            showGrid: this.showGrid,
+            // Scale type options
+            xScaleType: this.xScaleType,
+            yScaleType: this.yScaleType,
+            xDivisions: this.xDivisions,
+            yDivisions: this.yDivisions,
+            xLogBase: this.xLogBase,
+            yLogBase: this.yLogBase,
+            xPiMultiplier: this.xPiMultiplier,
+            yPiMultiplier: this.yPiMultiplier
+        };
+
+        // Add legacy grid settings if specified (backward compatibility)
+        if (this.tickSize !== null) {
+            graphOptions.tickSize = this.tickSize;
+        }
+        if (this.usePiLabels) {
+            graphOptions.usePiLabels = this.usePiLabels;
+        }
+        if (this.xPiScale !== null) {
+            graphOptions.xPiScale = this.xPiScale;
+        }
+        if (this.yPiScale !== null) {
+            graphOptions.yPiScale = this.yPiScale;
+        }
+
+        // Create graph container using bounds-based API
+        console.log('🏗️ doInit graphOptions:', JSON.stringify(graphOptions));
+        const grapher = this.diagram2d.graphContainer(this.row1, this.col1, this.row2, this.col2, graphOptions);
 
         // Store reference in expression for variable access
         if (this.expression) {

@@ -13,7 +13,7 @@ export class CircleCommand extends BaseCommand {
      * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
      * @param {Object} center - Center position {x, y}
      * @param {number} radius - Circle radius
-     * @param {Object} options - Additional options {strokeWidth, fill}
+     * @param {Object} options - Additional options {strokeWidth, fill, fillOpacity}
      */
     constructor(graphExpression, center, radius, options = {}) {
         super();
@@ -23,6 +23,7 @@ export class CircleCommand extends BaseCommand {
         this.radius = radius;
         this.strokeWidth = options.strokeWidth || null;
         this.fill = options.fill || null;
+        this.fillOpacity = options.fillOpacity !== undefined ? options.fillOpacity : null;
     }
 
     /**
@@ -59,8 +60,11 @@ export class CircleCommand extends BaseCommand {
         if (this.strokeWidth) {
             options.strokeWidth = this.strokeWidth;
         }
-        if (this.fill) {
+        if (this.fill && this.fill !== 'none') {
             options.fill = this.fill;
+        }
+        if (this.fillOpacity !== null) {
+            options.fillOpacity = this.fillOpacity;
         }
 
         this.commandResult = this.diagram2d.circle(

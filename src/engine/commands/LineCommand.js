@@ -13,7 +13,7 @@ export class LineCommand extends BaseCommand {
    * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
    * @param {Object} startPoint - Start position {x, y}
    * @param {Object} endPoint - End position {x, y}
-   * @param {Object} options - Additional options {strokeWidth, fill}
+   * @param {Object} options - Additional options {strokeWidth, fill, dashPattern}
    */
   constructor(graphExpression, startPoint, endPoint, options = {}) {
     super();
@@ -23,6 +23,7 @@ export class LineCommand extends BaseCommand {
     this.endPoint = endPoint;     // {x, y}
     this.strokeWidth = options.strokeWidth || null;
     this.fill = options.fill || null;
+    this.dashPattern = options.dashPattern || 'solid';
   }
 
   /**
@@ -61,6 +62,9 @@ export class LineCommand extends BaseCommand {
     }
     if (this.fill) {
       options.fill = this.fill;
+    }
+    if (this.dashPattern && this.dashPattern !== 'solid') {
+      options.dashPattern = this.dashPattern;
     }
 
     this.commandResult = this.diagram2d.line(

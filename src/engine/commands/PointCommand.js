@@ -12,7 +12,7 @@ export class PointCommand extends BaseCommand {
    * Create a point command
    * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
    * @param {Object} position - Point position {x, y}
-   * @param {Object} options - Additional options {radius}
+   * @param {Object} options - Additional options {radius, fill}
    */
   constructor(graphExpression, position, options = {}) {
     super();
@@ -20,6 +20,7 @@ export class PointCommand extends BaseCommand {
     this.graphContainer = null; // Set at init time
     this.position = position; // {x, y}
     this.radius = options.radius || 4;
+    this.fill = options.fill !== undefined ? options.fill : true; // Points are filled by default
   }
 
   /**
@@ -55,7 +56,8 @@ export class PointCommand extends BaseCommand {
       this.color,
       {
         radius: this.radius,
-        label: this.labelName
+        label: this.labelName,
+        fill: this.fill
       }
     );
   }

@@ -1,25 +1,44 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import ColorPicker from './ColorPicker';
-import SpeedSlider from './SpeedSlider';
-import OffsetControls from './OffsetControls';
+import SettingsTabs from './SettingsTabs';
+import StyleTab from './tabs/StyleTab';
+import ExpressionOptionsTab from './tabs/ExpressionOptionsTab';
+import AnimationTab from './tabs/AnimationTab';
+import { detectExpressionType, hasOptionsPanel } from '../../utils/expressionTypeDetector';
+import { ExpressionOptionsRegistry } from '../../../../engine/expression-parser/core/ExpressionOptionsRegistry';
 
 /**
- * Settings panel for command properties (color, speed, label, offset)
+ * Tabbed Settings Panel for command properties
+ * Tab 1: Style (color, label, offset, comment)
+ * Tab 2: Expression Options (dynamic based on expression type)
+ * Tab 3: Animation (speed)
  */
-const SettingsPanel = ({ command, onUpdate, onClose, anchorElement }) => {
+const SettingsPanel = ({ command, onUpdate, onClose, anchorElement, onApplySpeedToAll }) => {
   const panelRef = useRef(null);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [position, setPosition] = useState(null); // null until calculated
   const [arrowPosition, setArrowPosition] = useState(50);
+  const [activeTab, setActiveTab] = useState('style');
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [wasDragged, setWasDragged] = useState(false); // Track if user dragged the panel
+  const [optionsVersion, setOptionsVersion] = useState(0); // Force re-read from registry
 
-  // Calculate position based on anchor element
+  // Detect expression type
+  const expressionType = useMemo(() => {
+    const { type } = detectExpressionType(command?.expression);
+    return type;
+  }, [command?.expression]);
+
+  // Calculate position based on anchor element (only on initial render or if not dragged)
   useEffect(() => {
     if (!anchorElement || !panelRef.current) return;
+    if (wasDragged) return; // Don't reposition if user dragged it
 
     const updatePosition = () => {
+      if (wasDragged) return;
+
       const anchorRect = anchorElement.getBoundingClientRect();
       const panelHeight = panelRef.current.offsetHeight;
-      const panelWidth = panelRef.current.offsetWidth;
 
       let top = anchorRect.top - 80;
       const totalHeight = top + panelHeight;
@@ -28,6 +47,11 @@ const SettingsPanel = ({ command, onUpdate, onClose, anchorElement }) => {
       if (totalHeight + 20 > window.innerHeight) {
         const offset = totalHeight - window.innerHeight;
         top = top - offset - 50;
+      }
+
+      // Ensure top is not negative
+      if (top < 10) {
+        top = 10;
       }
 
       // Calculate arrow position
@@ -43,7 +67,7 @@ const SettingsPanel = ({ command, onUpdate, onClose, anchorElement }) => {
     updatePosition();
     window.addEventListener('resize', updatePosition);
     return () => window.removeEventListener('resize', updatePosition);
-  }, [anchorElement]);
+  }, [anchorElement, wasDragged]); // Remove activeTab dependency
 
   // Close on outside click
   useEffect(() => {
@@ -57,67 +81,159 @@ const SettingsPanel = ({ command, onUpdate, onClose, anchorElement }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [onClose]);
 
+  // Get current expression options from registry
+  const currentExpressionOptions = useMemo(() => {
+    if (!command?.id || !expressionType) return {};
+    const rawOptions = ExpressionOptionsRegistry.getRawById(command.id);
+    return rawOptions.expressionOptions?.[expressionType] || {};
+  }, [command?.id, expressionType, optionsVersion]);
+
+  // Handle expression option changes - save to registry
+  const handleExpressionOptionChange = (optionKey, value) => {
+    console.log('📝 handleExpressionOptionChange:', optionKey, '=', value, 'expressionType:', expressionType, 'commandId:', command?.id);
+    if (!expressionType || !command?.id) {
+      console.log('❌ Missing expressionType or command.id');
+      return;
+    }
+
+    // Update the registry
+    ExpressionOptionsRegistry.setExpressionOptions(command.id, expressionType, {
+      [optionKey]: value
+    });
+    console.log('📝 Registry updated, calling onUpdate');
+
+    // Force re-read from registry
+    setOptionsVersion(v => v + 1);
+
+    // Trigger re-render by updating command (this will cause pipeline to re-fetch from registry)
+    onUpdate({});
+  };
+
+  // Handle stroke color change - save to registry
+  const handleColorChange = (color) => {
+    if (!command?.id) return;
+
+    // Update the registry with the new color
+    ExpressionOptionsRegistry.setById(command.id, { color });
+
+    // Also update the command model for backward compatibility
+    onUpdate({ color });
+  };
+
+  // Handle fill color change - save to registry
+  const handleFillColorChange = (fillColor) => {
+    if (!command?.id) return;
+
+    // Update the registry with the new fill color
+    ExpressionOptionsRegistry.setById(command.id, { fillColor });
+
+    // Also update the command model
+    onUpdate({ fillColor });
+  };
+
+  // Switch to a valid tab if current tab becomes disabled
+  useEffect(() => {
+    if (activeTab === 'expression' && !hasOptionsPanel(expressionType)) {
+      setActiveTab('style');
+    }
+  }, [expressionType, activeTab]);
+
+  // Drag handlers
+  const handleMouseDown = (e) => {
+    if (e.target.closest('.settings-close-btn')) return; // Don't drag when clicking close
+    setIsDragging(true);
+    setDragOffset({
+      x: e.clientX - (position?.left || 0),
+      y: e.clientY - (position?.top || 0)
+    });
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e) => {
+      setPosition({
+        left: e.clientX - dragOffset.x,
+        top: e.clientY - dragOffset.y
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setWasDragged(true); // Remember that user positioned the panel
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
   if (!command) return null;
 
   return createPortal(
     <div
       ref={panelRef}
-      className="cmd-setting popover right"
+      className="cmd-setting popover right tabbed-settings"
       style={{
         display: 'block',
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-        position: 'fixed'
+        top: position ? `${position.top}px` : '-9999px',
+        left: position ? `${position.left}px` : '-9999px',
+        position: 'fixed',
+        visibility: position ? 'visible' : 'hidden'
       }}
     >
       <div className="arrow" style={{ top: `${arrowPosition}%` }} />
-      <div className="popover-title">
-        Settings
+
+      {/* Header with tabs - draggable */}
+      <div
+        className="popover-title tabbed-header"
+        onMouseDown={handleMouseDown}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
+        <span className="settings-title">Settings</span>
         <i
-          className="glyphicon glyphicon-remove pull-right setting-close"
+          className="glyphicon glyphicon-remove settings-close-btn"
           onClick={onClose}
-          style={{ cursor: 'pointer' }}
         />
       </div>
-      <div className="popover-content">
-        <ColorPicker
-          selectedColor={command.color}
-          onChange={(color) => onUpdate({ color })}
-        />
 
-        <SpeedSlider
-          value={command.speed}
-          onChange={(speed) => onUpdate({ speed })}
-        />
+      {/* Tab navigation */}
+      <SettingsTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        expressionType={expressionType}
+      />
 
-        <div className="show-label-div">
-          <label>
-            <input
-              type="checkbox"
-              className="labeled-checkbox"
-              checked={command.label}
-              onChange={(e) => onUpdate({ label: e.target.checked })}
-            />
-            <span style={{ marginLeft: '5px' }}>Show Label</span>
-          </label>
-        </div>
-
-        <OffsetControls
-          offsetX={command.offsetX}
-          offsetY={command.offsetY}
-          onChangeX={(offsetX) => onUpdate({ offsetX })}
-          onChangeY={(offsetY) => onUpdate({ offsetY })}
-        />
-
-        <div className="style-text">
-          <input
-            type="text"
-            placeholder="Comment"
-            value={command.text || ''}
-            onChange={(e) => onUpdate({ text: e.target.value })}
-            style={{ width: '100%' }}
+      {/* Tab content */}
+      <div className="popover-content tab-content">
+        {activeTab === 'style' && (
+          <StyleTab
+            command={command}
+            onUpdate={onUpdate}
+            onColorChange={handleColorChange}
+            onFillColorChange={handleFillColorChange}
           />
-        </div>
+        )}
+
+        {activeTab === 'expression' && hasOptionsPanel(expressionType) && (
+          <ExpressionOptionsTab
+            expressionType={expressionType}
+            options={currentExpressionOptions}
+            onChange={handleExpressionOptionChange}
+          />
+        )}
+
+        {activeTab === 'animation' && (
+          <AnimationTab
+            speed={command.speed}
+            onSpeedChange={(speed) => onUpdate({ speed })}
+            onApplyToAllChange={onApplySpeedToAll}
+          />
+        )}
       </div>
     </div>,
     document.body
