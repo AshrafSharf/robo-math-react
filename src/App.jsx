@@ -28,6 +28,7 @@ function App() {
     handleStop: hookHandleStop,
     handlePause: hookHandlePause,
     handleResume: hookHandleResume,
+    redrawSingle: hookRedrawSingle,
     errors,
     canPlayInfos,
     clearAndRerender
@@ -121,6 +122,7 @@ function App() {
           onPause={hookHandlePause}
           onResume={hookHandleResume}
           onChange={hookHandleChange}
+          onRedrawSingle={hookRedrawSingle}
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isSidebarCollapsed}
           errors={errors}

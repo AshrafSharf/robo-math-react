@@ -3,7 +3,7 @@ import { getExpressionSchema, getDefaultOptions } from '../../../utils/expressio
 
 /**
  * Point Options Panel
- * Options: radius, fill
+ * Options: radius
  */
 const PointOptionsPanel = ({ options, onChange }) => {
   const schema = getExpressionSchema('point');
@@ -22,17 +22,6 @@ const PointOptionsPanel = ({ options, onChange }) => {
           onChange={(e) => onChange('radius', parseInt(e.target.value, 10) || schema.radius.default)}
           className="option-input"
         />
-      </div>
-
-      <div className="option-group">
-        <label className="option-checkbox-label">
-          <input
-            type="checkbox"
-            checked={currentOptions.fill}
-            onChange={(e) => onChange('fill', e.target.checked)}
-          />
-          <span>Filled</span>
-        </label>
       </div>
     </div>
   );

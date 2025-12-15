@@ -73,8 +73,8 @@ export class CartesianGrid extends BaseGrid {
     gridOption._xLogBase = xLogBase;
     gridOption._yLogBase = yLogBase;
 
-    // Render grid lines if enabled
-    if (gridOption.renderGrid) {
+    // Render grid lines if enabled (and showGridLines is not explicitly false)
+    if (gridOption.renderGrid && gridOption.renderGridLines !== false) {
       this.renderGridLines(xTicks, yTicks, xScale, yScale);
     }
 

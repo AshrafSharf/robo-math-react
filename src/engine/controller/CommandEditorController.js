@@ -285,6 +285,16 @@ export class CommandEditorController {
     }
 
     /**
+     * Redraw a single command with new style options
+     * @param {number} expressionId - The expression ID
+     * @param {Object} styleOptions - Style options {color, fill, strokeWidth}
+     * @returns {Promise<boolean>} True if command was redrawn
+     */
+    async redrawSingle(expressionId, styleOptions) {
+        return this.commandExecutor.redrawSingle(expressionId, styleOptions);
+    }
+
+    /**
      * Stop execution
      */
     stop() {

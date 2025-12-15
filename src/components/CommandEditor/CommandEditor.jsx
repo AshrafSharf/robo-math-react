@@ -23,6 +23,7 @@ const CommandEditor = ({
   onPause,
   onResume,
   onChange,
+  onRedrawSingle,
   onToggleSidebar,
   isSidebarCollapsed,
   errors = [],
@@ -77,13 +78,7 @@ const CommandEditor = ({
       c.id === id ? { ...c, ...updates } : c
     );
     updateCommands(newCommands);
-
-    // Trigger direct play if expression changed
-    if (updates.expression !== undefined && onExecute) {
-      const command = newCommands.find(c => c.id === id);
-      onExecute(command);
-    }
-  }, [commands, updateCommands, onExecute]);
+  }, [commands, updateCommands]);
 
   // Drag & Drop
   const sensors = useSensors(
@@ -243,6 +238,12 @@ const CommandEditor = ({
               const currentCmd = commands.find(c => c.id === selectedId);
               if (currentCmd) {
                 updateCommand(selectedId, updates);
+              }
+            }}
+            onRedrawSingle={(styleOptions) => {
+              // Redraw just this command with new style
+              if (onRedrawSingle) {
+                onRedrawSingle(selectedId, styleOptions);
               }
             }}
             onClose={() => setSettingsPanelOpen(false)}

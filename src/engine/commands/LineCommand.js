@@ -22,6 +22,7 @@ export class LineCommand extends BaseCommand {
     this.startPoint = startPoint; // {x, y}
     this.endPoint = endPoint;     // {x, y}
     this.strokeWidth = options.strokeWidth || null;
+    this.strokeOpacity = options.strokeOpacity ?? null;
     this.fill = options.fill || null;
     this.dashPattern = options.dashPattern || 'solid';
   }
@@ -59,6 +60,9 @@ export class LineCommand extends BaseCommand {
 
     if (this.strokeWidth) {
       options.strokeWidth = this.strokeWidth;
+    }
+    if (this.strokeOpacity !== null) {
+      options.strokeOpacity = this.strokeOpacity;
     }
     if (this.fill) {
       options.fill = this.fill;

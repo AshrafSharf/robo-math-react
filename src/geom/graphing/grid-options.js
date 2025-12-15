@@ -2,6 +2,7 @@ export class GridOptions {
   constructor() {
     // Simple boolean flags for grid and axis visibility
     this.renderGrid = true;
+    this.renderGridLines = true;  // Grid lines can be hidden while keeping axis
     this.renderAxis = true;
 
     // Scale type options

@@ -90,6 +90,7 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
                 xRange,
                 yRange,
                 showGrid: options.showGrid !== undefined ? options.showGrid : this.showGrid,
+                showGridLines: options.showGridLines,
                 xScaleType: options.xScaleType,
                 yScaleType: options.yScaleType,
                 xDivisions: options.xDivisions,

@@ -13,7 +13,7 @@ import { ExpressionOptionsRegistry } from '../../../../engine/expression-parser/
  * Tab 2: Expression Options (dynamic based on expression type)
  * Tab 3: Animation (speed)
  */
-const SettingsPanel = ({ command, onUpdate, onClose, anchorElement, onApplySpeedToAll }) => {
+const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorElement, onApplySpeedToAll }) => {
   const panelRef = useRef(null);
   const [position, setPosition] = useState(null); // null until calculated
   const [arrowPosition, setArrowPosition] = useState(50);
@@ -109,26 +109,56 @@ const SettingsPanel = ({ command, onUpdate, onClose, anchorElement, onApplySpeed
     onUpdate({});
   };
 
-  // Handle stroke color change - save to registry
+  // Handle stroke color change - save to registry and redraw single command
   const handleColorChange = (color) => {
     if (!command?.id) return;
 
     // Update the registry with the new color
     ExpressionOptionsRegistry.setById(command.id, { color });
 
-    // Also update the command model for backward compatibility
-    onUpdate({ color });
+    // Redraw just this command with new color (no full canvas redraw)
+    if (onRedrawSingle) {
+      onRedrawSingle({ color });
+    }
   };
 
-  // Handle fill color change - save to registry
+  // Handle fill color change - save to registry and redraw single command
   const handleFillColorChange = (fillColor) => {
     if (!command?.id) return;
 
     // Update the registry with the new fill color
     ExpressionOptionsRegistry.setById(command.id, { fillColor });
 
-    // Also update the command model
-    onUpdate({ fillColor });
+    // Redraw just this command with new fill (no full canvas redraw)
+    if (onRedrawSingle) {
+      onRedrawSingle({ fill: fillColor });
+    }
+  };
+
+  // Handle stroke width change - save to registry and redraw single command
+  const handleStrokeWidthChange = (strokeWidth) => {
+    if (!command?.id) return;
+
+    // Update the registry with the new stroke width
+    ExpressionOptionsRegistry.setById(command.id, { strokeWidth });
+
+    // Redraw just this command with new stroke width (no full canvas redraw)
+    if (onRedrawSingle) {
+      onRedrawSingle({ strokeWidth });
+    }
+  };
+
+  // Handle stroke opacity change - save to registry and redraw single command
+  const handleStrokeOpacityChange = (strokeOpacity) => {
+    if (!command?.id) return;
+
+    // Update the registry with the new stroke opacity
+    ExpressionOptionsRegistry.setById(command.id, { strokeOpacity });
+
+    // Redraw just this command with new stroke opacity (no full canvas redraw)
+    if (onRedrawSingle) {
+      onRedrawSingle({ strokeOpacity });
+    }
   };
 
   // Switch to a valid tab if current tab becomes disabled
@@ -213,9 +243,12 @@ const SettingsPanel = ({ command, onUpdate, onClose, anchorElement, onApplySpeed
         {activeTab === 'style' && (
           <StyleTab
             command={command}
+            expressionType={expressionType}
             onUpdate={onUpdate}
             onColorChange={handleColorChange}
             onFillColorChange={handleFillColorChange}
+            onStrokeWidthChange={handleStrokeWidthChange}
+            onStrokeOpacityChange={handleStrokeOpacityChange}
           />
         )}
 

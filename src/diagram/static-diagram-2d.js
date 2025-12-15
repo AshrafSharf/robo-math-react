@@ -5,10 +5,7 @@
  */
 
 import { BaseDiagram2d } from './base-diagram-2d.js';
-import {
-  parseColor,
-  DEFAULT_SHAPE_COLORS
-} from './style_helper.js';
+import { DEFAULT_SHAPE_COLORS } from './style_helper.js';
 import { ParallelogramPrimitiveShape } from '../script-shapes/parallelogram-primitive-shape.js';
 import { subtractVectors } from '../utils/vector-math-2d.js';
 import { FocusEffect } from '../effects/focus-effect.js';
@@ -86,8 +83,8 @@ export class StaticDiagram2d extends BaseDiagram2d {
       originalEnd.y + displacement.y
     );
 
-    const color = options.color || 'blue';
-    shape.stroke(parseColor(color));
+    const color = options.color || DEFAULT_SHAPE_COLORS.vector;
+    shape.stroke(color);
 
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
 
@@ -702,8 +699,8 @@ export class StaticDiagram2d extends BaseDiagram2d {
 
     const parallelogramShape = new ParallelogramPrimitiveShape(coords, options);
     const shape = graphContainer.addMathShape(parallelogramShape);
-    shape.stroke(parseColor(color));
-    if (options.fill) shape.fill(parseColor(options.fill));
+    shape.stroke(color);
+    if (options.fill) shape.fill(options.fill);
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
 
     shape.renderEndState();
@@ -724,7 +721,7 @@ export class StaticDiagram2d extends BaseDiagram2d {
    */
   async dashedLine(graphContainer, start, end, color = DEFAULT_SHAPE_COLORS.line, options = {}) {
     const shape = graphContainer.line(start.x, start.y, end.x, end.y);
-    shape.stroke(parseColor(color));
+    shape.stroke(color);
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
 
     const dashPattern = options.dashPattern || '5,3';

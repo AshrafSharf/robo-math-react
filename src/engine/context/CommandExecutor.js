@@ -342,6 +342,31 @@ export class CommandExecutor {
     return this.commands[index];
   }
 
+  /**
+   * Redraw a single command with new style options
+   * Clears the old shape, updates style, and re-initializes
+   * @param {number} expressionId - The expression ID
+   * @param {Object} styleOptions - Style options {color, fill, strokeWidth}
+   * @returns {Promise<boolean>} True if command was found and redrawn
+   */
+  async redrawSingle(expressionId, styleOptions) {
+    const command = this.commands.find(cmd => cmd.getExpressionId() === expressionId);
+    if (!command) return false;
+
+    // Update command's style properties
+    if (styleOptions.color) command.setColor(styleOptions.color);
+    if (styleOptions.fill !== undefined) command.fill = styleOptions.fill;
+    if (styleOptions.strokeWidth !== undefined) command.strokeWidth = styleOptions.strokeWidth;
+    if (styleOptions.strokeOpacity !== undefined) command.strokeOpacity = styleOptions.strokeOpacity;
+
+    // Clear old shape and re-init with new style
+    command.clear();
+    await this.initCommand(command);
+    command.directPlay();
+
+    return true;
+  }
+
   // ============================================
   // Callbacks
   // ============================================

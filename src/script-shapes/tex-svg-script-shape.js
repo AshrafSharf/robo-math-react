@@ -140,6 +140,12 @@ export class TexSVGScriptShape extends BaseStylableSubject {
     return this;
   }
 
+  strokeOpacity(value) {
+    this.setStyle({ 'stroke-opacity': value });
+    this.renderEndState();
+    return this;
+  }
+
   fill(value) {
     this.setStyle({ 'fill': value });
     this.renderEndState();

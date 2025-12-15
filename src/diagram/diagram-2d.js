@@ -143,14 +143,14 @@ export class Diagram2d extends BaseDiagram2d {
   /**
    * Create a circle
    */
-  circle(graphContainer, center, radius, color = 'blue', options = {}) {
+  circle(graphContainer, center, radius, color = DEFAULT_SHAPE_COLORS.circle, options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
       fill: options.fill || color
     };
     const shape = this._createCircle(graphContainer, center, radius, shapeOptions.stroke, shapeOptions);
-    if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
+    if (shapeOptions.fill) shape.fill(shapeOptions.fill);
     shape.renderEndState();
     shape.show();
     this.objects.push(shape);
@@ -160,14 +160,14 @@ export class Diagram2d extends BaseDiagram2d {
   /**
    * Create an ellipse
    */
-  ellipse(graphContainer, center, rx, ry, color = 'red', options = {}) {
+  ellipse(graphContainer, center, rx, ry, color = DEFAULT_SHAPE_COLORS.ellipse, options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
       fill: options.fill || color
     };
     const shape = this._createEllipse(graphContainer, center, rx, ry, shapeOptions.stroke, shapeOptions);
-    if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
+    if (shapeOptions.fill) shape.fill(shapeOptions.fill);
     shape.renderEndState();
     shape.show();
     this.objects.push(shape);
@@ -177,7 +177,7 @@ export class Diagram2d extends BaseDiagram2d {
   /**
    * Create an arc
    */
-  arc(graphContainer, start, end, rx, ry, color = 'green', options = {}) {
+  arc(graphContainer, start, end, rx, ry, color = DEFAULT_SHAPE_COLORS.arc, options = {}) {
     const shape = this._createArc(graphContainer, start, end, rx, ry, color, options);
     shape.renderEndState();
     shape.show();
@@ -188,14 +188,14 @@ export class Diagram2d extends BaseDiagram2d {
   /**
    * Create a polygon
    */
-  polygon(graphContainer, vertices, color = 'orange', options = {}) {
+  polygon(graphContainer, vertices, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
       fill: options.fill || color
     };
     const shape = this._createPolygon(graphContainer, vertices, shapeOptions.stroke, shapeOptions);
-    if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
+    if (shapeOptions.fill) shape.fill(shapeOptions.fill);
     shape.renderEndState();
     shape.show();
     this.objects.push(shape);
@@ -205,7 +205,7 @@ export class Diagram2d extends BaseDiagram2d {
   /**
    * Create a curve
    */
-  curve(graphContainer, type, points, color = 'violet', options = {}) {
+  curve(graphContainer, type, points, color = DEFAULT_SHAPE_COLORS.curve, options = {}) {
     const shape = this._createCurve(graphContainer, type, points, color, options);
     shape.renderEndState();
     shape.show();

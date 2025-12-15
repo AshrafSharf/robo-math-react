@@ -1,12 +1,21 @@
 /**
  * Expression Options Schema
  * Defines available options and defaults for each expression type
+ *
+ * _style: 'stroke' | 'fill' | 'strokeFill' | 'font' | null
+ *   - stroke: color + strokeWidth + opacity (line, segment, ray, vec, arc, plot, etc.)
+ *   - fill: color only, applies to both stroke and fill (point)
+ *   - strokeFill: stroke color + fill color + opacities (circle, polygon, ellipse, angle)
+ *   - font: fontSize + fontColor (label)
+ *   - null/undefined: no style controls (g2d, p2d)
  */
 
 export const EXPRESSION_OPTIONS_SCHEMA = {
-  // Graph 2D expression options
+  // Graph 2D - no style controls
   g2d: {
+    _style: null,
     showGrid: { type: 'checkbox', default: true, label: 'Grid' },
+    showGridLines: { type: 'checkbox', default: true, label: 'Grid Lines' },
     // X-Axis settings
     xMin: { type: 'number', default: -5, label: 'X Min' },
     xMax: { type: 'number', default: 5, label: 'X Max' },
@@ -23,8 +32,9 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
     yLogBase: { type: 'select', options: ['10', 'e', '2'], default: '10', label: 'Y Log Base' },
   },
 
-  // Polar 2D expression options
+  // Polar 2D - no style controls
   p2d: {
+    _style: null,
     showGrid: { type: 'checkbox', default: true, label: 'Show Grid' },
     rMax: { type: 'number', min: 1, max: 100, default: 10, label: 'Max Radius' },
     radialLines: { type: 'number', min: 4, max: 24, default: 12, label: 'Radial Lines' },
@@ -32,87 +42,79 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
     angleLabels: { type: 'checkbox', default: true, label: 'Show Angle Labels' },
   },
 
-  // Line expression options
+  // Line - stroke style
   line: {
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
+    _style: 'stroke',
     dashPattern: { type: 'select', options: ['solid', 'dashed', 'dotted'], default: 'solid', label: 'Dash Pattern' },
   },
 
-  // Circle expression options
+  // Circle - stroke + fill style
   circle: {
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
-    fill: { type: 'color', default: 'none', label: 'Fill Color' },
-    fillOpacity: { type: 'slider', min: 0, max: 1, step: 0.1, default: 0.3, label: 'Fill Opacity' },
+    _style: 'strokeFill',
   },
 
-  // Point expression options
+  // Point - fill style (single color for both stroke and fill)
   point: {
+    _style: 'fill',
     radius: { type: 'number', min: 2, max: 20, default: 4, label: 'Radius' },
-    fill: { type: 'checkbox', default: true, label: 'Filled' },
   },
 
-  // Vector expression options
+  // Vector - stroke style
   vec: {
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
+    _style: 'stroke',
     arrowSize: { type: 'number', min: 5, max: 20, default: 10, label: 'Arrow Size' },
   },
 
-  // Angle expression options
+  // Angle - stroke + fill style
   angle: {
+    _style: 'strokeFill',
     radius: { type: 'number', min: 0.3, max: 3, step: 0.1, default: 0.8, label: 'Arc Radius' },
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
-    fill: { type: 'color', default: 'none', label: 'Fill Color' },
-    fillOpacity: { type: 'slider', min: 0, max: 1, step: 0.1, default: 0.2, label: 'Fill Opacity' },
     showArc: { type: 'checkbox', default: true, label: 'Show Arc' },
   },
 
-  // Label expression options
+  // Label - font style
   label: {
+    _style: 'font',
     fontSize: { type: 'number', min: 10, max: 48, default: 16, label: 'Font Size' },
-    fontColor: { type: 'color', default: '#000000', label: 'Font Color' },
   },
 
-  // Polygon expression options
+  // Polygon - stroke + fill style
   polygon: {
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
-    fill: { type: 'color', default: 'none', label: 'Fill Color' },
-    fillOpacity: { type: 'slider', min: 0, max: 1, step: 0.1, default: 0.3, label: 'Fill Opacity' },
+    _style: 'strokeFill',
   },
 
-  // Arc expression options
+  // Arc - stroke style
   arc: {
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
+    _style: 'stroke',
   },
 
-  // Plot expression options
+  // Plot - stroke style
   plot: {
-    strokeWidth: { type: 'number', min: 1, max: 5, default: 2, label: 'Line Width' },
+    _style: 'stroke',
     samples: { type: 'number', min: 50, max: 500, step: 50, default: 200, label: 'Sample Points' },
   },
 
-  // Parametric plot expression options
+  // Parametric plot - stroke style
   paraplot: {
-    strokeWidth: { type: 'number', min: 1, max: 5, default: 2, label: 'Line Width' },
+    _style: 'stroke',
     samples: { type: 'number', min: 50, max: 500, step: 50, default: 200, label: 'Sample Points' },
   },
 
-  // Segment expression options
+  // Segment - stroke style
   segment: {
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
+    _style: 'stroke',
     dashPattern: { type: 'select', options: ['solid', 'dashed', 'dotted'], default: 'solid', label: 'Dash Pattern' },
   },
 
-  // Ray expression options
+  // Ray - stroke style
   ray: {
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
+    _style: 'stroke',
     dashPattern: { type: 'select', options: ['solid', 'dashed', 'dotted'], default: 'solid', label: 'Dash Pattern' },
   },
 
-  // Ellipse expression options
+  // Ellipse - stroke + fill style
   ellipse: {
-    strokeWidth: { type: 'number', min: 1, max: 10, default: 2, label: 'Stroke Width' },
-    fill: { type: 'color', default: 'none', label: 'Fill Color' },
-    fillOpacity: { type: 'slider', min: 0, max: 1, step: 0.1, default: 0.3, label: 'Fill Opacity' },
+    _style: 'strokeFill',
   },
 };
 
@@ -150,3 +152,13 @@ export function getExpressionSchema(expressionType) {
  * List of expression types that have options panels
  */
 export const EXPRESSION_TYPES_WITH_OPTIONS = Object.keys(EXPRESSION_OPTIONS_SCHEMA);
+
+/**
+ * Get style type for expression
+ * @param {string} expressionType - The expression type
+ * @returns {'stroke' | 'fill' | 'strokeFill' | 'font' | null}
+ */
+export function getStyleType(expressionType) {
+  const schema = EXPRESSION_OPTIONS_SCHEMA[expressionType];
+  return schema?._style || null;
+}

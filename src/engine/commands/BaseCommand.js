@@ -1,3 +1,16 @@
+import { COLOR_MAP } from '../../diagram/style_helper.js';
+
+/**
+ * Convert color name to hex. If already hex or unknown, return as-is.
+ * @param {string} color - Color name or hex string
+ * @returns {string} Hex color string
+ */
+function toHexColor(color) {
+  if (!color || typeof color !== 'string') return null;
+  if (color.startsWith('#')) return color;
+  return COLOR_MAP[color.toLowerCase()] || color;
+}
+
 /**
  * BaseCommand - Abstract base class for all commands
  *
@@ -262,11 +275,14 @@ export class BaseCommand {
   }
 
   /**
-   * Set color
-   * @param {string} color
+   * Set color - converts color names to hex
+   * @param {string} color - Color name or hex string
    */
   setColor(color) {
-    this.color = color;
+    const hexColor = toHexColor(color);
+    if (hexColor) {
+      this.color = hexColor;
+    }
   }
 
   /**

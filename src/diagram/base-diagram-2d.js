@@ -4,7 +4,6 @@
  */
 
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
-import { parseColor } from './style_helper.js';
 import { Grapher } from '../blocks/grapher.js';
 import { PolarGrapher } from '../blocks/polar-grapher.js';
 import { compile } from 'mathjs';
@@ -38,9 +37,10 @@ export class BaseDiagram2d {
    * @protected
    */
   _applyStyle(shape, color, options = {}) {
-    shape.stroke(parseColor(color));
+    shape.stroke(color);
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
-    if (options.fill) shape.fill(parseColor(options.fill));
+    if (options.strokeOpacity !== undefined) shape.strokeOpacity(options.strokeOpacity);
+    if (options.fill) shape.fill(options.fill);
   }
 
   /**
@@ -49,8 +49,8 @@ export class BaseDiagram2d {
    */
   _createAngle(graphContainer, vertex, point1, point2, angleType, color, options = {}) {
     const shape = graphContainer.angle(vertex, point1, point2, angleType, options);
-    shape.stroke(parseColor(color));
-    shape.fill(parseColor(options.fill || color));
+    shape.stroke(color);
+    shape.fill(options.fill || color);
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
     return shape;
   }
@@ -251,7 +251,7 @@ export class BaseDiagram2d {
    */
   _createTexToSvg(graphContainer, position, latexString, color, options = {}) {
     const shape = graphContainer.latex(position.x, position.y, latexString, options);
-    shape.stroke(parseColor(color));
+    shape.stroke(color);
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
     return shape;
   }
@@ -262,7 +262,7 @@ export class BaseDiagram2d {
    */
   _createLabelOnPoint(graphContainer, point, latexString, color, options = {}) {
     const shape = graphContainer.latex(point.x, point.y, latexString, options);
-    shape.fill(parseColor(color));
+    shape.fill(color);
     shape.stroke('none');
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
 
@@ -298,7 +298,7 @@ export class BaseDiagram2d {
 
     // Create the label at midpoint
     const shape = graphContainer.latex(midX, midY, latexString, options);
-    shape.fill(parseColor(color));
+    shape.fill(color);
     shape.stroke('none');
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
 
@@ -349,11 +349,10 @@ export class BaseDiagram2d {
       height: bounds.height
     };
 
-    // Apply color parsing
     const styleOptions = {
-      stroke: options.stroke ? parseColor(options.stroke) : '#333',
+      stroke: options.stroke || '#333',
       strokeWidth: options.strokeWidth || 2,
-      fill: options.fill ? parseColor(options.fill) : 'transparent',
+      fill: options.fill || 'transparent',
       fillOpacity: options.fillOpacity || 0,
       padding: options.padding !== undefined ? options.padding : 2
     };
@@ -412,8 +411,8 @@ export class BaseDiagram2d {
       this.canvasSection,
       {
         fontSize: options.fontSize || 22,
-        stroke: parseColor(color),
-        fill: parseColor(color)
+        stroke: color,
+        fill: color
       }
     );
 
@@ -526,18 +525,6 @@ export class BaseDiagram2d {
     return this.objects;
   }
 
-  // ============= STYLE HELPER METHODS =============
-
-  /**
-   * Parse color from name or hex string
-   * Delegates to the style helper function
-   * @param {string} color - Color name or hex string
-   * @returns {string} Color value for SVG
-   */
-  parseColor(color) {
-    return parseColor(color);
-  }
-
   // ============= CELL CREATION METHODS (JUPYTER-STYLE) =============
 
   /**
@@ -582,6 +569,7 @@ export class BaseDiagram2d {
       width: width,
       height: height,
       showGrid: options.showGrid !== false,
+      showGridLines: options.showGridLines,
       xRange: options.xRange || [-10, 10],
       yRange: options.yRange || [-10, 10],
       // Scale type options

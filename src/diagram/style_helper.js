@@ -66,35 +66,20 @@ export const MESSAGE_STYLES = {
   }
 };
 
-// Default shape colors
+// Default shape colors (hex values)
 export const DEFAULT_SHAPE_COLORS = {
-  point: 'red',
-  vector: 'red',
-  line: 'black',
-  plot: 'green',
-  circle: 'blue',
-  ellipse: 'red',
-  arc: 'green',
-  polygon: 'orange',
-  curve: 'violet',
-  arrow: 'red',
-  angle: 'orange'
+  point: '#ff0000',
+  vector: '#ff0000',
+  line: '#000000',
+  plot: '#00ff00',
+  circle: '#0000ff',
+  ellipse: '#ff0000',
+  arc: '#00ff00',
+  polygon: '#ffa500',
+  curve: '#ee82ee',
+  arrow: '#ff0000',
+  angle: '#ffa500'
 };
-
-/**
- * Parse color from name or hex string
- * @param {string} color - Color name or hex string
- * @returns {string} Color value for SVG
- */
-export function parseColor(color) {
-  if (!color) return color;
-  
-  if (color.startsWith('#')) {
-    return color;
-  }
-  
-  return COLOR_MAP[color.toLowerCase()] || color;
-}
 
 /**
  * Get animation type code
@@ -117,8 +102,8 @@ export function getMessageStyle(type) {
 /**
  * Get default shape color
  * @param {string} shapeType - Type of shape
- * @returns {string} Default color for the shape
+ * @returns {string} Default hex color for the shape
  */
 export function getDefaultShapeColor(shapeType) {
-  return DEFAULT_SHAPE_COLORS[shapeType] || 'black';
+  return DEFAULT_SHAPE_COLORS[shapeType] || '#000000';
 }

@@ -138,6 +138,8 @@ export class Grapher {
     
     // Render grid if requested
     if (options.showGrid !== false) {
+      // Pass showGridLines option to control whether grid lines are rendered
+      this.gridOptions.renderGridLines = options.showGridLines !== false;
       this.renderGrid();
     }
   }

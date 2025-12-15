@@ -127,6 +127,13 @@ export function useCommandExecution(roboCanvas, options = {}) {
         controller.clearAndReset();
     }, [controller]);
 
+    /**
+     * Redraw a single command with new style options
+     */
+    const redrawSingle = useCallback((expressionId, styleOptions) => {
+        return controller.redrawSingle(expressionId, styleOptions);
+    }, [controller]);
+
     // Cleanup on unmount
     useEffect(() => {
         return () => {
@@ -151,6 +158,7 @@ export function useCommandExecution(roboCanvas, options = {}) {
         handlePause,
         handleResume,
         clearAndRerender,
+        redrawSingle,
 
         // Direct controller access (if needed)
         controller

@@ -128,6 +128,7 @@ export class ExpressionPipelineService {
 
             // Line/shape stroke options
             strokeWidth: registryOptions.strokeWidth,
+            strokeOpacity: registryOptions.strokeOpacity,
             dashPattern: registryOptions.dashPattern,
 
             // Fill options (circle, polygon, angle, ellipse)
@@ -148,6 +149,7 @@ export class ExpressionPipelineService {
 
             // G2D options
             showGrid: registryOptions.showGrid,
+            showGridLines: registryOptions.showGridLines,
             xMin: registryOptions.xMin,
             xMax: registryOptions.xMax,
             yMin: registryOptions.yMin,

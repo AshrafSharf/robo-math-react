@@ -146,7 +146,7 @@ const G2DOptionsPanel = ({ options, onChange }) => {
 
   return (
     <div className="g2d-panel">
-      {/* Top row: Grid checkbox + axis toggle */}
+      {/* Top row: Grid checkbox + Grid Lines checkbox + axis toggle */}
       <div className="g2d-top-row">
         <label className="g2d-grid-toggle">
           <input
@@ -155,6 +155,15 @@ const G2DOptionsPanel = ({ options, onChange }) => {
             onChange={(e) => onChange('showGrid', e.target.checked)}
           />
           Grid
+        </label>
+        <label className="g2d-grid-toggle">
+          <input
+            type="checkbox"
+            checked={options.showGridLines !== undefined ? options.showGridLines : defaults.showGridLines}
+            onChange={(e) => onChange('showGridLines', e.target.checked)}
+            disabled={!(options.showGrid !== undefined ? options.showGrid : defaults.showGrid)}
+          />
+          GridLines
         </label>
         <div className="g2d-axis-toggle">
           <button

@@ -122,8 +122,8 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
     }
 
     const shape = graphContainer.vector(end.x, end.y, start.x, start.y);
-    const color = options.color || 'red';
-    shape.stroke(this.parseColor(color));
+    const color = options.color || DEFAULT_SHAPE_COLORS.vector;
+    shape.stroke(color);
 
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
 
@@ -163,8 +163,8 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
       originalEnd.y + dy
     );
 
-    const color = options.color || 'blue';
-    shape.stroke(this.parseColor(color));
+    const color = options.color || DEFAULT_SHAPE_COLORS.vector;
+    shape.stroke(color);
 
     if (options.strokeWidth) shape.strokeWidth(options.strokeWidth);
 
@@ -315,14 +315,14 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
    * @param {Object} options - Additional options {strokeWidth, fill, stroke}
    * @returns {Promise<Object>} Circle shape
    */
-  async circle(graphContainer, center, radius, color = 'blue', options = {}) {
+  async circle(graphContainer, center, radius, color = DEFAULT_SHAPE_COLORS.circle, options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
       fill: options.fill || color
     };
     const shape = this._createCircle(graphContainer, center, radius, shapeOptions.stroke, shapeOptions);
-    if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
+    if (shapeOptions.fill) shape.fill(shapeOptions.fill);
     this._applyModeLogic(shape);
     this.objects.push(shape);
     if (this.animateMode) {
@@ -341,14 +341,14 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
    * @param {Object} options - Additional options {strokeWidth, fill}
    * @returns {Promise<Object>} Ellipse shape
    */
-  async ellipse(graphContainer, center, rx, ry, color = 'red', options = {}) {
+  async ellipse(graphContainer, center, rx, ry, color = DEFAULT_SHAPE_COLORS.ellipse, options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
       fill: options.fill || color
     };
     const shape = this._createEllipse(graphContainer, center, rx, ry, shapeOptions.stroke, shapeOptions);
-    if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
+    if (shapeOptions.fill) shape.fill(shapeOptions.fill);
     this._applyModeLogic(shape);
     this.objects.push(shape);
     if (this.animateMode) {
@@ -368,7 +368,7 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Promise<Object>} Arc shape
    */
-  async arc(graphContainer, start, end, rx, ry, color = 'green', options = {}) {
+  async arc(graphContainer, start, end, rx, ry, color = DEFAULT_SHAPE_COLORS.arc, options = {}) {
     const shape = this._createArc(graphContainer, start, end, rx, ry, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);
@@ -386,14 +386,14 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
    * @param {Object} options - Additional options {strokeWidth, fill}
    * @returns {Promise<Object>} Polygon shape
    */
-  async polygon(graphContainer, vertices, color = 'orange', options = {}) {
+  async polygon(graphContainer, vertices, color = DEFAULT_SHAPE_COLORS.polygon, options = {}) {
     const shapeOptions = {
       ...options,
       stroke: options.stroke || color,
       fill: options.fill || color
     };
     const shape = this._createPolygon(graphContainer, vertices, shapeOptions.stroke, shapeOptions);
-    if (shapeOptions.fill) shape.fill(this.parseColor(shapeOptions.fill));
+    if (shapeOptions.fill) shape.fill(shapeOptions.fill);
     this._applyModeLogic(shape);
     this.objects.push(shape);
     if (this.animateMode) {
@@ -411,7 +411,7 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
    * @param {Object} options - Additional options {strokeWidth}
    * @returns {Promise<Object>} Curve shape
    */
-  async curve(graphContainer, type, points, color = 'violet', options = {}) {
+  async curve(graphContainer, type, points, color = DEFAULT_SHAPE_COLORS.curve, options = {}) {
     const shape = this._createCurve(graphContainer, type, points, color, options);
     this._applyModeLogic(shape);
     this.objects.push(shape);

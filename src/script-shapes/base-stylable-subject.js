@@ -5,6 +5,7 @@ export class BaseStylableSubject {
     fill: 'transparent',
     'stroke-width': 2,
     'stroke': 'blue',
+    'stroke-opacity': 1,
     'fill-opacity': 1,
     'family': 'Helvetica',
     'size': 18,
