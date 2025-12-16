@@ -24,7 +24,12 @@ export class RewriteOnlyEffect extends BaseEffect {
     }
 
     toEndState() {
-        // No-op - strokes are already in their correct state
+        // Enable only the selected strokes (for directPlay after hide())
+        const nodesToPlay = this.mathComponent.includeTweenNodes(this.selectionUnits);
+        this.mathComponent.updateSelectionStroke(this.selectionUnits);
+        nodesToPlay.forEach((tweenableNode) => {
+            tweenableNode.enableStroke();
+        });
     }
 
     doPlay(playContext) {

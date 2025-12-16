@@ -21,7 +21,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
         this.mode = null;  // 'existing' or 'create'
         // For 'existing' mode
         this.targetVariableName = null;
-        this.excludePattern = '';
+        this.excludePatterns = [];  // Array of patterns to exclude
         // For 'create' mode
         this.row = 0;
         this.col = 0;
@@ -39,8 +39,8 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
         const firstExpr = this.subExpressions[0];
         firstExpr.resolve(context);
 
-        if (firstExpr.variableName && this.subExpressions.length === 2) {
-            // Mode 1: writewithout(M, "exclude")
+        if (firstExpr.variableName) {
+            // Mode 1: writewithout(M, "exclude", ...) - existing mathtext with patterns
             this.mode = 'existing';
             this.targetVariableName = firstExpr.variableName;
 
@@ -53,14 +53,16 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
                 this.dispatchError(`writewithout(): "${this.targetVariableName}" must be a mathtext expression`);
             }
 
-            // Second arg: exclude pattern (string)
-            const excludeExpr = this.subExpressions[1];
-            excludeExpr.resolve(context);
-            const resolvedExclude = this._getResolvedExpression(context, excludeExpr);
-            if (!resolvedExclude || resolvedExclude.getName() !== 'quotedstring') {
-                this.dispatchError('writewithout() second argument must be a quoted string (pattern to exclude)');
+            // Remaining args: exclude patterns (strings)
+            for (let i = 1; i < this.subExpressions.length; i++) {
+                const excludeExpr = this.subExpressions[i];
+                excludeExpr.resolve(context);
+                const resolvedExclude = this._getResolvedExpression(context, excludeExpr);
+                if (!resolvedExclude || resolvedExclude.getName() !== 'quotedstring') {
+                    this.dispatchError(`writewithout() argument ${i + 1} must be a quoted string (pattern to exclude)`);
+                }
+                this.excludePatterns.push(resolvedExclude.getStringValue());
             }
-            this.excludePattern = resolvedExclude.getStringValue();
         } else if (this.subExpressions.length >= 4) {
             // Mode 2: writewithout(row, col, "latex", "exclude")
             this.mode = 'create';
@@ -90,14 +92,16 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
             }
             this.latexString = resolvedLatex.getStringValue();
 
-            // Exclude pattern
-            const excludeExpr = this.subExpressions[3];
-            excludeExpr.resolve(context);
-            const resolvedExclude = this._getResolvedExpression(context, excludeExpr);
-            if (!resolvedExclude || resolvedExclude.getName() !== 'quotedstring') {
-                this.dispatchError('writewithout() fourth argument must be a quoted string (exclude pattern)');
+            // Exclude patterns (from arg index 3 onwards)
+            for (let i = 3; i < this.subExpressions.length; i++) {
+                const excludeExpr = this.subExpressions[i];
+                excludeExpr.resolve(context);
+                const resolvedExclude = this._getResolvedExpression(context, excludeExpr);
+                if (!resolvedExclude || resolvedExclude.getName() !== 'quotedstring') {
+                    this.dispatchError(`writewithout() argument ${i + 1} must be a quoted string (exclude pattern)`);
+                }
+                this.excludePatterns.push(resolvedExclude.getStringValue());
             }
-            this.excludePattern = resolvedExclude.getStringValue();
         } else {
             this.dispatchError('writewithout() usage: writewithout(M, "exclude") or writewithout(row, col, "latex", "exclude")');
         }
@@ -123,18 +127,18 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
         if (this.mode === 'existing') {
             // Use RewriteWithoutCommand for existing components
             // - doesn't hide container
-            // - wraps pattern with bbox at runtime
+            // - wraps patterns with bbox at runtime
             // - animates everything except matched strokes
             return new RewriteWithoutCommand({
                 targetVariableName: this.targetVariableName,
-                excludePattern: this.excludePattern
+                excludePatterns: this.excludePatterns
             });
         } else {
             return new WriteWithoutCommand('create', {
                 row: this.row,
                 col: this.col,
                 latexString: this.latexString,
-                excludePattern: this.excludePattern,
+                excludePatterns: this.excludePatterns,
                 expression: this
             });
         }

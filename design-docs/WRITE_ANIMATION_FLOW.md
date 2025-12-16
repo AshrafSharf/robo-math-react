@@ -89,8 +89,9 @@ Gap length = 10000              Gap length = 0
 │  showContainer() - Container visible, strokes remain hidden     │
 │                    Used by: effect.show() before animation      │
 │                                                                 │
-│  hide()          - Container hidden (display: none)             │
-│                    Used by: doInit() to start hidden            │
+│  hide()          - Container visible, strokes disabled          │
+│                    Uses stroke-based hiding (not display:none)  │
+│                    Allows writeOnly/writeWithout to work on it  │
 │                                                                 │
 │  enableStroke()  - Set stroke-dasharray: 0,0 on ALL paths       │
 │                    Makes all strokes visible                    │
@@ -114,8 +115,14 @@ Result:   tan(θ) = sin(θ)/cos(θ)  (all animated)
 
 ### 2. writeonly - Animate ONLY marked parts
 
+Supports multiple patterns - each pattern is wrapped with bbox.
+
 ```
+# Single pattern
 writeonly(2, 3, "\tan(\theta)=...", "\theta")
+
+# Multiple patterns
+writeonly(2, 3, "\tan(\theta)=...", "\theta", "\tan")
 
 LaTeX wrapped: \tan(\bbox[0px]{\theta})=\frac{\sin(\bbox[0px]{\theta})}{...}
 
@@ -126,8 +133,14 @@ Result:   θ θ θ  (only thetas visible and animated)
 
 ### 3. writewithout - Animate everything EXCEPT marked parts
 
+Supports multiple patterns - each pattern is wrapped with bbox.
+
 ```
+# Single pattern
 writewithout(2, 3, "\tan(\theta)=...", "\theta")
+
+# Multiple patterns
+writewithout(2, 3, "\tan(\theta)=...", "\theta", "\sin")
 
 LaTeX wrapped: \tan(\bbox[0px]{\theta})=\frac{\sin(\bbox[0px]{\theta})}{...}
 
@@ -392,6 +405,65 @@ This ensures animation works correctly even if:
 
 **Solution:** Ensure bounds extraction works with hidden containers (temp show)
 
+## Hide + Selective Write Workflow
+
+The `hide()` function uses stroke-based hiding (not `display: none`), which allows `writeOnly` and `writeWithout` to selectively reveal parts of hidden text.
+
+### Usage
+
+```
+M = mathtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+hide(M)                      # All strokes disabled, container stays in DOM
+writeonly(M, "\theta")       # Animates only θ parts back to visible
+writewithout(M, "\tan")      # Animates everything except tan back to visible
+```
+
+### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  HIDE + SELECTIVE WRITE FLOW                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  1. mathtext(...)                                               │
+│     - Creates component                                         │
+│     - Container: display: block, strokes: enabled               │
+│     - Text is fully visible                                     │
+│                                                                 │
+│  2. hide(M)                                                     │
+│     - Container: stays display: block (NOT display: none)       │
+│     - Strokes: disabled (stroke-dasharray: 0,10000)             │
+│     - Text appears invisible but DOM is intact                  │
+│     - getBBox() still works (needed for writeOnly bounds)       │
+│                                                                 │
+│  3. writeonly(M, "\theta")                                      │
+│     - Animation: Enables only θ strokes progressively           │
+│     - directPlay: Instantly enables only θ strokes              │
+│     - Other strokes remain disabled                             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Why Stroke-Based Hiding?
+
+**Old approach (display: none):**
+- `getBBox()` returns zeros → can't detect bbox regions
+- `writeOnly` fails because bounds extraction doesn't work
+
+**New approach (stroke-dasharray):**
+- Container stays in DOM layout
+- `getBBox()` returns correct bounds
+- `writeOnly`/`writeWithout` can selectively enable strokes
+
+### directPlay vs playSingle
+
+Both `RewriteOnlyEffect` and `RewriteWithoutEffect` support direct play after `hide()`:
+
+| Mode | Method | Behavior |
+|------|--------|----------|
+| Animation | `playSingle()` | Pen traces selected/non-selected strokes |
+| Instant | `directPlay()` | `toEndState()` enables selected/non-selected strokes immediately |
+
 ## Rewrite Commands (Existing Components)
 
 When `writeonly` or `writewithout` is called with an **existing** MathTextComponent variable instead of creating a new one, the system uses "Rewrite" commands.
@@ -400,8 +472,14 @@ When `writeonly` or `writewithout` is called with an **existing** MathTextCompon
 
 ```
 M = mathtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+
+# Single pattern
 writeonly(M, "\theta")      # Animates only θ parts on existing M
 writewithout(M, "\theta")   # Animates everything except θ parts on existing M
+
+# Multiple patterns
+writeonly(M, "\theta", "\tan")       # Animates θ and tan parts
+writewithout(M, "\theta", "\sin")    # Animates everything except θ and sin
 ```
 
 ### Key Differences from Create Mode

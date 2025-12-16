@@ -1,6 +1,6 @@
 import { BaseCommand } from './BaseCommand.js';
 import { RewriteWithoutEffect } from '../../mathtext/effects/rewrite-without-effect.js';
-import { wrapWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
+import { wrapMultipleWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
 import { MathTextComponent } from '../../mathtext/components/math-text-component.js';
 
 /**
@@ -32,7 +32,7 @@ export class RewriteWithoutCommand extends BaseCommand {
         const originalContent = this.mathComponent.getContent();
 
         // 2. Create TEMP component with wrapped bbox content (same position)
-        const wrappedContent = wrapWithBBox(originalContent, this.options.excludePattern);
+        const wrappedContent = wrapMultipleWithBBox(originalContent, this.options.excludePatterns);
         const tempComponent = MathTextComponent.createTempAtSamePosition(
             this.mathComponent,
             wrappedContent

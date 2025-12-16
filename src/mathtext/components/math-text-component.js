@@ -209,8 +209,13 @@ export class MathTextComponent {
   }
 
   hide() {
-    // Just hide the container
-    $(this.containerDOM).css('display', 'none');
+    // Keep container in DOM but disable all strokes (invisible but allows writeOnly to work)
+    $(this.containerDOM).css({
+      'display': 'block',
+      'opacity': 1,
+      'visibility': 'visible'
+    });
+    this.disableStroke();
     return this;
   }
 

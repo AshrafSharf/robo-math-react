@@ -19,7 +19,7 @@
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathTextComponent } from '../../mathtext/components/math-text-component.js';
-import { wrapWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
+import { wrapMultipleWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
 
 export class WriteWithoutCommand extends BaseCommand {
     /**
@@ -51,7 +51,7 @@ export class WriteWithoutCommand extends BaseCommand {
             // or we work with them as-is
         } else {
             // Create new MathTextComponent with bbox-wrapped exclusions
-            const wrappedLatex = wrapWithBBox(this.options.latexString, this.options.excludePattern);
+            const wrappedLatex = wrapMultipleWithBBox(this.options.latexString, this.options.excludePatterns);
 
             const coordinateMapper = this.diagram2d.coordinateMapper;
             const canvasSection = this.diagram2d.canvasSection;

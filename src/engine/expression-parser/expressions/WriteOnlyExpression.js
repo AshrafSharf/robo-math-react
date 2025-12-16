@@ -39,8 +39,8 @@ export class WriteOnlyExpression extends AbstractNonArithmeticExpression {
         const firstExpr = this.subExpressions[0];
         firstExpr.resolve(context);
 
-        if (firstExpr.variableName && this.subExpressions.length === 2) {
-            // Mode 1: writeonly(M, "include")
+        if (firstExpr.variableName) {
+            // Mode 1: writeonly(M, "include", ...) - existing mathtext with patterns
             this.mode = 'existing';
             this.targetVariableName = firstExpr.variableName;
 
@@ -53,14 +53,16 @@ export class WriteOnlyExpression extends AbstractNonArithmeticExpression {
                 this.dispatchError(`writeonly(): "${this.targetVariableName}" must be a mathtext expression`);
             }
 
-            // Second arg: include pattern (string)
-            const includeExpr = this.subExpressions[1];
-            includeExpr.resolve(context);
-            const resolvedInclude = this._getResolvedExpression(context, includeExpr);
-            if (!resolvedInclude || resolvedInclude.getName() !== 'quotedstring') {
-                this.dispatchError('writeonly() second argument must be a quoted string (pattern to include)');
+            // Remaining args: include patterns (strings)
+            for (let i = 1; i < this.subExpressions.length; i++) {
+                const includeExpr = this.subExpressions[i];
+                includeExpr.resolve(context);
+                const resolvedInclude = this._getResolvedExpression(context, includeExpr);
+                if (!resolvedInclude || resolvedInclude.getName() !== 'quotedstring') {
+                    this.dispatchError(`writeonly() argument ${i + 1} must be a quoted string (pattern to include)`);
+                }
+                this.includePatterns.push(resolvedInclude.getStringValue());
             }
-            this.includePattern = resolvedInclude.getStringValue();
         } else if (this.subExpressions.length >= 4) {
             // Mode 2: writeonly(row, col, "latex", "include")
             this.mode = 'create';
@@ -90,14 +92,16 @@ export class WriteOnlyExpression extends AbstractNonArithmeticExpression {
             }
             this.latexString = resolvedLatex.getStringValue();
 
-            // Include pattern
-            const includeExpr = this.subExpressions[3];
-            includeExpr.resolve(context);
-            const resolvedInclude = this._getResolvedExpression(context, includeExpr);
-            if (!resolvedInclude || resolvedInclude.getName() !== 'quotedstring') {
-                this.dispatchError('writeonly() fourth argument must be a quoted string (include pattern)');
+            // Include patterns (from arg index 3 onwards)
+            for (let i = 3; i < this.subExpressions.length; i++) {
+                const includeExpr = this.subExpressions[i];
+                includeExpr.resolve(context);
+                const resolvedInclude = this._getResolvedExpression(context, includeExpr);
+                if (!resolvedInclude || resolvedInclude.getName() !== 'quotedstring') {
+                    this.dispatchError(`writeonly() argument ${i + 1} must be a quoted string (include pattern)`);
+                }
+                this.includePatterns.push(resolvedInclude.getStringValue());
             }
-            this.includePattern = resolvedInclude.getStringValue();
         } else {
             this.dispatchError('writeonly() usage: writeonly(M, "include") or writeonly(row, col, "latex", "include")');
         }
@@ -123,18 +127,18 @@ export class WriteOnlyExpression extends AbstractNonArithmeticExpression {
         if (this.mode === 'existing') {
             // Use RewriteOnlyCommand for existing components
             // - doesn't hide container
-            // - wraps pattern with bbox at runtime
+            // - wraps patterns with bbox at runtime
             // - only animates the matched strokes
             return new RewriteOnlyCommand({
                 targetVariableName: this.targetVariableName,
-                includePattern: this.includePattern
+                includePatterns: this.includePatterns
             });
         } else {
             return new WriteOnlyCommand('create', {
                 row: this.row,
                 col: this.col,
                 latexString: this.latexString,
-                includePattern: this.includePattern,
+                includePatterns: this.includePatterns,
                 expression: this
             });
         }

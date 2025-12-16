@@ -33,9 +33,22 @@ plot(g, "2*x + 1")
 
 
 
-  writeonly(M, "\theta")
- writeonly(row, col, "latex", "\theta")
+writeonly(M, "\theta")
+writeonly(row, col, "latex", "\theta")
 
  # Multiple patterns (new)
  writeonly(M, "\theta", "\sin")
  writeonly(row, col, "latex", "\theta", "\sin", "\cos")
+
+
+
+
+  M = mathtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+  hide(M)
+  thetas = subonly(M, "\theta")           
+  nonThetas = subwithout(M, "\theta")                 
+  write(textat(thetas, 0))                
+  write(textat(thetas, 2))               
+
+    
+  write(thetas)      

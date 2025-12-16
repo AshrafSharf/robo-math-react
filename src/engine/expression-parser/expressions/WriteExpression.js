@@ -4,9 +4,14 @@
  * Syntax:
  *   write(M)                    - Animate existing MathTextComponent variable
  *   write(row, col, "latex")    - Create new MathTextComponent and animate it
+ *   write(collection)           - Animate all items in a TextItemCollection sequentially
+ *   write(textItem)             - Animate a single TextItem
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { WriteCommand } from '../../commands/WriteCommand.js';
+import { WriteCollectionVarCommand } from '../../commands/WriteCollectionVarCommand.js';
+import { WriteTextItemVarCommand } from '../../commands/WriteTextItemVarCommand.js';
+import { WriteTextItemExprCommand } from '../../commands/WriteTextItemExprCommand.js';
 
 export class WriteExpression extends AbstractNonArithmeticExpression {
     static NAME = 'write';
@@ -14,7 +19,7 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        // Mode: 'existing' or 'create'
+        // Mode: 'existing', 'create', 'collection_var', 'textitem_var', 'textitem_expr'
         this.mode = null;
         // For 'existing' mode
         this.targetVariableName = null;
@@ -22,6 +27,12 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         this.row = 0;
         this.col = 0;
         this.latexString = '';
+        // For 'collection_var' mode
+        this.collectionVariableName = null;
+        // For 'textitem_var' mode
+        this.textItemVariableName = null;
+        // For 'textitem_expr' mode (inline textat)
+        this.textItemExpression = null;
         // Reference to created MathTextComponent (set by command after init)
         this.mathTextComponent = null;
     }
@@ -32,25 +43,50 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         }
 
         if (this.subExpressions.length === 1) {
-            // Mode 1: write(M) - animate existing MathTextComponent
-            this.mode = 'existing';
             const targetExpr = this.subExpressions[0];
             targetExpr.resolve(context);
 
-            // Get the variable name for registry lookup
-            if (targetExpr.variableName) {
-                this.targetVariableName = targetExpr.variableName;
-            } else {
-                this.dispatchError('write() argument must be a variable reference to a MathTextComponent');
+            // Check if target is a textat expression (returns TextItem)
+            const targetName = targetExpr.getName && targetExpr.getName();
+            if (targetName === 'textat') {
+                this.mode = 'textitem_expr';
+                this.textItemExpression = targetExpr;
+                return;
             }
 
-            // Verify the referenced expression exists and is a MathTextExpression
-            const resolvedExpr = context.getVariable(this.targetVariableName);
-            if (!resolvedExpr) {
-                this.dispatchError(`write(): Variable "${this.targetVariableName}" not found`);
-            }
-            if (resolvedExpr.getName && resolvedExpr.getName() !== 'mathtext') {
-                this.dispatchError(`write(): "${this.targetVariableName}" must be a mathtext expression`);
+            // Check if target is a variable reference
+            if (targetExpr.variableName) {
+                const resolvedExpr = context.getReference(targetExpr.variableName);
+                if (!resolvedExpr) {
+                    this.dispatchError(`write(): Variable "${targetExpr.variableName}" not found`);
+                }
+
+                const exprName = resolvedExpr.getName && resolvedExpr.getName();
+
+                // Check for subonly/subwithout (returns TextItemCollection)
+                if (exprName === 'subonly' || exprName === 'subwithout') {
+                    this.mode = 'collection_var';
+                    this.collectionVariableName = targetExpr.variableName;
+                    return;
+                }
+
+                // Check for textat variable (returns TextItem)
+                if (exprName === 'textat') {
+                    this.mode = 'textitem_var';
+                    this.textItemVariableName = targetExpr.variableName;
+                    return;
+                }
+
+                // Check for mathtext (existing MathTextComponent)
+                if (exprName === 'mathtext') {
+                    this.mode = 'existing';
+                    this.targetVariableName = targetExpr.variableName;
+                    return;
+                }
+
+                this.dispatchError(`write(): "${targetExpr.variableName}" must be a mathtext, subonly, subwithout, or textat expression`);
+            } else {
+                this.dispatchError('write() argument must be a variable reference');
             }
         } else if (this.subExpressions.length >= 3) {
             // Mode 2: write(row, col, "latex") - create new and animate
@@ -105,7 +141,17 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        if (this.mode === 'existing') {
+        if (this.mode === 'collection_var') {
+            return new WriteCollectionVarCommand(this.collectionVariableName);
+        } else if (this.mode === 'textitem_var') {
+            return new WriteTextItemVarCommand(this.textItemVariableName);
+        } else if (this.mode === 'textitem_expr') {
+            // Inline textat expression: write(textat(thetas, 0))
+            return new WriteTextItemExprCommand(
+                this.textItemExpression.collectionVariableName,
+                this.textItemExpression.index
+            );
+        } else if (this.mode === 'existing') {
             return new WriteCommand('existing', {
                 targetVariableName: this.targetVariableName
             });
