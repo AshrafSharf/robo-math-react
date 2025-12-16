@@ -38,7 +38,7 @@ export class WriteOnlyEffect extends BaseEffect {
             playContext.onComplete(e);
         };
 
-        // Only play (render) the selections - don't hide other parts
+        // Only play (render) the selections - others stay hidden from init
         this.mathComponent.writeSelectionOnlyAnimate(this.selectionUnits, this.includeAll, localHandler);
     }
 }

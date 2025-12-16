@@ -14,4 +14,8 @@ export class HideExpression extends BaseVisibilityExpression {
     getCommandClass() {
         return HideCommand;
     }
+
+    canPlay() {
+        return false;
+    }
 }
