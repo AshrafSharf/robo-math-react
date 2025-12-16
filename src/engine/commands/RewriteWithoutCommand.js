@@ -50,6 +50,16 @@ export class RewriteWithoutCommand extends BaseCommand {
         this.commandResult = this.mathComponent;
     }
 
+    async doPlay() {
+        if (!this.mathComponent || !this.selectionUnits) return;
+
+        // Disable excluded strokes so they stay hidden
+        const excludedNodes = this.mathComponent.includeTweenNodes(this.selectionUnits);
+        excludedNodes.forEach(node => node.disableStroke());
+
+        return this.playSingle();
+    }
+
     async playSingle() {
         if (!this.mathComponent || !this.selectionUnits) return;
 

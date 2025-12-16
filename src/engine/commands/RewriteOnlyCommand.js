@@ -49,6 +49,16 @@ export class RewriteOnlyCommand extends BaseCommand {
         this.commandResult = this.mathComponent;
     }
 
+    async doPlay() {
+        if (!this.mathComponent || !this.selectionUnits) return;
+
+        // Disable non-selected strokes so they stay hidden
+        const nonSelectedNodes = this.mathComponent.excludeTweenNodes(this.selectionUnits);
+        nonSelectedNodes.forEach(node => node.disableStroke());
+
+        return this.playSingle();
+    }
+
     async playSingle() {
         if (!this.mathComponent || !this.selectionUnits) return;
 
