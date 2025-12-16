@@ -43,6 +43,7 @@ const CommandEditor = ({
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const containerRef = useRef(null);
   const selectedCommandRef = useRef(null);
 
@@ -230,33 +231,46 @@ const CommandEditor = ({
             isPopupMode={isPopupMode}
           />
 
-          <div className="robo-cmd-panel" id="cmd-panel">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={commands.map(c => c.id)}
-                strategy={verticalListSortingStrategy}
+          <div className={`robo-cmd-panel ${isInputFocused ? 'input-focused' : ''}`} id="cmd-panel">
+            <div className="robo-cmd-scroll-wrapper">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                <div className="robo-cmdlist" id="sortable">
-                  <CommandList
-                    commands={commands}
-                    selectedId={selectedId}
-                    onSelect={setSelectedId}
-                    onUpdate={updateCommand}
-                    onDelete={deleteCommand}
-                    onPlaySingle={handlePlaySingle}
-                    onSettingsClick={handleSettingsClick}
-                    onAddCommand={addCommand}
-                    errors={errors}
-                    canPlayInfos={canPlayInfos}
-                  />
-                  <NewCommandButton onClick={() => addCommand()} />
-                </div>
-              </SortableContext>
-            </DndContext>
+                <SortableContext
+                  items={commands.map(c => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="robo-cmdlist" id="sortable">
+                    <CommandList
+                      commands={commands}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                      onUpdate={updateCommand}
+                      onDelete={deleteCommand}
+                      onPlaySingle={handlePlaySingle}
+                      onSettingsClick={handleSettingsClick}
+                      onAddCommand={addCommand}
+                      onInputFocus={() => setIsInputFocused(true)}
+                      onInputBlur={() => {
+                        // Delay to check if focus moved to another input in the list
+                        setTimeout(() => {
+                          const activeEl = document.activeElement;
+                          const isStillInEditor = activeEl?.closest('.robo-cmd-panel');
+                          if (!isStillInEditor) {
+                            setIsInputFocused(false);
+                          }
+                        }, 100);
+                      }}
+                      errors={errors}
+                      canPlayInfos={canPlayInfos}
+                    />
+                    <NewCommandButton onClick={() => addCommand()} />
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
           </div>
         </div>
 

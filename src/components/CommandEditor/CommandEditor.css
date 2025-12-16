@@ -48,7 +48,6 @@
 .robo-cmd-editor.collapsed .robo-cmdeditor-container {
     min-width: 50px;
     padding-top: 0;
-    box-shadow: none;
 }
 
 /* Hide command panel with opacity for smoother transition */
@@ -60,7 +59,6 @@
     opacity: 0;
     pointer-events: none;
     position: absolute;
-    border-right: none;
 }
 
 /* Hide menu bar buttons when collapsed */
@@ -220,10 +218,27 @@ font-size: 20px;
 .robo-cmd-panel {
     position: relative;
     flex: 1;
-    overflow: visible;
+    overflow: hidden;
     background-color: #fff;
     border-right: 1px solid rgba(206, 206, 206, 0.8);
     z-index: 0;
+}
+
+/* When input is focused, allow overflow for expansion */
+.robo-cmd-panel.input-focused {
+    overflow: visible !important;
+}
+
+.robo-cmd-panel.input-focused .robo-cmd-scroll-wrapper {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
+
+.robo-cmd-scroll-wrapper {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 

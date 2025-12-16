@@ -19,6 +19,8 @@ const CommandItem = ({
   onPlaySingle,
   onSettings,
   onKeyDown,
+  onInputFocus,
+  onInputBlur,
   error,
   canPlay = false
 }) => {
@@ -86,7 +88,11 @@ const CommandItem = ({
             ref={inputRef}
             value={command.expression}
             onChange={handleExpressionChange}
-            onFocus={() => onSelect(command.id)}
+            onFocus={() => {
+              onSelect(command.id);
+              onInputFocus?.();
+            }}
+            onBlur={() => onInputBlur?.()}
             onKeyDown={handleKeyDownInternal}
             placeholder="type here..."
             commandId={command.id}

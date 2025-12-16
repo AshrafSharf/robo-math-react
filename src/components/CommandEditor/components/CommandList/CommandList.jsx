@@ -14,6 +14,8 @@ const CommandList = ({
   onPlaySingle,
   onSettingsClick,
   onAddCommand,
+  onInputFocus,
+  onInputBlur,
   errors = [],
   canPlayInfos = []
 }) => {
@@ -53,6 +55,8 @@ const CommandList = ({
             onPlaySingle={onPlaySingle}
             onSettings={onSettingsClick}
             onKeyDown={handleKeyDownWithEnter}
+            onInputFocus={onInputFocus}
+            onInputBlur={onInputBlur}
             error={errorForCommand?.error}
             canPlay={canPlayInfo?.canPlay ?? false}
             ref={(el) => {
