@@ -6,16 +6,29 @@ import './App.css';
 import { RoboCanvas } from './RoboCanvas.js';
 import { useCommandExecution } from './hooks/useCommandExecution.js';
 import { IntrepreterFunctionTable } from './engine/expression-parser/core/IntrepreterFunctionTable.js';
+import { LessonProvider, useLesson, useLessonPersistence, PageTabBar, LessonHeader } from './lesson';
 
-function App() {
+function AppContent() {
+  const { lesson, activePage, updatePageCommands, setLesson } = useLesson();
+  const { loadFromStorage } = useLessonPersistence(lesson, setLesson);
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [roboCanvas, setRoboCanvas] = useState(null);
   const containerRef = useRef(null);
+  const prevPageIdRef = useRef(activePage.id);
 
   // Initialize expression function table once
   useEffect(() => {
     IntrepreterFunctionTable.populateFunctionTable();
+  }, []);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const stored = loadFromStorage();
+    if (stored) {
+      setLesson(stored);
+    }
   }, []);
 
   // Command execution hook
@@ -36,9 +49,27 @@ function App() {
     debounceMs: 500
   });
 
+  // Clear and re-execute when page changes
+  useEffect(() => {
+    if (!roboCanvas || prevPageIdRef.current === activePage.id) return;
+
+    prevPageIdRef.current = activePage.id;
+    roboCanvas.clearAll();
+    clearAndRerender();
+
+    if (activePage.commands?.length > 0) {
+      hookHandleChange(activePage.commands);
+    }
+  }, [activePage.id, activePage.commands, roboCanvas, clearAndRerender, hookHandleChange]);
+
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
   };
+
+  // Handle commands change from CommandEditor
+  const handleCommandsChange = useCallback((commands) => {
+    updatePageCommands(activePage.id, commands);
+  }, [activePage.id, updatePageCommands]);
 
   // Callback when annotation layer SVG is ready
   const handleAnnotationLayerReady = useCallback((svgElement) => {
@@ -98,22 +129,15 @@ function App() {
             <h3 style={{ margin: 0, color: 'white', display: 'inline-block' }}>Robo Math</h3>
           </a>
         </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px' }}>
-          <input
-            type="checkbox"
-            checked={showGrid}
-            onChange={(e) => setShowGrid(e.target.checked)}
-            style={{ cursor: 'pointer' }}
-          />
-          <span style={{ color: 'white', fontSize: '14px' }}>Grid</span>
-          <a href="/test" style={{ color: '#aaa', fontSize: '12px', marginLeft: '20px' }}>Test Features</a>
-        </div>
+        <LessonHeader showGrid={showGrid} onShowGridChange={setShowGrid} />
       </div>
 
       {/* Main Shell */}
       <div className="robo-shell-main">
         {/* Command Editor */}
         <CommandEditor
+          commands={activePage.commands}
+          onCommandsChange={handleCommandsChange}
           onExecute={hookHandleExecute}
           onExecuteAll={hookHandleExecuteAll}
           onPlaySingle={hookHandlePlaySingle}
@@ -129,19 +153,30 @@ function App() {
           canPlayInfos={canPlayInfos}
         />
 
-        {/* Play Surface - RoboCanvas Container */}
-        <div
-          ref={containerRef}
-          className={`robo-shell-main-playsurface ${isSidebarCollapsed ? 'expanded' : ''}`}
-        >
-          <AnnotationLayer onLayerReady={handleAnnotationLayerReady} />
-          <RoboCanvasGridOverlay
-            pixelsPerUnit={25}
-            visible={showGrid}
-          />
+        {/* Canvas Area with Tab Bar */}
+        <div className="canvas-area">
+          <PageTabBar isSidebarCollapsed={isSidebarCollapsed} />
+          <div
+            ref={containerRef}
+            className={`robo-shell-main-playsurface ${isSidebarCollapsed ? 'expanded' : ''}`}
+          >
+            <AnnotationLayer onLayerReady={handleAnnotationLayerReady} />
+            <RoboCanvasGridOverlay
+              pixelsPerUnit={25}
+              visible={showGrid}
+            />
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <LessonProvider>
+      <AppContent />
+    </LessonProvider>
   );
 }
 

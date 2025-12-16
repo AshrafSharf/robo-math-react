@@ -1,0 +1,56 @@
+.lesson-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding: 0 15px;
+}
+
+.lesson-header-btn {
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.lesson-header-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.lesson-name-input {
+  width: 160px;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 13px;
+}
+
+.lesson-name-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.lesson-name-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.grid-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.grid-toggle input {
+  cursor: pointer;
+}

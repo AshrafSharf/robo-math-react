@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import CommandMenuBar from './components/CommandMenuBar/CommandMenuBar';
@@ -27,9 +27,14 @@ const CommandEditor = ({
   onToggleSidebar,
   isSidebarCollapsed,
   errors = [],
-  canPlayInfos = []
+  canPlayInfos = [],
+  // Controlled mode props
+  commands: externalCommands,
+  onCommandsChange
 }) => {
-  const [commands, setCommands] = useState([createCommand(1)]);
+  // Use external commands if provided (controlled mode), otherwise local state
+  const [localCommands, setLocalCommands] = useState([createCommand(1)]);
+  const commands = externalCommands ?? localCommands;
   const [selectedId, setSelectedId] = useState(1);
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -38,12 +43,27 @@ const CommandEditor = ({
   const containerRef = useRef(null);
   const selectedCommandRef = useRef(null);
 
+  // Reset selectedId when external commands change (e.g., page switch)
+  useEffect(() => {
+    if (externalCommands && externalCommands.length > 0) {
+      // If current selectedId is not in new commands, select first command
+      if (!externalCommands.some(c => c.id === selectedId)) {
+        setSelectedId(externalCommands[0].id);
+      }
+    }
+  }, [externalCommands]);
+
   // Update commands and notify parent
   // Controller handles debouncing internally - no throttle needed here
   const updateCommands = useCallback((newCommands) => {
-    setCommands(newCommands);
+    // If in controlled mode, call external handler; otherwise update local state
+    if (onCommandsChange) {
+      onCommandsChange(newCommands);
+    } else {
+      setLocalCommands(newCommands);
+    }
     if (onChange) onChange(newCommands);
-  }, [onChange]);
+  }, [onChange, onCommandsChange]);
 
   // Add new command
   const addCommand = useCallback((afterId = null) => {
