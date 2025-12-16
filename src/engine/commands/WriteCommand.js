@@ -1,9 +1,21 @@
 /**
- * WriteCommand - Animates math text with pen-tracing write effect
+ * WriteCommand - Writes math text with pen animation
  *
  * Supports two modes:
  * - 'existing': Animate an existing MathTextComponent from shapeRegistry
  * - 'create': Create a new MathTextComponent and animate it
+ *
+ * Lifecycle:
+ *   doInit():
+ *     - Creates MathTextComponent (hidden, strokes disabled)
+ *     - Component stays hidden until play
+ *
+ *   playSingle() (animated):
+ *     - Effect.show() → showContainer() - container visible, strokes hidden
+ *     - Effect.doPlay() → writeAnimate() - pen traces and reveals strokes
+ *
+ *   doDirectPlay() (instant):
+ *     - show() - container AND strokes visible immediately
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathTextComponent } from '../../mathtext/components/math-text-component.js';

@@ -3,6 +3,19 @@
  *
  * Uses wrapWithBBox() to mark exclusions, then writeWithoutBBox() to animate
  * only the non-excluded content.
+ *
+ * Lifecycle:
+ *   doInit():
+ *     - Creates MathTextComponent with bbox markers (hidden, strokes disabled)
+ *     - Calls hide() + disableStroke() to ensure hidden state
+ *
+ *   playSingle() (animated):
+ *     - Effect.show() → showContainer() - container visible, strokes hidden
+ *     - Effect.doPlay() → writeWithoutSelectionAnimate() - pen traces non-excluded parts
+ *
+ *   doDirectPlay() (instant):
+ *     - show() - container visible
+ *     - toEndState() - enables non-excluded strokes only
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathTextComponent } from '../../mathtext/components/math-text-component.js';

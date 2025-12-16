@@ -24,8 +24,16 @@ export class WriteOnlyEffect extends BaseEffect {
         mathComponent.disableStroke();
     }
 
+    /**
+     * Called by BaseEffect.play() before doPlay().
+     * Shows the container but keeps strokes hidden so animation can reveal them.
+     *
+     * Animation lifecycle:
+     *   1. BaseEffect.play() calls show() - container visible, strokes hidden
+     *   2. doPlay() runs writeSelectionOnlyAnimate() - selected strokes enabled by animator
+     */
     show() {
-        this.mathComponent.show(true);
+        this.mathComponent.showContainer();
     }
 
     hide() {

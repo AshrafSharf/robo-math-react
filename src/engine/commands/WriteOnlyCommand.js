@@ -3,6 +3,19 @@
  *
  * Uses wrapWithBBox() to mark inclusions, then writeOnlyBBox() to animate
  * only the included content (rest is hidden).
+ *
+ * Lifecycle:
+ *   doInit():
+ *     - Creates MathTextComponent with bbox markers (hidden, strokes disabled)
+ *     - Calls hide() + disableStroke() to ensure hidden state
+ *
+ *   playSingle() (animated):
+ *     - Effect.show() → showContainer() - container visible, strokes hidden
+ *     - Effect.doPlay() → writeSelectionOnlyAnimate() - pen traces selected parts
+ *
+ *   doDirectPlay() (instant):
+ *     - show() - container visible
+ *     - toEndState() - enables selected strokes only
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathTextComponent } from '../../mathtext/components/math-text-component.js';

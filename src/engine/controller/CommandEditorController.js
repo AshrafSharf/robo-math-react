@@ -215,6 +215,9 @@ export class CommandEditorController {
         const pen = this.roboCanvas?.penTracer || null;
         const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection, pen);
 
+        // Clear old commands before setting new ones (removes old DOM elements)
+        this.commandExecutor.clearCommands();
+
         // Set up executor
         this.commandExecutor.setDiagram2d(diagram);
         this.commandExecutor.setCommands(pipelineResult.commands);
@@ -266,6 +269,9 @@ export class CommandEditorController {
         const diagram = this.getDiagram();
         const pen = this.roboCanvas?.penTracer || null;
         const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection, pen);
+
+        // Clear old commands before setting new ones (removes old DOM elements)
+        this.commandExecutor.clearCommands();
 
         // Set up executor
         this.commandExecutor.setDiagram2d(diagram);

@@ -162,17 +162,37 @@ export class MathTextComponent {
     console.log(`Created ${this.mathNodes.length} math nodes for animation`);
   }
 
+  /**
+   * Show the component fully - both container and strokes visible.
+   * Use this for instant display (directPlay) where no animation is needed.
+   * @returns {MathTextComponent} this for chaining
+   */
   show() {
-    // Show everything - container visibility and strokes
     $(this.containerDOM).css({
       'display': 'block',
       'opacity': 1,
       'visibility': 'visible'
     });
-    this.enableStroke();  // Make strokes visible (stroke-dasharray: 0,0)
+    this.enableStroke();
     return this;
   }
-  
+
+  /**
+   * Show container only - strokes remain hidden for progressive animation.
+   * Use this in effect.show() when animation will reveal strokes progressively.
+   * The animator (MathNodeAnimator, CustomOrderTypeAnimator, etc.) will enable
+   * individual strokes as the pen traces each path.
+   * @returns {MathTextComponent} this for chaining
+   */
+  showContainer() {
+    $(this.containerDOM).css({
+      'display': 'block',
+      'opacity': 1,
+      'visibility': 'visible'
+    });
+    return this;
+  }
+
   fadeIn(duration = 0.5) {
     // Fade in using GSAP
     $(this.containerDOM).css({
@@ -250,22 +270,46 @@ export class MathTextComponent {
 
   // Convenience methods for bbox-based animations (hides SelectionUnit implementation)
   writeOnlyBBox(includeAll = false) {
+    // Temporarily show container for getBBox() to work (returns zeros when display:none)
+    const wasHidden = this.containerDOM.style.display === 'none';
+    if (wasHidden) {
+      this.containerDOM.style.display = 'block';
+    }
+
     const bboxBounds = this.getBBoxHighlightBounds();
     const selectionUnits = bboxBounds.map(bounds => {
       const selectionUnit = new SelectionUnit();
       this.computeSelectionUnit(bounds, selectionUnit);
       return selectionUnit;
     });
+
+    // Restore hidden state if it was hidden
+    if (wasHidden) {
+      this.containerDOM.style.display = 'none';
+    }
+
     return new WriteOnlyEffect(this, selectionUnits, includeAll);
   }
 
   writeWithoutBBox() {
+    // Temporarily show container for getBBox() to work (returns zeros when display:none)
+    const wasHidden = this.containerDOM.style.display === 'none';
+    if (wasHidden) {
+      this.containerDOM.style.display = 'block';
+    }
+
     const bboxBounds = this.getBBoxHighlightBounds();
     const selectionUnits = bboxBounds.map(bounds => {
       const selectionUnit = new SelectionUnit();
       this.computeSelectionUnit(bounds, selectionUnit);
       return selectionUnit;
     });
+
+    // Restore hidden state if it was hidden
+    if (wasHidden) {
+      this.containerDOM.style.display = 'none';
+    }
+
     return new WriteWithoutEffect(this, selectionUnits);
   }
 

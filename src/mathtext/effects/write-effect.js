@@ -14,8 +14,16 @@ export class WriteEffect extends BaseEffect {
         this.mathComponent.enableStroke();
     }
 
+    /**
+     * Called by BaseEffect.play() before doPlay().
+     * Shows the container but keeps strokes hidden so animation can reveal them.
+     *
+     * Animation lifecycle:
+     *   1. BaseEffect.play() calls show() - container visible, strokes hidden
+     *   2. doPlay() runs writeAnimate() - strokes progressively enabled by animator
+     */
     show() {
-        this.mathComponent.show();
+        this.mathComponent.showContainer();
     }
 
     hide() {
