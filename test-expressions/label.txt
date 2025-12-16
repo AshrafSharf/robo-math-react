@@ -23,3 +23,19 @@ plot(g, "2*x + 1")
   g = g2d(0,0,16,20)
   paraplot(g, "cos(t)", "sin(t)", 0, 6.28)          
   paraplot(g, "t*cos(t)", "t*sin(t)", 0, 18.84)      
+
+
+
+
+  M = mathtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+  writeonly(M, "\theta") 
+  writewithout(M, "\theta")   
+
+
+
+  writeonly(M, "\theta")
+ writeonly(row, col, "latex", "\theta")
+
+ # Multiple patterns (new)
+ writeonly(M, "\theta", "\sin")
+ writeonly(row, col, "latex", "\theta", "\sin", "\cos")

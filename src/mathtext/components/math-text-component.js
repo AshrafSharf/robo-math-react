@@ -4,6 +4,7 @@ import { MathNodeAnimator } from '../animator/math-node-animator.js';
 import { CustomOrderTypeAnimator } from '../animator/custom-order-type-animator.js';
 import { PlaySelectionAnimator } from '../animator/play-selection-animator.js';
 import { NonSelectionOrderTypeAnimator } from '../animator/non-selection-order-type-animator.js';
+import { RewriteNonSelectionAnimator } from '../animator/rewrite-non-selection-animator.js';
 import { TweenableNode } from '../animator/tweenable-node.js';
 import { MathJaxProcessor } from '../processor/math-jax-processor.js';
 import { RoboEventManager } from '../../events/robo-event-manager.js';
@@ -344,6 +345,26 @@ export class MathTextComponent {
     const mathTypeAnimator = new NonSelectionOrderTypeAnimator(startPenPos, selectionUnits, false);
     mathTypeAnimator.animateType(this.mathGraphNode, this.getFontStroke(), completionHandler);
   }
+
+  /**
+   * Animate only selected parts (rewrite on existing visible components).
+   * Uses same animator as writeSelectionOnlyAnimate - it only touches the strokes it animates.
+   */
+  rewriteSelectionOnlyAnimate(selectionUnits, autoComplete, completionHandler) {
+    const startPenPos = RoboEventManager.getLastVisitedPenPoint();
+    const mathTypeAnimator = new CustomOrderTypeAnimator(startPenPos, selectionUnits, autoComplete);
+    mathTypeAnimator.animateType(this.mathGraphNode, this.getFontStroke(), completionHandler);
+  }
+
+  /**
+   * Animate everything except selected parts (rewrite-without on existing visible components).
+   * Uses RewriteNonSelectionAnimator which does NOT disable excluded nodes.
+   */
+  rewriteWithoutSelectionAnimate(selectionUnits, completionHandler) {
+    const startPenPos = RoboEventManager.getLastVisitedPenPoint();
+    const mathTypeAnimator = new RewriteNonSelectionAnimator(startPenPos, selectionUnits, false);
+    mathTypeAnimator.animateType(this.mathGraphNode, this.getFontStroke(), completionHandler);
+  }
   
   hideSelectionUnits(selectionUnits) {
     const startPenPos = RoboEventManager.getLastVisitedPenPoint();
@@ -599,6 +620,80 @@ export class MathTextComponent {
   }
 
   /**
+   * Get the original LaTeX content of this component.
+   * @returns {string} The LaTeX string used to create this component
+   */
+  getContent() {
+    return this.componentState.content;
+  }
+
+  /**
+   * Update the LaTeX content and re-render the component in place.
+   * Used for rewrite animations where we need to add bbox markers at runtime.
+   * Container visibility is preserved - only the SVG content is replaced.
+   * @param {string} newLatex - New LaTeX string (e.g., with bbox markers)
+   */
+  updateContent(newLatex) {
+    // Store new content
+    this.componentState.content = newLatex;
+
+    // Clear existing SVG content (but keep container)
+    $(this.containerDOM).html('');
+
+    // Re-render with new LaTeX
+    this.renderMath();
+    this.applyStrokeColor();
+
+    // Don't change container visibility - preserve current state
+  }
+
+  /**
+   * Get selection units for all bbox-marked regions.
+   * This is the data-only method that commands use to create effects.
+   * @returns {SelectionUnit[]} Array of selection units for bbox regions
+   */
+  getBBoxSelectionUnits() {
+    const bboxBounds = this.getBBoxHighlightBounds();
+    const selectionUnits = bboxBounds.map(bounds => {
+      const selectionUnit = new SelectionUnit();
+      this.computeSelectionUnit(bounds, selectionUnit);
+      return selectionUnit;
+    });
+    return selectionUnits;
+  }
+
+  /**
+   * Compute selection units from external bounds (e.g., from a temp component).
+   * This finds nodes in THIS component that match the given bounds.
+   * @param {Bounds2[]} boundsArray - Array of bounds to match
+   * @returns {SelectionUnit[]} Array of selection units for this component
+   */
+  computeSelectionUnitsFromBounds(boundsArray) {
+    return boundsArray.map(bounds => {
+      const selectionUnit = new SelectionUnit();
+      this.computeSelectionUnit(bounds, selectionUnit);
+      return selectionUnit;
+    });
+  }
+
+  /**
+   * Enable (show) strokes only within bbox-marked regions.
+   * Inverse of hideBBoxContent() - used for writewithout on existing components.
+   */
+  enableBBoxContent() {
+    const descriptors = this.getBBoxDescriptors();
+
+    descriptors.forEach((descriptor) => {
+      descriptor.paths.forEach(path => {
+        path.setAttribute('stroke-dasharray', '0,0');
+        path.style.strokeDasharray = '0,0';
+        path.style.opacity = '1';
+        path.style.visibility = 'visible';
+      });
+    });
+  }
+
+  /**
    * Create a MathTextComponent from a cloned SVG element.
    * Creates identical copies at different positions with the same styling.
    *
@@ -687,5 +782,70 @@ export class MathTextComponent {
     const mathNodeBuilder = new MathNodeBuilder(svgString);
     mathNodeBuilder.process(this.componentState.componentId + "_math_node", this.getFontStroke());
     this.mathGraphNode = mathNodeBuilder.rootMathGrapNode;
+  }
+
+  /**
+   * Remove this component from the DOM and clean up.
+   * Used for temporary components created for bounds extraction.
+   */
+  destroy() {
+    if (this.containerDOM && this.containerDOM.parentNode) {
+      this.containerDOM.parentNode.removeChild(this.containerDOM);
+    }
+    this.containerDOM = null;
+    this.mathGraphNode = null;
+    this.mathNodes = [];
+  }
+
+  /**
+   * Create a temporary MathTextComponent at same position as source.
+   * Used for extracting bbox bounds without modifying the original.
+   * @param {MathTextComponent} source - Source component to match position/style
+   * @param {string} latex - LaTeX content (with bbox markers)
+   * @returns {MathTextComponent} Temporary component (caller must destroy)
+   */
+  static createTempAtSamePosition(source, latex) {
+    const instance = Object.create(MathTextComponent.prototype);
+
+    instance.coordinateMapper = source.coordinateMapper;
+    instance.parentDOM = source.parentDOM;
+    instance.visible = false;
+    instance.strokeColor = source.strokeColor;
+    instance.fillColor = source.fillColor;
+    instance.fontSizeValue = source.fontSizeValue;
+    instance.mathNodes = [];
+    instance.renderedSVG = null;
+    instance.highLightedSections = {
+      fBoxBounds: [],
+      semiColonBounds: [],
+      angleBracketBounds: []
+    };
+
+    // Use same pixel position as source
+    instance.componentState = {
+      componentId: `math-text-temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      content: latex,
+      left: source.componentState.left,
+      top: source.componentState.top
+    };
+
+    // Create container - use visibility:hidden so getBBox works
+    instance.containerDOM = $('<div>').attr({
+      'id': instance.componentState.componentId,
+      'class': instance.getComponentClass()
+    }).css({
+      'position': 'absolute',
+      'left': instance.componentState.left + 'px',
+      'top': instance.componentState.top + 'px',
+      'font-size': instance.fontSizeValue + 'px',
+      'visibility': 'hidden'
+    })[0];
+    $(instance.parentDOM).append(instance.containerDOM);
+
+    // Render the LaTeX
+    instance.renderMath();
+    instance.applyStrokeColor();
+
+    return instance;
   }
 }

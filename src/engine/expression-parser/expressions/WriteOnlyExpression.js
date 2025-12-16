@@ -10,6 +10,7 @@
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { WriteOnlyCommand } from '../../commands/WriteOnlyCommand.js';
+import { RewriteOnlyCommand } from '../../commands/RewriteOnlyCommand.js';
 
 export class WriteOnlyExpression extends AbstractNonArithmeticExpression {
     static NAME = 'writeonly';
@@ -20,7 +21,7 @@ export class WriteOnlyExpression extends AbstractNonArithmeticExpression {
         this.mode = null;  // 'existing' or 'create'
         // For 'existing' mode
         this.targetVariableName = null;
-        this.includePattern = '';
+        this.includePatterns = [];  // Array of patterns to include
         // For 'create' mode
         this.row = 0;
         this.col = 0;
@@ -44,7 +45,7 @@ export class WriteOnlyExpression extends AbstractNonArithmeticExpression {
             this.targetVariableName = firstExpr.variableName;
 
             // Verify the referenced expression exists and is a MathTextExpression
-            const resolvedExpr = context.getVariable(this.targetVariableName);
+            const resolvedExpr = context.getReference(this.targetVariableName);
             if (!resolvedExpr) {
                 this.dispatchError(`writeonly(): Variable "${this.targetVariableName}" not found`);
             }
@@ -120,7 +121,11 @@ export class WriteOnlyExpression extends AbstractNonArithmeticExpression {
 
     toCommand(options = {}) {
         if (this.mode === 'existing') {
-            return new WriteOnlyCommand('existing', {
+            // Use RewriteOnlyCommand for existing components
+            // - doesn't hide container
+            // - wraps pattern with bbox at runtime
+            // - only animates the matched strokes
+            return new RewriteOnlyCommand({
                 targetVariableName: this.targetVariableName,
                 includePattern: this.includePattern
             });

@@ -10,6 +10,7 @@
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { WriteWithoutCommand } from '../../commands/WriteWithoutCommand.js';
+import { RewriteWithoutCommand } from '../../commands/RewriteWithoutCommand.js';
 
 export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
     static NAME = 'writewithout';
@@ -44,7 +45,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
             this.targetVariableName = firstExpr.variableName;
 
             // Verify the referenced expression exists and is a MathTextExpression
-            const resolvedExpr = context.getVariable(this.targetVariableName);
+            const resolvedExpr = context.getReference(this.targetVariableName);
             if (!resolvedExpr) {
                 this.dispatchError(`writewithout(): Variable "${this.targetVariableName}" not found`);
             }
@@ -120,7 +121,11 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
 
     toCommand(options = {}) {
         if (this.mode === 'existing') {
-            return new WriteWithoutCommand('existing', {
+            // Use RewriteWithoutCommand for existing components
+            // - doesn't hide container
+            // - wraps pattern with bbox at runtime
+            // - animates everything except matched strokes
+            return new RewriteWithoutCommand({
                 targetVariableName: this.targetVariableName,
                 excludePattern: this.excludePattern
             });

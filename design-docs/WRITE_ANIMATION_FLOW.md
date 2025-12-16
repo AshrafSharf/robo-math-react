@@ -392,16 +392,171 @@ This ensures animation works correctly even if:
 
 **Solution:** Ensure bounds extraction works with hidden containers (temp show)
 
+## Rewrite Commands (Existing Components)
+
+When `writeonly` or `writewithout` is called with an **existing** MathTextComponent variable instead of creating a new one, the system uses "Rewrite" commands.
+
+### Usage
+
+```
+M = mathtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+writeonly(M, "\theta")      # Animates only θ parts on existing M
+writewithout(M, "\theta")   # Animates everything except θ parts on existing M
+```
+
+### Key Differences from Create Mode
+
+| Aspect | Create Mode (new component) | Existing Mode (rewrite) |
+|--------|----------------------------|------------------------|
+| Component | Creates new MathTextComponent | Uses existing from registry |
+| Container | Starts hidden, shows on play | Already visible, stays visible |
+| Strokes | All disabled initially | May be enabled/disabled |
+| Excluded nodes | Disabled by animator | NOT touched at all |
+
+### Rewrite Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              REWRITE COMMAND FLOW (Existing Component)          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  writeonly(M, "\theta") where M is existing mathtext            │
+│                                                                 │
+│  1. Expression detects 'existing' mode (first arg is variable)  │
+│     └── Returns RewriteOnlyCommand instead of WriteOnlyCommand  │
+│                                                                 │
+│  2. RewriteOnlyCommand.doInit()                                 │
+│     │                                                           │
+│     ├── Get original component from shapeRegistry               │
+│     │                                                           │
+│     ├── Create TEMP component with bbox-wrapped content         │
+│     │   - Same position, same parent, same font size            │
+│     │   - Content: wrapWithBBox(original, "\theta")             │
+│     │   - Uses visibility:hidden (not display:none)             │
+│     │                                                           │
+│     ├── Extract BOUNDS from temp's bbox regions                 │
+│     │   - getBBoxHighlightBounds() returns coordinate bounds    │
+│     │                                                           │
+│     ├── Destroy temp component                                  │
+│     │                                                           │
+│     └── Use bounds to find nodePaths in ORIGINAL component      │
+│         - computeSelectionUnitsFromBounds(bboxBounds)           │
+│         - Returns SelectionUnits with original's nodePaths      │
+│                                                                 │
+│  3. RewriteOnlyCommand.playSingle()                             │
+│     └── RewriteOnlyEffect.play()                                │
+│         - show(): No-op (container already visible)             │
+│         - doPlay(): Animate only selected strokes               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Why Temp Component?
+
+The original component doesn't have bbox markers in its LaTeX. We need to:
+1. Wrap the pattern with `\bbox[0px]{...}` to identify its location
+2. Render that wrapped LaTeX to get spatial bounds
+3. Use those bounds to find matching nodes in the original component
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              TEMP COMPONENT BOUNDS EXTRACTION                   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Original: \tan(\theta) = ...                                   │
+│                                                                 │
+│  Wrapped:  \tan(\bbox[0px]{\theta}) = ...                       │
+│                                                                 │
+│  Temp component renders at same position:                       │
+│  ┌──────────────────────────────────────┐                       │
+│  │  tan( θ ) = sin( θ )/cos( θ )        │                       │
+│  │       ↑         ↑         ↑          │                       │
+│  │   [bounds1]  [bounds2]  [bounds3]    │  ← bbox regions       │
+│  └──────────────────────────────────────┘                       │
+│                                                                 │
+│  bounds1 = { minX: 45, minY: 10, maxX: 55, maxY: 25 }           │
+│                                                                 │
+│  Original component at same position:                           │
+│  ┌──────────────────────────────────────┐                       │
+│  │  tan( θ ) = sin( θ )/cos( θ )        │                       │
+│  │       ↑                              │                       │
+│  │   nodePath: "root/g1/path3"          │  ← found by bounds    │
+│  └──────────────────────────────────────┘                       │
+│                                                                 │
+│  Same spatial position → same coordinates → correct nodePaths   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Rewrite Animators
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                 REWRITE ANIMATOR CLASSES                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  CustomOrderTypeAnimator                                        │
+│  │  - Disables selected strokes, then animates them             │
+│  │  - Used by: WriteOnlyEffect, RewriteOnlyEffect               │
+│  │                                                              │
+│  ├── NonSelectionOrderTypeAnimator                              │
+│  │   - Removes selected nodes from list                         │
+│  │   - DISABLES removed nodes (for create mode)                 │
+│  │   - Animates remaining nodes                                 │
+│  │   - Used by: WriteWithoutEffect                              │
+│  │                                                              │
+│  └── RewriteNonSelectionAnimator                                │
+│      - Removes selected nodes from list                         │
+│      - Does NOT disable removed nodes (leaves them as-is)       │
+│      - Animates remaining nodes                                 │
+│      - Used by: RewriteWithoutEffect                            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key distinction:**
+- `NonSelectionOrderTypeAnimator`: Disables excluded nodes (correct for new components where everything should be hidden except what's animated)
+- `RewriteNonSelectionAnimator`: Does NOT disable excluded nodes (correct for existing components where we shouldn't touch unrelated strokes)
+
+### Rewrite Effect Classes
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   REWRITE EFFECT CLASSES                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  RewriteOnlyEffect (extends BaseEffect)                         │
+│  │  - show(): No-op (container already visible)                 │
+│  │  - hide(): No-op (don't hide container)                      │
+│  │  - doPlay(): rewriteSelectionOnlyAnimate()                   │
+│  │  - Only animates selected strokes                            │
+│  │                                                              │
+│  RewriteWithoutEffect (extends BaseEffect)                      │
+│      - show(): No-op (container already visible)                │
+│      - hide(): No-op (don't hide container)                     │
+│      - doPlay(): rewriteWithoutSelectionAnimate()               │
+│      - Animates non-selected strokes                            │
+│      - Does NOT disable selected strokes                        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## File References
 
 - `src/mathtext/components/math-text-component.js` - Core component
 - `src/mathtext/effects/write-effect.js` - WriteEffect
 - `src/mathtext/effects/write-only-effect.js` - WriteOnlyEffect
 - `src/mathtext/effects/write-without-effect.js` - WriteWithoutEffect
+- `src/mathtext/effects/rewrite-only-effect.js` - RewriteOnlyEffect (existing components)
+- `src/mathtext/effects/rewrite-without-effect.js` - RewriteWithoutEffect (existing components)
 - `src/mathtext/utils/bbox-latex-wrapper.js` - wrapWithBBox utility
 - `src/mathtext/utils/bounds-extractor.js` - BBox detection
 - `src/mathtext/animator/custom-order-type-animator.js` - Selection animator
+- `src/mathtext/animator/non-selection-order-type-animator.js` - Non-selection animator (create mode)
+- `src/mathtext/animator/rewrite-non-selection-animator.js` - Non-selection animator (existing mode)
 - `src/engine/commands/WriteCommand.js` - Write command
-- `src/engine/commands/WriteOnlyCommand.js` - WriteOnly command
-- `src/engine/commands/WriteWithoutCommand.js` - WriteWithout command
+- `src/engine/commands/WriteOnlyCommand.js` - WriteOnly command (create mode)
+- `src/engine/commands/WriteWithoutCommand.js` - WriteWithout command (create mode)
+- `src/engine/commands/RewriteOnlyCommand.js` - RewriteOnly command (existing mode)
+- `src/engine/commands/RewriteWithoutCommand.js` - RewriteWithout command (existing mode)
 - `src/engine/controller/CommandEditorController.js` - Execution controller
