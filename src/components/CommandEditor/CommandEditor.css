@@ -5,11 +5,12 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    min-width: 250px;
-    max-width: 900px;
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
     height: 100%;
     transition: min-width 0.25s ease-out, max-width 0.25s ease-out;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .robo-cmd-editor .robo-cmdeditor-container {
@@ -20,10 +21,13 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-width: 250px;
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
     -webkit-box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
     transition: opacity 0.2s ease-out;
+    overflow: visible;
 }
 
 .robo-cmd-editor .robo-cmdeditor-container.robo-animate {
@@ -36,6 +40,7 @@
 
 /* Collapsed state - stays in flex flow, shrinks smoothly */
 .robo-cmd-editor.collapsed {
+    width: 50px;
     min-width: 50px;
     max-width: 50px;
 }
@@ -213,8 +218,7 @@ font-size: 20px;
 .robo-cmd-panel {
     position: relative;
     flex: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: visible;
     background-color: #fff;
     border-right: 1px solid rgba(206, 206, 206, 0.8);
     z-index: 0;
@@ -260,6 +264,18 @@ font-size: 20px;
     padding-bottom: 5px;
     white-space: nowrap;
     font-size: 110%;
+    overflow: hidden;
+    max-width: 220px;
+}
+
+/* Allow focused input to overflow - extend the row seamlessly */
+.robo-cmditem .robo-fade-container .robo-cmd-main:has(.codemirror-wrapper.focused) {
+    overflow: visible;
+    max-width: none;
+    background: white;
+    box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    padding-right: 20px;
 }
 
 
@@ -292,6 +308,12 @@ font-size: 20px;
     width: 100%;
     height: auto;
     overflow: visible;
+}
+
+/* Focused input expands with background */
+.codemirror-wrapper.focused {
+    z-index: 1000;
+    position: relative;
 }
 
 .codemirror-wrapper .cm-scroller {
@@ -2109,5 +2131,194 @@ margin-top: 10px;
 .checkmark-dark {
     color: #333 !important;
     text-shadow: none !important;
+}
+
+/* ================================================
+   POPUP MODE STYLES
+   ================================================ */
+
+/* Popup container - rendered via portal */
+.robo-cmd-editor-popup {
+    position: fixed;
+    z-index: 1000;
+    background: #fff;
+    border-radius: 8px 8px 0 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+}
+
+/* Popup header - draggable */
+.popup-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+    border-bottom: 1px solid #ccc;
+    border-radius: 8px 8px 0 0;
+    user-select: none;
+}
+
+.popup-header:active {
+    cursor: grabbing;
+}
+
+.popup-restore-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background 0.15s ease;
+}
+
+.popup-restore-btn:hover {
+    background: #ccc;
+}
+
+.popup-restore-btn .glyphicon {
+    font-size: 14px;
+    color: #333;
+}
+
+.popup-title {
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+    flex: 1;
+}
+
+/* Resize handle */
+.popup-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: nwse-resize;
+    background-color: #e0e0e0;
+    border-top-left-radius: 4px;
+    z-index: 100;
+}
+
+.popup-resize-handle::before {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #888;
+    border-bottom: 2px solid #888;
+}
+
+.popup-resize-handle:hover {
+    background-color: #ccc;
+}
+
+.popup-resize-handle:hover::before {
+    border-color: #555;
+}
+
+/* CommandEditor in popup mode */
+.robo-cmd-editor.popup-mode {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+}
+
+.robo-cmd-editor.popup-mode .robo-cmdeditor-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    height: 100%;
+    padding-top: 50px;
+    box-shadow: none;
+    overflow: visible;
+}
+
+/* Command panel in popup mode */
+.robo-cmd-editor.popup-mode .robo-cmd-panel {
+    overflow: visible;
+}
+
+/* Menu bar in popup mode - horizontal on top like normal mode */
+.robo-cmd-editor.popup-mode .robo-cmd-menu-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    display: flex;
+    flex-direction: row;
+    border-bottom: 1px solid #ccc;
+}
+
+.robo-cmd-editor.popup-mode .robo-cmd-menu-bar a {
+    width: 20%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-right: 1px solid #A5A5A5;
+    background: none;
+    float: left;
+}
+
+.robo-cmd-editor.popup-mode .robo-cmd-menu-bar a:hover {
+    background: #e8e8e8;
+}
+
+/* Hide sidebar toggle in popup mode */
+.robo-cmd-editor.popup-mode .resize-btn {
+    display: none;
+}
+
+/* Hide delete and import in popup mode (same as collapsed) */
+.robo-cmd-editor.popup-mode .delete-all,
+.robo-cmd-editor.popup-mode .import-btn {
+    display: none;
+}
+
+/* Play button styling in popup mode */
+.robo-cmd-editor.popup-mode .play-all .glyphicon-play,
+.robo-cmd-editor.popup-mode .resume-all .glyphicon-play {
+    color: #28a745;
+    font-size: 20px;
+}
+
+.robo-cmd-editor.popup-mode .pause-all .glyphicon-pause {
+    color: #ffc107;
+    font-size: 20px;
+}
+
+.robo-cmd-editor.popup-mode .stop-all .glyphicon-stop {
+    color: #333;
+    font-size: 18px;
+}
+
+/* Popup button in collapsed state */
+.robo-cmd-editor.collapsed .popup-btn {
+    order: 4;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.robo-cmd-editor.collapsed .popup-btn .glyphicon {
+    color: #214462;
+    font-size: 18px;
 }
 

@@ -25,7 +25,10 @@ const CommandEditor = ({
   onChange,
   onRedrawSingle,
   onToggleSidebar,
+  onPopupMode,
+  onRestoreToSidebar,
   isSidebarCollapsed,
+  isPopupMode,
   errors = [],
   canPlayInfos = [],
   // Controlled mode props
@@ -195,6 +198,11 @@ const CommandEditor = ({
     setSelectedId(newCommands[0] ? newCommands[0].id : 1);
   }, [commands, updateCommands]);
 
+  // Determine CSS class based on mode
+  const editorClass = isPopupMode
+    ? 'robo-cmd-editor popup-mode'
+    : `robo-cmd-editor ${isSidebarCollapsed ? 'collapsed' : ''}`;
+
   return (
     <CommandProvider value={{
       commands,
@@ -205,7 +213,7 @@ const CommandEditor = ({
       updateCommand,
       isExecuting
     }}>
-      <div className={`robo-cmd-editor ${isSidebarCollapsed ? 'collapsed' : ''}`} ref={containerRef}>
+      <div className={editorClass} ref={containerRef}>
         <div className="robo-cmdeditor-container robo-animate">
           <CommandMenuBar
             onPlayAll={handlePlayAll}
@@ -215,9 +223,11 @@ const CommandEditor = ({
             onDeleteAll={handleDeleteAll}
             onImport={handleOpenImport}
             onToggleSidebar={handleToggleSidebar}
+            onPopupMode={onPopupMode}
             isExecuting={isExecuting}
             isPaused={isPaused}
             isSidebarCollapsed={isSidebarCollapsed}
+            isPopupMode={isPopupMode}
           />
 
           <div className="robo-cmd-panel" id="cmd-panel">
@@ -254,14 +264,12 @@ const CommandEditor = ({
           <SettingsPanel
             command={commands.find(c => c.id === selectedId)}
             onUpdate={(updates) => {
-              // Get current command and merge updates to pass to onExecute
               const currentCmd = commands.find(c => c.id === selectedId);
               if (currentCmd) {
                 updateCommand(selectedId, updates);
               }
             }}
             onRedrawSingle={(styleOptions) => {
-              // Redraw just this command with new style
               if (onRedrawSingle) {
                 onRedrawSingle(selectedId, styleOptions);
               }

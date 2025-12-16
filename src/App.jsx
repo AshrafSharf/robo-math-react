@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import CommandEditor from './components/CommandEditor';
+import CommandEditorWithPopup from './components/CommandEditor/CommandEditorWithPopup';
 import RoboCanvasGridOverlay from './components/RoboCanvasGridOverlay';
 import AnnotationLayer from './components/AnnotationLayer';
 import './App.css';
@@ -134,8 +134,8 @@ function AppContent() {
 
       {/* Main Shell */}
       <div className="robo-shell-main">
-        {/* Command Editor */}
-        <CommandEditor
+        {/* Command Editor with Popup Support */}
+        <CommandEditorWithPopup
           commands={activePage.commands}
           onCommandsChange={handleCommandsChange}
           onExecute={hookHandleExecute}

@@ -521,13 +521,58 @@ writewithout(M, "\theta", "\sin")    # Animates everything except θ and sin
 │         - computeSelectionUnitsFromBounds(bboxBounds)           │
 │         - Returns SelectionUnits with original's nodePaths      │
 │                                                                 │
-│  3. RewriteOnlyCommand.playSingle()                             │
+│  3. RewriteOnlyCommand.doPlay() [during playAll]                │
+│     │                                                           │
+│     ├── Disable non-selected strokes (excludeTweenNodes)        │
+│     │   - Ensures only selected parts will be visible           │
+│     │                                                           │
+│     └── Call playSingle()                                       │
+│                                                                 │
+│  4. RewriteOnlyCommand.playSingle()                             │
 │     └── RewriteOnlyEffect.play()                                │
 │         - show(): No-op (container already visible)             │
 │         - doPlay(): Animate only selected strokes               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+### doPlay() Override for playAll
+
+During `playAll`, `mathtext` enables all strokes. The Rewrite commands must disable the strokes they're NOT animating before calling `playSingle()`:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   doPlay() STROKE HANDLING                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  RewriteOnlyCommand.doPlay():                                   │
+│  │                                                              │
+│  ├── Disable NON-SELECTED strokes (excludeTweenNodes)           │
+│  │   - Everything except the pattern stays hidden               │
+│  │                                                              │
+│  └── Call playSingle() to animate selected strokes              │
+│                                                                 │
+│  RewriteWithoutCommand.doPlay():                                │
+│  │                                                              │
+│  ├── Disable EXCLUDED strokes (includeTweenNodes)               │
+│  │   - The pattern strokes stay hidden                          │
+│  │                                                              │
+│  └── Call playSingle() to animate non-excluded strokes          │
+│                                                                 │
+│  TextItem Commands (WriteCollectionVarCommand, etc.):           │
+│  │                                                              │
+│  └── NO doPlay() override - uses base class default             │
+│      - Only animates its own TextItem strokes                   │
+│      - Does NOT disable other strokes                           │
+│      - Allows sequential: writewithout(M,...) then write(sins)  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Why this matters:**
+- `mathtext(...)` shows all strokes immediately
+- `writewithout(M, "\sin", "\cos")` must hide `\sin`/`\cos` strokes in `doPlay()`
+- `write(sins)` (TextItem) later animates just the `\sin` strokes without touching others
 
 ### Why Temp Component?
 

@@ -11,9 +11,11 @@ const CommandMenuBar = ({
   onDeleteAll,
   onImport,
   onToggleSidebar,
+  onPopupMode,
   isExecuting,
   isPaused,
-  isSidebarCollapsed
+  isSidebarCollapsed,
+  isPopupMode
 }) => {
   return (
     <div className="robo-cmd-menu-bar">
@@ -71,6 +73,17 @@ const CommandMenuBar = ({
       >
         <i className="glyphicon glyphicon-import" />
       </a>
+
+      {/* Popup mode button - only visible in collapsed state */}
+      {isSidebarCollapsed && !isPopupMode && (
+        <a
+          className="btn btn-default popup-btn pull-left"
+          onClick={onPopupMode}
+          title="Open as popup"
+        >
+          <i className="glyphicon glyphicon-new-window" />
+        </a>
+      )}
 
       <a
         id="slide-btn"
