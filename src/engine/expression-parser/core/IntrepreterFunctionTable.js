@@ -5,7 +5,7 @@ import { ExpressionInterpreter } from './ExpressionInterpreter.js';
 import { NumericExpression } from '../expressions/NumericExpression.js';
 import { PointExpression } from '../expressions/PointExpression.js';
 import { LineExpression } from '../expressions/LineExpression.js';
-import { VecExpression } from '../expressions/VecExpression.js';
+import { VectorExpression } from '../expressions/VectorExpression.js';
 import { VLExpression } from '../expressions/VLExpression.js';
 import { HLExpression } from '../expressions/HLExpression.js';
 import { XLExpression } from '../expressions/XLExpression.js';
@@ -49,6 +49,11 @@ import { R2PExpression } from '../expressions/R2PExpression.js';
 import { A2PExpression } from '../expressions/A2PExpression.js';
 import { MagExpression } from '../expressions/MagExpression.js';
 import { UVExpression } from '../expressions/UVExpression.js';
+import { MapExpression } from '../expressions/MapExpression.js';
+import { HideExpression } from '../expressions/visibility/HideExpression.js';
+import { ShowExpression } from '../expressions/visibility/ShowExpression.js';
+import { FadeInExpression } from '../expressions/visibility/FadeInExpression.js';
+import { FadeOutExpression } from '../expressions/visibility/FadeOutExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
 import { Polar2DExpression } from '../expressions/Polar2DExpression.js';
 import { Graph3DExpression } from '../expressions/Graph3DExpression.js';
@@ -113,7 +118,7 @@ export class IntrepreterFunctionTable {
         // Geometry expressions
         registerMultiArg('point', PointExpression);
         registerMultiArg('line', LineExpression);
-        registerMultiArg('vec', VecExpression);
+        registerMultiArg('vector', VectorExpression);
         registerMultiArg('arc', ArcExpression);
         registerMultiArg('circle', CircleExpression);
         registerMultiArg('polygon', PolygonExpression);
@@ -174,6 +179,13 @@ export class IntrepreterFunctionTable {
         // Measurement utilities
         registerMultiArg('mag', MagExpression);     // magnitude/distance
         registerMultiArg('uv', UVExpression);       // unit vector
+        registerMultiArg('map', MapExpression);     // linear interpolation
+
+        // Visibility controls
+        registerMultiArg('hide', HideExpression);     // hide shapes instantly
+        registerMultiArg('show', ShowExpression);     // show shapes instantly
+        registerMultiArg('fadein', FadeInExpression); // fade in with animation
+        registerMultiArg('fadeout', FadeOutExpression); // fade out with animation
 
         // Intersection
         registerMultiArg('intersect', IntersectExpression);

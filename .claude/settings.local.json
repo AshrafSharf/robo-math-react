@@ -29,7 +29,8 @@
       "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/PolygonOptionsPanel.jsx )",
       "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/LabelOptionsPanel.jsx )",
       "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/ArcOptionsPanel.jsx )",
-      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/EllipseOptionsPanel.jsx)"
+      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/EllipseOptionsPanel.jsx)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

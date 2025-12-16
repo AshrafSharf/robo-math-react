@@ -21,12 +21,12 @@ export const FUNCTION_METADATA = {
     altSignatures: ['line(p1, p2)', 'line(x1, y1, x2, y2)', 'line(g, p1, p2)', 'line(p1, p2, ext)'],
     category: 'Geometry'
   },
-  vec: {
-    name: 'vec',
+  vector: {
+    name: 'vector',
     signature: '(p1, p2)',
     args: ['p1: Point', 'p2: Point'],
     description: 'Vector with arrowhead',
-    altSignatures: ['vec(p1, p2)', 'vec(x1, y1, x2, y2)', 'vec(g, p1, p2)'],
+    altSignatures: ['vector(p1, p2)', 'vector(x1, y1, x2, y2)', 'vector(g, p1, p2)'],
     category: 'Geometry'
   },
   circle: {
@@ -499,20 +499,6 @@ export const FUNCTION_METADATA = {
     altSignatures: ['project(line, point)', 'project(vec, point)'],
     category: 'Transforms'
   },
-  interpolate: {
-    name: 'interpolate',
-    signature: '(p1, p2, t)',
-    args: ['p1: Point', 'p2: Point', 't: number'],
-    description: 'Interpolate between two points',
-    category: 'Transforms'
-  },
-  dilate: {
-    name: 'dilate',
-    signature: '(point, center, scale)',
-    args: ['point: Point', 'center: Point', 'scale: number'],
-    description: 'Scale point from center',
-    category: 'Transforms'
-  },
   translate: {
     name: 'translate',
     signature: '(point, dx, dy)',
@@ -521,174 +507,74 @@ export const FUNCTION_METADATA = {
     category: 'Transforms'
   },
 
-  // === STYLING ===
-  fill: {
-    name: 'fill',
-    signature: '(shape, color)',
-    args: ['shape: Shape', 'color: string'],
-    description: 'Fill shape with color',
-    category: 'Styling'
-  },
-  stroke: {
-    name: 'stroke',
-    signature: '(shape, color)',
-    args: ['shape: Shape', 'color: string'],
-    description: 'Set stroke color',
-    category: 'Styling'
-  },
-  dash: {
-    name: 'dash',
-    signature: '(shape, pattern)',
-    args: ['shape: Shape', 'pattern: string'],
-    description: 'Set dash pattern',
-    category: 'Styling'
-  },
-  pointtype: {
-    name: 'pointtype',
-    signature: '(point, type)',
-    args: ['point: Point', 'type: string'],
-    description: 'Set point marker type',
-    category: 'Styling'
-  },
-  marker: {
-    name: 'marker',
-    signature: '(shape, type)',
-    args: ['shape: Shape', 'type: string'],
-    description: 'Add markers to shape',
-    category: 'Styling'
-  },
-
   // === UTILITIES ===
-  dist: {
-    name: 'dist',
-    signature: '(p1, p2)',
-    args: ['p1: Point', 'p2: Point'],
-    description: 'Distance between two points',
-    category: 'Utilities'
-  },
   mag: {
     name: 'mag',
     signature: '(shape)',
-    args: ['shape: Line|Vec|Point'],
+    args: ['shape: Line|Vector|Point'],
     description: 'Magnitude/length of shape or distance from origin',
-    altSignatures: ['mag(line)', 'mag(vec)', 'mag(point)', 'mag(p1, p2)'],
+    altSignatures: ['mag(line)', 'mag(vector)', 'mag(point)', 'mag(p1, p2)'],
     category: 'Utilities'
   },
-  pos: {
-    name: 'pos',
-    signature: '(shape)',
-    args: ['shape: Shape'],
-    description: 'Get position of shape',
+  map: {
+    name: 'map',
+    signature: '(t, a, b)',
+    args: ['t: number (0-1)', 'a: number|Point', 'b: number|Point'],
+    description: 'Linear interpolation: a + t*(b-a)',
+    altSignatures: ['map(0.5, 0, 100) → 50', 'map(0.25, P1, P2) → point 25% from P1 to P2'],
     category: 'Utilities'
   },
-  findangle: {
-    name: 'findangle',
-    signature: '(p1, vertex, p2)',
-    args: ['p1: Point', 'vertex: Point', 'p2: Point'],
-    description: 'Calculate angle in degrees',
-    category: 'Utilities'
-  },
+
+  // === VISIBILITY ===
   hide: {
     name: 'hide',
-    signature: '(shape)',
-    args: ['shape: Shape'],
-    description: 'Hide a shape',
-    category: 'Utilities'
-  },
-  trace: {
-    name: 'trace',
-    signature: '(shape)',
-    args: ['shape: Shape'],
-    description: 'Trace shape movement',
-    category: 'Utilities'
-  },
-  text: {
-    name: 'text',
-    signature: '(content, x, y)',
-    args: ['content: string', 'x: number', 'y: number'],
-    description: 'Add text at position',
-    category: 'Utilities'
-  },
-  group: {
-    name: 'group',
-    signature: '(shapes...)',
+    signature: '(shape1, shape2, ...)',
     args: ['shapes: Shape...'],
-    description: 'Group shapes together',
-    category: 'Utilities'
+    description: 'Hide shapes instantly',
+    altSignatures: ['hide(A)', 'hide(A, B, C)'],
+    category: 'Visibility'
   },
-  part: {
-    name: 'part',
-    signature: '(shape, index)',
-    args: ['shape: Shape', 'index: number'],
-    description: 'Get part of composite shape',
-    category: 'Utilities'
+  show: {
+    name: 'show',
+    signature: '(shape1, shape2, ...)',
+    args: ['shapes: Shape...'],
+    description: 'Show shapes instantly',
+    altSignatures: ['show(A)', 'show(A, B, C)'],
+    category: 'Visibility'
   },
-  fade: {
-    name: 'fade',
-    signature: '(shape, opacity)',
-    args: ['shape: Shape', 'opacity: number'],
-    description: 'Set shape opacity',
-    category: 'Utilities'
+  fadein: {
+    name: 'fadein',
+    signature: '(shape1, shape2, ...)',
+    args: ['shapes: Shape...'],
+    description: 'Fade in shapes with animation',
+    altSignatures: ['fadein(A)', 'fadein(A, B, C)'],
+    category: 'Visibility'
   },
-  reverse: {
-    name: 'reverse',
-    signature: '(vector)',
-    args: ['vector: Vector'],
-    description: 'Reverse vector direction',
-    category: 'Utilities'
-  },
-
-  // === SET OPERATIONS ===
-  and: {
-    name: 'and',
-    signature: '(shape1, shape2)',
-    args: ['shape1: Shape', 'shape2: Shape'],
-    description: 'Intersection of two shapes',
-    category: 'Sets'
-  },
-  or: {
-    name: 'or',
-    signature: '(shape1, shape2)',
-    args: ['shape1: Shape', 'shape2: Shape'],
-    description: 'Union of two shapes',
-    category: 'Sets'
-  },
-  diff: {
-    name: 'diff',
-    signature: '(shape1, shape2)',
-    args: ['shape1: Shape', 'shape2: Shape'],
-    description: 'Difference of two shapes',
-    category: 'Sets'
-  },
-  subtract: {
-    name: 'subtract',
-    signature: '(shape1, shape2)',
-    args: ['shape1: Shape', 'shape2: Shape'],
-    description: 'Subtract shape2 from shape1',
-    category: 'Sets'
+  fadeout: {
+    name: 'fadeout',
+    signature: '(shape1, shape2, ...)',
+    args: ['shapes: Shape...'],
+    description: 'Fade out shapes with animation',
+    altSignatures: ['fadeout(A)', 'fadeout(A, B, C)'],
+    category: 'Visibility'
   },
 
-  // === SPECIAL ===
-  para: {
-    name: 'para',
-    signature: '(line1, line2)',
-    args: ['line1: Line', 'line2: Line'],
-    description: 'Check if lines are parallel',
-    category: 'Special'
+  // === FUNCTIONS ===
+  def: {
+    name: 'def',
+    signature: '(name, params, body)',
+    args: ['name: string', 'params: list', 'body: expression'],
+    description: 'Define a custom function',
+    altSignatures: ['def(name, (a, b), a + b)'],
+    category: 'Functions'
   },
-  perp: {
-    name: 'perp',
-    signature: '(line1, line2)',
-    args: ['line1: Line', 'line2: Line'],
-    description: 'Check if lines are perpendicular',
-    category: 'Special'
-  },
-  parallel: {
-    name: 'parallel',
-    signature: '(line, point)',
-    args: ['line: Line', 'point: Point'],
-    description: 'Create parallel line through point',
-    category: 'Special'
+  fun: {
+    name: 'fun',
+    signature: '(name, args...)',
+    args: ['name: string', 'args: values'],
+    description: 'Call a custom function',
+    altSignatures: ['fun(myFunc, 1, 2)'],
+    category: 'Functions'
   }
 };
 
@@ -726,8 +612,7 @@ export const CATEGORY_ORDER = [
   'Graph',
   'Math',
   'Transforms',
-  'Styling',
+  'Visibility',
   'Utilities',
-  'Sets',
-  'Special'
+  'Functions'
 ];

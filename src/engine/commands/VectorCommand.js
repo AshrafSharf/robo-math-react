@@ -32,7 +32,7 @@ export class VectorCommand extends BaseCommand {
     async doInit() {
         // Resolve grapher from expression at init time (after g2d command has run)
         if (!this.graphExpression) {
-            const err = new Error(common_error_messages.GRAPH_REQUIRED('vec'));
+            const err = new Error(common_error_messages.GRAPH_REQUIRED('vector'));
             err.expressionId = this.expressionId;
             throw err;
         }

@@ -4,8 +4,9 @@ point(g,2,3)
 rotate(g,l1,90)
 l=label(g,"\frac{\sin(\theta)}{\cos(\theta)}",-2,4)
 h=def(x,"x^2")
-plot(g, h)
+p=plot(g, h)
 point(g,1,fun(h, 1))
+fadein(p,l)
 
 
 

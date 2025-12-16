@@ -1,4 +1,4 @@
-import { TexSVGScriptShape } from './tex-svg-script-shape.js';
+import { SVGScriptShape } from './svg-script-shape.js';
 import { Bounds2 } from '../geom/Bounds2.js';
 import { Point } from '../geom/Point.js';
 import { isEmpty } from 'lodash';
@@ -6,7 +6,7 @@ import $ from 'jquery';
 import { RoboEventManager } from '../events/robo-event-manager.js';
 import { TweenablePath } from '../animator/tweenable-path.js';
 
-export class GeomPrimitiveShape extends TexSVGScriptShape {
+export class GeomPrimitiveShape extends SVGScriptShape {
   constructor(modelCoordinates) {
     super(modelCoordinates);
     this.styleObj.fill = 'transparent';

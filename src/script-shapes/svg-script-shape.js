@@ -9,7 +9,7 @@ import SVG from 'svg.js';
 
 const svgFunc = SVG;
 
-export class TexSVGScriptShape extends BaseStylableSubject {
+export class SVGScriptShape extends BaseStylableSubject {
   constructor(modelCoordinates) {
     super();
     this.modelCoordinates = modelCoordinates;
@@ -200,7 +200,7 @@ export class TexSVGScriptShape extends BaseStylableSubject {
    * @param {number} dx - Delta x in model coordinates
    * @param {number} dy - Delta y in model coordinates
    * @param {number} duration - Animation duration in seconds (optional, for animated version)
-   * @returns {TexSVGScriptShape} Returns this for method chaining
+   * @returns {SVGScriptShape} Returns this for method chaining
    */
   translate(dx, dy, duration = 0) {
     // Update all x,y coordinate pairs in modelCoordinates
@@ -233,7 +233,7 @@ export class TexSVGScriptShape extends BaseStylableSubject {
    * Translate the shape to a specific target point
    * @param {Object} targetPoint - Target position {x, y} in model coordinates
    * @param {number} duration - Animation duration in seconds (optional, for animated version)
-   * @returns {TexSVGScriptShape} Returns this for method chaining
+   * @returns {SVGScriptShape} Returns this for method chaining
    */
   translateTo(targetPoint, duration = 0) {
     // Calculate current reference point (default: first coordinate pair)
@@ -255,7 +255,7 @@ export class TexSVGScriptShape extends BaseStylableSubject {
    * @param {number} angleInDegrees - Rotation angle in degrees (positive = counterclockwise)
    * @param {Object} center - Center of rotation {x, y} in model coordinates
    * @param {number} duration - Animation duration in seconds (optional, for animated version)
-   * @returns {TexSVGScriptShape} Returns this for method chaining
+   * @returns {SVGScriptShape} Returns this for method chaining
    */
   rotateAbout(angleInDegrees, center, duration = 0) {
     if (duration > 0 && this.shapeGroup) {
@@ -356,7 +356,7 @@ export class TexSVGScriptShape extends BaseStylableSubject {
    * Rotate the shape about its default center
    * @param {number} angleInDegrees - Rotation angle in degrees (positive = counterclockwise)
    * @param {number} duration - Animation duration in seconds (optional, for animated version)
-   * @returns {TexSVGScriptShape} Returns this for method chaining
+   * @returns {SVGScriptShape} Returns this for method chaining
    */
   rotate(angleInDegrees, duration = 0) {
     const center = this.getRotationCenter();

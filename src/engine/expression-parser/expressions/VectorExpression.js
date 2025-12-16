@@ -1,23 +1,23 @@
 /**
- * Vec expression - represents a 2D vector (arrow)
+ * Vector expression - represents a 2D vector (arrow)
  *
  * Syntax options:
- *   vec(graph, x1, y1, x2, y2)   - graph with coordinates
- *   vec(graph, point1, point2)   - graph with point expressions
+ *   vector(graph, x1, y1, x2, y2)   - graph with coordinates
+ *   vector(graph, point1, point2)   - graph with point expressions
  *
  * Similar to line but renders with an arrowhead.
  *
  * Examples:
  *   g = g2d(0, 0, 5, 5)
- *   vec(g, 0, 0, 3, 2)           // vector from origin to (3,2)
- *   vec(g, A, B)                 // vector between points A and B
+ *   vector(g, 0, 0, 3, 2)           // vector from origin to (3,2)
+ *   vector(g, A, B)                 // vector between points A and B
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
-import { vec_error_messages } from '../core/ErrorMessages.js';
+import { vector_error_messages } from '../core/ErrorMessages.js';
 
-export class VecExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'vec';
+export class VectorExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'vector';
 
     constructor(subExpressions) {
         super();
@@ -28,7 +28,7 @@ export class VecExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError(vec_error_messages.MISSING_ARGS());
+            this.dispatchError(vector_error_messages.MISSING_ARGS());
         }
 
         // First arg must be graph
@@ -36,7 +36,7 @@ export class VecExpression extends AbstractNonArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError(vec_error_messages.GRAPH_REQUIRED());
+            this.dispatchError(vector_error_messages.GRAPH_REQUIRED());
         }
 
         // Remaining args are coordinates
@@ -53,7 +53,7 @@ export class VecExpression extends AbstractNonArithmeticExpression {
         }
 
         if (this.coordinates.length !== 4) {
-            this.dispatchError(vec_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
+            this.dispatchError(vector_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
         }
     }
 
@@ -79,7 +79,7 @@ export class VecExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return VecExpression.NAME;
+        return VectorExpression.NAME;
     }
 
     /**

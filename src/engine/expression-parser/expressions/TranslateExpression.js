@@ -31,7 +31,7 @@ export class TranslateExpression extends AbstractArithmeticExpression {
         this.subExpressions = subExpressions;
         this.originalData = null;   // Original shape coordinates
         this.translatedData = null; // Computed translated coordinates
-        this.originalShapeName = null;  // 'point', 'line', 'vec', 'circle', 'polygon'
+        this.originalShapeName = null;  // 'point', 'line', 'vector', 'circle', 'polygon'
         this.originalShapeType = null;  // GEOMETRY_TYPES value
         this.originalShapeVariableName = null;  // Variable name for registry lookup
         this.dx = 0;  // Translation in x

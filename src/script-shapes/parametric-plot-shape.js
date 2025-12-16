@@ -1,10 +1,10 @@
-import { TexSVGScriptShape } from './tex-svg-script-shape.js';
+import { SVGScriptShape } from './svg-script-shape.js';
 import { Bounds2 } from '../geom/Bounds2.js';
 import { Point } from '../geom/Point.js';
 import { PolygonPathGenerator } from '../path-generators/polygon-path-generator.js';
 import { TweenablePath } from '../animator/tweenable-path.js';
 
-export class ParametricPlotShape extends TexSVGScriptShape {
+export class ParametricPlotShape extends SVGScriptShape {
   constructor(xFunction, yFunction, tMin, tMax) {
     super([]);
     // xFunction and yFunction should be function callbacks, not strings

@@ -20,7 +20,7 @@ export class RotateCommand extends BaseCommand {
      * @param {Object} graphExpression - The graph expression
      * @param {string} originalShapeVarName - Variable name of original shape (for registry lookup)
      * @param {Object} rotatedData - Computed rotated coordinates
-     * @param {string} originalShapeName - Original shape name ('point', 'line', 'vec', etc.)
+     * @param {string} originalShapeName - Original shape name ('point', 'line', 'vector', etc.)
      * @param {string} originalShapeType - GEOMETRY_TYPES value
      * @param {number} angle - Rotation angle in degrees
      * @param {Object} center - Rotation center {x, y}
@@ -88,7 +88,7 @@ export class RotateCommand extends BaseCommand {
                 return new PointCommand(this.graphExpression, this.rotatedData.point);
             case 'line':
                 return new LineCommand(this.graphExpression, this.rotatedData.start, this.rotatedData.end);
-            case 'vec':
+            case 'vector':
                 return new VectorCommand(this.graphExpression, this.rotatedData.start, this.rotatedData.end);
             case 'circle':
                 return new CircleCommand(this.graphExpression, this.rotatedData.center, this.rotatedData.radius);
@@ -166,7 +166,7 @@ export class RotateCommand extends BaseCommand {
             case 'point':
                 return this.rotatedData.point;
             case 'line':
-            case 'vec':
+            case 'vector':
                 // Midpoint of line
                 return {
                     x: (this.rotatedData.start.x + this.rotatedData.end.x) / 2,

@@ -33,7 +33,7 @@ export class RotateExpression extends AbstractArithmeticExpression {
         this.subExpressions = subExpressions;
         this.originalData = null;   // Original shape coordinates
         this.rotatedData = null;    // Computed rotated coordinates
-        this.originalShapeName = null;  // 'point', 'line', 'vec', 'circle', 'polygon'
+        this.originalShapeName = null;  // 'point', 'line', 'vector', 'circle', 'polygon'
         this.originalShapeType = null;  // GEOMETRY_TYPES value
         this.originalShapeVariableName = null;  // Variable name for registry lookup (e.g., "P")
         this.angle = 0;             // Rotation angle in degrees

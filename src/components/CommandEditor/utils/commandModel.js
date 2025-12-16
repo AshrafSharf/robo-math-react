@@ -16,8 +16,8 @@ export const DEFAULT_SPEED = 5;
 export const createCommand = (id) => ({
   id,
   expression: '',
-  color: DEFAULT_COLOR,           // stroke color (kept as 'color' for backward compatibility)
-  fillColor: DEFAULT_FILL_COLOR,  // fill color
+  color: null,                    // null = use color cycling
+  fillColor: null,                // null = no fill by default
   strokeWidth: DEFAULT_STROKE_WIDTH,
   strokeOpacity: DEFAULT_STROKE_OPACITY,
   fillOpacity: DEFAULT_FILL_OPACITY,

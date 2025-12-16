@@ -1,4 +1,4 @@
-export { TexSVGScriptShape } from './tex-svg-script-shape.js';
+export { SVGScriptShape } from './svg-script-shape.js';
 export { GeomPrimitiveShape } from './geom-primitive-shape.js';
 export { CirclePrimitiveShape } from './circle-primitive-shape.js';
 export { ArcPrimitiveShape } from './arc-primitive-shape.js';

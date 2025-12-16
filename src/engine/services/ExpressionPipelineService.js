@@ -9,6 +9,7 @@ import { ExpressionInterpreter } from '../expression-parser/core/ExpressionInter
 import { ExpressionContext } from '../expression-parser/core/ExpressionContext.js';
 import { AssignmentExpression } from '../expression-parser/expressions/AssignmentExpression.js';
 import { ExpressionOptionsRegistry } from '../expression-parser/core/ExpressionOptionsRegistry.js';
+import { getColorByIndex } from '../constants/colors.js';
 
 /**
  * Map expression names to their normalized type for options lookup
@@ -24,7 +25,7 @@ const EXPRESSION_TYPE_MAP = {
     'circle': 'circle',
     'ellipse': 'ellipse',
     'arc': 'arc',
-    'vec': 'vec',
+    'vector': 'vector',
     'angle': 'angle',
     'anglex': 'angle',
     'anglex2': 'angle',
@@ -47,9 +48,10 @@ export class ExpressionPipelineService {
      * @param {string} expressionStr - The expression string (e.g., "point(0,0)")
      * @param {ExpressionContext} context - Context for variable resolution
      * @param {Object} options - Command options {color, label, showLabel, offsetX, offsetY, expressionId}
+     * @param {number} index - Command index for color cycling (default 0)
      * @returns {{ command: BaseCommand|null, expression: Expression|null, error: Error|null, label: string, canPlay: boolean }}
      */
-    processExpression(expressionStr, context, options = {}) {
+    processExpression(expressionStr, context, options = {}, index = 0) {
         const result = {
             command: null,
             expression: null,
@@ -86,12 +88,12 @@ export class ExpressionPipelineService {
 
                 // Only create command if RHS has toCommand method
                 if (rhsExpression && typeof rhsExpression.toCommand === 'function') {
-                    result.command = this._createCommand(rhsExpression, options, result.label);
+                    result.command = this._createCommand(rhsExpression, options, result.label, index);
                 }
             } else {
                 // Non-assignment: create command directly if toCommand exists
                 if (typeof expression.toCommand === 'function') {
-                    result.command = this._createCommand(expression, options, options.label || '');
+                    result.command = this._createCommand(expression, options, options.label || '', index);
                 }
             }
 
@@ -105,8 +107,12 @@ export class ExpressionPipelineService {
     /**
      * Create command from expression with options
      * @private
+     * @param {Expression} expression - The expression to create command from
+     * @param {Object} options - Command options
+     * @param {string} label - Label for the command
+     * @param {number} index - Command index for color cycling
      */
-    _createCommand(expression, options, label) {
+    _createCommand(expression, options, label, index = 0) {
         // Get the expression type and look up type-specific options
         const expressionName = expression.getName ? expression.getName().toLowerCase() : null;
         const normalizedType = expressionName ? EXPRESSION_TYPE_MAP[expressionName] : null;
@@ -126,8 +132,8 @@ export class ExpressionPipelineService {
             radius: registryOptions.radius,
             fill: registryOptions.fill,
 
-            // Line/shape stroke options
-            strokeWidth: registryOptions.strokeWidth,
+            // Line/shape stroke options (default to 2)
+            strokeWidth: registryOptions.strokeWidth ?? 2,
             strokeOpacity: registryOptions.strokeOpacity,
             dashPattern: registryOptions.dashPattern,
 
@@ -177,11 +183,9 @@ export class ExpressionPipelineService {
             return null;
         }
 
-        // Apply command options - color from registry takes precedence
-        const color = registryOptions.color || options.color;
-        if (color) {
-            command.setColor(color);
-        }
+        // Apply command options - color from registry takes precedence, then options, then cycling
+        const color = registryOptions.color || options.color || getColorByIndex(index);
+        command.setColor(color);
         if (label) {
             command.setLabelName(label);
         }
@@ -225,7 +229,8 @@ export class ExpressionPipelineService {
                     offsetY: cmdModel.offsetY,
                     expressionId: cmdModel.id
                     // Note: expression-specific options are now fetched from ExpressionOptionsRegistry by ID
-                }
+                },
+                index  // Pass index for color cycling
             );
 
             if (processResult.error) {

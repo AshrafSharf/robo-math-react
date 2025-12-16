@@ -109,16 +109,22 @@ export const circle_error_messages = {
 
 // ============= Vector Error Messages =============
 
-export const vec_error_messages = {
+export const vector_error_messages = {
   MISSING_ARGS: () =>
-    `vec() needs 5 arguments.\nUsage: vec(g, x1, y1, x2, y2)`,
+    `vector() needs 5 arguments.\nUsage: vector(g, x1, y1, x2, y2)`,
 
   WRONG_COORD_COUNT: (count) =>
-    `vec() got ${count} coordinates.\nNeed exactly 4: x1, y1, x2, y2`,
+    `vector() got ${count} coordinates.\nNeed exactly 4: x1, y1, x2, y2`,
+
+  GRAPH_REQUIRED: () =>
+    `vector() needs a graph.\nFirst argument must be graph.`,
 
   INVALID_GRAPH: (varName) =>
-    `'${varName}' is not a graph.\nvec(graph, x1, y1, x2, y2)`,
+    `'${varName}' is not a graph.\nvector(graph, x1, y1, x2, y2)`,
 };
+
+// Alias for backward compatibility
+export const vec_error_messages = vector_error_messages;
 
 // ============= Polygon Error Messages =============
 
@@ -336,7 +342,8 @@ const messagesByType = {
   point3d: point3d_error_messages,
   line3d: line3d_error_messages,
   circle: circle_error_messages,
-  vec: vec_error_messages,
+  vector: vector_error_messages,
+  vec: vec_error_messages,  // backward compatibility
   polygon: polygon_error_messages,
   arc: arc_error_messages,
   angle: angle_error_messages,
