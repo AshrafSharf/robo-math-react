@@ -17,7 +17,7 @@ return {name:"assignment",args:lhsAndRhsArguments}
 
 
 callOrAdditive "Arithmetic Or Command Name " =
-additive/call
+additive/call/ _ quotedstring:quotedstring { return quotedstring; }
 
 
 call "Command"

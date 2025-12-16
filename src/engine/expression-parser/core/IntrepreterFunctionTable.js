@@ -66,6 +66,7 @@ import { FunctionCallExpression } from '../expressions/FunctionCallExpression.js
 import { VariableReferenceExpression } from '../expressions/VariableReferenceExpression.js';
 import { QuotedStringExpression } from '../expressions/QuotedStringExpression.js';
 import { LabelExpression } from '../expressions/LabelExpression.js';
+import { MathTextExpression } from '../expressions/MathTextExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
 import { SubtractionExpression } from '../expressions/SubtractionExpression.js';
@@ -130,6 +131,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('plot', PlotExpression);
         registerMultiArg('paraplot', ParametricPlotExpression);
         registerMultiArg('label', LabelExpression);
+        registerMultiArg('mathtext', MathTextExpression);
 
         // Function definition and calling
         registerMultiArg('def', FunctionDefinitionExpression);
