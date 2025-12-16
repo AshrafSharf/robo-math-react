@@ -48,6 +48,7 @@
 .robo-cmd-editor.collapsed .robo-cmdeditor-container {
     min-width: 50px;
     padding-top: 0;
+    box-shadow: none;
 }
 
 /* Hide command panel with opacity for smoother transition */
@@ -59,6 +60,7 @@
     opacity: 0;
     pointer-events: none;
     position: absolute;
+    border-right: none;
 }
 
 /* Hide menu bar buttons when collapsed */
