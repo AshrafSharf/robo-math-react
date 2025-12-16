@@ -57,16 +57,16 @@ export class PlotCommand extends BaseCommand {
             throw err;
         }
 
-        // Use graph's xRange if domain not specified
+        // Use graph's x extents if domain not specified
         let minX = this.domainMin;
         let maxX = this.domainMax;
 
         if (minX === null || maxX === null) {
-            // Try to get xRange from graphContainer
-            if (this.graphContainer && this.graphContainer.options) {
-                const xRange = this.graphContainer.options.xRange || [-10, 10];
-                if (minX === null) minX = xRange[0];
-                if (maxX === null) maxX = xRange[1];
+            // Get x extents from graphContainer's graphsheet
+            if (this.graphContainer && typeof this.graphContainer.xends === 'function') {
+                const xEnds = this.graphContainer.xends();
+                if (minX === null) minX = xEnds.min;
+                if (maxX === null) maxX = xEnds.max;
             } else {
                 // Default fallback
                 if (minX === null) minX = -10;

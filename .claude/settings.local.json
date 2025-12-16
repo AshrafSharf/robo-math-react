@@ -22,7 +22,14 @@
       "Bash(wc:*)",
       "Bash(done)",
       "WebSearch",
-      "WebFetch(domain:mathjs.org)"
+      "WebFetch(domain:mathjs.org)",
+      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/CircleOptionsPanel.jsx )",
+      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/VectorOptionsPanel.jsx )",
+      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/AngleOptionsPanel.jsx )",
+      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/PolygonOptionsPanel.jsx )",
+      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/LabelOptionsPanel.jsx )",
+      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/ArcOptionsPanel.jsx )",
+      "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/EllipseOptionsPanel.jsx)"
     ],
     "deny": [],
     "ask": []

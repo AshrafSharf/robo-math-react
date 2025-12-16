@@ -1,34 +1,16 @@
 import React from 'react';
 import G2DOptionsPanel from '../panels/G2DOptionsPanel';
 import P2DOptionsPanel from '../panels/P2DOptionsPanel';
-import LineOptionsPanel from '../panels/LineOptionsPanel';
-import CircleOptionsPanel from '../panels/CircleOptionsPanel';
-import VectorOptionsPanel from '../panels/VectorOptionsPanel';
-import AngleOptionsPanel from '../panels/AngleOptionsPanel';
-import PolygonOptionsPanel from '../panels/PolygonOptionsPanel';
-import LabelOptionsPanel from '../panels/LabelOptionsPanel';
-import PlotOptionsPanel from '../panels/PlotOptionsPanel';
-import ArcOptionsPanel from '../panels/ArcOptionsPanel';
-import EllipseOptionsPanel from '../panels/EllipseOptionsPanel';
 
 /**
  * Map of expression types to their option panel components
+ *
+ * Only graph containers (g2d, p2d) have dedicated panels with unique options.
+ * All other shapes use standard styling from StyleTab (color, strokeWidth, fill, etc.)
  */
 const PANEL_MAP = {
   g2d: G2DOptionsPanel,
   p2d: P2DOptionsPanel,
-  line: LineOptionsPanel,
-  segment: LineOptionsPanel,
-  ray: LineOptionsPanel,
-  circle: CircleOptionsPanel,
-  vec: VectorOptionsPanel,
-  angle: AngleOptionsPanel,
-  polygon: PolygonOptionsPanel,
-  label: LabelOptionsPanel,
-  plot: PlotOptionsPanel,
-  paraplot: PlotOptionsPanel,
-  arc: ArcOptionsPanel,
-  ellipse: EllipseOptionsPanel,
 };
 
 /**

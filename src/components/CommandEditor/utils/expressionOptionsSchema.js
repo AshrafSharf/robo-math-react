@@ -148,14 +148,10 @@ export function getExpressionSchema(expressionType) {
 }
 
 /**
- * List of expression types that have options panels
- * Only includes types with actual options (not just _style)
+ * List of expression types that have dedicated options panels
+ * Only graph containers (g2d, p2d) have dedicated panels - all other shapes use StyleTab
  */
-export const EXPRESSION_TYPES_WITH_OPTIONS = Object.keys(EXPRESSION_OPTIONS_SCHEMA).filter(type => {
-  const schema = EXPRESSION_OPTIONS_SCHEMA[type];
-  // Check if there are any keys other than _style
-  return Object.keys(schema).some(key => key !== '_style');
-});
+export const EXPRESSION_TYPES_WITH_OPTIONS = ['g2d', 'p2d'];
 
 /**
  * Get style type for expression
