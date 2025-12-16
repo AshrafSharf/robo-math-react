@@ -1,7 +1,8 @@
 /**
  * ParametricPlotCommand - Command for rendering a parametric function plot
  *
- * Creates a parametric plot shape via diagram.parametricPlot()
+ * Creates a parametric plot shape via diagram.parametricPlotFunction()
+ * Accepts pre-compiled functions for both x(t) and y(t).
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
@@ -11,22 +12,24 @@ export class ParametricPlotCommand extends BaseCommand {
     /**
      * Create a parametric plot command
      * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
-     * @param {string} xEquation - The x(t) equation (e.g., "cos(t)", "r*cos(t)")
-     * @param {string} yEquation - The y(t) equation (e.g., "sin(t)", "r*sin(t)")
+     * @param {Function} compiledXFunction - Pre-compiled x(t) function
+     * @param {Function} compiledYFunction - Pre-compiled y(t) function
      * @param {number} tMin - Minimum t value
      * @param {number} tMax - Maximum t value
-     * @param {Object} scope - Variable values for math.js evaluation (e.g., {r: 5, a: 2})
+     * @param {string} xEquationString - Original x equation string for display/debugging
+     * @param {string} yEquationString - Original y equation string for display/debugging
      * @param {Object} options - Additional options {strokeWidth, samples}
      */
-    constructor(graphExpression, xEquation, yEquation, tMin = 0, tMax = 2 * Math.PI, scope = {}, options = {}) {
+    constructor(graphExpression, compiledXFunction, compiledYFunction, tMin = 0, tMax = 2 * Math.PI, xEquationString = '', yEquationString = '', options = {}) {
         super();
         this.graphExpression = graphExpression; // Resolved at init time
         this.graphContainer = null; // Set at init time
-        this.xEquation = xEquation;
-        this.yEquation = yEquation;
+        this.compiledXFunction = compiledXFunction;  // Pre-compiled x(t) function
+        this.compiledYFunction = compiledYFunction;  // Pre-compiled y(t) function
+        this.xEquation = xEquationString;  // Keep for display/debugging
+        this.yEquation = yEquationString;  // Keep for display/debugging
         this.tMin = tMin;
         this.tMax = tMax;
-        this.scope = scope;  // Variable scope for math.js
         this.strokeWidth = options.strokeWidth || null;
         this.samples = options.samples || null;
     }
@@ -69,13 +72,13 @@ export class ParametricPlotCommand extends BaseCommand {
             options.samples = this.samples;
         }
 
-        this.commandResult = this.diagram2d.parametricPlot(
+        // Use parametricPlotFunction with pre-compiled functions
+        this.commandResult = this.diagram2d.parametricPlotFunction(
             this.graphContainer,
-            this.xEquation,
-            this.yEquation,
+            this.compiledXFunction,
+            this.compiledYFunction,
             this.tMin,
             this.tMax,
-            this.scope,
             this.color,
             options
         );

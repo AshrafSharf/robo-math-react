@@ -1,7 +1,8 @@
 /**
  * PlotCommand - Command for rendering a function plot
  *
- * Creates a plot shape via diagram.plot()
+ * Creates a plot shape via diagram.plot() or diagram.plotFunction()
+ * Accepts either a pre-compiled function or equation string for backwards compatibility.
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
@@ -11,20 +12,20 @@ export class PlotCommand extends BaseCommand {
     /**
      * Create a plot command
      * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
-     * @param {string} equation - The equation to plot (e.g., "x^2", "sin(x)")
+     * @param {Function} compiledFunction - Pre-compiled function f(x) => y
      * @param {number} domainMin - Minimum x value (or null to use graph's xRange)
      * @param {number} domainMax - Maximum x value (or null to use graph's xRange)
-     * @param {Object} scope - Variable values for math.js evaluation (e.g., {a: 10, b: 5})
+     * @param {string} equationString - Original equation string for display/debugging (optional)
      * @param {Object} options - Additional options {strokeWidth, samples}
      */
-    constructor(graphExpression, equation, domainMin = null, domainMax = null, scope = {}, options = {}) {
+    constructor(graphExpression, compiledFunction, domainMin = null, domainMax = null, equationString = '', options = {}) {
         super();
         this.graphExpression = graphExpression; // Resolved at init time
         this.graphContainer = null; // Set at init time
-        this.equation = equation;
+        this.compiledFunction = compiledFunction;  // Pre-compiled function
+        this.equation = equationString;  // Keep for display/debugging
         this.domainMin = domainMin;
         this.domainMax = domainMax;
-        this.scope = scope;  // Variable scope for math.js
         this.strokeWidth = options.strokeWidth || null;
         this.samples = options.samples || null;
     }
@@ -84,12 +85,12 @@ export class PlotCommand extends BaseCommand {
             options.samples = this.samples;
         }
 
-        this.commandResult = this.diagram2d.plot(
+        // Use plotFunction with the pre-compiled function
+        this.commandResult = this.diagram2d.plotFunction(
             this.graphContainer,
-            this.equation,
+            this.compiledFunction,
             minX,
             maxX,
-            this.scope,
             this.color,
             options
         );

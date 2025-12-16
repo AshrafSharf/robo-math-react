@@ -1,10 +1,17 @@
 /**
  * ParametricPlotExpression - represents a parametric function plot
- * Syntax: paraplot(graph, xExpr, yExpr, tMin, tMax)
- * Example: paraplot(g, "cos(t)", "sin(t)", 0, 6.28)
+ * Syntax:
+ *   paraplot(graph, "xExpr", "yExpr")                    - String equations
+ *   paraplot(graph, "xExpr", "yExpr", tMin, tMax)
+ *   paraplot(graph, xFuncDef, yFuncDef)                  - Function definitions (from def())
+ *   paraplot(graph, xFuncDef, yFuncDef, tMin, tMax)
+ *
+ * Both string and function definition paths compile at resolve time (late binding).
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { ParametricPlotCommand } from '../../commands/ParametricPlotCommand.js';
+import { FunctionDefinitionExpression } from './FunctionDefinitionExpression.js';
+import { MathFunctionCompiler } from '../utils/MathFunctionCompiler.js';
 
 export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
     static NAME = 'paraplot';
@@ -13,11 +20,15 @@ export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.graphExpression = null;
-        this.xEquation = '';  // x(t) expression
-        this.yEquation = '';  // y(t) expression
+        this.xEquation = '';  // x(t) expression string
+        this.yEquation = '';  // y(t) expression string
         this.tMin = 0;
         this.tMax = 2 * Math.PI;
         this.scope = {};  // Variable scope for math.js evaluation
+        this.xFunctionDef = null;  // FunctionDefinitionExpression if using def() for x
+        this.yFunctionDef = null;  // FunctionDefinitionExpression if using def() for y
+        this.compiledXFunction = null;  // Compiled x(t) function
+        this.compiledYFunction = null;  // Compiled y(t) function
     }
 
     resolve(context) {
@@ -29,15 +40,24 @@ export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
         this.subExpressions[0].resolve(context);
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
-        // Second arg is x equation
+        // LATE BINDING: Get current scope at resolve time
+        this.scope = context.getReferencesCopyAsPrimitiveValues();
+
+        // Second arg is x equation (string or function definition)
         this.subExpressions[1].resolve(context);
         const xExpr = this.subExpressions[1];
-        this.xEquation = this._extractEquationString(xExpr);
+        const xResult = this._resolveEquationOrFuncDef(xExpr, context);
+        this.xEquation = xResult.equation;
+        this.xFunctionDef = xResult.funcDef;
+        this.compiledXFunction = xResult.compiled;
 
-        // Third arg is y equation
+        // Third arg is y equation (string or function definition)
         this.subExpressions[2].resolve(context);
         const yExpr = this.subExpressions[2];
-        this.yEquation = this._extractEquationString(yExpr);
+        const yResult = this._resolveEquationOrFuncDef(yExpr, context);
+        this.yEquation = yResult.equation;
+        this.yFunctionDef = yResult.funcDef;
+        this.compiledYFunction = yResult.compiled;
 
         // Optional t range arguments (tMin, tMax)
         if (this.subExpressions.length >= 5) {
@@ -50,10 +70,37 @@ export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
             if (minValues.length > 0) this.tMin = minValues[0];
             if (maxValues.length > 0) this.tMax = maxValues[0];
         }
+    }
 
-        // Extract all numeric variables from context for math.js scope
-        // This allows expressions like: a=2, paraplot(g, "a*cos(t)", "a*sin(t)", 0, 6.28)
-        this.scope = context.getReferencesCopyAsPrimitiveValues();
+    /**
+     * Resolve an equation expression - either string or function definition
+     * @param {Object} expr - The expression to resolve
+     * @param {Object} context - Expression context
+     * @returns {Object} { equation: string, funcDef: FunctionDefinitionExpression|null, compiled: Function }
+     */
+    _resolveEquationOrFuncDef(expr, context) {
+        // Check if it's a function definition reference
+        if (typeof expr.getVariableName === 'function') {
+            const varName = expr.getVariableName();
+            if (varName) {
+                const ref = context.getReference(varName);
+                if (ref instanceof FunctionDefinitionExpression) {
+                    return {
+                        equation: ref.getBodyString(),
+                        funcDef: ref,
+                        compiled: ref.compileWithScope(this.scope)
+                    };
+                }
+            }
+        }
+
+        // Fall back to string extraction
+        const equation = this._extractEquationString(expr);
+        return {
+            equation,
+            funcDef: null,
+            compiled: equation ? MathFunctionCompiler.compile(equation, ['t'], this.scope) : null
+        };
     }
 
     /**
@@ -108,18 +155,36 @@ export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
     }
 
     /**
+     * Get compiled x(t) function
+     * @returns {Function}
+     */
+    getCompiledXFunction() {
+        return this.compiledXFunction;
+    }
+
+    /**
+     * Get compiled y(t) function
+     * @returns {Function}
+     */
+    getCompiledYFunction() {
+        return this.compiledYFunction;
+    }
+
+    /**
      * Create a ParametricPlotCommand from this expression
      * @param {Object} options - Command options {strokeWidth}
      * @returns {ParametricPlotCommand}
      */
     toCommand(options = {}) {
+        // Always pass compiled functions - both string and def() paths compile at resolve time
         return new ParametricPlotCommand(
             this.graphExpression,
-            this.xEquation,
-            this.yEquation,
+            this.compiledXFunction,  // Pre-compiled x(t) function
+            this.compiledYFunction,  // Pre-compiled y(t) function
             this.tMin,
             this.tMax,
-            this.scope,
+            this.xEquation,          // Keep for display/debugging
+            this.yEquation,          // Keep for display/debugging
             options
         );
     }

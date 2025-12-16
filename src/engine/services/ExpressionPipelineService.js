@@ -172,6 +172,11 @@ export class ExpressionPipelineService {
 
         const command = expression.toCommand(commandOptions);
 
+        // Some expressions (like def(), fun()) don't produce commands
+        if (!command) {
+            return null;
+        }
+
         // Apply command options - color from registry takes precedence
         const color = registryOptions.color || options.color;
         if (color) {
