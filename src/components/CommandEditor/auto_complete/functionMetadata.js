@@ -7,100 +7,100 @@ export const FUNCTION_METADATA = {
   // === GEOMETRY ===
   point: {
     name: 'point',
-    signature: '(x, y)',
-    args: ['x: number', 'y: number'],
+    signature: '(g, x, y)',
+    args: ['g: Graph', 'x: number', 'y: number'],
     description: 'Create a 2D point',
-    altSignatures: ['point(x, y)', 'point(g, x, y)', 'point(otherPoint)'],
+    altSignatures: ['point(g, x, y)', 'point(g, otherPoint)'],
     category: 'Geometry'
   },
   line: {
     name: 'line',
-    signature: '(p1, p2)',
-    args: ['p1: Point', 'p2: Point'],
+    signature: '(g, p1, p2)',
+    args: ['g: Graph', 'p1: Point', 'p2: Point'],
     description: 'Create a line segment',
-    altSignatures: ['line(p1, p2)', 'line(x1, y1, x2, y2)', 'line(g, p1, p2)', 'line(p1, p2, ext)'],
+    altSignatures: ['line(g, p1, p2)', 'line(g, x1, y1, x2, y2)', 'line(g, p1, p2, ext)'],
     category: 'Geometry'
   },
   vector: {
     name: 'vector',
-    signature: '(p1, p2)',
-    args: ['p1: Point', 'p2: Point'],
+    signature: '(g, p1, p2)',
+    args: ['g: Graph', 'p1: Point', 'p2: Point'],
     description: 'Vector with arrowhead',
-    altSignatures: ['vector(p1, p2)', 'vector(x1, y1, x2, y2)', 'vector(g, p1, p2)'],
+    altSignatures: ['vector(g, p1, p2)', 'vector(g, x1, y1, x2, y2)'],
     category: 'Geometry'
   },
   circle: {
     name: 'circle',
-    signature: '(r)',
-    args: ['r: number'],
+    signature: '(g, r)',
+    args: ['g: Graph', 'r: number'],
     description: 'Circle (radius first, center at origin by default)',
-    altSignatures: ['circle(r)', 'circle(r, x, y)', 'circle(r, center)', 'circle(g, r)', 'circle(g, r, x, y)'],
+    altSignatures: ['circle(g, r)', 'circle(g, r, x, y)', 'circle(g, r, center)'],
     category: 'Geometry'
   },
   arc: {
     name: 'arc',
-    signature: '(cx, cy, r, start, sweep)',
-    args: ['cx: number', 'cy: number', 'r: number', 'start°: number', 'sweep°: number'],
+    signature: '(g, cx, cy, r, start, sweep)',
+    args: ['g: Graph', 'cx: number', 'cy: number', 'r: number', 'start°: number', 'sweep°: number'],
     description: 'Arc segment (angles in degrees)',
-    altSignatures: ['arc(cx, cy, r, start°, sweep°)', 'arc(g, cx, cy, r, start°, sweep°)'],
+    altSignatures: ['arc(g, cx, cy, r, start°, sweep°)'],
     category: 'Geometry'
   },
   polygon: {
     name: 'polygon',
-    signature: '(p1, p2, p3, ...)',
-    args: ['p1: Point', 'p2: Point', 'p3: Point', '...'],
+    signature: '(g, p1, p2, p3, ...)',
+    args: ['g: Graph', 'p1: Point', 'p2: Point', 'p3: Point', '...'],
     description: 'Polygon from 3+ points',
-    altSignatures: ['polygon(p1, p2, p3, ...)', 'polygon(g, p1, p2, p3, ...)'],
+    altSignatures: ['polygon(g, p1, p2, p3, ...)'],
     category: 'Geometry'
   },
 
   // === ANGLES ===
   angle: {
     name: 'angle',
-    signature: '(vertex, p1, p2)',
-    args: ['vertex: Point', 'p1: Point', 'p2: Point'],
+    signature: '(g, vertex, p1, p2)',
+    args: ['g: Graph', 'vertex: Point', 'p1: Point', 'p2: Point'],
     description: 'Interior angle marker',
-    altSignatures: ['angle(vertex, p1, p2)', 'angle(vertex, p1, p2, radius)', 'angle(line1, line2)', 'angle(g, vertex, p1, p2)'],
+    altSignatures: ['angle(g, vertex, p1, p2)', 'angle(g, vertex, p1, p2, radius)', 'angle(g, line1, line2)'],
     category: 'Angles'
   },
   anglex: {
     name: 'anglex',
-    signature: '(vertex, p1, p2)',
-    args: ['vertex: Point', 'p1: Point', 'p2: Point'],
+    signature: '(g, vertex, p1, p2)',
+    args: ['g: Graph', 'vertex: Point', 'p1: Point', 'p2: Point'],
     description: 'Exterior angle (first side)',
-    altSignatures: ['anglex(vertex, p1, p2)', 'anglex(line1, line2)', 'anglex(g, vertex, p1, p2)'],
+    altSignatures: ['anglex(g, vertex, p1, p2)', 'anglex(g, line1, line2)'],
     category: 'Angles'
   },
   anglex2: {
     name: 'anglex2',
-    signature: '(vertex, p1, p2)',
-    args: ['vertex: Point', 'p1: Point', 'p2: Point'],
+    signature: '(g, vertex, p1, p2)',
+    args: ['g: Graph', 'vertex: Point', 'p1: Point', 'p2: Point'],
     description: 'Exterior angle (second side)',
-    altSignatures: ['anglex2(vertex, p1, p2)', 'anglex2(line1, line2)', 'anglex2(g, vertex, p1, p2)'],
+    altSignatures: ['anglex2(g, vertex, p1, p2)', 'anglex2(g, line1, line2)'],
     category: 'Angles'
   },
   angler: {
     name: 'angler',
-    signature: '(vertex, p1, p2)',
-    args: ['vertex: Point', 'p1: Point', 'p2: Point'],
+    signature: '(g, vertex, p1, p2)',
+    args: ['g: Graph', 'vertex: Point', 'p1: Point', 'p2: Point'],
     description: 'Reflex angle (> 180°)',
-    altSignatures: ['angler(vertex, p1, p2)', 'angler(line1, line2)', 'angler(g, vertex, p1, p2)'],
+    altSignatures: ['angler(g, vertex, p1, p2)', 'angler(g, line1, line2)'],
     category: 'Angles'
   },
   anglert: {
     name: 'anglert',
-    signature: '(vertex, p1, p2)',
-    args: ['vertex: Point', 'p1: Point', 'p2: Point'],
+    signature: '(g, vertex, p1, p2)',
+    args: ['g: Graph', 'vertex: Point', 'p1: Point', 'p2: Point'],
     description: 'Right angle marker (90°)',
-    altSignatures: ['anglert(vertex, p1, p2)', 'anglert(line1, line2)', 'anglert(g, vertex, p1, p2)'],
+    altSignatures: ['anglert(g, vertex, p1, p2)', 'anglert(g, line1, line2)'],
     category: 'Angles'
   },
   angleo: {
     name: 'angleo',
-    signature: '(vertex, p1, p2)',
-    args: ['vertex: Point', 'p1: Point', 'p2: Point'],
+    signature: '(g, vertex, p1, p2)',
+    args: ['g: Graph', 'vertex: Point', 'p1: Point', 'p2: Point'],
     description: 'Vertically opposite angle',
-    altSignatures: ['angleo(vertex, p1, p2)', 'angleo(line1, line2)', 'angleo(g, vertex, p1, p2)'],
+    altSignatures: ['angleo(g, vertex, p1, p2)', 'angleo(g, line1, line2)'],
     category: 'Angles'
   },
 
@@ -181,10 +181,10 @@ export const FUNCTION_METADATA = {
   },
   uv: {
     name: 'uv',
-    signature: '(shape)',
-    args: ['shape: Line|Vec'],
+    signature: '(g, shape)',
+    args: ['g: Graph', 'shape: Line|Vec'],
     description: 'Unit vector (normalized direction)',
-    altSignatures: ['uv(line)', 'uv(vec)', 'uv(p1, p2)', 'uv(g, line)'],
+    altSignatures: ['uv(g, line)', 'uv(g, vec)', 'uv(g, p1, p2)'],
     category: 'Vectors'
   },
   fwv: {
@@ -337,18 +337,42 @@ export const FUNCTION_METADATA = {
   // === GRAPH ===
   g2d: {
     name: 'g2d',
-    signature: '(row, col, w, h)',
-    args: ['row: number', 'col: number', 'width: number', 'height: number'],
+    signature: '(row1, col1, row2, col2)',
+    args: ['row1: number', 'col1: number', 'row2: number', 'col2: number'],
     description: 'Create 2D graph container',
-    altSignatures: ['g2d(row: number, col: number, w: number, h: number)', 'g2d(row: number, col: number, w: number, h: number, xMin: number, xMax: number)', 'g2d(row: number, col: number, w: number, h: number, xMin: number, xMax: number, yMin: number, yMax: number)'],
+    altSignatures: ['g2d(row1, col1, row2, col2)', 'g2d(row1, col1, row2, col2, xMin, xMax)', 'g2d(row1, col1, row2, col2, xMin, xMax, yMin, yMax)', 'g2d(row1, col1, row2, col2, xMin, xMax, yMin, yMax, showGrid)'],
+    category: 'Graph'
+  },
+  g3d: {
+    name: 'g3d',
+    signature: '(row1, col1, row2, col2)',
+    args: ['row1: number', 'col1: number', 'row2: number', 'col2: number'],
+    description: 'Create 3D graph container',
+    altSignatures: ['g3d(row1, col1, row2, col2)', 'g3d(row1, col1, row2, col2, xMin, xMax, yMin, yMax, zMin, zMax)', 'g3d(row1, col1, row2, col2, xMin, xMax, yMin, yMax, zMin, zMax, showGrid)', 'g3d(..., "lhs"|"rhs")'],
+    category: 'Graph'
+  },
+  p2d: {
+    name: 'p2d',
+    signature: '(row1, col1, row2, col2)',
+    args: ['row1: number', 'col1: number', 'row2: number', 'col2: number'],
+    description: 'Create 2D polar graph container',
+    altSignatures: ['p2d(row1, col1, row2, col2)', 'p2d(row1, col1, row2, col2, rMax)', 'p2d(row1, col1, row2, col2, rMax, showGrid)'],
     category: 'Graph'
   },
   plot: {
     name: 'plot',
-    signature: '(g, equation)',
+    signature: '(g, "equation")',
     args: ['g: Graph', 'equation: string'],
     description: 'Plot a function equation',
-    altSignatures: ['plot(g: Graph, equation: string)', 'plot(g: Graph, equation: string, domainMin: number, domainMax: number)'],
+    altSignatures: ['plot(g, "y = x^2")', 'plot(g, "equation", domainMin, domainMax)'],
+    category: 'Graph'
+  },
+  paraplot: {
+    name: 'paraplot',
+    signature: '(g, "xExpr", "yExpr")',
+    args: ['g: Graph', 'xExpr: string', 'yExpr: string'],
+    description: 'Parametric plot with x(t) and y(t)',
+    altSignatures: ['paraplot(g, "cos(t)", "sin(t)")', 'paraplot(g, "xExpr", "yExpr", tMin, tMax)', 'paraplot(g, xFuncDef, yFuncDef)'],
     category: 'Graph'
   },
   label: {
@@ -358,6 +382,24 @@ export const FUNCTION_METADATA = {
     description: 'MathText label with pen animation on graph',
     altSignatures: ['label(g, "latex", x, y)', 'label(g, "latex", point)'],
     category: 'Graph'
+  },
+
+  // === 3D GEOMETRY ===
+  point3d: {
+    name: 'point3d',
+    signature: '(g, x, y, z)',
+    args: ['g: Graph3D', 'x: number', 'y: number', 'z: number'],
+    description: 'Create a 3D point',
+    altSignatures: ['point3d(g, x, y, z)', 'point3d(g, point2d, z)'],
+    category: '3D Geometry'
+  },
+  line3d: {
+    name: 'line3d',
+    signature: '(g, p1, p2)',
+    args: ['g: Graph3D', 'p1: Point3D', 'p2: Point3D'],
+    description: 'Create a 3D line segment',
+    altSignatures: ['line3d(g, p1, p2)', 'line3d(g, x1, y1, z1, x2, y2, z2)'],
+    category: '3D Geometry'
   },
 
   // === MATH FUNCTIONS ===
@@ -470,40 +512,42 @@ export const FUNCTION_METADATA = {
   // === TRANSFORMATIONS ===
   intersect: {
     name: 'intersect',
-    signature: '(shape1, shape2)',
-    args: ['shape1: Line|Circle', 'shape2: Line|Circle'],
+    signature: '(g, shape1, shape2)',
+    args: ['g: Graph', 'shape1: Line|Circle', 'shape2: Line|Circle'],
     description: 'Find intersection point(s)',
-    altSignatures: ['intersect(line, line)', 'intersect(line, circle)', 'intersect(circle, circle)'],
+    altSignatures: ['intersect(g, line, line)', 'intersect(g, line, circle)', 'intersect(g, circle, circle)', 'intersect(g, shape1, shape2, index)'],
     category: 'Transforms'
   },
   reflect: {
     name: 'reflect',
-    signature: '(line, point)',
-    args: ['line: Line|Vec', 'point: Point'],
+    signature: '(g, line, point)',
+    args: ['g: Graph', 'line: Line|Vec', 'point: Point'],
     description: 'Reflect point across line',
-    altSignatures: ['reflect(line, point)', 'reflect(vec, point)'],
+    altSignatures: ['reflect(g, line, point)', 'reflect(g, vec, point)'],
     category: 'Transforms'
   },
   rotate: {
     name: 'rotate',
-    signature: '(point, center, angle)',
-    args: ['point: Point', 'center: Point', 'angle: number'],
+    signature: '(g, point, center, angle)',
+    args: ['g: Graph', 'point: Point', 'center: Point', 'angle: number'],
     description: 'Rotate point around center',
+    altSignatures: ['rotate(g, point, center, angle)'],
     category: 'Transforms'
   },
   project: {
     name: 'project',
-    signature: '(line, point)',
-    args: ['line: Line|Vec', 'point: Point'],
+    signature: '(g, line, point)',
+    args: ['g: Graph', 'line: Line|Vec', 'point: Point'],
     description: 'Project point onto line (foot of perpendicular)',
-    altSignatures: ['project(line, point)', 'project(vec, point)'],
+    altSignatures: ['project(g, line, point)', 'project(g, vec, point)'],
     category: 'Transforms'
   },
   translate: {
     name: 'translate',
-    signature: '(point, dx, dy)',
-    args: ['point: Point', 'dx: number', 'dy: number'],
+    signature: '(g, point, dx, dy)',
+    args: ['g: Graph', 'point: Point', 'dx: number', 'dy: number'],
     description: 'Translate point by offset',
+    altSignatures: ['translate(g, point, dx, dy)'],
     category: 'Transforms'
   },
 
@@ -605,6 +649,7 @@ export function getCategories() {
  */
 export const CATEGORY_ORDER = [
   'Geometry',
+  '3D Geometry',
   'Angles',
   'Lines',
   'Vectors',
