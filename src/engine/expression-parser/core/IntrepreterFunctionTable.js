@@ -77,6 +77,7 @@ import { MoveToExpression } from '../expressions/MoveToExpression.js';
 import { TextAtExpression } from '../expressions/TextAtExpression.js';
 import { ReplaceTextItemExpression } from '../expressions/ReplaceTextItemExpression.js';
 import { SequenceExpression } from '../expressions/SequenceExpression.js';
+import { ParallelExpression } from '../expressions/ParallelExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
 import { SubtractionExpression } from '../expressions/SubtractionExpression.js';
@@ -152,6 +153,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('textat', TextAtExpression);
         registerMultiArg('replace', ReplaceTextItemExpression);
         registerMultiArg('seq', SequenceExpression);
+        registerMultiArg('para', ParallelExpression);
 
         // Function definition and calling
         registerMultiArg('def', FunctionDefinitionExpression);

@@ -13,6 +13,10 @@ export class CommandContext {
     // Used by commands like RotateCommand to look up previously created shapes
     this.shapeRegistry = {};
 
+    // Command registry: variableName -> command instance
+    // Used by ParallelCommand to look up commands for parallel playback
+    this.commandRegistry = {};
+
     // Layout dependencies for 3D graph creation
     this.layoutMapper = layoutMapper;
     this.canvasSection = canvasSection;

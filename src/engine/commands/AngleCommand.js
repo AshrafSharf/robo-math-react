@@ -26,7 +26,7 @@ export class AngleCommand extends BaseCommand {
     this.point2 = point2;
     this.angleType = angleType;
     this.radius = options.radius || 0.8;
-    this.strokeWidth = options.strokeWidth || null;
+    this.strokeWidth = options.strokeWidth ?? 2;
     this.fill = options.fill || null;
     this.fillOpacity = options.fillOpacity !== undefined ? options.fillOpacity : null;
     this.showArc = options.showArc !== undefined ? options.showArc : true;
@@ -64,9 +64,7 @@ export class AngleCommand extends BaseCommand {
       label: this.labelName
     };
 
-    if (this.strokeWidth) {
-      options.strokeWidth = this.strokeWidth;
-    }
+    options.strokeWidth = this.strokeWidth;
     if (this.fill) {
       options.fill = this.fill;
     }

@@ -21,7 +21,7 @@ export class VectorCommand extends BaseCommand {
         this.graphContainer = null; // Set at init time
         this.startPoint = startPoint; // {x, y}
         this.endPoint = endPoint;     // {x, y}
-        this.strokeWidth = options.strokeWidth || null;
+        this.strokeWidth = options.strokeWidth ?? 2;
         this.arrowSize = options.arrowSize || null;
     }
 
@@ -56,9 +56,7 @@ export class VectorCommand extends BaseCommand {
             label: this.labelName
         };
 
-        if (this.strokeWidth) {
-            options.strokeWidth = this.strokeWidth;
-        }
+        options.strokeWidth = this.strokeWidth;
         if (this.arrowSize) {
             options.arrowSize = this.arrowSize;
         }

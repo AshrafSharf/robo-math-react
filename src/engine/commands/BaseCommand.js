@@ -89,13 +89,17 @@ export class BaseCommand {
   }
 
   /**
-   * Called after doInit() - register shape in registry if this is an assignment
+   * Called after doInit() - register shape and command in registries if this is an assignment
    */
   postInit() {
     // Register commandResult in shapeRegistry if this command has a label
     // (labels are only set for assignment expressions like P = point(...))
     if (this.labelName && this.commandResult) {
       this.commandContext.shapeRegistry[this.labelName] = this.commandResult;
+    }
+    // Also register the command itself for parallel playback
+    if (this.labelName) {
+      this.commandContext.commandRegistry[this.labelName] = this;
     }
   }
 

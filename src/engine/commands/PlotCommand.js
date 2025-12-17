@@ -26,7 +26,7 @@ export class PlotCommand extends BaseCommand {
         this.equation = equationString;  // Keep for display/debugging
         this.domainMin = domainMin;
         this.domainMax = domainMax;
-        this.strokeWidth = options.strokeWidth || null;
+        this.strokeWidth = options.strokeWidth ?? 2;
         this.samples = options.samples || null;
     }
 
@@ -78,9 +78,7 @@ export class PlotCommand extends BaseCommand {
             label: this.labelName
         };
 
-        if (this.strokeWidth) {
-            options.strokeWidth = this.strokeWidth;
-        }
+        options.strokeWidth = this.strokeWidth;
         if (this.samples) {
             options.samples = this.samples;
         }

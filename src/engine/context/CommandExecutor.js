@@ -82,6 +82,7 @@ export class CommandExecutor {
     }
     this.commands = [];
     this.commandContext.shapeRegistry = {};
+    this.commandContext.commandRegistry = {};
     this.currentIndex = 0;
     this.stop();
   }

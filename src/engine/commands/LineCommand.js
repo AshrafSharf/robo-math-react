@@ -21,7 +21,7 @@ export class LineCommand extends BaseCommand {
     this.graphContainer = null; // Set at init time
     this.startPoint = startPoint; // {x, y}
     this.endPoint = endPoint;     // {x, y}
-    this.strokeWidth = options.strokeWidth || null;
+    this.strokeWidth = options.strokeWidth ?? 2;
     this.strokeOpacity = options.strokeOpacity ?? null;
     this.fill = options.fill || null;
     this.dashPattern = options.dashPattern || 'solid';
@@ -58,9 +58,7 @@ export class LineCommand extends BaseCommand {
       label: this.labelName
     };
 
-    if (this.strokeWidth) {
-      options.strokeWidth = this.strokeWidth;
-    }
+    options.strokeWidth = this.strokeWidth;
     if (this.strokeOpacity !== null) {
       options.strokeOpacity = this.strokeOpacity;
     }

@@ -1,0 +1,5 @@
+l=label(g,"\frac{\sin(\theta)}{\cos(\theta)}",-2,4)
+h=def(x,"x^2")
+p=plot(g, h)
+point(g,1,fun(h, 1))
+fadein(p,l)

@@ -31,7 +31,7 @@ export class ArcCommand extends BaseCommand {
     this.endPoint = endPoint;     // {x, y}
     this.rx = rx;
     this.ry = ry !== null ? ry : rx; // Default to circular arc
-    this.strokeWidth = options.strokeWidth || null;
+    this.strokeWidth = options.strokeWidth ?? 2;
   }
 
   /**
@@ -97,9 +97,7 @@ export class ArcCommand extends BaseCommand {
       label: this.labelName
     };
 
-    if (this.strokeWidth) {
-      options.strokeWidth = this.strokeWidth;
-    }
+    options.strokeWidth = this.strokeWidth;
 
     this.commandResult = this.diagram2d.arc(
       this.graphContainer,

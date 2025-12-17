@@ -9,6 +9,7 @@ export class RoboEventManager {
   static scaleFactor = 1;
   static lastVisitedPoint = new Point(0, 0);
   static lastVisitedTweenNode = null;
+  static penActive = true;
 
   static register(eventName, callback) {
     if (!this.listeners.has(eventName)) {
@@ -46,8 +47,17 @@ export class RoboEventManager {
   }
 
   static firePenPosition(penEvent) {
+    if (!this.penActive) return;
     this.lastVisitedPoint = penEvent.screenPoint;
     this.emit(PenEvent.POSITION_EVENT_NAME, penEvent);
+  }
+
+  static setPenActive(active) {
+    this.penActive = active;
+  }
+
+  static isPenActive() {
+    return this.penActive;
   }
 
   static getLastVisitedPenPoint() {

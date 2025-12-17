@@ -19,7 +19,7 @@ export class PolygonCommand extends BaseCommand {
         this.graphExpression = graphExpression; // Resolved at init time
         this.graphContainer = null; // Set at init time
         this.vertices = vertices; // [{x, y}, ...]
-        this.strokeWidth = options.strokeWidth || null;
+        this.strokeWidth = options.strokeWidth ?? 2;
         this.fill = options.fill || null;
         this.fillOpacity = options.fillOpacity !== undefined ? options.fillOpacity : null;
     }
@@ -55,9 +55,7 @@ export class PolygonCommand extends BaseCommand {
             label: this.labelName
         };
 
-        if (this.strokeWidth) {
-            options.strokeWidth = this.strokeWidth;
-        }
+        options.strokeWidth = this.strokeWidth;
         if (this.fill) {
             options.fill = this.fill;
         }

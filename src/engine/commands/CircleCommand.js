@@ -21,7 +21,7 @@ export class CircleCommand extends BaseCommand {
         this.graphContainer = null; // Set at init time
         this.center = center; // {x, y}
         this.radius = radius;
-        this.strokeWidth = options.strokeWidth || null;
+        this.strokeWidth = options.strokeWidth ?? 2;
         this.fill = options.fill || null;
         this.fillOpacity = options.fillOpacity !== undefined ? options.fillOpacity : null;
     }
@@ -57,9 +57,7 @@ export class CircleCommand extends BaseCommand {
             label: this.labelName
         };
 
-        if (this.strokeWidth) {
-            options.strokeWidth = this.strokeWidth;
-        }
+        options.strokeWidth = this.strokeWidth;
         if (this.fill && this.fill !== 'none') {
             options.fill = this.fill;
         }

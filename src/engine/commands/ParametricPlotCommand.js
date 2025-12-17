@@ -30,7 +30,7 @@ export class ParametricPlotCommand extends BaseCommand {
         this.yEquation = yEquationString;  // Keep for display/debugging
         this.tMin = tMin;
         this.tMax = tMax;
-        this.strokeWidth = options.strokeWidth || null;
+        this.strokeWidth = options.strokeWidth ?? 2;
         this.samples = options.samples || null;
     }
 
@@ -65,9 +65,7 @@ export class ParametricPlotCommand extends BaseCommand {
             label: this.labelName
         };
 
-        if (this.strokeWidth) {
-            options.strokeWidth = this.strokeWidth;
-        }
+        options.strokeWidth = this.strokeWidth;
         if (this.samples) {
             options.samples = this.samples;
         }
