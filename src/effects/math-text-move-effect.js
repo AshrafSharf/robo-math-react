@@ -127,9 +127,7 @@ export class MathTextMoveEffect extends BaseEffect {
    */
   reset() {
     if (this.clonedComponent) {
-      // Move back to start position
-      this.clonedComponent.containerDOM.style.left = this.startX + 'px';
-      this.clonedComponent.containerDOM.style.top = this.startY + 'px';
+      this.clonedComponent.setCanvasPosition(this.startX, this.startY);
     }
   }
 
@@ -150,9 +148,8 @@ export class MathTextMoveEffect extends BaseEffect {
   toEndState() {
     this._createClone();
     if (this.clonedComponent) {
+      this.clonedComponent.setCanvasPosition(this.endX, this.endY);
       this.clonedComponent.show();
-      this.clonedComponent.containerDOM.style.left = this.endX + 'px';
-      this.clonedComponent.containerDOM.style.top = this.endY + 'px';
     }
   }
 
@@ -170,7 +167,8 @@ export class MathTextMoveEffect extends BaseEffect {
         return;
       }
 
-      // Show at start position
+      // Reset to start position before animating
+      this.clonedComponent.setCanvasPosition(this.startX, this.startY);
       this.clonedComponent.show();
 
       // Animate to end position

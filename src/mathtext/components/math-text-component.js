@@ -260,6 +260,18 @@ export class MathTextComponent {
     };
   }
 
+  /**
+   * Set the component's position in canvas/pixel coordinates
+   * @param {number} x - X pixel coordinate
+   * @param {number} y - Y pixel coordinate
+   */
+  setCanvasPosition(x, y) {
+    this.componentState.left = x;
+    this.componentState.top = y;
+    this.containerDOM.style.left = x + 'px';
+    this.containerDOM.style.top = y + 'px';
+  }
+
   enableStroke() {
     // Match the original exactly
     $("path", this.containerDOM).attr('stroke-dasharray', '0,0');

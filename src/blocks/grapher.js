@@ -249,6 +249,20 @@ export class Grapher {
     return this.containerDOM;
   }
 
+  /**
+   * Get the grapher's position relative to its offset parent
+   * @returns {{left: number, top: number}}
+   */
+  getPosition() {
+    if (!this.containerDOM) {
+      throw new Error('Grapher.getPosition: containerDOM is null');
+    }
+    return {
+      left: this.containerDOM.offsetLeft,
+      top: this.containerDOM.offsetTop
+    };
+  }
+
   xends() {
     return this.graphSheet2D.xends();
   }
