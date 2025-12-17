@@ -1,6 +1,6 @@
 
 
-seq(rotate(g,l1,90), rotate(g,l1,-90))
+
 
 l=label(g,"\frac{\sin(\theta)}{\cos(\theta)}",-2,4)
 h=def(x,"x^2")

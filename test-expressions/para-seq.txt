@@ -1,3 +1,5 @@
+
+g=g2d(1,2,20,30)
 l=label(g,"\frac{\sin(\theta)}{\cos(\theta)}",-2,4)
 h=def(x,"x^2")
 p=plot(g, h)

@@ -1,25 +1,26 @@
 /**
- * FocusIndicator3D - Three.js marker indicator for 3D shapes
+ * FocusIndicator3D - Three.js arrow indicator for 3D shapes
  *
- * Creates a ring/circle marker mesh positioned at the shape's 3D center.
+ * Creates a small downward-pointing arrow above the shape's 3D position.
  * Only dependency: Three.js
  */
 import * as THREE from 'three';
 
 export class FocusIndicator3D {
   constructor() {
-    this.marker = null;
+    this.group = null;
     this.scene = null;
 
-    // Marker styling
-    this.color = 0x0066cc;
-    this.innerRadius = 0.3;
-    this.outerRadius = 0.4;
-    this.opacity = 0.8;
+    // Arrow styling
+    this.color = 0xff6b6b;
+    this.arrowHeadSize = 0.15;
+    this.shaftLength = 0.08;
+    this.shaftRadius = 0.02;
+    this.offset = 0.3; // Distance above target
   }
 
   /**
-   * Create marker mesh and add to scene
+   * Create arrow mesh and add to scene
    * @param {THREE.Scene} scene - The Three.js scene
    */
   create(scene) {
@@ -27,123 +28,121 @@ export class FocusIndicator3D {
 
     this.scene = scene;
 
-    // Create ring geometry for the marker
-    const geometry = new THREE.RingGeometry(this.innerRadius, this.outerRadius, 32);
+    // Create group to hold arrow parts
+    this.group = new THREE.Group();
+    this.group.name = 'focus-indicator-3d';
 
-    // Create material with transparency
+    // Create arrowhead (cone pointing down)
+    const coneGeometry = new THREE.ConeGeometry(this.arrowHeadSize, this.arrowHeadSize * 1.5, 16);
     const material = new THREE.MeshBasicMaterial({
       color: this.color,
-      side: THREE.DoubleSide,
       transparent: true,
-      opacity: this.opacity,
-      depthTest: false  // Always render on top
+      opacity: 0.9,
+      depthTest: false
     });
 
-    this.marker = new THREE.Mesh(geometry, material);
-    this.marker.name = 'focus-indicator-3d';
+    const arrowHead = new THREE.Mesh(coneGeometry, material);
+    arrowHead.rotation.x = Math.PI; // Point downward
+    arrowHead.position.y = 0; // Tip at origin of group
 
-    // Add to scene but hide initially
-    this.marker.visible = false;
-    scene.add(this.marker);
+    // Create shaft (cylinder)
+    const shaftGeometry = new THREE.CylinderGeometry(this.shaftRadius, this.shaftRadius, this.shaftLength, 8);
+    const shaft = new THREE.Mesh(shaftGeometry, material.clone());
+    shaft.position.y = this.arrowHeadSize * 0.75 + this.shaftLength / 2; // Above arrowhead
+
+    this.group.add(arrowHead);
+    this.group.add(shaft);
+
+    // Hide initially
+    this.group.visible = false;
+    scene.add(this.group);
   }
 
   /**
-   * Update marker position
+   * Update arrow position
    * @param {Object} position - Target position {x, y, z}
    */
   update(position) {
-    if (!this.marker) return;
+    if (!this.group) return;
 
-    this.marker.position.set(position.x, position.y, position.z);
-    this.marker.visible = true;
-
-    // Make marker face the camera if available
-    if (this.scene && this.scene.userData.camera) {
-      this.marker.lookAt(this.scene.userData.camera.position);
-    }
+    // Position arrow above the target
+    this.group.position.set(
+      position.x,
+      position.y + this.offset,
+      position.z
+    );
+    this.group.visible = true;
   }
 
   /**
-   * Set marker styling
+   * Set arrow styling
    * @param {Object} style - Style options
-   * @param {number} [style.color] - Hex color (e.g., 0x0066cc)
-   * @param {number} [style.innerRadius] - Inner radius of ring
-   * @param {number} [style.outerRadius] - Outer radius of ring
-   * @param {number} [style.opacity] - Opacity (0-1)
+   * @param {number} [style.color] - Hex color (e.g., 0xff6b6b)
+   * @param {number} [style.offset] - Distance above target
    */
-  setStyle({ color, innerRadius, outerRadius, opacity }) {
+  setStyle({ color, offset }) {
     if (color !== undefined) {
       this.color = color;
-      if (this.marker) {
-        this.marker.material.color.setHex(color);
+      if (this.group) {
+        this.group.children.forEach(child => {
+          if (child.material) {
+            child.material.color.setHex(color);
+          }
+        });
       }
     }
-    if (opacity !== undefined) {
-      this.opacity = opacity;
-      if (this.marker) {
-        this.marker.material.opacity = opacity;
-      }
-    }
-    // Inner/outer radius changes require recreating geometry
-    if (innerRadius !== undefined || outerRadius !== undefined) {
-      this.innerRadius = innerRadius ?? this.innerRadius;
-      this.outerRadius = outerRadius ?? this.outerRadius;
-      if (this.marker) {
-        this.marker.geometry.dispose();
-        this.marker.geometry = new THREE.RingGeometry(
-          this.innerRadius,
-          this.outerRadius,
-          32
-        );
-      }
+    if (offset !== undefined) {
+      this.offset = offset;
     }
   }
 
   /**
-   * Show the marker
+   * Show the arrow
    */
   show() {
-    if (this.marker) {
-      this.marker.visible = true;
+    if (this.group) {
+      this.group.visible = true;
     }
   }
 
   /**
-   * Hide the marker
+   * Hide the arrow
    */
   hide() {
-    if (this.marker) {
-      this.marker.visible = false;
+    if (this.group) {
+      this.group.visible = false;
     }
   }
 
   /**
-   * Remove marker from scene and dispose resources
+   * Remove arrow from scene and dispose resources
    */
   remove() {
-    if (this.marker) {
+    if (this.group) {
       if (this.scene) {
-        this.scene.remove(this.marker);
+        this.scene.remove(this.group);
       }
 
-      // Dispose geometry and material
-      if (this.marker.geometry) {
-        this.marker.geometry.dispose();
-      }
-      if (this.marker.material) {
-        this.marker.material.dispose();
-      }
+      // Dispose geometry and material for all children
+      this.group.children.forEach(child => {
+        if (child.geometry) {
+          child.geometry.dispose();
+        }
+        if (child.material) {
+          child.material.dispose();
+        }
+      });
 
-      this.marker = null;
+      this.group = null;
     }
     this.scene = null;
   }
 
   /**
-   * Check if marker is attached to scene
+   * Check if arrow is attached to scene
    * @returns {boolean}
    */
   isAttached() {
-    return this.marker !== null && this.scene !== null;
+    return this.group !== null && this.scene !== null;
   }
 }
