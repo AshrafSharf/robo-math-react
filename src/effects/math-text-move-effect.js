@@ -16,6 +16,9 @@
 import { BaseEffect } from './base-effect.js';
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
 import { TweenMax, Power2 } from 'gsap';
+import { RoboEventManager } from '../events/robo-event-manager.js';
+import { PenEvent } from '../events/pen-event.js';
+import { PenCoordinateUtil } from '../utils/pen-coordinate-util.js';
 
 export class MathTextMoveEffect extends BaseEffect {
   /**
@@ -171,11 +174,32 @@ export class MathTextMoveEffect extends BaseEffect {
       this.clonedComponent.setCanvasPosition(this.startX, this.startY);
       this.clonedComponent.show();
 
+      // Store start/end for interpolation
+      const startX = this.startX;
+      const startY = this.startY;
+      const endX = this.endX;
+      const endY = this.endY;
+
       // Animate to end position
-      this.activeTween = TweenMax.to(this.clonedComponent.containerDOM, this.duration, {
-        left: this.endX + 'px',
-        top: this.endY + 'px',
+      const tweener = { progress: 0 };
+      this.activeTween = TweenMax.to(tweener, this.duration, {
+        progress: 1,
         ease: this.ease,
+        onUpdate: () => {
+          // Interpolate position
+          const currentX = startX + (endX - startX) * tweener.progress;
+          const currentY = startY + (endY - startY) * tweener.progress;
+
+          // Update clone position
+          this.clonedComponent.setCanvasPosition(currentX, currentY);
+
+          // Emit pen position in screen coordinates
+          // Add internal offset to get actual content position
+          const penX = currentX + this.internalOffsetX;
+          const penY = currentY + this.internalOffsetY;
+          const screenPos = PenCoordinateUtil.canvasToScreen(this.parentDOM, penX, penY);
+          RoboEventManager.firePenPosition(new PenEvent(screenPos));
+        },
         onComplete: () => {
           this.activeTween = null;
           this.scheduleComplete();
