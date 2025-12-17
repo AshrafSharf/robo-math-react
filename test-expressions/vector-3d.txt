@@ -1,3 +1,19 @@
 g = g3d(0, 0, 20, 20)
   vector3d(g, 0, 0, 0, 3, 2, 1)        
   vector3d(g, point3d1, point3d2)   
+
+
+
+
+g = g3d(0, 0, 20, 20)
+V = vector3d(g, 0, 0, 0, 3, 2, 1)
+forward3d(V)          
+  forward3d(V, 2)        // slide forward 2 units
+
+  backward3d(V)          // slide backward 1 unit
+  backward3d(V, 0.5)     // slide backward 0.5 units
+
+  move3d(V, 1, 1, 1)     // move vector to start at (1,1,1)
+  move3d(V, point3d(g, 2, 2, 2))  // move to point3d
+
+  reverse3d(V)           // create reversed vector at same tail

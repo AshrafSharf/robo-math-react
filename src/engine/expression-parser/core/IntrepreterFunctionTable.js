@@ -68,6 +68,10 @@ import { Torus3DExpression } from '../expressions/3d/Torus3DExpression.js';
 import { Prism3DExpression } from '../expressions/3d/Prism3DExpression.js';
 import { Frustum3DExpression } from '../expressions/3d/Frustum3DExpression.js';
 import { Pyramid3DExpression } from '../expressions/3d/Pyramid3DExpression.js';
+import { Forward3DExpression } from '../expressions/3d/Forward3DExpression.js';
+import { Backward3DExpression } from '../expressions/3d/Backward3DExpression.js';
+import { Move3DExpression } from '../expressions/3d/Move3DExpression.js';
+import { Reverse3DExpression } from '../expressions/3d/Reverse3DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { ParametricPlotExpression } from '../expressions/ParametricPlotExpression.js';
 import { FunctionDefinitionExpression } from '../expressions/FunctionDefinitionExpression.js';
@@ -157,6 +161,13 @@ export class IntrepreterFunctionTable {
         registerMultiArg('prism', Prism3DExpression);
         registerMultiArg('frustum', Frustum3DExpression);
         registerMultiArg('pyramid', Pyramid3DExpression);
+
+        // 3D vector operations
+        registerMultiArg('forward3d', Forward3DExpression);   // animate vector sliding forward
+        registerMultiArg('backward3d', Backward3DExpression); // animate vector sliding backward
+        registerMultiArg('move3d', Move3DExpression);         // move vector to new position
+        registerMultiArg('reverse3d', Reverse3DExpression);   // create reversed vector
+
         registerMultiArg('plot', PlotExpression);
         registerMultiArg('paraplot', ParametricPlotExpression);
         registerMultiArg('label', LabelExpression);

@@ -263,6 +263,14 @@ export class Grapher3D {
     }
 
     /**
+     * Get the Three.js scene
+     * @returns {THREE.Scene} The scene
+     */
+    getScene() {
+        return this.scene;
+    }
+
+    /**
      * Destroy the grapher and clean up resources
      */
     destroy() {
