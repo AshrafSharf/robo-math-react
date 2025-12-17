@@ -438,12 +438,20 @@ function TestFeatures() {
     const y = parseFloat(cloneTargetY);
     const index = parseInt(cloneBboxIndex);
 
-    console.log(`Animating bbox section ${index} to (${x}, ${y}) using MathTextMoveEffect`);
+    // Get TextItems from the component
+    const textItems = component.getTextItems();
+    const textItem = textItems.get(index);
 
-    // Create the effect
+    if (!textItem) {
+      alert(`No TextItem found at index ${index}. Use Detect first.`);
+      return;
+    }
+
+    console.log(`Animating TextItem ${index} to (${x}, ${y}) using MathTextMoveEffect`);
+
+    // Create the effect with new TextItem-based API
     const effect = new MathTextMoveEffect(
-      component,
-      index,
+      textItem,
       x,
       y,
       containerRef.current,
@@ -456,7 +464,7 @@ function TestFeatures() {
     // Play the effect (returns a Promise)
     await effect.play();
 
-    console.log(`Animation complete for bbox section ${index}`);
+    console.log(`Animation complete for TextItem ${index}`);
   };
 
   return (

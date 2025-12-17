@@ -21,3 +21,7 @@ export { DelayEffect } from './delay-effect.js';
 
 // Shape effects
 export { TexToSVGShapeEffect } from './shape-effects/tex-to-svg-shape-effect.js';
+
+// MathText effects
+export { MathTextMoveEffect } from './math-text-move-effect.js';
+export { MathTextRectEffect } from './math-text-rect-effect.js';

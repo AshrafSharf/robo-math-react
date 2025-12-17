@@ -72,6 +72,7 @@ import { WriteOnlyExpression } from '../expressions/WriteOnlyExpression.js';
 import { WriteWithoutExpression } from '../expressions/WriteWithoutExpression.js';
 import { SubOnlyExpression } from '../expressions/SubOnlyExpression.js';
 import { SubWithoutExpression } from '../expressions/SubWithoutExpression.js';
+import { SurroundExpression } from '../expressions/SurroundExpression.js';
 import { TextAtExpression } from '../expressions/TextAtExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
@@ -143,6 +144,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('writewithout', WriteWithoutExpression);
         registerMultiArg('subonly', SubOnlyExpression);
         registerMultiArg('subwithout', SubWithoutExpression);
+        registerMultiArg('surround', SurroundExpression);
         registerMultiArg('textat', TextAtExpression);
 
         // Function definition and calling

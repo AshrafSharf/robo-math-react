@@ -1,6 +1,7 @@
 import { RectPathGenerator } from '../path-generators/rect-path-generator.js';
 import { TweenablePath } from '../animator/tweenable-path.js';
 import { IdUtil } from '../shared/utils/id-util.js';
+import { Bounds2 } from '../geom/Bounds2.js';
 
 /**
  * MathTextRectShape - A rectangle shape that renders inside a MathText SVG
@@ -33,7 +34,7 @@ export class MathTextRectShape {
       'fill-opacity': options.fillOpacity || 0
     };
 
-    this.padding = options.padding !== undefined ? options.padding : 2;
+    this.padding = options.padding !== undefined ? options.padding : 5;
 
     // SVG elements (created in doCreate)
     this.shapeGroup = null;
@@ -78,11 +79,21 @@ export class MathTextRectShape {
    * Generate the rectangle path string
    */
   generatePath() {
+    // Create Bounds2 and dilate by padding
+    const bounds = new Bounds2(
+      this.bounds.x,
+      this.bounds.y,
+      this.bounds.x + this.bounds.width,
+      this.bounds.y + this.bounds.height
+    );
+
+    const dilatedBounds = bounds.dilated(this.padding);
+
     const dimensions = {
-      x: this.bounds.x - this.padding,
-      y: this.bounds.y - this.padding,
-      width: this.bounds.width + (this.padding * 2),
-      height: this.bounds.height + (this.padding * 2)
+      x: dilatedBounds.minX,
+      y: dilatedBounds.minY,
+      width: dilatedBounds.width,
+      height: dilatedBounds.height
     };
 
     const pathStr = this.pathGenerator.generate(dimensions);

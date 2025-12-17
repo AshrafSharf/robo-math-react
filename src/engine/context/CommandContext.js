@@ -19,5 +19,8 @@ export class CommandContext {
 
     // Global pen tracer for animations
     this.pen = pen;
+
+    // Annotation layer SVG for drawing overlays (e.g., surround rectangles)
+    this.annotationLayer = null;
   }
 }

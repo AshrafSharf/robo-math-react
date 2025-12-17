@@ -1,41 +1,46 @@
 /**
- * MathTextMoveEffect - Animates a bbox section from a MathTextComponent
+ * MathTextMoveEffect - Animates a TextItem from a MathTextComponent
  * moving from its original position to a target position.
  *
- * Creates a clone of the bbox content and animates it using GSAP.
+ * Creates a clone of the TextItem content and animates it using GSAP.
+ *
+ * Usage:
+ * ```javascript
+ * const mathText = diagram.mathText('x + \\bbox[0px]{y} = z', 0, 0);
+ * const items = mathText.getTextItems();
+ * const effect = new MathTextMoveEffect(items.get(0), 200, 300, parentDOM);
+ * await effect.play();
+ * ```
  */
 
 import { BaseEffect } from './base-effect.js';
-import { TextSectionManager } from '../mathtext/utils/text-section-manager.js';
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
 import { TweenMax, Power2 } from 'gsap';
 
 export class MathTextMoveEffect extends BaseEffect {
   /**
-   * @param {MathTextComponent} sourceMathText - The source math text component
-   * @param {number} bboxIndex - Index of the bbox section to animate
+   * @param {TextItem} textItem - The TextItem to animate
    * @param {number} targetX - Target x pixel coordinate
    * @param {number} targetY - Target y pixel coordinate
-   * @param {HTMLElement} parentDOM - Parent DOM for the cloned component
+   * @param {HTMLElement} parentDOM - Parent DOM for the cloned component (optional, defaults to mathComponent's parent)
    * @param {Object} options - Animation options
    * @param {number} options.duration - Animation duration in seconds (default: 0.8)
    * @param {*} options.ease - GSAP easing function (default: Power2.easeOut)
    */
-  constructor(sourceMathText, bboxIndex, targetX, targetY, parentDOM, options = {}) {
+  constructor(textItem, targetX, targetY, parentDOM, options = {}) {
     super();
 
-    this.sourceMathText = sourceMathText;
-    this.bboxIndex = bboxIndex;
+    this.textItem = textItem;
+    this.mathComponent = textItem.getMathComponent();
     this.targetX = targetX;
     this.targetY = targetY;
-    this.parentDOM = parentDOM || sourceMathText.parentDOM;
+    this.parentDOM = parentDOM || this.mathComponent.parentDOM;
 
     this.duration = options.duration || 0.8;
     this.ease = options.ease || Power2.easeOut;
 
     // Will be set when clone is created
     this.clonedComponent = null;
-    this.textSectionManager = null;
     this.startX = null;
     this.startY = null;
     this.endX = null;
@@ -46,35 +51,29 @@ export class MathTextMoveEffect extends BaseEffect {
     // Active tween for stopping
     this.activeTween = null;
 
-    // Initialize TextSectionManager and calculate positions
+    // Initialize and calculate positions
     this._init();
   }
 
   /**
-   * Initialize TextSectionManager and calculate start/end positions
+   * Calculate start/end positions based on TextItem bounds
    */
   _init() {
-    this.textSectionManager = new TextSectionManager(this.sourceMathText, this.parentDOM);
-
-    const sections = this.textSectionManager.extractBBoxSections();
-    if (this.bboxIndex < 0 || this.bboxIndex >= sections.length) {
-      console.error(`MathTextMoveEffect: Invalid bbox index ${this.bboxIndex}`);
+    const clientBounds = this.textItem.getClientBounds();
+    if (!clientBounds) {
+      console.error('MathTextMoveEffect: Could not get TextItem bounds');
       return;
     }
 
-    const section = sections[this.bboxIndex];
-    const { bounds } = section;
-
-    // Calculate internal offset
-    const containerRect = this.sourceMathText.containerDOM.getBoundingClientRect();
-    this.internalOffsetX = bounds.minX - containerRect.left;
-    this.internalOffsetY = bounds.minY - containerRect.top;
+    // Internal offset is the position of the TextItem content within the container
+    this.internalOffsetX = clientBounds.x;
+    this.internalOffsetY = clientBounds.y;
 
     // Start position: same as source container (clone will overlap original)
-    this.startX = this.sourceMathText.componentState.left;
-    this.startY = this.sourceMathText.componentState.top;
+    this.startX = this.mathComponent.componentState.left;
+    this.startY = this.mathComponent.componentState.top;
 
-    // End position: adjusted to place bbox content at target
+    // End position: adjusted to place TextItem content at target
     this.endX = this.targetX - this.internalOffsetX;
     this.endY = this.targetY - this.internalOffsetY;
   }
@@ -85,26 +84,11 @@ export class MathTextMoveEffect extends BaseEffect {
   _createClone() {
     if (this.clonedComponent) return;
 
-    const sections = this.textSectionManager.extractBBoxSections();
-    if (this.bboxIndex < 0 || this.bboxIndex >= sections.length) {
+    const filteredSvg = this.textItem.getFilteredSVG();
+    if (!filteredSvg) {
+      console.warn('MathTextMoveEffect: No filtered SVG from TextItem');
       return;
     }
-
-    const section = sections[this.bboxIndex];
-    const { paths } = section;
-
-    if (!paths || paths.length === 0) {
-      console.warn(`MathTextMoveEffect: No paths found in bbox section ${this.bboxIndex}`);
-      return;
-    }
-
-    const sourceSvg = this.sourceMathText.getMathSVGRoot()[0];
-    if (!sourceSvg) {
-      console.error('MathTextMoveEffect: Source has no SVG');
-      return;
-    }
-
-    const filteredSvg = this.textSectionManager.createFilteredSVG(sourceSvg, paths, section.bounds);
 
     this.clonedComponent = MathTextComponent.fromSVGClone(
       filteredSvg,
@@ -112,9 +96,9 @@ export class MathTextMoveEffect extends BaseEffect {
       this.startY,
       this.parentDOM,
       {
-        fontSize: this.sourceMathText.fontSizeValue,
-        stroke: this.sourceMathText.strokeColor,
-        fill: this.sourceMathText.fillColor
+        fontSize: this.mathComponent.fontSizeValue,
+        stroke: this.mathComponent.strokeColor,
+        fill: this.mathComponent.fillColor
       }
     );
   }

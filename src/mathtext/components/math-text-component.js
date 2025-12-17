@@ -17,6 +17,8 @@ import { WriteEffect } from '../effects/write-effect.js';
 import { WriteOnlyEffect } from '../effects/write-only-effect.js';
 import { WriteWithoutEffect } from '../effects/write-without-effect.js';
 import { SelectionUnit } from '../models/selection-unit.js';
+import { TextItem } from '../models/text-item.js';
+import { TextItemCollection } from '../models/text-item-collection.js';
 import $ from '../utils/dom-query.js';
 
 export class MathTextComponent {
@@ -665,6 +667,64 @@ export class MathTextComponent {
       return selectionUnit;
     });
     return selectionUnits;
+  }
+
+  // ===== TEXT ITEM API =====
+
+  /**
+   * Get TextItems for all bbox-marked sections
+   * @returns {TextItemCollection} Collection of TextItems for bbox regions
+   */
+  getTextItems() {
+    const bboxBounds = this.getBBoxHighlightBounds();
+    const selectionUnits = this.getBBoxSelectionUnits();
+
+    const items = bboxBounds.map((bounds, i) =>
+      new TextItem(this, selectionUnits[i], bounds)
+    );
+
+    return new TextItemCollection(items);
+  }
+
+  /**
+   * Clone a TextItem's content to a new position
+   * @param {TextItem} textItem - The TextItem to clone
+   * @param {HTMLElement} parentDOM - Parent DOM element for the cloned component
+   * @param {number} targetX - Target x pixel coordinate
+   * @param {number} targetY - Target y pixel coordinate
+   * @returns {MathTextComponent} The cloned MathTextComponent (hidden by default)
+   */
+  cloneTextItemTo(textItem, parentDOM, targetX, targetY) {
+    const filteredSvg = textItem.getFilteredSVG();
+    if (!filteredSvg) {
+      console.warn('MathTextComponent.cloneTextItemTo: No filtered SVG');
+      return null;
+    }
+
+    // Calculate the internal offset
+    const clientBounds = textItem.getClientBounds();
+    if (!clientBounds) {
+      console.warn('MathTextComponent.cloneTextItemTo: No client bounds');
+      return null;
+    }
+
+    const adjustedX = targetX - clientBounds.x;
+    const adjustedY = targetY - clientBounds.y;
+
+    // Create MathTextComponent from the filtered SVG
+    const clonedComponent = MathTextComponent.fromSVGClone(
+      filteredSvg,
+      adjustedX,
+      adjustedY,
+      parentDOM,
+      {
+        fontSize: this.fontSizeValue,
+        stroke: this.strokeColor,
+        fill: this.fillColor
+      }
+    );
+
+    return clonedComponent;
   }
 
   /**
