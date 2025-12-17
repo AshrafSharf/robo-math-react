@@ -3,7 +3,6 @@
  * Provides animated creation and transformation of 3D geometry
  */
 import { LHS3DDiagram } from './lhs_diagram3d.js';
-import { dashedVector as lhsDashedVector } from './lhs/lhs_vector.js';
 import { TweenMax, TimelineMax } from 'gsap';
 import * as geoUtils from './geo3d_utils.js';
 import { createEffectsManager } from './effects_manager3d.js';
@@ -16,7 +15,6 @@ import { fadeInLabel } from './lhs/animator/lhs_label_animator.js';
 import { animateDashedLineSequential } from './lhs/animator/lhs_dashed_line_animator.js';
 import { animatePlaneParametricSweep, animatePlaneScale } from './lhs/animator/lhs_plane_animator.js';
 import { animateArcDraw, fadeInArc } from './lhs/animator/lhs_arc_animator.js';
-import { animateVectorMovement, animateReverseVectorCreation, animateVectorSlide } from './lhs/animator/lhs_movement_animator.js';
 import { animateBoxProduct, fadeInBoxProduct } from './lhs/animator/extrude_animator.js';
 import { TraceAnimator } from './lhs/lhs_trace_animator.js';
 
@@ -704,171 +702,6 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
         }
     }
     
-    
-    /**
-     * Animate a vector moving forward along its direction
-     * @param {Object} vectorObj - The vector object to move forward
-     * @param {number} scalar - The scalar amount to move forward (default 1 = one vector length)
-     * @param {Object} options - Additional options for the animation
-     * @returns {Object} The vector object
-     */
-    forwardVector(vectorObj, scalar = 1, options = {}) {
-        const duration = options.animationDuration || this.animationDuration;
-        const returnToOriginal = options.returnToOriginal !== false; // Default true
-        const pauseDuration = options.pauseDuration || 0.5;
-        
-        // Get vector start and end from userData (should be in math coordinates)
-        const vectorStart = vectorObj.userData?.start || {x: 0, y: 0, z: 0};
-        const vectorEnd = vectorObj.userData?.end || {x: 1, y: 0, z: 0};
-        
-        // Animate sliding forward along direction with proper coordinate transformation
-        animateVectorSlide(vectorObj, vectorStart, vectorEnd, Math.abs(scalar), {
-            duration: duration,
-            ease: options.ease || "power2.inOut",
-            returnToOriginal: returnToOriginal,
-            pauseDuration: pauseDuration,
-            onComplete: options.onComplete
-        });
-        
-        return vectorObj;
-    }
-    
-    /**
-     * Animate a vector moving backward along its direction
-     * @param {Object} vectorObj - The vector object to move backward
-     * @param {number} scalar - The scalar amount to move backward (default 1 = one vector length)
-     * @param {Object} options - Additional options for the animation
-     * @returns {Object} The vector object
-     */
-    backwardVector(vectorObj, scalar = 1, options = {}) {
-        const duration = options.animationDuration || this.animationDuration;
-        const returnToOriginal = options.returnToOriginal !== false; // Default true
-        const pauseDuration = options.pauseDuration || 0.5;
-        
-        // Get vector start and end from userData (should be in math coordinates)
-        const vectorStart = vectorObj.userData?.start || {x: 0, y: 0, z: 0};
-        const vectorEnd = vectorObj.userData?.end || {x: 1, y: 0, z: 0};
-        
-        // Animate sliding backward along direction (negative scalar) with proper coordinate transformation
-        animateVectorSlide(vectorObj, vectorStart, vectorEnd, -Math.abs(scalar), {
-            duration: duration,
-            ease: options.ease || "power2.inOut",
-            returnToOriginal: returnToOriginal,
-            pauseDuration: pauseDuration,
-            onComplete: options.onComplete
-        });
-        
-        return vectorObj;
-    }
-    
-    /**
-     * Creates a vector at original position and animates it moving to target position
-     * @param {Object} originalVector - Original vector definition {start: {x,y,z}, end: {x,y,z}}
-     * @param {Object} targetPosition - Target position {x, y, z} or target vector {start: {x,y,z}, end: {x,y,z}}
-     * @param {Object} options - Options including label, color, and animation settings
-     * @returns {Object} The animated vector group
-     */
-    moveVector(originalVector, targetPosition, options = {}) {
-        const duration = options.animationDuration || this.animationDuration;
-        const targetStart = targetPosition.start || targetPosition;
-        const label = String(options.label || '');
-        const color = options.color || 0xff0000;
-        
-        // Create the vector at its ORIGINAL position
-        const vectorGroup = super.vector(originalVector.start, originalVector.end, label, color, options);
-        
-        // Hide label initially during movement
-        if (vectorGroup.label) {
-            vectorGroup.label.visible = false;
-        }
-        
-        // Animate the vector movement using the movement animator
-        animateVectorMovement(vectorGroup, originalVector.start, targetStart, {
-            duration: duration,
-            ease: options.ease || "power2.inOut",
-            onComplete: () => {
-                // Show label after movement
-                if (vectorGroup.label) {
-                    vectorGroup.label.visible = true;
-                    fadeInLabel(vectorGroup.label, { duration: duration * 0.3 });
-                }
-                if (options.onComplete) {
-                    options.onComplete();
-                }
-            }
-        });
-        
-        return vectorGroup;
-    }
-    
-    /**
-     * Animated creation of a reversed vector (flipped direction)
-     * @param {Object} vector - Object with {start: {x,y,z}, end: {x,y,z}}
-     * @param {Object} options - Additional options for the reversed vector
-     * @returns {Object} Reversed vector group with label property
-     */
-    reverseVector(vector, options = {}) {
-        const duration = options.animationDuration || this.animationDuration;
-        
-        // Get the original vector's positions
-        const originalStart = vector.start;
-        const originalEnd = vector.end;
-        
-        // Calculate the vector displacement
-        const displacement = {
-            x: originalEnd.x - originalStart.x,
-            y: originalEnd.y - originalStart.y,
-            z: originalEnd.z - originalStart.z
-        };
-        
-        // The reversed endpoint (flipped around the tail)
-        const reversedEnd = {
-            x: originalStart.x - displacement.x,
-            y: originalStart.y - displacement.y,
-            z: originalStart.z - displacement.z
-        };
-        
-        // Create the reversed vector directly with flipped displacement
-        const finalReversedVector = lhsDashedVector(
-            {x: 0, y: 0, z: 0},  // Start at origin
-            {x: -displacement.x, y: -displacement.y, z: -displacement.z},  // Reversed displacement
-            {
-                color: this.parseColor(options.color || options.strokeColor || 'red'),
-                shaftRadius: options.shaftRadius || 0.04,
-                headRadius: options.headRadius || 0.15,
-                headLength: options.headLength || 0.3,
-                dashSize: options.dash || 0.2,
-                gapSize: options.gapSize || 0.1,
-                ...options
-            }
-        );
-        
-        // Add to scene and track
-        this.scene.add(finalReversedVector);
-        this.objects.push(finalReversedVector);
-        
-        // Add label if provided
-        if (options.label) {
-            this._addLabel(finalReversedVector, this._midpoint(originalStart, reversedEnd), options.label, {
-                labelOffset: options.labelOffset || { x: 0, y: 0.5, z: 0 },
-                addAsChild: true
-            });
-            // Hide label initially for animation
-            if (finalReversedVector.label) {
-                finalReversedVector.label.visible = false;
-            }
-        }
-        
-        // Animate the reversed vector creation with proper positioning
-        animateReverseVectorCreation(finalReversedVector, {
-            duration: duration,
-            ease: "power2.out",
-            onComplete: options.onComplete,
-            position: originalStart  // Pass the position for the animator to handle
-        });
-        
-        return finalReversedVector;
-    }
     
     /**
      * Animated creation of a dot projection visualization

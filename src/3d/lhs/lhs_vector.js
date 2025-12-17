@@ -3,7 +3,7 @@ import { transformToThreeJS } from './lhs_transform.js';
 
 /**
  * Creates a vector (arrow) in 3D space using mathematical coordinates
- * Arrow head is placed at the middle of the vector by default
+ * Arrow head is placed at the end of the vector by default
  * @param {Object} from - Start position in mathematical coordinates {x, y, z}
  * @param {Object} to - End position in mathematical coordinates {x, y, z}
  * @param {Object} options - Configuration options
@@ -23,7 +23,7 @@ export function vector(from, to, options = {}) {
         shaftRadius = 0.05,       // Visible shaft
         headRadius = 0.15,        // Prominent head
         headLength = 0.3,         // Clear arrow head
-        headPosition = 'middle',  // Arrow head at middle by default
+        headPosition = 'end',     // Arrow head at end by default
         emissive = 0x000000,      // No emission
         emissiveIntensity = 0,    
         shininess = 100           // Moderately shiny

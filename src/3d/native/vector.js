@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 /**
  * Creates a vector (arrow) in 3D space using Three.js coordinates
+ * Arrow head is placed at the end of the vector by default
  * @param {Object} from - Start position in Three.js coordinates {x, y, z}
  * @param {Object} to - End position in Three.js coordinates {x, y, z}
  * @param {Object} options - Configuration options
@@ -9,6 +10,7 @@ import * as THREE from 'three';
  * @param {number} options.shaftRadius - Radius of the arrow shaft (default: 0.02)
  * @param {number} options.headRadius - Radius of the arrow head (default: 0.08)
  * @param {number} options.headLength - Length of the arrow head (default: 0.2)
+ * @param {string} options.headPosition - Position of arrow head: 'middle' or 'end' (default: 'end')
  * @param {number} options.emissive - Emissive color (default: 0x000000)
  * @param {number} options.emissiveIntensity - Emissive intensity (default: 0)
  * @param {number} options.shininess - Material shininess (default: 100)
@@ -20,23 +22,24 @@ export function vector(from, to, options = {}) {
         shaftRadius = 0.05,       // Visible shaft
         headRadius = 0.15,        // Prominent head
         headLength = 0.3,         // Clear arrow head
+        headPosition = 'end',     // Arrow head at end by default
         emissive = 0x000000,      // No emission
-        emissiveIntensity = 0,    
+        emissiveIntensity = 0,
         shininess = 100           // Moderately shiny
     } = options;
-    
+
     // Use Three.js coordinates directly
     const threeFrom = new THREE.Vector3(from.x, from.y, from.z);
     const threeTo = new THREE.Vector3(to.x, to.y, to.z);
-    
+
     // Calculate vector direction and length
     const direction = new THREE.Vector3().subVectors(threeTo, threeFrom);
     const length = direction.length();
     direction.normalize();
-    
+
     // Create group to hold both shaft and head
     const arrowGroup = new THREE.Group();
-    
+
     // Create material for both parts
     const material = new THREE.MeshPhongMaterial({
         color: color,
@@ -44,47 +47,85 @@ export function vector(from, to, options = {}) {
         emissiveIntensity: emissiveIntensity,
         shininess: shininess
     });
-    
-    // Create shaft (cylinder)
-    const shaftLength = Math.max(0, length - headLength);
-    if (shaftLength > 0) {
+
+    // Create shaft and position based on headPosition option
+    const up = new THREE.Vector3(0, 1, 0);
+
+    if (headPosition === 'end') {
+        // Arrow at end - shaft from start to (end - headLength)
+        const shaftLength = Math.max(0, length - headLength);
+        if (shaftLength > 0) {
+            const shaftGeometry = new THREE.CylinderGeometry(
+                shaftRadius,
+                shaftRadius,
+                shaftLength,
+                8
+            );
+            const shaft = new THREE.Mesh(shaftGeometry, material);
+
+            // Position shaft at midpoint
+            const shaftMidpoint = new THREE.Vector3()
+                .addVectors(threeFrom, direction.clone().multiplyScalar(shaftLength / 2));
+            shaft.position.copy(shaftMidpoint);
+
+            // Orient shaft along direction
+            const quaternion = new THREE.Quaternion().setFromUnitVectors(up, direction);
+            shaft.quaternion.copy(quaternion);
+
+            arrowGroup.add(shaft);
+        }
+
+        // Create arrowhead at the end
+        const coneGeometry = new THREE.ConeGeometry(headRadius, headLength, 8);
+        const cone = new THREE.Mesh(coneGeometry, material);
+
+        // Position cone at the end
+        const conePosition = new THREE.Vector3()
+            .addVectors(threeFrom, direction.clone().multiplyScalar(length - headLength / 2));
+        cone.position.copy(conePosition);
+
+        // Orient cone along direction
+        const quaternion = new THREE.Quaternion().setFromUnitVectors(up, direction);
+        cone.quaternion.copy(quaternion);
+
+        arrowGroup.add(cone);
+    } else {
+        // Arrow at middle - full length shaft with cone in middle
         const shaftGeometry = new THREE.CylinderGeometry(
-            shaftRadius, 
-            shaftRadius, 
-            shaftLength, 
+            shaftRadius,
+            shaftRadius,
+            length,
             8
         );
         const shaft = new THREE.Mesh(shaftGeometry, material);
-        
-        // Position shaft at midpoint
+
+        // Position shaft at midpoint between from and to
         const shaftMidpoint = new THREE.Vector3()
-            .addVectors(threeFrom, direction.clone().multiplyScalar(shaftLength / 2));
+            .addVectors(threeFrom, direction.clone().multiplyScalar(length / 2));
         shaft.position.copy(shaftMidpoint);
-        
+
         // Orient shaft along direction
-        const up = new THREE.Vector3(0, 1, 0);
-        const quaternion = new THREE.Quaternion().setFromUnitVectors(up, direction);
-        shaft.quaternion.copy(quaternion);
-        
+        const shaftQuaternion = new THREE.Quaternion().setFromUnitVectors(up, direction);
+        shaft.quaternion.copy(shaftQuaternion);
+
         arrowGroup.add(shaft);
+
+        // Create arrowhead at the middle
+        const coneGeometry = new THREE.ConeGeometry(headRadius, headLength, 8);
+        const cone = new THREE.Mesh(coneGeometry, material);
+
+        // Position cone at the middle of the vector
+        const conePosition = new THREE.Vector3()
+            .addVectors(threeFrom, direction.clone().multiplyScalar(length / 2));
+        cone.position.copy(conePosition);
+
+        // Orient cone along direction
+        const coneQuaternion = new THREE.Quaternion().setFromUnitVectors(up, direction);
+        cone.quaternion.copy(coneQuaternion);
+
+        arrowGroup.add(cone);
     }
-    
-    // Create arrowhead (cone)
-    const coneGeometry = new THREE.ConeGeometry(headRadius, headLength, 8);
-    const cone = new THREE.Mesh(coneGeometry, material);
-    
-    // Position cone at the end
-    const conePosition = new THREE.Vector3()
-        .addVectors(threeFrom, direction.clone().multiplyScalar(length - headLength / 2));
-    cone.position.copy(conePosition);
-    
-    // Orient cone along direction
-    const up = new THREE.Vector3(0, 1, 0);
-    const quaternion = new THREE.Quaternion().setFromUnitVectors(up, direction);
-    cone.quaternion.copy(quaternion);
-    
-    arrowGroup.add(cone);
-    
+
     return arrowGroup;
 }
 
