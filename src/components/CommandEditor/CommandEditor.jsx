@@ -29,6 +29,7 @@ const CommandEditor = ({
   onRestoreToSidebar,
   isSidebarCollapsed,
   isPopupMode,
+  isExecuting = false,
   errors = [],
   canPlayInfos = [],
   // Controlled mode props
@@ -48,7 +49,6 @@ const CommandEditor = ({
   const [selectedId, setSelectedId] = useState(1);
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
-  const [isExecuting, setIsExecuting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const containerRef = useRef(null);
@@ -136,15 +136,21 @@ const CommandEditor = ({
   }, [onPlaySingle]);
 
   // Play all commands with animation
-  const handlePlayAll = useCallback(() => {
-    setIsExecuting(true);
+  const handlePlayAll = useCallback(async () => {
     setIsPaused(false);
+
+    // Auto-collapse sidebar if expanded, then wait for animation
+    if (!isSidebarCollapsed && onToggleSidebar) {
+      onToggleSidebar();
+      // Wait for CSS transition (250ms) + buffer
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
     if (onPlayAll) onPlayAll();
-  }, [onPlayAll]);
+  }, [onPlayAll, isSidebarCollapsed, onToggleSidebar]);
 
   // Stop execution
   const handleStop = useCallback(() => {
-    setIsExecuting(false);
     setIsPaused(false);
     if (onStop) onStop();
   }, [onStop]);

@@ -47,7 +47,8 @@ function AppContent() {
     handleExpressionBlur: hookHandleExpressionBlur,
     errors,
     canPlayInfos,
-    clearAndRerender
+    clearAndRerender,
+    isExecuting
   } = useCommandExecution(roboCanvas, {
     debounceMs: 500
   });
@@ -168,6 +169,7 @@ function AppContent() {
           onExpressionBlur={hookHandleExpressionBlur}
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isSidebarCollapsed}
+          isExecuting={isExecuting}
           errors={errors}
           canPlayInfos={canPlayInfos}
         />
