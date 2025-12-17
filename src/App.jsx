@@ -7,6 +7,7 @@ import { RoboCanvas } from './RoboCanvas.js';
 import { useCommandExecution } from './hooks/useCommandExecution.js';
 import { IntrepreterFunctionTable } from './engine/expression-parser/core/IntrepreterFunctionTable.js';
 import { LessonProvider, useLesson, useLessonPersistence, PageTabBar, LessonHeader } from './lesson';
+import { ExpressionFocusManager } from './engine/focus/index.js';
 
 function AppContent() {
   const { lesson, activePage, updatePageCommands, setLesson } = useLesson();
@@ -42,12 +43,28 @@ function AppContent() {
     handlePause: hookHandlePause,
     handleResume: hookHandleResume,
     redrawSingle: hookRedrawSingle,
+    handleExpressionFocus: hookHandleExpressionFocus,
+    handleExpressionBlur: hookHandleExpressionBlur,
     errors,
     canPlayInfos,
     clearAndRerender
   } = useCommandExecution(roboCanvas, {
     debounceMs: 500
   });
+
+  // Initialize ExpressionFocusManager
+  const focusManagerRef = useRef(null);
+  useEffect(() => {
+    focusManagerRef.current = new ExpressionFocusManager();
+    focusManagerRef.current.start();
+
+    return () => {
+      if (focusManagerRef.current) {
+        focusManagerRef.current.stop();
+        focusManagerRef.current = null;
+      }
+    };
+  }, []);
 
   // Clear and re-execute when page changes
   useEffect(() => {
@@ -147,6 +164,8 @@ function AppContent() {
           onResume={hookHandleResume}
           onChange={hookHandleChange}
           onRedrawSingle={hookRedrawSingle}
+          onExpressionFocus={hookHandleExpressionFocus}
+          onExpressionBlur={hookHandleExpressionBlur}
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isSidebarCollapsed}
           errors={errors}

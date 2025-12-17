@@ -33,6 +33,7 @@ export class CommandEditorController {
         this.onErrorsChange = null;
         this.onCanPlayInfosChange = null;
         this.onExecutingChange = null;
+        this.onExecutionComplete = null;  // Called after commands finish executing
     }
 
     /**
@@ -149,6 +150,11 @@ export class CommandEditorController {
 
         // Execute (static mode - instant draw)
         await this.commandExecutor.drawAll();
+
+        // Notify listeners that execution is complete
+        if (this.onExecutionComplete) {
+            this.onExecutionComplete();
+        }
     }
 
     /**

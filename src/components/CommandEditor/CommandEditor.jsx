@@ -37,7 +37,10 @@ const CommandEditor = ({
   // Popup focus/blur handlers (injected by PopupContainer)
   popupInputFocused,
   onPopupInputFocus,
-  onPopupInputBlur
+  onPopupInputBlur,
+  // Expression focus handlers (for ExpressionFocusManager)
+  onExpressionFocus,
+  onExpressionBlur
 }) => {
   // Use external commands if provided (controlled mode), otherwise local state
   const [localCommands, setLocalCommands] = useState([createCommand(1)]);
@@ -256,14 +259,18 @@ const CommandEditor = ({
                       onPlaySingle={handlePlaySingle}
                       onSettingsClick={handleSettingsClick}
                       onAddCommand={addCommand}
-                      onInputFocus={() => {
+                      onInputFocus={(expressionId) => {
                         setIsInputFocused(true);
                         // Also notify popup container if in popup mode
                         if (isPopupMode && onPopupInputFocus) {
                           onPopupInputFocus();
                         }
+                        // Notify expression focus manager
+                        if (onExpressionFocus) {
+                          onExpressionFocus(expressionId);
+                        }
                       }}
-                      onInputBlur={() => {
+                      onInputBlur={(expressionId) => {
                         // Delay to check if focus moved to another input in the list
                         setTimeout(() => {
                           const activeEl = document.activeElement;
@@ -273,6 +280,10 @@ const CommandEditor = ({
                             // Also notify popup container if in popup mode
                             if (isPopupMode && onPopupInputBlur) {
                               onPopupInputBlur();
+                            }
+                            // Notify expression focus manager
+                            if (onExpressionBlur) {
+                              onExpressionBlur(expressionId);
                             }
                           }
                         }, 100);

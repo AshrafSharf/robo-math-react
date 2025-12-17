@@ -7,6 +7,7 @@
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { CommandEditorController } from '../engine/controller/CommandEditorController.js';
+import { FOCUS_EVENT, BLUR_EVENT } from '../engine/focus/index.js';
 
 /**
  * Hook for connecting CommandEditor to the execution system
@@ -24,6 +25,9 @@ export function useCommandExecution(roboCanvas, options = {}) {
     const [errors, setErrors] = useState([]);
     const [canPlayInfos, setCanPlayInfos] = useState([]);
 
+    // Track currently focused expression for re-dispatch after execution
+    const focusedExpressionIdRef = useRef(null);
+
     // Controller instance (single ref, not recreated)
     const controllerRef = useRef(null);
 
@@ -39,18 +43,45 @@ export function useCommandExecution(roboCanvas, options = {}) {
         controller.setRoboCanvas(roboCanvas);
     }, [roboCanvas, controller]);
 
+    // Dispatch active shape event to update focus indicator
+    const setActiveShape = useCallback((expressionId) => {
+        if (expressionId === null) return;
+
+        const command = controller.commandExecutor.commands.find(
+            c => c.getExpressionId() === expressionId
+        );
+
+        document.dispatchEvent(new CustomEvent(FOCUS_EVENT, {
+            detail: {
+                expressionId,
+                shape: command?.getCommandResult() || null,
+                canvasSection: roboCanvas?.canvasSection,
+                annotationLayer: roboCanvas?.getAnnotationLayer(),
+                scene3d: null
+            }
+        }));
+    }, [controller, roboCanvas]);
+
     // Wire up controller callbacks to React state
     useEffect(() => {
         controller.onErrorsChange = setErrors;
         controller.onCanPlayInfosChange = setCanPlayInfos;
         controller.onExecutingChange = setIsExecuting;
 
+        // Update active shape after execution completes (shapes may have moved/recreated)
+        controller.onExecutionComplete = () => {
+            if (focusedExpressionIdRef.current !== null) {
+                setActiveShape(focusedExpressionIdRef.current);
+            }
+        };
+
         return () => {
             controller.onErrorsChange = null;
             controller.onCanPlayInfosChange = null;
             controller.onExecutingChange = null;
+            controller.onExecutionComplete = null;
         };
-    }, [controller]);
+    }, [controller, setActiveShape]);
 
     /**
      * Handle command change (from input)
@@ -134,6 +165,23 @@ export function useCommandExecution(roboCanvas, options = {}) {
         return controller.redrawSingle(expressionId, styleOptions);
     }, [controller]);
 
+    /**
+     * Handle expression input focus - track focused expression and show indicator
+     * @param {number} expressionId - The expression/command ID
+     */
+    const handleExpressionFocus = useCallback((expressionId) => {
+        focusedExpressionIdRef.current = expressionId;
+        setActiveShape(expressionId);
+    }, [setActiveShape]);
+
+    /**
+     * Handle expression input blur - clear focus tracking and hide indicator
+     */
+    const handleExpressionBlur = useCallback(() => {
+        focusedExpressionIdRef.current = null;
+        document.dispatchEvent(new CustomEvent(BLUR_EVENT));
+    }, []);
+
     // Cleanup on unmount
     useEffect(() => {
         return () => {
@@ -159,6 +207,8 @@ export function useCommandExecution(roboCanvas, options = {}) {
         handleResume,
         clearAndRerender,
         redrawSingle,
+        handleExpressionFocus,
+        handleExpressionBlur,
 
         // Direct controller access (if needed)
         controller

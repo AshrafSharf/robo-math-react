@@ -90,9 +90,9 @@ const CommandItem = ({
             onChange={handleExpressionChange}
             onFocus={() => {
               onSelect(command.id);
-              onInputFocus?.();
+              onInputFocus?.(command.id);
             }}
-            onBlur={() => onInputBlur?.()}
+            onBlur={() => onInputBlur?.(command.id)}
             onKeyDown={handleKeyDownInternal}
             placeholder="type here..."
             commandId={command.id}
