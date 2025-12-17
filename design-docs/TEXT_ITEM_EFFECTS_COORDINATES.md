@@ -245,3 +245,75 @@ This document explains the coordinate systems and layer stacking used by `MathTe
 ### MathTextComponent
 - `setCanvasPosition(x, y)` - sets position in canvas coordinates
 - `getPosition()` - gets current canvas position
+
+---
+
+## TextItem Visibility Operations
+
+TextItem and TextItemCollection support visibility operations through the `ShapeVisibilityAdapter` pattern.
+
+### Supported Commands
+
+```
+M = mathtext(2, 3, "x^2 + y^2 = r^2")
+write(M)
+C = subonly(M, "x^2")
+
+// Visibility commands work with both TextItem and TextItemCollection
+show(C)       // Show the text item(s)
+hide(C)       // Hide using stroke-dasharray
+fadein(C)     // Fade in with animation
+fadeout(C)    // Fade out with animation
+```
+
+### Implementation
+
+The `ShapeVisibilityAdapter.for(shape)` factory detects:
+- **TextItem**: Has `mathComponent` and `selectionUnit` properties
+- **TextItemCollection**: Has `items` array and `get()` method
+
+Both use stroke-dasharray technique (consistent with MathTextComponent):
+- **Hide**: `stroke-dasharray: 0,10000` (large gap = invisible)
+- **Show**: `stroke-dasharray: 0,0` (no gap = visible)
+
+### Adapters
+
+| Adapter | Detection | Target |
+|---------|-----------|--------|
+| `TextItemAdapter` | `shape.mathComponent && shape.selectionUnit` | Single TextItem |
+| `TextItemCollectionAdapter` | `shape.items && shape.get` | Collection from subonly/subwithout |
+
+---
+
+## Replace Expression
+
+Creates a new MathTextComponent at a TextItem's position with matching style.
+
+### Syntax
+
+```
+replace("latex string", textItemOrCollection)
+```
+
+### Example
+
+```
+M = mathtext(2, 3, "x^2 + y^2 = r^2")
+write(M)
+C = subonly(M, "x^2")
+replace("a^2", C)    // Creates "a^2" at C's position with C's style
+```
+
+### How It Works
+
+1. Gets target TextItem (or first item from collection)
+2. Gets canvas position via `textItem.getCanvasBounds()`
+3. Gets style from parent MathTextComponent (`fontSizeValue`, `strokeColor`, `fillColor`)
+4. Creates new MathTextComponent with same style at same position
+5. Animates writing the new text via `WriteEffect`
+
+### Files
+
+- `src/engine/expression-parser/expressions/ReplaceTextItemExpression.js`
+- `src/engine/commands/ReplaceTextItemCommand.js`
+- `src/engine/commands/visibility/ShapeVisibilityAdapter.js` (TextItemAdapter, TextItemCollectionAdapter)

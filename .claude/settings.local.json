@@ -32,7 +32,8 @@
       "Bash(/Users/ashraf/robocompass/robomath-react/src/components/CommandEditor/components/SettingsPanel/panels/EllipseOptionsPanel.jsx)",
       "Bash(curl:*)",
       "Bash(xargs basename:*)",
-      "Bash(npm run test:expressions:*)"
+      "Bash(npm run test:expressions:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

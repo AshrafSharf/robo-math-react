@@ -38,6 +38,16 @@ export class ShapeVisibilityAdapter {
             return new SVGElementAdapter(shape);
         }
 
+        // Check for TextItem (has mathComponent and selectionUnit)
+        if (shape.mathComponent && shape.selectionUnit) {
+            return new TextItemAdapter(shape);
+        }
+
+        // Check for TextItemCollection (has items array and get method)
+        if (shape.items && Array.isArray(shape.items) && typeof shape.get === 'function') {
+            return new TextItemCollectionAdapter(shape);
+        }
+
         // Unknown type - return null adapter
         console.warn('ShapeVisibilityAdapter: Unknown shape type', shape);
         return new NullAdapter();
@@ -276,6 +286,192 @@ class ThreeJSAdapter extends BaseAdapter {
 
     getElement() {
         return this.getMesh();
+    }
+}
+
+/**
+ * Adapter for TextItem (extracted portions of MathTextComponent)
+ * Uses stroke-dasharray approach consistent with MathTextComponent's enableStroke/disableStroke
+ */
+class TextItemAdapter extends BaseAdapter {
+    show() {
+        const paths = this.shape.getSVGPaths();
+        paths.forEach(path => {
+            // Enable stroke - same as MathTextComponent.enableStroke()
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+            path.style.opacity = '1';
+            path.style.visibility = 'visible';
+        });
+    }
+
+    hide() {
+        const paths = this.shape.getSVGPaths();
+        paths.forEach(path => {
+            // Disable stroke - same as MathTextComponent.disableStroke()
+            path.setAttribute('stroke-dasharray', '0,10000');
+            path.style.strokeDasharray = '0,10000';
+        });
+    }
+
+    fadeIn(duration, onComplete) {
+        const paths = this.shape.getSVGPaths();
+        if (!paths || paths.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        // First enable strokes but at 0 opacity
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+            path.style.visibility = 'visible';
+            path.style.opacity = '0';
+        });
+        // Animate all paths together, call onComplete when done
+        let completed = 0;
+        paths.forEach(path => {
+            TweenMax.to(path, duration, {
+                opacity: 1,
+                onComplete: () => {
+                    completed++;
+                    if (completed === paths.length && onComplete) {
+                        onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    fadeOut(duration, onComplete) {
+        const paths = this.shape.getSVGPaths();
+        if (!paths || paths.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        // First ensure strokes are visible (enabled) so we can fade them out
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+            path.style.visibility = 'visible';
+            path.style.opacity = '1';
+        });
+        let completed = 0;
+        paths.forEach(path => {
+            TweenMax.to(path, duration, {
+                opacity: 0,
+                onComplete: () => {
+                    // Disable stroke after fade
+                    path.setAttribute('stroke-dasharray', '0,10000');
+                    path.style.strokeDasharray = '0,10000';
+                    completed++;
+                    if (completed === paths.length && onComplete) {
+                        onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    getElement() {
+        return this.shape.getSVGPaths();
+    }
+}
+
+/**
+ * Adapter for TextItemCollection (collection of TextItems from subonly/subwithout)
+ * Applies visibility operations to all items in the collection
+ */
+class TextItemCollectionAdapter extends BaseAdapter {
+    /**
+     * Get all SVG paths from all TextItems in the collection
+     * @returns {Element[]}
+     */
+    _getAllPaths() {
+        const allPaths = [];
+        this.shape.getAll().forEach(textItem => {
+            const paths = textItem.getSVGPaths();
+            if (paths) {
+                allPaths.push(...paths);
+            }
+        });
+        return allPaths;
+    }
+
+    show() {
+        const paths = this._getAllPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+            path.style.opacity = '1';
+            path.style.visibility = 'visible';
+        });
+    }
+
+    hide() {
+        const paths = this._getAllPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,10000');
+            path.style.strokeDasharray = '0,10000';
+        });
+    }
+
+    fadeIn(duration, onComplete) {
+        const paths = this._getAllPaths();
+        if (!paths || paths.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+            path.style.visibility = 'visible';
+            path.style.opacity = '0';
+        });
+        let completed = 0;
+        paths.forEach(path => {
+            TweenMax.to(path, duration, {
+                opacity: 1,
+                onComplete: () => {
+                    completed++;
+                    if (completed === paths.length && onComplete) {
+                        onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    fadeOut(duration, onComplete) {
+        const paths = this._getAllPaths();
+        if (!paths || paths.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        // First ensure strokes are visible (enabled) so we can fade them out
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+            path.style.visibility = 'visible';
+            path.style.opacity = '1';
+        });
+        let completed = 0;
+        paths.forEach(path => {
+            TweenMax.to(path, duration, {
+                opacity: 0,
+                onComplete: () => {
+                    path.setAttribute('stroke-dasharray', '0,10000');
+                    path.style.strokeDasharray = '0,10000';
+                    completed++;
+                    if (completed === paths.length && onComplete) {
+                        onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    getElement() {
+        return this._getAllPaths();
     }
 }
 
