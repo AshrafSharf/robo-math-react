@@ -72,5 +72,13 @@ export const GEOMETRY_3D_FUNCTIONS = {
     description: 'Create a 3D line segment',
     altSignatures: ['line3d(g, p1, p2)', 'line3d(g, x1, y1, z1, x2, y2, z2)'],
     category: '3D Geometry'
+  },
+  vector3d: {
+    name: 'vector3d',
+    signature: '(g, p1, p2)',
+    args: ['g: Graph3D', 'p1: Point3D', 'p2: Point3D'],
+    description: 'Create a 3D vector with arrowhead',
+    altSignatures: ['vector3d(g, p1, p2)', 'vector3d(g, x1, y1, z1, x2, y2, z2)'],
+    category: '3D Geometry'
   }
 };

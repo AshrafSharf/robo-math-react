@@ -6,6 +6,7 @@
 import { BaseEffect } from '../base-effect.js';
 import { animatePointScale, fadeInPoint } from '../../3d/common/animator/point_animator.js';
 import { animateLine } from '../../3d/common/animator/line_animator.js';
+import { animateVector } from '../../3d/common/animator/vector_animator.js';
 import { fadeInSolid } from '../../3d/common/animator/solid_animator.js';
 
 export class Math3DShapeEffect extends BaseEffect {
@@ -56,7 +57,7 @@ export class Math3DShapeEffect extends BaseEffect {
             switch (this.shapeType) {
                 case 'point':
                     fadeInPoint(this.object3d, {
-                        duration: 0.5,
+                        duration: 2,
                         pen: this.pen,
                         camera: this.camera,
                         canvas: this.canvas,
@@ -66,7 +67,17 @@ export class Math3DShapeEffect extends BaseEffect {
 
                 case 'line':
                     animateLine(this.object3d, {
-                        duration: 0.8,
+                        duration: 2,
+                        pen: this.pen,
+                        camera: this.camera,
+                        canvas: this.canvas,
+                        onComplete
+                    });
+                    break;
+
+                case 'vector':
+                    animateVector(this.object3d, {
+                        duration: 2,
                         pen: this.pen,
                         camera: this.camera,
                         canvas: this.canvas,

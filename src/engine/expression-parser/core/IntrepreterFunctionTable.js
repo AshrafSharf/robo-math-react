@@ -59,6 +59,7 @@ import { Polar2DExpression } from '../expressions/Polar2DExpression.js';
 import { Graph3DExpression } from '../expressions/Graph3DExpression.js';
 import { Point3DExpression } from '../expressions/3d/Point3DExpression.js';
 import { Line3DExpression } from '../expressions/3d/Line3DExpression.js';
+import { Vector3DExpression } from '../expressions/3d/Vector3DExpression.js';
 import { Sphere3DExpression } from '../expressions/3d/Sphere3DExpression.js';
 import { Cylinder3DExpression } from '../expressions/3d/Cylinder3DExpression.js';
 import { Cube3DExpression } from '../expressions/3d/Cube3DExpression.js';
@@ -147,6 +148,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('g3d', Graph3DExpression);
         registerMultiArg('point3d', Point3DExpression);
         registerMultiArg('line3d', Line3DExpression);
+        registerMultiArg('vector3d', Vector3DExpression);
         registerMultiArg('sphere', Sphere3DExpression);
         registerMultiArg('cylinder', Cylinder3DExpression);
         registerMultiArg('cube', Cube3DExpression);

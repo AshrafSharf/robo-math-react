@@ -94,6 +94,19 @@ export const line3d_error_messages = {
     `line3d() needs a g3d graph.\nFirst argument must be g3d.`,
 };
 
+// ============= Vector3D Error Messages =============
+
+export const vector3d_error_messages = {
+  MISSING_ARGS: () =>
+    `vector3d() needs 7 arguments.\nUsage: vector3d(g, x1,y1,z1, x2,y2,z2)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `vector3d() got ${count} coordinates.\nNeed exactly 6: x1,y1,z1,x2,y2,z2`,
+
+  GRAPH_REQUIRED: () =>
+    `vector3d() needs a g3d graph.\nFirst argument must be g3d.`,
+};
+
 // ============= Sphere3D Error Messages =============
 
 export const sphere3d_error_messages = {
@@ -493,6 +506,7 @@ const messagesByType = {
   point: point_error_messages,
   point3d: point3d_error_messages,
   line3d: line3d_error_messages,
+  vector3d: vector3d_error_messages,
   sphere: sphere3d_error_messages,
   cylinder: cylinder3d_error_messages,
   cube: cube3d_error_messages,
