@@ -33,7 +33,11 @@ const CommandEditor = ({
   canPlayInfos = [],
   // Controlled mode props
   commands: externalCommands,
-  onCommandsChange
+  onCommandsChange,
+  // Popup focus/blur handlers (injected by PopupContainer)
+  popupInputFocused,
+  onPopupInputFocus,
+  onPopupInputBlur
 }) => {
   // Use external commands if provided (controlled mode), otherwise local state
   const [localCommands, setLocalCommands] = useState([createCommand(1)]);
@@ -252,7 +256,13 @@ const CommandEditor = ({
                       onPlaySingle={handlePlaySingle}
                       onSettingsClick={handleSettingsClick}
                       onAddCommand={addCommand}
-                      onInputFocus={() => setIsInputFocused(true)}
+                      onInputFocus={() => {
+                        setIsInputFocused(true);
+                        // Also notify popup container if in popup mode
+                        if (isPopupMode && onPopupInputFocus) {
+                          onPopupInputFocus();
+                        }
+                      }}
                       onInputBlur={() => {
                         // Delay to check if focus moved to another input in the list
                         setTimeout(() => {
@@ -260,6 +270,10 @@ const CommandEditor = ({
                           const isStillInEditor = activeEl?.closest('.robo-cmd-panel');
                           if (!isStillInEditor) {
                             setIsInputFocused(false);
+                            // Also notify popup container if in popup mode
+                            if (isPopupMode && onPopupInputBlur) {
+                              onPopupInputBlur();
+                            }
                           }
                         }, 100);
                       }}

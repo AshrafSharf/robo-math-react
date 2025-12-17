@@ -1,9 +1,13 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, cloneElement, Children } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
  * PopupContainer - A draggable, resizable popup container using React portal
  * Renders children in a floating window that can be moved and resized
+ *
+ * Focus/Blur behavior:
+ * - On focus: overflow visible to show expanded command editor item
+ * - On blur: overflow hidden with scrollbar visible
  */
 const PopupContainer = ({
   children,
@@ -19,6 +23,7 @@ const PopupContainer = ({
   const [isResizing, setIsResizing] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   // Drag handlers
   const handleDragStart = (e) => {
@@ -108,10 +113,35 @@ const PopupContainer = ({
     ? { top: position.top, right: position.right }
     : { top: position.top, left: position.left };
 
+  // Handle focus/blur events for the popup content
+  const handleInputFocus = () => setIsInputFocused(true);
+  const handleInputBlur = () => {
+    // Delay to check if focus moved to another input in the popup
+    setTimeout(() => {
+      const activeEl = document.activeElement;
+      const isStillInPopup = activeEl?.closest('.robo-cmd-editor-popup');
+      if (!isStillInPopup) {
+        setIsInputFocused(false);
+      }
+    }, 100);
+  };
+
+  // Clone children to inject focus/blur handlers
+  const childrenWithFocusHandlers = Children.map(children, child => {
+    if (React.isValidElement(child)) {
+      return cloneElement(child, {
+        popupInputFocused: isInputFocused,
+        onPopupInputFocus: handleInputFocus,
+        onPopupInputBlur: handleInputBlur
+      });
+    }
+    return child;
+  });
+
   return createPortal(
     <div
       ref={containerRef}
-      className="robo-cmd-editor-popup"
+      className={`robo-cmd-editor-popup ${isInputFocused ? 'input-focused' : ''}`}
       style={{
         ...positionStyle,
         width: size.width,
@@ -137,8 +167,10 @@ const PopupContainer = ({
         <span className="popup-title">Commands</span>
       </div>
 
-      {/* Content - no wrapper, let CommandEditor handle layout */}
-      {children}
+      {/* Content wrapper - constrains CommandEditor, handles overflow */}
+      <div className="popup-content-wrapper">
+        {childrenWithFocusHandlers}
+      </div>
 
       {/* Resize Handle */}
       <div

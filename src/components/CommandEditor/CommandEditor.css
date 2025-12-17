@@ -2163,6 +2163,11 @@ margin-top: 10px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+/* When input focused, allow overflow for expanded editor item */
+.robo-cmd-editor-popup.input-focused {
     overflow: visible;
 }
 
@@ -2243,6 +2248,25 @@ margin-top: 10px;
     border-color: #555;
 }
 
+/* Content wrapper inside popup - constrains overflow, shows scrollbar on blur */
+.popup-content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* On blur state, content wrapper clips content and shows scrollbar via inner elements */
+.robo-cmd-editor-popup:not(.input-focused) .popup-content-wrapper {
+    overflow: hidden;
+}
+
+/* On focus state, allow content wrapper to show expanded items */
+.robo-cmd-editor-popup.input-focused .popup-content-wrapper {
+    overflow: visible;
+}
+
 /* CommandEditor in popup mode */
 .robo-cmd-editor.popup-mode {
     width: 100%;
@@ -2266,9 +2290,28 @@ margin-top: 10px;
     overflow: visible;
 }
 
-/* Command panel in popup mode */
+/* Command panel in popup mode - default state shows scrollbar */
 .robo-cmd-editor.popup-mode .robo-cmd-panel {
-    overflow: visible;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Scroll wrapper in popup mode - shows scrollbar by default */
+.robo-cmd-editor.popup-mode .robo-cmd-scroll-wrapper {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* When input focused in popup mode, allow overflow for expanded item */
+.robo-cmd-editor.popup-mode .robo-cmd-panel.input-focused {
+    overflow: visible !important;
+}
+
+.robo-cmd-editor.popup-mode .robo-cmd-panel.input-focused .robo-cmd-scroll-wrapper {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
 }
 
 /* Menu bar in popup mode - horizontal on top like normal mode */
