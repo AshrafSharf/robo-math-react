@@ -94,6 +94,155 @@ export const line3d_error_messages = {
     `line3d() needs a g3d graph.\nFirst argument must be g3d.`,
 };
 
+// ============= Sphere3D Error Messages =============
+
+export const sphere3d_error_messages = {
+  MISSING_ARGS: () =>
+    `sphere3d() needs 5 arguments.\nUsage: sphere3d(g, radius, x, y, z)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `sphere3d() got ${count} coordinates.\nNeed exactly 3: x, y, z`,
+
+  GRAPH_REQUIRED: () =>
+    `sphere3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_RADIUS: () =>
+    `sphere3d() radius must be a single number.`,
+};
+
+// ============= Cylinder3D Error Messages =============
+
+export const cylinder3d_error_messages = {
+  MISSING_ARGS: () =>
+    `cylinder() needs at least 4 arguments.\nUsage: cylinder(g, r, h, x,y,z) or cylinder(g, r, x1,y1,z1, x2,y2,z2)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `cylinder() got ${count} values after radius.\nNeed 4 (height + center) or 6 (two points).`,
+
+  GRAPH_REQUIRED: () =>
+    `cylinder() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_RADIUS: () =>
+    `cylinder() radius must be a single number.`,
+
+  INVALID_HEIGHT: () =>
+    `cylinder() height must be a single number.`,
+};
+
+// ============= Cube3D Error Messages =============
+
+export const cube3d_error_messages = {
+  MISSING_ARGS: () =>
+    `cube3d() needs 5 arguments.\nUsage: cube3d(g, size, x, y, z)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `cube3d() got ${count} coordinates.\nNeed exactly 3: x, y, z`,
+
+  GRAPH_REQUIRED: () =>
+    `cube3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_SIZE: () =>
+    `cube3d() size must be a single number.`,
+};
+
+// ============= Cone3D Error Messages =============
+
+export const cone3d_error_messages = {
+  MISSING_ARGS: () =>
+    `cone3d() needs 8 arguments.\nUsage: cone3d(g, radius, ax,ay,az, bx,by,bz)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `cone3d() got ${count} coordinates.\nNeed exactly 6: apex(3) + base(3)`,
+
+  GRAPH_REQUIRED: () =>
+    `cone3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_RADIUS: () =>
+    `cone3d() radius must be a single number.`,
+};
+
+// ============= Torus3D Error Messages =============
+
+export const torus3d_error_messages = {
+  MISSING_ARGS: () =>
+    `torus3d() needs 6 arguments.\nUsage: torus3d(g, radius, tubeRadius, x, y, z)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `torus3d() got ${count} coordinates.\nNeed exactly 3: x, y, z`,
+
+  GRAPH_REQUIRED: () =>
+    `torus3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_RADIUS: () =>
+    `torus3d() radius must be a single number.`,
+
+  INVALID_TUBE_RADIUS: () =>
+    `torus3d() tubeRadius must be a single number.`,
+};
+
+// ============= Prism3D Error Messages =============
+
+export const prism3d_error_messages = {
+  MISSING_ARGS: () =>
+    `prism3d() needs 8 arguments.\nUsage: prism3d(g, sides, height, baseRadius, x, y, z)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `prism3d() got ${count} coordinates.\nNeed exactly 3: x, y, z`,
+
+  GRAPH_REQUIRED: () =>
+    `prism3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_SIDES: () =>
+    `prism3d() sides must be a single number.`,
+
+  INVALID_HEIGHT: () =>
+    `prism3d() height must be a single number.`,
+
+  INVALID_RADIUS: () =>
+    `prism3d() baseRadius must be a single number.`,
+};
+
+// ============= Frustum3D Error Messages =============
+
+export const frustum3d_error_messages = {
+  MISSING_ARGS: () =>
+    `frustum3d() needs 9 arguments.\nUsage: frustum3d(g, baseR, topR, x1,y1,z1, x2,y2,z2)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `frustum3d() got ${count} coordinates.\nNeed exactly 6: base(3) + top(3)`,
+
+  GRAPH_REQUIRED: () =>
+    `frustum3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_BASE_RADIUS: () =>
+    `frustum3d() baseRadius must be a single number.`,
+
+  INVALID_TOP_RADIUS: () =>
+    `frustum3d() topRadius must be a single number.`,
+};
+
+// ============= Pyramid3D Error Messages =============
+
+export const pyramid3d_error_messages = {
+  MISSING_ARGS: () =>
+    `pyramid3d() needs 8 arguments.\nUsage: pyramid3d(g, sides, height, size, x, y, z)`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `pyramid3d() got ${count} coordinates.\nNeed exactly 3: x, y, z`,
+
+  GRAPH_REQUIRED: () =>
+    `pyramid3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_SIDES: () =>
+    `pyramid3d() sides must be a single number.`,
+
+  INVALID_HEIGHT: () =>
+    `pyramid3d() height must be a single number.`,
+
+  INVALID_SIZE: () =>
+    `pyramid3d() size must be a single number.`,
+};
+
 // ============= Circle Error Messages =============
 
 export const circle_error_messages = {
@@ -122,9 +271,6 @@ export const vector_error_messages = {
   INVALID_GRAPH: (varName) =>
     `'${varName}' is not a graph.\nvector(graph, x1, y1, x2, y2)`,
 };
-
-// Alias for backward compatibility
-export const vec_error_messages = vector_error_messages;
 
 // ============= Polygon Error Messages =============
 
@@ -347,9 +493,16 @@ const messagesByType = {
   point: point_error_messages,
   point3d: point3d_error_messages,
   line3d: line3d_error_messages,
+  sphere: sphere3d_error_messages,
+  cylinder: cylinder3d_error_messages,
+  cube: cube3d_error_messages,
+  cone: cone3d_error_messages,
+  torus: torus3d_error_messages,
+  prism: prism3d_error_messages,
+  frustum: frustum3d_error_messages,
+  pyramid: pyramid3d_error_messages,
   circle: circle_error_messages,
   vector: vector_error_messages,
-  vec: vec_error_messages,  // backward compatibility
   polygon: polygon_error_messages,
   arc: arc_error_messages,
   angle: angle_error_messages,

@@ -46,6 +46,54 @@ const defaults = {
             color: 0x00ffff
         }
     },
+    sphere: {
+        styleOptions: {
+            color: 0x4444ff,
+            opacity: 1.0
+        }
+    },
+    cylinder: {
+        styleOptions: {
+            color: 0x44ff44,
+            opacity: 1.0
+        }
+    },
+    cube: {
+        styleOptions: {
+            color: 0xff4444,
+            opacity: 1.0
+        }
+    },
+    cone: {
+        styleOptions: {
+            color: 0x44ff44,
+            opacity: 1.0
+        }
+    },
+    torus: {
+        styleOptions: {
+            color: 0xffaa00,
+            opacity: 1.0
+        }
+    },
+    prism: {
+        styleOptions: {
+            color: 0x44ff88,
+            opacity: 1.0
+        }
+    },
+    frustum: {
+        styleOptions: {
+            color: 0xff8844,
+            opacity: 1.0
+        }
+    },
+    pyramid: {
+        styleOptions: {
+            color: 0xffaa44,
+            opacity: 1.0
+        }
+    },
 
     // 2D shapes
     line: {

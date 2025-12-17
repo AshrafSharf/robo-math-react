@@ -19,6 +19,16 @@ import { rightAngle as lhsRightAngle } from './lhs/lhs_right_angle.js';
 import { label as createTextLabel } from './lhs/lhs_label.js';
 import { dashedThickLine as lhsDashedLine } from './lhs/lhs_line.js';
 import { measurementIndicator as lhsMeasurementIndicator } from './lhs/lhs_measurement_indicator.js';
+import {
+    sphere as lhsSphere,
+    cylinder as lhsCylinder,
+    cube as lhsCube,
+    cone as lhsCone,
+    torus as lhsTorus,
+    prism as lhsPrism,
+    frustum as lhsFrustum,
+    pyramid as lhsPyramid
+} from './lhs/lhs_3d_primitives.js';
 import * as geoUtils from './geo3d_utils.js';
 import { clearAll, hideAll, showAll } from './lifecycle_utils.js';
 
@@ -1074,5 +1084,302 @@ export class LHS3DDiagram extends BaseDiagram3D {
     restore() {
         // Empty stub - only works in AnimatedDiagram
         // Static diagrams don't need restore effects
+    }
+
+    // ===========================================
+    // 3D SOLID PRIMITIVES
+    // ===========================================
+
+    /**
+     * Create a 3D sphere
+     * @param {Object} center - Center position {x, y, z}
+     * @param {number} radius - Radius of the sphere
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Sphere mesh with label property
+     */
+    sphere3d(center, radius, label = '', color = 0x4444ff, options = {}) {
+        const sphereMesh = lhsSphere(center, radius, {
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(sphereMesh);
+        this.objects.push(sphereMesh);
+
+        if (label) {
+            this._addLabel(sphereMesh, center, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return sphereMesh;
+    }
+
+    /**
+     * Create a 3D cylinder
+     * @param {Object} center - Center position {x, y, z}
+     * @param {number} radius - Radius of the cylinder
+     * @param {number} height - Height of the cylinder
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Cylinder mesh with label property
+     */
+    cylinder3d(center, radius, height, label = '', color = 0x44ff44, options = {}) {
+        // Calculate base and top centers from center and height
+        // In LHS: Z is up
+        const baseCenter = { x: center.x, y: center.y, z: center.z - height / 2 };
+        const topCenter = { x: center.x, y: center.y, z: center.z + height / 2 };
+
+        const cylinderMesh = lhsCylinder(baseCenter, topCenter, radius, {
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(cylinderMesh);
+        this.objects.push(cylinderMesh);
+
+        if (label) {
+            this._addLabel(cylinderMesh, center, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return cylinderMesh;
+    }
+
+    /**
+     * Create a 3D cylinder between two points
+     * @param {Object} baseCenter - Base center position {x, y, z}
+     * @param {Object} topCenter - Top center position {x, y, z}
+     * @param {number} radius - Radius of the cylinder
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Cylinder mesh with label property
+     */
+    cylinder3dByTwoPoints(baseCenter, topCenter, radius, label = '', color = 0x44ff44, options = {}) {
+        const cylinderMesh = lhsCylinder(baseCenter, topCenter, radius, {
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(cylinderMesh);
+        this.objects.push(cylinderMesh);
+
+        if (label) {
+            const midpoint = this._midpoint(baseCenter, topCenter);
+            this._addLabel(cylinderMesh, midpoint, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return cylinderMesh;
+    }
+
+    /**
+     * Create a 3D cube/box
+     * @param {Object} center - Center position {x, y, z}
+     * @param {number} size - Size of the cube
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Cube mesh with label property
+     */
+    cube3d(center, size, label = '', color = 0xff4444, options = {}) {
+        const cubeMesh = lhsCube(center, size, {
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(cubeMesh);
+        this.objects.push(cubeMesh);
+
+        if (label) {
+            this._addLabel(cubeMesh, center, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return cubeMesh;
+    }
+
+    /**
+     * Create a 3D cone
+     * @param {Object} apex - Apex position {x, y, z}
+     * @param {Object} baseCenter - Base center position {x, y, z}
+     * @param {number} radius - Radius of the base
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Cone mesh with label property
+     */
+    cone3d(apex, baseCenter, radius, label = '', color = 0x44ff44, options = {}) {
+        const coneMesh = lhsCone(apex, baseCenter, radius, {
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(coneMesh);
+        this.objects.push(coneMesh);
+
+        if (label) {
+            const midpoint = this._midpoint(apex, baseCenter);
+            this._addLabel(coneMesh, midpoint, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return coneMesh;
+    }
+
+    /**
+     * Create a 3D torus
+     * @param {Object} center - Center position {x, y, z}
+     * @param {number} radius - Main radius (distance from center to tube center)
+     * @param {number} tubeRadius - Radius of the tube
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Torus mesh with label property
+     */
+    torus3d(center, radius, tubeRadius, label = '', color = 0xffaa00, options = {}) {
+        const torusMesh = lhsTorus(center, radius, tubeRadius, {
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(torusMesh);
+        this.objects.push(torusMesh);
+
+        if (label) {
+            this._addLabel(torusMesh, center, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return torusMesh;
+    }
+
+    /**
+     * Create a 3D prism
+     * @param {Object} baseCenter - Base center position {x, y, z}
+     * @param {number} sides - Number of sides (3=triangular, 4=square, 6=hexagonal, etc.)
+     * @param {number} height - Height of the prism
+     * @param {number} baseRadius - Radius of the base
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Prism mesh with label property
+     */
+    prism3d(baseCenter, sides, height, baseRadius, label = '', color = 0x44ff88, options = {}) {
+        const prismMesh = lhsPrism(baseCenter, sides, height, {
+            baseRadius: baseRadius,
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(prismMesh);
+        this.objects.push(prismMesh);
+
+        if (label) {
+            const labelPos = {
+                x: baseCenter.x,
+                y: baseCenter.y,
+                z: baseCenter.z + height / 2
+            };
+            this._addLabel(prismMesh, labelPos, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return prismMesh;
+    }
+
+    /**
+     * Create a 3D frustum (truncated pyramid/cone)
+     * @param {Object} baseCenter - Base center position {x, y, z}
+     * @param {Object} topCenter - Top center position {x, y, z}
+     * @param {number} baseRadius - Radius of the base
+     * @param {number} topRadius - Radius of the top
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Frustum mesh with label property
+     */
+    frustum3d(baseCenter, topCenter, baseRadius, topRadius, label = '', color = 0xff8844, options = {}) {
+        const frustumMesh = lhsFrustum(baseCenter, topCenter, baseRadius, topRadius, {
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(frustumMesh);
+        this.objects.push(frustumMesh);
+
+        if (label) {
+            const midpoint = this._midpoint(baseCenter, topCenter);
+            this._addLabel(frustumMesh, midpoint, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return frustumMesh;
+    }
+
+    /**
+     * Create a 3D pyramid
+     * @param {Object} position - Base center position {x, y, z}
+     * @param {number} sides - Number of sides (3=triangular, 4=square, etc.)
+     * @param {number} height - Height of the pyramid
+     * @param {number} size - Base size/radius
+     * @param {string} label - Optional label
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Pyramid mesh with label property
+     */
+    pyramid3d(position, sides, height, size, label = '', color = 0xffaa44, options = {}) {
+        // Default orientation is upward (Z axis in LHS coordinates)
+        const orientation = options.orientation || { x: 0, y: 0, z: 1 };
+
+        const pyramidMesh = lhsPyramid(position, sides, height, size, orientation, {
+            color: this.parseColor(color),
+            opacity: options.opacity || 1.0,
+            wireframe: options.wireframe || false,
+            ...options
+        });
+
+        this.scene.add(pyramidMesh);
+        this.objects.push(pyramidMesh);
+
+        if (label) {
+            const labelPos = {
+                x: position.x,
+                y: position.y,
+                z: position.z + height / 2
+            };
+            this._addLabel(pyramidMesh, labelPos, label, {
+                labelOffset: options.labelOffset || { x: 0.3, y: 0.3, z: 0 }
+            });
+        }
+
+        return pyramidMesh;
     }
 }

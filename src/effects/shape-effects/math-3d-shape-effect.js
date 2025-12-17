@@ -6,6 +6,7 @@
 import { BaseEffect } from '../base-effect.js';
 import { animatePointScale, fadeInPoint } from '../../3d/common/animator/point_animator.js';
 import { animateLine } from '../../3d/common/animator/line_animator.js';
+import { fadeInSolid } from '../../3d/common/animator/solid_animator.js';
 
 export class Math3DShapeEffect extends BaseEffect {
     /**
@@ -69,6 +70,22 @@ export class Math3DShapeEffect extends BaseEffect {
                         pen: this.pen,
                         camera: this.camera,
                         canvas: this.canvas,
+                        onComplete
+                    });
+                    break;
+
+                // 3D solid primitives - fade in animation
+                case 'solid':
+                case 'sphere':
+                case 'cylinder':
+                case 'cube':
+                case 'cone':
+                case 'torus':
+                case 'prism':
+                case 'frustum':
+                case 'pyramid':
+                    fadeInSolid(this.object3d, {
+                        duration: 2.0,
                         onComplete
                     });
                     break;
