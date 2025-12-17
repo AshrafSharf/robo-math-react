@@ -217,13 +217,16 @@ export const intersect_error_messages = {
 
 export const project_error_messages = {
   WRONG_ARG_COUNT: (count) =>
-    `project() needs 2 arguments.\nGot ${count}. Usage: project(line, point)`,
+    `project() needs 3 arguments.\nGot ${count}. Usage: project(g, line, point)`,
+
+  GRAPH_REQUIRED: () =>
+    `project() needs a graph.\nFirst argument must be graph.`,
 
   FIRST_ARG_NOT_LINE: (type) =>
-    `First arg must be line/vec.\nGot ${type} instead.`,
+    `Second arg must be line/vec.\nGot ${type} instead.`,
 
   SECOND_ARG_NOT_POINT: (type) =>
-    `Second arg must be a point.\nGot ${type} instead.`,
+    `Third arg must be a point.\nGot ${type} instead.`,
 
   VARIABLE_NOT_FOUND: (varName) =>
     `Variable '${varName}' not defined.\nDefine it before using.`,
@@ -233,13 +236,16 @@ export const project_error_messages = {
 
 export const reflect_error_messages = {
   WRONG_ARG_COUNT: (count) =>
-    `reflect() needs 2 arguments.\nGot ${count}. Usage: reflect(line, point)`,
+    `reflect() needs 3 arguments.\nGot ${count}. Usage: reflect(g, line, shape)`,
+
+  GRAPH_REQUIRED: () =>
+    `reflect() needs a graph.\nFirst argument must be graph.`,
 
   FIRST_ARG_NOT_LINE: (type) =>
-    `First arg must be line/vec.\nGot ${type} instead.`,
+    `Second arg must be line/vec.\nGot ${type} instead.`,
 
-  SECOND_ARG_NOT_POINT: (type) =>
-    `Second arg must be a point.\nGot ${type} instead.`,
+  INVALID_SHAPE: (type) =>
+    `Cannot reflect ${type}.\nUse point, line, vec, circle, polygon.`,
 
   VARIABLE_NOT_FOUND: (varName) =>
     `Variable '${varName}' not defined.\nDefine it before using.`,
@@ -277,7 +283,7 @@ export const translate_error_messages = {
     `translate() needs a graph.\nFirst argument must be graph.`,
 
   INVALID_SHAPE: (type) =>
-    `Cannot translate ${type}.\nUse point, line, vec, circle, polygon.`,
+    `Cannot translate ${type}.\nUse point, line, vec, circle, polygon, plot.`,
 
   DX_NOT_NUMBER: () =>
     `dx must be a number.\ntranslate(g, shape, dx, dy)`,

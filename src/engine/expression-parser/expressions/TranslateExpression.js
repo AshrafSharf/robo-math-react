@@ -23,7 +23,8 @@ export class TranslateExpression extends AbstractArithmeticExpression {
         GEOMETRY_TYPES.POINT,
         GEOMETRY_TYPES.LINE,
         GEOMETRY_TYPES.CIRCLE,
-        GEOMETRY_TYPES.POLYGON
+        GEOMETRY_TYPES.POLYGON,
+        GEOMETRY_TYPES.PLOT
     ]);
 
     constructor(subExpressions) {
@@ -128,6 +129,9 @@ export class TranslateExpression extends AbstractArithmeticExpression {
             case GEOMETRY_TYPES.POLYGON:
                 this._translatePolygon(shapeExpr);
                 break;
+            case GEOMETRY_TYPES.PLOT:
+                this._translatePlot(shapeExpr);
+                break;
         }
     }
 
@@ -179,6 +183,28 @@ export class TranslateExpression extends AbstractArithmeticExpression {
         this.originalData = { vertices };
         this.translatedData = {
             vertices: TransformationUtil.translatePolygon(vertices, this.dx, this.dy)
+        };
+    }
+
+    /**
+     * Translate a plot - store reference info for command to handle
+     * Plot translation happens at command level since coordinates are generated at render time
+     */
+    _translatePlot(expr) {
+        // For plots, we store the expression info and let TranslateCommand handle it
+        // The actual modelCoordinates are generated at render time
+        this.originalData = {
+            compiledFunction: expr.getCompiledFunction(),
+            equation: expr.getEquation(),
+            domain: expr.getDomain()
+        };
+        // translatedData will be used by TranslateCommand to apply dx, dy offset
+        this.translatedData = {
+            dx: this.dx,
+            dy: this.dy,
+            compiledFunction: expr.getCompiledFunction(),
+            equation: expr.getEquation(),
+            domain: expr.getDomain()
         };
     }
 

@@ -23,6 +23,13 @@ export class PointPrimitiveShape extends GeomPrimitiveShape {
         return 'point';
     }
 
+    generatePathForCoordinates(coords) {
+        const cx = this.graphsheet2d.toViewX(coords[0]);
+        const cy = this.graphsheet2d.toViewY(coords[1]);
+        const r = this.pointRadius;
+        return new CirclePathGenerator().generate({ cx, cy, r });
+    }
+
     setTweenSpeed(tweenablePath) {
         tweenablePath.setFast();
     }

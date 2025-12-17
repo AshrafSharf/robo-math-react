@@ -196,6 +196,33 @@ export class SVGScriptShape extends BaseStylableSubject {
   }
 
   /**
+   * Generate SVG path string for given model coordinates.
+   * Used by transform effects (rotate, translate) to animate the shape.
+   * Override in subclasses that need special handling.
+   * @param {number[]} coords - Model coordinates
+   * @returns {string} SVG path d attribute
+   */
+  generatePathForCoordinates(coords) {
+    // Default: convert to view coords and generate line path
+    const viewCoords = this.getViewCoordinates(coords);
+    if (viewCoords.length < 4) return '';
+    let d = `M ${viewCoords[0]} ${viewCoords[1]}`;
+    for (let i = 2; i < viewCoords.length; i += 2) {
+      d += ` L ${viewCoords[i]} ${viewCoords[i + 1]}`;
+    }
+    return d;
+  }
+
+  /**
+   * Get number of coordinate pairs in modelCoordinates.
+   * Override for shapes with extra data (e.g., circle has radius).
+   * @returns {number}
+   */
+  getCoordinatePairCount() {
+    return Math.floor(this.modelCoordinates.length / 2);
+  }
+
+  /**
    * Translate the shape by a delta amount
    * @param {number} dx - Delta x in model coordinates
    * @param {number} dy - Delta y in model coordinates

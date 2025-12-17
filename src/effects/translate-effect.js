@@ -13,8 +13,7 @@ import {
     getCloneableElement,
     getPathElement,
     updatePath,
-    removeElement,
-    generateLinePath
+    removeElement
 } from '../utils/svg-utils.js';
 
 export class TranslateEffect extends BaseEffect {
@@ -99,29 +98,32 @@ export class TranslateEffect extends BaseEffect {
         const targetDy = this.dy;
         const animData = { progress: 0 };
 
+        // Use shape's own generatePathForCoordinates if available
+        const shape = this.originalShape;
+
         this.tween = TweenMax.to(animData, this.duration, {
             progress: 1,
             ease: 'Power2.easeInOut',
             onUpdate: () => {
-                // Translate each point in model space
+                // Translate model coordinates
                 const translatedCoords = [];
                 const currentDx = animData.progress * targetDx;
                 const currentDy = animData.progress * targetDy;
 
-                for (let i = 0; i < originalCoords.length; i += 2) {
-                    const x = originalCoords[i] + currentDx;
-                    const y = originalCoords[i + 1] + currentDy;
-                    translatedCoords.push(x, y);
+                // Translate x,y pairs (skip non-coordinate values like radius for circles)
+                const coordPairs = shape.getCoordinatePairCount ? shape.getCoordinatePairCount() : Math.floor(originalCoords.length / 2);
+                for (let i = 0; i < coordPairs; i++) {
+                    translatedCoords.push(originalCoords[i * 2] + currentDx);
+                    translatedCoords.push(originalCoords[i * 2 + 1] + currentDy);
+                }
+                // Copy remaining non-coordinate values (e.g., radius for circles)
+                for (let i = coordPairs * 2; i < originalCoords.length; i++) {
+                    translatedCoords.push(originalCoords[i]);
                 }
 
-                // Convert to view coordinates and regenerate path
-                const viewCoords = [];
-                for (let i = 0; i < translatedCoords.length; i += 2) {
-                    viewCoords.push(graphsheet2d.toViewX(translatedCoords[i]));
-                    viewCoords.push(graphsheet2d.toViewY(translatedCoords[i + 1]));
-                }
-
-                updatePath(clonePath, generateLinePath(viewCoords));
+                // Let shape generate path for these coordinates
+                const pathStr = shape.generatePathForCoordinates(translatedCoords);
+                updatePath(clonePath, pathStr);
             },
             onComplete: () => {
                 removeElement(self.clone);

@@ -3,3 +3,9 @@ h=def(x,"x^2")
 p=plot(g, h)
 point(g,1,fun(h, 1))
 fadein(p,l)
+
+
+g=g2d(1,2,20,30)
+A=point(g,2,3)
+l1=line(g,4,5,A)
+para(rotate(g,A,40,0,0), rotate(g,l1,40,0,0))

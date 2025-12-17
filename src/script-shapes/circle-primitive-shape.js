@@ -27,6 +27,20 @@ export class CirclePrimitiveShape extends GeomPrimitiveShape {
   getShapeType() {
     return 'circle';
   }
+
+  generatePathForCoordinates(coords) {
+    const cx = this.graphsheet2d.toViewX(coords[0]);
+    const cy = this.graphsheet2d.toViewY(coords[1]);
+    const rX = this.graphsheet2d.toUIWidth(coords[2]);
+    const rY = this.graphsheet2d.toUIHeight(coords[2]);
+    const r = (Math.abs(rX) + Math.abs(rY)) / 2;
+    return new CirclePathGenerator().generate({ cx, cy, r });
+  }
+
+  getCoordinatePairCount() {
+    // Circle has [cx, cy, radius] - only 1 coordinate pair
+    return 1;
+  }
   
   disableStroke() {
     // Hide both stroke and fill during animation

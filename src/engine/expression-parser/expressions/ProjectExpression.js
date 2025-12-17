@@ -8,7 +8,7 @@
  * This is also known as the "foot of the perpendicular".
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
-import { PointCommand } from '../../commands/PointCommand.js';
+import { ProjectCommand } from '../../commands/ProjectCommand.js';
 import { LineUtil } from '../../../geom/LineUtil.js';
 import { project_error_messages } from '../core/ErrorMessages.js';
 import { GEOMETRY_TYPES } from './IntersectExpression.js';
@@ -20,6 +20,9 @@ export class ProjectExpression extends AbstractArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.point = { x: NaN, y: NaN };
+        this.originalPointData = null;  // Original point coordinates
+        this.originalPointVariableName = null;  // Variable name for registry lookup
+        this.linePoints = null;  // The line used for projection {start, end}
         this.graphExpression = null;
     }
 
@@ -57,14 +60,18 @@ export class ProjectExpression extends AbstractArithmeticExpression {
         }
 
         // Get line points and point coordinates
-        const linePoints = this._getLinePoints(lineExpr);
+        this.linePoints = this._getLinePoints(lineExpr);
         const pointCoords = this._getPointCoords(pointExpr);
+
+        // Store original point data for animation
+        this.originalPointData = { point: pointCoords };
+        this.originalPointVariableName = this._getVariableName(this.subExpressions[2]);
 
         // Calculate projection using LineUtil
         const projected = LineUtil.projectPoint(
             pointCoords,
-            linePoints.start,
-            linePoints.end
+            this.linePoints.start,
+            this.linePoints.end
         );
 
         this.point = { x: projected.x, y: projected.y };
@@ -76,6 +83,19 @@ export class ProjectExpression extends AbstractArithmeticExpression {
     _getGeometryType(expr) {
         if (typeof expr.getGeometryType === 'function') {
             return expr.getGeometryType();
+        }
+        return null;
+    }
+
+    /**
+     * Get variable name from expression (for registry lookup)
+     */
+    _getVariableName(expr) {
+        if (expr.variableName) {
+            return expr.variableName;
+        }
+        if (typeof expr.getVariableName === 'function') {
+            return expr.getVariableName();
         }
         return null;
     }
@@ -142,10 +162,16 @@ export class ProjectExpression extends AbstractArithmeticExpression {
     }
 
     /**
-     * Create command - PointCommand
+     * Create command - ProjectCommand with animation support
      */
     toCommand(options = {}) {
-        return new PointCommand(this.graphExpression, this.point, options);
+        return new ProjectCommand(
+            this.graphExpression,
+            this.originalPointVariableName,
+            this.point,
+            this.linePoints,
+            options
+        );
     }
 
     /**

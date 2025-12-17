@@ -1,8 +1,8 @@
 /**
- * TranslateCommand - Command for rendering a translated shape
+ * ReflectCommand - Command for rendering a reflected shape
  *
  * Uses delegate commands (PointCommand, LineCommand, etc.) to create shapes.
- * For animated mode: creates shape without animation, then plays TranslateEffect.
+ * For animated mode: creates shape without animation, then plays ReflectEffect.
  * For static mode: delegate command creates and shows shape normally.
  */
 import { BaseCommand } from './BaseCommand.js';
@@ -11,37 +11,34 @@ import { LineCommand } from './LineCommand.js';
 import { VectorCommand } from './VectorCommand.js';
 import { CircleCommand } from './CircleCommand.js';
 import { PolygonCommand } from './PolygonCommand.js';
-import { PlotCommand } from './PlotCommand.js';
-import { TranslateEffect } from '../../effects/translate-effect.js';
+import { ReflectEffect } from '../../effects/reflect-effect.js';
 import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 
-export class TranslateCommand extends BaseCommand {
+export class ReflectCommand extends BaseCommand {
     /**
-     * Create a translate command
+     * Create a reflect command
      * @param {Object} graphExpression - The graph expression
      * @param {string} originalShapeVarName - Variable name of original shape (for registry lookup)
-     * @param {Object} translatedData - Computed translated coordinates
+     * @param {Object} reflectedData - Computed reflected coordinates
      * @param {string} originalShapeName - Original shape name ('point', 'line', 'vector', etc.)
      * @param {string} originalShapeType - GEOMETRY_TYPES value
-     * @param {number} dx - Translation in x direction
-     * @param {number} dy - Translation in y direction
+     * @param {Object} linePoints - The line used for reflection {start, end}
      * @param {Object} options - Additional options
      */
-    constructor(graphExpression, originalShapeVarName, translatedData, originalShapeName, originalShapeType, dx, dy, options = {}) {
+    constructor(graphExpression, originalShapeVarName, reflectedData, originalShapeName, originalShapeType, linePoints, options = {}) {
         super();
         this.graphExpression = graphExpression;
         this.graphContainer = null;
         this.originalShapeVarName = originalShapeVarName;
-        this.translatedData = translatedData;
+        this.reflectedData = reflectedData;
         this.originalShapeName = originalShapeName;
         this.originalShapeType = originalShapeType;
-        this.dx = dx;
-        this.dy = dy;
+        this.linePoints = linePoints;
         this.options = options;
 
         // Set during init/play
         this.originalShape = null;
-        this.translatedShape = null;
+        this.reflectedShape = null;
         this.delegateCommand = null;
     }
 
@@ -51,7 +48,7 @@ export class TranslateCommand extends BaseCommand {
      */
     async doInit() {
         if (!this.graphExpression) {
-            const err = new Error(common_error_messages.GRAPH_REQUIRED('translate'));
+            const err = new Error(common_error_messages.GRAPH_REQUIRED('reflect'));
             err.expressionId = this.expressionId;
             throw err;
         }
@@ -71,10 +68,10 @@ export class TranslateCommand extends BaseCommand {
             throw err;
         }
 
-        // Look up original shape from registry - required for translation animation
+        // Look up original shape from registry - required for reflection animation
         this.originalShape = this.commandContext.shapeRegistry[this.originalShapeVarName];
         if (!this.originalShape) {
-            throw new Error(`TranslateCommand: original shape '${this.originalShapeVarName}' not found in registry`);
+            throw new Error(`ReflectCommand: original shape '${this.originalShapeVarName}' not found in registry`);
         }
     }
 
@@ -86,42 +83,53 @@ export class TranslateCommand extends BaseCommand {
     _createDelegateCommand() {
         switch (this.originalShapeName) {
             case 'point':
-                return new PointCommand(this.graphExpression, this.translatedData.point);
+                return new PointCommand(this.graphExpression, this.reflectedData.point);
             case 'line':
-                return new LineCommand(this.graphExpression, this.translatedData.start, this.translatedData.end);
+                return new LineCommand(this.graphExpression, this.reflectedData.start, this.reflectedData.end);
             case 'vector':
-                return new VectorCommand(this.graphExpression, this.translatedData.start, this.translatedData.end);
+                return new VectorCommand(this.graphExpression, this.reflectedData.start, this.reflectedData.end);
             case 'circle':
-                return new CircleCommand(this.graphExpression, this.translatedData.center, this.translatedData.radius);
+                return new CircleCommand(this.graphExpression, this.reflectedData.center, this.reflectedData.radius);
             case 'polygon':
-                return new PolygonCommand(this.graphExpression, this.translatedData.vertices);
-            case 'plot': {
-                // For plot, create a translated function: f(x) + dy, with x shifted by dx
-                const originalFunc = this.translatedData.compiledFunction;
-                const dx = this.dx;
-                const dy = this.dy;
-                const translatedFunc = (x) => originalFunc(x - dx) + dy;
-                const domain = this.translatedData.domain;
-                return new PlotCommand(
-                    this.graphExpression,
-                    translatedFunc,
-                    domain.min !== null ? domain.min + dx : null,
-                    domain.max !== null ? domain.max + dx : null,
-                    this.translatedData.equation,
-                    this.options
-                );
-            }
+                return new PolygonCommand(this.graphExpression, this.reflectedData.vertices);
             default:
-                throw new Error(`TranslateCommand: unsupported shape type '${this.originalShapeName}'`);
+                throw new Error(`ReflectCommand: unsupported shape type '${this.originalShapeName}'`);
         }
     }
 
     /**
-     * Play animation - create shape, then play translation effect
+     * Get reflected model coordinates array for animation
+     * @returns {Array<number>}
+     * @private
+     */
+    _getReflectedCoords() {
+        switch (this.originalShapeName) {
+            case 'point':
+                return [this.reflectedData.point.x, this.reflectedData.point.y];
+            case 'line':
+            case 'vector':
+                return [
+                    this.reflectedData.start.x, this.reflectedData.start.y,
+                    this.reflectedData.end.x, this.reflectedData.end.y
+                ];
+            case 'circle':
+                return [
+                    this.reflectedData.center.x, this.reflectedData.center.y,
+                    this.reflectedData.radius
+                ];
+            case 'polygon':
+                return this.reflectedData.vertices.flatMap(v => [v.x, v.y]);
+            default:
+                return [];
+        }
+    }
+
+    /**
+     * Play animation - create shape, then play reflection effect
      * @returns {Promise}
      */
     async play() {
-        // Create translated shape via delegate command
+        // Create reflected shape via delegate command
         this.delegateCommand = this._createDelegateCommand();
         this.delegateCommand.diagram2d = this.diagram2d;
         this.delegateCommand.setColor(this.color);
@@ -130,23 +138,24 @@ export class TranslateCommand extends BaseCommand {
         }
         await this.delegateCommand.init(this.commandContext);
 
-        this.translatedShape = this.delegateCommand.commandResult;
-        this.commandResult = this.translatedShape;
+        this.reflectedShape = this.delegateCommand.commandResult;
+        this.commandResult = this.reflectedShape;
 
-        // Hide translated shape, will be shown by translation animation
-        this.translatedShape.hide();
+        // Hide reflected shape, will be shown by reflection animation
+        this.reflectedShape.hide();
 
-        // Play translation effect with model-space dx, dy
-        const effect = new TranslateEffect(this.originalShape, this.translatedShape, this.dx, this.dy);
+        // Play reflection effect
+        const reflectedCoords = this._getReflectedCoords();
+        const effect = new ReflectEffect(this.originalShape, this.reflectedShape, reflectedCoords);
         await effect.play();
     }
 
     /**
-     * Direct play (no animation) - use delegate command to create and show translated shape
+     * Direct play (no animation) - use delegate command to create and show reflected shape
      * @returns {Promise}
      */
     async directPlay() {
-        // Create translated shape via delegate command
+        // Create reflected shape via delegate command
         this.delegateCommand = this._createDelegateCommand();
         this.delegateCommand.diagram2d = this.diagram2d;
         this.delegateCommand.setColor(this.color);
@@ -156,8 +165,8 @@ export class TranslateCommand extends BaseCommand {
 
         await this.delegateCommand.init(this.commandContext);
 
-        this.translatedShape = this.delegateCommand.commandResult;
-        this.commandResult = this.translatedShape;
+        this.reflectedShape = this.delegateCommand.commandResult;
+        this.commandResult = this.reflectedShape;
     }
 
     /**
@@ -165,11 +174,12 @@ export class TranslateCommand extends BaseCommand {
      * @returns {Promise}
      */
     async playSingle() {
-        // Hide translated shape and replay animation
-        this.translatedShape.hide();
+        // Hide reflected shape and replay animation
+        this.reflectedShape.hide();
 
-        // Play translation effect with model-space dx, dy
-        const effect = new TranslateEffect(this.originalShape, this.translatedShape, this.dx, this.dy);
+        // Play reflection effect
+        const reflectedCoords = this._getReflectedCoords();
+        const effect = new ReflectEffect(this.originalShape, this.reflectedShape, reflectedCoords);
         return effect.play();
     }
 
@@ -180,26 +190,23 @@ export class TranslateCommand extends BaseCommand {
     getLabelPosition() {
         switch (this.originalShapeName) {
             case 'point':
-                return this.translatedData.point;
+                return this.reflectedData.point;
             case 'line':
             case 'vector':
                 // Midpoint of line
                 return {
-                    x: (this.translatedData.start.x + this.translatedData.end.x) / 2,
-                    y: (this.translatedData.start.y + this.translatedData.end.y) / 2
+                    x: (this.reflectedData.start.x + this.reflectedData.end.x) / 2,
+                    y: (this.reflectedData.start.y + this.reflectedData.end.y) / 2
                 };
             case 'circle':
-                return this.translatedData.center;
+                return this.reflectedData.center;
             case 'polygon':
                 // Centroid
-                const verts = this.translatedData.vertices;
+                const verts = this.reflectedData.vertices;
                 const n = verts.length - 1; // Exclude closing point
                 const sumX = verts.slice(0, n).reduce((s, v) => s + v.x, 0);
                 const sumY = verts.slice(0, n).reduce((s, v) => s + v.y, 0);
                 return { x: sumX / n, y: sumY / n };
-            case 'plot':
-                // Return a point on the translated plot
-                return { x: this.dx, y: this.dy };
             default:
                 return { x: 0, y: 0 };
         }

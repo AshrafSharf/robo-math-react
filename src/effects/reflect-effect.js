@@ -1,10 +1,10 @@
 /**
- * RotateEffect - Animates rotation of a shape using GSAP
+ * ReflectEffect - Animates reflection of a shape across a line using GSAP
  *
  * Animates in model coordinate space to correctly handle non-uniform X/Y scales.
  * 1. Clone the original shape visually
- * 2. Animate by rotating model coordinates and regenerating the SVG path
- * 3. When done, show the real rotated shape and remove the clone
+ * 2. Animate by interpolating model coordinates from original to reflected
+ * 3. When done, show the real reflected shape and remove the clone
  */
 import { BaseEffect } from './base-effect.js';
 import { TweenMax } from 'gsap';
@@ -16,20 +16,18 @@ import {
     removeElement
 } from '../utils/svg-utils.js';
 
-export class RotateEffect extends BaseEffect {
+export class ReflectEffect extends BaseEffect {
     /**
      * @param {Object} originalShape - The original shape (stays visible)
-     * @param {Object} rotatedShape - The rotated shape to show at end
-     * @param {number} angle - Rotation angle in degrees (positive = CCW in math coords)
-     * @param {Object} center - Rotation center in MODEL coordinates {x, y}
+     * @param {Object} reflectedShape - The reflected shape to show at end
+     * @param {Object} reflectedCoords - The final reflected model coordinates
      * @param {Object} options - Animation options {duration}
      */
-    constructor(originalShape, rotatedShape, angle, center, options = {}) {
+    constructor(originalShape, reflectedShape, reflectedCoords, options = {}) {
         super();
         this.originalShape = originalShape;
-        this.rotatedShape = rotatedShape;
-        this.angle = angle;
-        this.center = center; // Model coordinates
+        this.reflectedShape = reflectedShape;
+        this.reflectedCoords = reflectedCoords;
         this.duration = options.duration || 0.8; // Seconds for GSAP
         this.clone = null;
         this.tween = null;
@@ -40,7 +38,7 @@ export class RotateEffect extends BaseEffect {
     }
 
     hide() {
-        this.rotatedShape.hide();
+        this.reflectedShape.hide();
         if (this.clone) {
             removeElement(this.clone);
             this.clone = null;
@@ -52,8 +50,8 @@ export class RotateEffect extends BaseEffect {
             removeElement(this.clone);
             this.clone = null;
         }
-        this.rotatedShape.renderEndState();
-        this.rotatedShape.show();
+        this.reflectedShape.renderEndState();
+        this.reflectedShape.show();
     }
 
     toStartState() {
@@ -61,13 +59,13 @@ export class RotateEffect extends BaseEffect {
     }
 
     /**
-     * Animate the rotation using GSAP with model-space interpolation
+     * Animate the reflection using GSAP with model-space interpolation
      */
     doPlay(playContext) {
         const originalElement = getCloneableElement(this.originalShape);
 
         if (!originalElement) {
-            console.error('RotateEffect: No element to clone from original shape');
+            console.error('ReflectEffect: No element to clone from original shape');
             this.toEndState();
             playContext.onComplete();
             return;
@@ -77,7 +75,7 @@ export class RotateEffect extends BaseEffect {
         const graphsheet2d = this.originalShape.graphsheet2d;
 
         if (!originalCoords || !graphsheet2d) {
-            console.error('RotateEffect: Missing modelCoordinates or graphsheet2d on original shape');
+            console.error('ReflectEffect: Missing modelCoordinates or graphsheet2d on original shape');
             this.toEndState();
             playContext.onComplete();
             return;
@@ -87,55 +85,43 @@ export class RotateEffect extends BaseEffect {
         const clonePath = getPathElement(this.clone);
 
         if (!clonePath) {
-            console.error('RotateEffect: Could not find path element in clone');
+            console.error('ReflectEffect: Could not find path element in clone');
             this.toEndState();
             playContext.onComplete();
             return;
         }
 
         const self = this;
-        const targetAngle = this.angle;
-        const center = this.center;
-        const animData = { angle: 0 };
+        const animData = { progress: 0 };
 
         // Use shape's own generatePathForCoordinates
         const shape = this.originalShape;
-        const coordPairs = shape.getCoordinatePairCount ? shape.getCoordinatePairCount() : Math.floor(originalCoords.length / 2);
+        const targetCoords = this.reflectedCoords;
 
         this.tween = TweenMax.to(animData, this.duration, {
-            angle: targetAngle,
+            progress: 1,
             ease: 'Power2.easeInOut',
             onUpdate: () => {
-                const rotatedCoords = [];
-                const angleRad = (animData.angle * Math.PI) / 180;
-                const cos = Math.cos(angleRad);
-                const sin = Math.sin(angleRad);
+                // Interpolate between original and reflected coordinates
+                const interpolatedCoords = [];
+                const t = animData.progress;
 
-                // Rotate coordinate pairs
-                for (let i = 0; i < coordPairs; i++) {
-                    const x = originalCoords[i * 2];
-                    const y = originalCoords[i * 2 + 1];
-                    const dx = x - center.x;
-                    const dy = y - center.y;
-                    const rotatedX = dx * cos - dy * sin + center.x;
-                    const rotatedY = dx * sin + dy * cos + center.y;
-                    rotatedCoords.push(rotatedX, rotatedY);
-                }
-                // Copy remaining non-coordinate values (e.g., radius for circles)
-                for (let i = coordPairs * 2; i < originalCoords.length; i++) {
-                    rotatedCoords.push(originalCoords[i]);
+                for (let i = 0; i < originalCoords.length; i++) {
+                    const original = originalCoords[i];
+                    const target = targetCoords[i];
+                    interpolatedCoords.push(original + t * (target - original));
                 }
 
                 // Let shape generate path for these coordinates
-                const pathStr = shape.generatePathForCoordinates(rotatedCoords);
+                const pathStr = shape.generatePathForCoordinates(interpolatedCoords);
                 updatePath(clonePath, pathStr);
             },
             onComplete: () => {
                 removeElement(self.clone);
                 self.clone = null;
                 self.tween = null;
-                self.rotatedShape.renderEndState();
-                self.rotatedShape.show();
+                self.reflectedShape.renderEndState();
+                self.reflectedShape.show();
                 playContext.onComplete();
             }
         });
@@ -158,6 +144,6 @@ export class RotateEffect extends BaseEffect {
             removeElement(this.clone);
             this.clone = null;
         }
-        this.rotatedShape.remove();
+        this.reflectedShape.remove();
     }
 }

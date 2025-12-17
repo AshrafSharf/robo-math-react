@@ -103,6 +103,14 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
         return PlotExpression.NAME;
     }
 
+    /**
+     * Get geometry type for transformations
+     * @returns {string}
+     */
+    getGeometryType() {
+        return 'plot';
+    }
+
     getEquation() {
         return this.equation;
     }

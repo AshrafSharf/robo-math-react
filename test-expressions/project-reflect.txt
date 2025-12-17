@@ -1,0 +1,53 @@
+Usage Examples
+
+  Project (point onto line)
+
+  G = g2d(0, 0, 16, 8, -10, 10, -10, 10, 1)
+  L = line(G, -5, -3, 5, 5)
+  P = point(G, 4, 6)
+  project(G, L, P)
+  This will:
+  1. Create a graph
+  2. Draw a line from (-5, -3) to (5, 5)
+  3. Draw a point at (4, 6)
+  4. Animate the point moving to its projection (foot of perpendicular) on the line
+
+  Reflect Point
+
+  G = g2d(0, 0, 16, 8, -10, 10, -10, 10, 1)
+  L = line(G, 0, -5, 0, 5)
+  P = point(G, 3, 4)
+  reflect(G, L, P)
+  This will reflect point P across the vertical line L (y-axis).
+
+  Reflect Line
+
+  G = g2d(0, 0, 16, 8, -10, 10, -10, 10, 1)
+  L = line(G, 0, -5, 0, 5)
+  AB = line(G, 2, 1, 5, 4)
+  reflect(G, L, AB)
+  This will reflect line AB across line L.
+
+  Reflect Circle
+
+  G = g2d(0, 0, 16, 8, -10, 10, -10, 10, 1)
+  L = line(G, 0, -5, 0, 5)
+  C = circle(G, 2, 3, 4)
+  reflect(G, L, C)
+  This will reflect circle C (centered at (3, 4) with radius 2) across line L.
+
+  Reflect Polygon
+
+  G = g2d(0, 0, 16, 8, -10, 10, -10, 10, 1)
+  L = line(G, 0, -5, 0, 5)
+  T = polygon(G, 2, 1, 5, 1, 3.5, 4)
+  reflect(G, L, T)
+  This will reflect the triangle T across line L.
+
+  Using Vector as reflection axis
+
+  G = g2d(0, 0, 16, 8, -10, 10, -10, 10, 1)
+  V = vector(G, -3, -3, 3, 3)
+  P = point(G, 4, 1)
+  reflect(G, V, P)
+  This will reflect point P across the line defined by vector V.

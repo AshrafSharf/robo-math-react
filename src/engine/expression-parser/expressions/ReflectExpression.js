@@ -1,15 +1,17 @@
 /**
- * Reflect expression - reflects a point across a line/vector
+ * Reflect expression - reflects a shape across a line/vector
  *
  * Syntax:
- *   reflect(graph, line/vec, point)  - returns the reflected point
+ *   reflect(graph, line/vec, shape)  - returns the reflected shape
  *
- * The reflection creates a mirror image of the point across the infinite line.
- * The reflected point is equidistant from the line as the original point,
+ * Supported shapes: point, line, vec, circle, polygon
+ *
+ * The reflection creates a mirror image of the shape across the infinite line.
+ * The reflected shape is equidistant from the line as the original,
  * but on the opposite side.
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
-import { PointCommand } from '../../commands/PointCommand.js';
+import { ReflectCommand } from '../../commands/ReflectCommand.js';
 import { LineUtil } from '../../../geom/LineUtil.js';
 import { reflect_error_messages } from '../core/ErrorMessages.js';
 import { GEOMETRY_TYPES } from './IntersectExpression.js';
@@ -17,15 +19,28 @@ import { GEOMETRY_TYPES } from './IntersectExpression.js';
 export class ReflectExpression extends AbstractArithmeticExpression {
     static NAME = 'reflect';
 
+    // Supported geometry types for reflection
+    static SUPPORTED_TYPES = new Set([
+        GEOMETRY_TYPES.POINT,
+        GEOMETRY_TYPES.LINE,
+        GEOMETRY_TYPES.CIRCLE,
+        GEOMETRY_TYPES.POLYGON
+    ]);
+
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        this.point = { x: NaN, y: NaN };
+        this.originalData = null;   // Original shape coordinates
+        this.reflectedData = null;  // Computed reflected coordinates
+        this.originalShapeName = null;  // 'point', 'line', 'vector', 'circle', 'polygon'
+        this.originalShapeType = null;  // GEOMETRY_TYPES value
+        this.originalShapeVariableName = null;  // Variable name for registry lookup
+        this.linePoints = null;     // The line used for reflection {start, end}
         this.graphExpression = null;
     }
 
     resolve(context) {
-        // Validate argument count: exactly 3 args (graph, line/vec, point)
+        // Validate argument count: exactly 3 args (graph, line/vec, shape)
         if (this.subExpressions.length !== 3) {
             this.dispatchError(reflect_error_messages.WRONG_ARG_COUNT(this.subExpressions.length));
         }
@@ -38,45 +53,54 @@ export class ReflectExpression extends AbstractArithmeticExpression {
             this.dispatchError(reflect_error_messages.GRAPH_REQUIRED());
         }
 
-        // Resolve line and point expressions
+        // Second arg: line/vector to reflect across
         this.subExpressions[1].resolve(context);
-        this.subExpressions[2].resolve(context);
-
         const lineExpr = this._getResolvedExpression(context, this.subExpressions[1]);
-        const pointExpr = this._getResolvedExpression(context, this.subExpressions[2]);
-
-        // Validate types
         const lineType = this._getGeometryType(lineExpr);
-        const pointType = this._getGeometryType(pointExpr);
 
         if (lineType !== GEOMETRY_TYPES.LINE) {
             this.dispatchError(reflect_error_messages.FIRST_ARG_NOT_LINE(lineExpr.getName()));
         }
 
-        if (pointType !== GEOMETRY_TYPES.POINT) {
-            this.dispatchError(reflect_error_messages.SECOND_ARG_NOT_POINT(pointExpr.getName()));
+        // Get line points for reflection
+        this.linePoints = this._getLinePoints(lineExpr);
+
+        // Third arg: shape to reflect
+        this.subExpressions[2].resolve(context);
+        const shapeExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+        this.originalShapeType = this._getGeometryType(shapeExpr);
+        this.originalShapeName = shapeExpr.getName();
+
+        // Store the variable name for registry lookup
+        this.originalShapeVariableName = this._getVariableName(this.subExpressions[2]);
+
+        if (!ReflectExpression.SUPPORTED_TYPES.has(this.originalShapeType)) {
+            this.dispatchError(reflect_error_messages.INVALID_SHAPE(shapeExpr.getName()));
         }
 
-        // Get line points and point coordinates
-        const linePoints = this._getLinePoints(lineExpr);
-        const pointCoords = this._getPointCoords(pointExpr);
-
-        // Calculate reflection using LineUtil
-        const reflected = LineUtil.reflectPoint(
-            pointCoords,
-            linePoints.start,
-            linePoints.end
-        );
-
-        this.point = { x: reflected.x, y: reflected.y };
+        // Extract original data and compute reflection based on shape type
+        this._extractAndReflect(shapeExpr);
     }
 
     /**
-     * Get geometry type category for an expression
+     * Get geometry type from expression
      */
     _getGeometryType(expr) {
         if (typeof expr.getGeometryType === 'function') {
             return expr.getGeometryType();
+        }
+        return null;
+    }
+
+    /**
+     * Get variable name from expression (for registry lookup)
+     */
+    _getVariableName(expr) {
+        if (expr.variableName) {
+            return expr.variableName;
+        }
+        if (typeof expr.getVariableName === 'function') {
+            return expr.getVariableName();
         }
         return null;
     }
@@ -112,47 +136,247 @@ export class ReflectExpression extends AbstractArithmeticExpression {
         return { x: coords[0], y: coords[1] };
     }
 
+    /**
+     * Extract original coordinates and compute reflected coordinates
+     */
+    _extractAndReflect(shapeExpr) {
+        switch (this.originalShapeType) {
+            case GEOMETRY_TYPES.POINT:
+                this._reflectPoint(shapeExpr);
+                break;
+            case GEOMETRY_TYPES.LINE:
+                this._reflectLine(shapeExpr);
+                break;
+            case GEOMETRY_TYPES.CIRCLE:
+                this._reflectCircle(shapeExpr);
+                break;
+            case GEOMETRY_TYPES.POLYGON:
+                this._reflectPolygon(shapeExpr);
+                break;
+        }
+    }
+
+    /**
+     * Reflect a point
+     */
+    _reflectPoint(expr) {
+        const point = this._getPointCoords(expr);
+        this.originalData = { point };
+        const reflected = LineUtil.reflectPoint(
+            point,
+            this.linePoints.start,
+            this.linePoints.end
+        );
+        this.reflectedData = {
+            point: { x: reflected.x, y: reflected.y }
+        };
+    }
+
+    /**
+     * Reflect a line or vector (both endpoints)
+     */
+    _reflectLine(expr) {
+        const linePoints = this._getLinePoints(expr);
+        this.originalData = linePoints;
+        const reflectedStart = LineUtil.reflectPoint(
+            linePoints.start,
+            this.linePoints.start,
+            this.linePoints.end
+        );
+        const reflectedEnd = LineUtil.reflectPoint(
+            linePoints.end,
+            this.linePoints.start,
+            this.linePoints.end
+        );
+        this.reflectedData = {
+            start: { x: reflectedStart.x, y: reflectedStart.y },
+            end: { x: reflectedEnd.x, y: reflectedEnd.y }
+        };
+    }
+
+    /**
+     * Reflect a circle (reflect center, radius unchanged)
+     */
+    _reflectCircle(expr) {
+        const circleCenter = expr.getCenter();
+        const radius = expr.getRadius();
+        this.originalData = { center: circleCenter, radius };
+        const reflectedCenter = LineUtil.reflectPoint(
+            circleCenter,
+            this.linePoints.start,
+            this.linePoints.end
+        );
+        this.reflectedData = {
+            center: { x: reflectedCenter.x, y: reflectedCenter.y },
+            radius
+        };
+    }
+
+    /**
+     * Reflect a polygon (all vertices)
+     */
+    _reflectPolygon(expr) {
+        const vertices = expr.getVertices();
+        this.originalData = { vertices };
+        const reflectedVertices = vertices.map(v => {
+            const reflected = LineUtil.reflectPoint(
+                v,
+                this.linePoints.start,
+                this.linePoints.end
+            );
+            return { x: reflected.x, y: reflected.y };
+        });
+        this.reflectedData = { vertices: reflectedVertices };
+    }
+
     getName() {
         return ReflectExpression.NAME;
     }
 
+    /**
+     * Return the geometry type of the reflected shape
+     */
     getGeometryType() {
-        return GEOMETRY_TYPES.POINT;
+        return this.originalShapeType;
     }
 
-    // getGrapher() inherited from AbstractArithmeticExpression
-
+    /**
+     * Get the reflected point (for point shapes)
+     */
     getPoint() {
-        return this.point;
+        if (this.originalShapeType === GEOMETRY_TYPES.POINT) {
+            return this.reflectedData.point;
+        }
+        return null;
     }
 
+    /**
+     * Get line points (for line/vec shapes)
+     */
+    getLinePoints() {
+        if (this.originalShapeType === GEOMETRY_TYPES.LINE) {
+            return [this.reflectedData.start, this.reflectedData.end];
+        }
+        return null;
+    }
+
+    /**
+     * Get vector points (for vec shapes, same as line)
+     */
+    getVectorPoints() {
+        return this.getLinePoints();
+    }
+
+    /**
+     * Get center (for circle shapes)
+     */
+    getCenter() {
+        if (this.originalShapeType === GEOMETRY_TYPES.CIRCLE) {
+            return this.reflectedData.center;
+        }
+        return null;
+    }
+
+    /**
+     * Get radius (for circle shapes)
+     */
+    getRadius() {
+        if (this.originalShapeType === GEOMETRY_TYPES.CIRCLE) {
+            return this.reflectedData.radius;
+        }
+        return null;
+    }
+
+    /**
+     * Get vertices (for polygon shapes)
+     */
+    getVertices() {
+        if (this.originalShapeType === GEOMETRY_TYPES.POLYGON) {
+            return this.reflectedData.vertices;
+        }
+        return null;
+    }
+
+    /**
+     * Return atomic values based on shape type
+     */
     getVariableAtomicValues() {
-        return [this.point.x, this.point.y];
+        switch (this.originalShapeType) {
+            case GEOMETRY_TYPES.POINT:
+                return [this.reflectedData.point.x, this.reflectedData.point.y];
+            case GEOMETRY_TYPES.LINE:
+                return [
+                    this.reflectedData.start.x, this.reflectedData.start.y,
+                    this.reflectedData.end.x, this.reflectedData.end.y
+                ];
+            case GEOMETRY_TYPES.CIRCLE:
+                return [
+                    this.reflectedData.center.x, this.reflectedData.center.y,
+                    this.reflectedData.radius
+                ];
+            case GEOMETRY_TYPES.POLYGON:
+                return this.reflectedData.vertices.flatMap(v => [v.x, v.y]);
+            default:
+                return [];
+        }
     }
 
     getStartValue() {
-        return [this.point.x, this.point.y];
+        switch (this.originalShapeType) {
+            case GEOMETRY_TYPES.POINT:
+                return [this.reflectedData.point.x, this.reflectedData.point.y];
+            case GEOMETRY_TYPES.LINE:
+                return [this.reflectedData.start.x, this.reflectedData.start.y];
+            case GEOMETRY_TYPES.CIRCLE:
+                return [this.reflectedData.center.x, this.reflectedData.center.y];
+            case GEOMETRY_TYPES.POLYGON:
+                const v = this.reflectedData.vertices[0];
+                return [v.x, v.y];
+            default:
+                return [0, 0];
+        }
     }
 
     getEndValue() {
-        return [this.point.x, this.point.y];
+        switch (this.originalShapeType) {
+            case GEOMETRY_TYPES.POINT:
+                return [this.reflectedData.point.x, this.reflectedData.point.y];
+            case GEOMETRY_TYPES.LINE:
+                return [this.reflectedData.end.x, this.reflectedData.end.y];
+            case GEOMETRY_TYPES.CIRCLE:
+                return [this.reflectedData.center.x, this.reflectedData.center.y];
+            case GEOMETRY_TYPES.POLYGON:
+                const verts = this.reflectedData.vertices;
+                const last = verts[verts.length - 1];
+                return [last.x, last.y];
+            default:
+                return [0, 0];
+        }
     }
 
     getFriendlyToStr() {
-        return `Reflect(${this.point.x.toFixed(2)}, ${this.point.y.toFixed(2)})`;
+        return `Reflect[${this.originalShapeName}]`;
     }
 
     /**
-     * Create command - PointCommand
+     * Create command for the reflected shape
      */
     toCommand(options = {}) {
-        return new PointCommand(this.graphExpression, this.point, options);
+        return new ReflectCommand(
+            this.graphExpression,
+            this.originalShapeVariableName,
+            this.reflectedData,
+            this.originalShapeName,
+            this.originalShapeType,
+            this.linePoints,
+            options
+        );
     }
 
     /**
-     * Can always play if we have valid coordinates
+     * Can play if we have valid reflected data
      */
     canPlay() {
-        return !isNaN(this.point.x) && !isNaN(this.point.y);
+        return this.reflectedData !== null;
     }
 }

@@ -26,7 +26,8 @@ export const GEOMETRY_TYPES = {
     CIRCLE: 'circle',   // circle, arc
     POLYGON: 'polygon', // polygon (and future triangle types)
     ANGLE: 'angle',     // angle, anglex, anglex2, angler, anglert, angleo
-    POINT: 'point'      // point
+    POINT: 'point',     // point
+    PLOT: 'plot'        // plot, paraplot
 };
 
 export class IntersectExpression extends AbstractArithmeticExpression {
