@@ -118,8 +118,11 @@ function normalizeTypeName(name) {
     'scalev': 'vector',
     'prov': 'vector',
     'dcv': 'vector',
-    // Math text
-    'mathtext': 'label',
+    // Math text expressions
+    'mathtext': 'mathtext',
+    'write': 'mathtext',
+    'writeonly': 'mathtext',
+    'writewithout': 'mathtext',
     'text': 'label',
   };
 
@@ -156,6 +159,7 @@ export function getExpressionDisplayName(expressionType) {
     'vector': 'Vector',
     'angle': 'Angle',
     'label': 'Label',
+    'mathtext': 'Math Text',
     'polygon': 'Polygon',
     'plot': 'Plot',
     'paraplot': 'Parametric Plot',

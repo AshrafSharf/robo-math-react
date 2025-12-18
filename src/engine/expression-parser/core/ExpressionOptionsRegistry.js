@@ -148,6 +148,14 @@ const defaults = {
             color: 'black'
         }
     },
+
+    // MathText expressions (mathtext, write, writeonly, writewithout all use this)
+    mathtext: {
+        styleOptions: {
+            fontSize: 22,
+            color: 'black'
+        }
+    },
     label3d: {
         styleOptions: {
             fontSize: 32,

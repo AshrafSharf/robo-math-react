@@ -141,7 +141,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
             return new RewriteWithoutCommand({
                 targetVariableName: this.targetVariableName,
                 excludePatterns: this.excludePatterns
-            });
+            }, options);
         } else {
             return new WriteWithoutCommand('create', {
                 row: this.row,
@@ -149,7 +149,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
                 latexString: this.latexString,
                 excludePatterns: this.excludePatterns,
                 expression: this
-            });
+            }, options);
         }
     }
 

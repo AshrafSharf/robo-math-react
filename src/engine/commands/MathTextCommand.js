@@ -14,13 +14,15 @@ export class MathTextCommand extends BaseCommand {
      * @param {number} col - Column position (logical coordinate)
      * @param {string} latexString - LaTeX string to render
      * @param {Object} expression - Reference to MathTextExpression for storing component
+     * @param {Object} options - Style options {fontSize, color}
      */
-    constructor(row, col, latexString, expression = null) {
+    constructor(row, col, latexString, expression = null, options = {}) {
         super();
         this.row = row;
         this.col = col;
         this.latexString = latexString;
         this.expression = expression;
+        this.fontSize = options.fontSize ?? 22;
     }
 
     /**
@@ -39,7 +41,7 @@ export class MathTextCommand extends BaseCommand {
             this.col,  // logical col
             coordinateMapper,
             canvasSection,
-            { fontSize: 22, stroke: '#000000', fill: '#000000' }
+            { fontSize: this.fontSize, stroke: this.color, fill: this.color }
         );
 
         // Show instantly (MathTextComponent starts hidden by default)

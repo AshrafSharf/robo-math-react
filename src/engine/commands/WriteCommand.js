@@ -28,11 +28,13 @@ export class WriteCommand extends BaseCommand {
      * @param {Object} options - Mode-specific options
      *   For 'existing': { targetVariableName }
      *   For 'create': { row, col, latexString, expression }
+     * @param {Object} styleOptions - Style options {fontSize, color}
      */
-    constructor(mode, options = {}) {
+    constructor(mode, options = {}, styleOptions = {}) {
         super();
         this.mode = mode;
         this.options = options;
+        this.styleOptions = styleOptions;
         this.mathComponent = null;
     }
 
@@ -62,7 +64,11 @@ export class WriteCommand extends BaseCommand {
                 this.options.col,
                 coordinateMapper,
                 canvasSection,
-                { fontSize: 22, stroke: '#000000', fill: '#000000' }
+                {
+                    fontSize: this.styleOptions.fontSize ?? 22,
+                    stroke: this.color,
+                    fill: this.color
+                }
             );
 
             // Start hidden with strokes disabled for animation

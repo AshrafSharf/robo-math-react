@@ -17,30 +17,26 @@ export class TextExUtil {
   static desktopModeConversion(fontSize) {
     const pixelSize = parseInt(fontSize);
 
-    if (pixelSize < 20) {
-      return `80`;  // Direct pixel value
-    }
-
-    if (pixelSize < 30) {
-      return `85`;  // Direct pixel value
-    }
-    
-    // For larger sizes, scale appropriately
-    return `90`;  // Direct pixel value for larger fonts
+    // Smoother mapping for common font sizes
+    if (pixelSize <= 12) return '70';
+    if (pixelSize <= 16) return '75';
+    if (pixelSize <= 20) return '80';
+    if (pixelSize <= 24) return '85';
+    if (pixelSize <= 32) return '90';
+    if (pixelSize <= 48) return '95';
+    return '100';  // Large sizes
   }
 
   static mobileModeConversion(fontSize) {
     const pixelSize = parseInt(fontSize);
 
-    if (pixelSize < 20) {
-      return `70`;  // Direct pixel value for mobile
-    }
-
-    if (pixelSize < 30) {
-      return `75`;  // Direct pixel value for mobile
-    }
-    
-    // For larger sizes on mobile
-    return `80`;  // Direct pixel value
+    // Slightly thinner strokes for mobile
+    if (pixelSize <= 12) return '60';
+    if (pixelSize <= 16) return '65';
+    if (pixelSize <= 20) return '70';
+    if (pixelSize <= 24) return '75';
+    if (pixelSize <= 32) return '80';
+    if (pixelSize <= 48) return '85';
+    return '90';
   }
 }

@@ -88,11 +88,9 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     return rawOptions.expressionOptions?.[expressionType] || {};
   }, [command?.id, expressionType, optionsVersion]);
 
-  // Handle expression option changes - save to registry
+  // Handle expression option changes - save to registry and command model
   const handleExpressionOptionChange = (optionKey, value) => {
-    console.log('📝 handleExpressionOptionChange:', optionKey, '=', value, 'expressionType:', expressionType, 'commandId:', command?.id);
     if (!expressionType || !command?.id) {
-      console.log('❌ Missing expressionType or command.id');
       return;
     }
 
@@ -100,21 +98,30 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     ExpressionOptionsRegistry.setExpressionOptions(command.id, expressionType, {
       [optionKey]: value
     });
-    console.log('📝 Registry updated, calling onUpdate');
+
+    // Update command model for persistence (store in expressionOptions)
+    const updatedExpressionOptions = {
+      ...command.expressionOptions,
+      [expressionType]: {
+        ...(command.expressionOptions?.[expressionType] || {}),
+        [optionKey]: value
+      }
+    };
+    onUpdate({ expressionOptions: updatedExpressionOptions });
 
     // Force re-read from registry
     setOptionsVersion(v => v + 1);
-
-    // Trigger re-render by updating command (this will cause pipeline to re-fetch from registry)
-    onUpdate({});
   };
 
-  // Handle stroke color change - save to registry and redraw single command
+  // Handle stroke color change - save to registry, command model, and redraw
   const handleColorChange = (color) => {
     if (!command?.id) return;
 
     // Update the registry with the new color
     ExpressionOptionsRegistry.setById(command.id, { color });
+
+    // Update command model for persistence
+    onUpdate({ color });
 
     // Redraw just this command with new color (no full canvas redraw)
     if (onRedrawSingle) {
@@ -122,12 +129,15 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     }
   };
 
-  // Handle fill color change - save to registry and redraw single command
+  // Handle fill color change - save to registry, command model, and redraw
   const handleFillColorChange = (fillColor) => {
     if (!command?.id) return;
 
     // Update the registry with the new fill color
     ExpressionOptionsRegistry.setById(command.id, { fillColor });
+
+    // Update command model for persistence
+    onUpdate({ fillColor });
 
     // Redraw just this command with new fill (no full canvas redraw)
     if (onRedrawSingle) {
@@ -135,12 +145,15 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     }
   };
 
-  // Handle stroke width change - save to registry and redraw single command
+  // Handle stroke width change - save to registry, command model, and redraw
   const handleStrokeWidthChange = (strokeWidth) => {
     if (!command?.id) return;
 
     // Update the registry with the new stroke width
     ExpressionOptionsRegistry.setById(command.id, { strokeWidth });
+
+    // Update command model for persistence
+    onUpdate({ strokeWidth });
 
     // Redraw just this command with new stroke width (no full canvas redraw)
     if (onRedrawSingle) {
@@ -148,12 +161,15 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     }
   };
 
-  // Handle stroke opacity change - save to registry and redraw single command
+  // Handle stroke opacity change - save to registry, command model, and redraw
   const handleStrokeOpacityChange = (strokeOpacity) => {
     if (!command?.id) return;
 
     // Update the registry with the new stroke opacity
     ExpressionOptionsRegistry.setById(command.id, { strokeOpacity });
+
+    // Update command model for persistence
+    onUpdate({ strokeOpacity });
 
     // Redraw just this command with new stroke opacity (no full canvas redraw)
     if (onRedrawSingle) {
@@ -161,16 +177,45 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     }
   };
 
-  // Handle fill opacity change - save to registry and redraw single command
+  // Handle fill opacity change - save to registry, command model, and redraw
   const handleFillOpacityChange = (fillOpacity) => {
     if (!command?.id) return;
 
     // Update the registry with the new fill opacity
     ExpressionOptionsRegistry.setById(command.id, { fillOpacity });
 
+    // Update command model for persistence
+    onUpdate({ fillOpacity });
+
     // Redraw just this command with new fill opacity (no full canvas redraw)
     if (onRedrawSingle) {
       onRedrawSingle({ fillOpacity });
+    }
+  };
+
+  // Handle font size change - save to registry, command model, and redraw
+  const handleFontSizeChange = (fontSize) => {
+    if (!command?.id || !expressionType) return;
+
+    // Update the registry with the new font size (expression-specific option)
+    ExpressionOptionsRegistry.setExpressionOptions(command.id, expressionType, { fontSize });
+
+    // Update command model for persistence (store in expressionOptions)
+    const updatedExpressionOptions = {
+      ...command.expressionOptions,
+      [expressionType]: {
+        ...(command.expressionOptions?.[expressionType] || {}),
+        fontSize
+      }
+    };
+    onUpdate({ expressionOptions: updatedExpressionOptions });
+
+    // Force re-read from registry
+    setOptionsVersion(v => v + 1);
+
+    // Redraw the command with new font size (clears and re-inits)
+    if (onRedrawSingle) {
+      onRedrawSingle({ fontSize });
     }
   };
 
@@ -257,12 +302,14 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
           <StyleTab
             command={command}
             expressionType={expressionType}
+            expressionOptions={currentExpressionOptions}
             onUpdate={onUpdate}
             onColorChange={handleColorChange}
             onFillColorChange={handleFillColorChange}
             onStrokeWidthChange={handleStrokeWidthChange}
             onStrokeOpacityChange={handleStrokeOpacityChange}
             onFillOpacityChange={handleFillOpacityChange}
+            onFontSizeChange={handleFontSizeChange}
           />
         )}
 

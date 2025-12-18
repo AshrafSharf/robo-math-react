@@ -2089,7 +2089,8 @@ margin-top: 10px;
 }
 
 .color-swatch {
-    width: 22px;
+    flex: 1;
+    min-width: 20px;
     height: 22px;
     border-radius: 3px;
     cursor: pointer;
@@ -2098,7 +2099,6 @@ margin-top: 10px;
     justify-content: center;
     border: 1px solid rgba(0, 0, 0, 0.1);
     transition: transform 0.1s, box-shadow 0.1s;
-    flex-shrink: 0;
 }
 
 .color-swatch:hover {

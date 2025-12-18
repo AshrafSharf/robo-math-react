@@ -8,6 +8,9 @@ const STROKE_WIDTH_PRESETS = [0.5, 1, 1.5, 2, 3, 4, 5, 6];
 // Preset values for opacity
 const OPACITY_PRESETS = [0, 0.25, 0.5, 0.75, 1];
 
+// Preset values for font size
+const FONT_SIZE_PRESETS = [16, 22, 28, 36, 48, 64];
+
 /**
  * Style Tab - Renders different UI based on style type
  * - stroke: color + strokeWidth + opacity
@@ -16,7 +19,7 @@ const OPACITY_PRESETS = [0, 0.25, 0.5, 0.75, 1];
  * - font: fontSize + fontColor
  * - null: no style controls
  */
-const StyleTab = ({ command, expressionType, onUpdate, onColorChange, onFillColorChange, onStrokeWidthChange, onStrokeOpacityChange, onFillOpacityChange }) => {
+const StyleTab = ({ command, expressionType, expressionOptions = {}, onUpdate, onColorChange, onFillColorChange, onStrokeWidthChange, onStrokeOpacityChange, onFillOpacityChange, onFontSizeChange }) => {
   const strokeColor = command.color || '#DC3912';
   const fillColor = command.fillColor || 'none';
   const strokeWidth = command.strokeWidth ?? 2;
@@ -123,9 +126,11 @@ const StyleTab = ({ command, expressionType, onUpdate, onColorChange, onFillColo
     );
   }
 
-  // font: fontSize + fontColor (for label)
+  // font: fontSize + fontColor (for label, mathtext, write, writeonly, writewithout)
   if (styleType === 'font') {
-    const fontSize = command.fontSize ?? 16;
+    // Get fontSize from expression options (registry) or fall back to defaults
+    const defaultSize = expressionType === 'mathtext' ? 22 : 16;
+    const fontSize = expressionOptions.fontSize ?? defaultSize;
     return (
       <div className="style-tab compact">
         <ColorPicker
@@ -134,15 +139,26 @@ const StyleTab = ({ command, expressionType, onUpdate, onColorChange, onFillColo
           label="Color:"
         />
         <div className="compact-controls-row">
-          <div className="compact-control">
+          <div className="compact-control width-presets">
             <label>Size</label>
-            <input
-              type="number"
-              min="10"
-              max="48"
-              value={fontSize}
-              onChange={(e) => onUpdate({ fontSize: Number(e.target.value) })}
-            />
+            <div className="preset-buttons">
+              {FONT_SIZE_PRESETS.map(size => (
+                <button
+                  key={size}
+                  type="button"
+                  className={`preset-btn ${fontSize === size ? 'active' : ''}`}
+                  onClick={() => {
+                    if (onFontSizeChange) {
+                      onFontSizeChange(size);
+                    } else {
+                      onUpdate({ fontSize: size });
+                    }
+                  }}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

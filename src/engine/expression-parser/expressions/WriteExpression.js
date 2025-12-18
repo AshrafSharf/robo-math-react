@@ -168,14 +168,14 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         } else if (this.mode === 'existing') {
             return new WriteCommand('existing', {
                 targetVariableName: this.targetVariableName
-            });
+            }, options);
         } else {
             return new WriteCommand('create', {
                 row: this.row,
                 col: this.col,
                 latexString: this.latexString,
                 expression: this
-            });
+            }, options);
         }
     }
 

@@ -77,7 +77,8 @@ export class MathTextExpression extends AbstractNonArithmeticExpression {
             this.row,
             this.col,
             this.latexString,
-            this  // Pass expression reference so command can set component
+            this,  // Pass expression reference so command can set component
+            options  // Pass style options (fontSize, color)
         );
     }
 }

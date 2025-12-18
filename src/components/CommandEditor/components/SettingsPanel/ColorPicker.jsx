@@ -39,13 +39,6 @@ const ColorPicker = ({ selectedColor, onChange, label = "Color:", allowNone = fa
   const colors = allowNone ? ['none', ...ALL_COLORS] : ALL_COLORS;
   const maxScroll = Math.max(0, colors.length - VISIBLE_COUNT);
 
-  const isColorSelected = (color) => {
-    if (color === 'none') {
-      return !selectedColor || selectedColor === 'none' || selectedColor === 'transparent';
-    }
-    return selectedColor?.toLowerCase() === color.toLowerCase();
-  };
-
   const scrollLeft = () => {
     setScrollIndex(Math.max(0, scrollIndex - 1));
   };
@@ -105,15 +98,11 @@ const ColorPicker = ({ selectedColor, onChange, label = "Color:", allowNone = fa
           {visibleColors.map((color) => (
             <li
               key={color}
-              className={`color-swatch ${color === 'none' ? 'none-swatch' : ''} ${isColorSelected(color) ? 'selected' : ''}`}
+              className={`color-swatch ${color === 'none' ? 'none-swatch' : ''}`}
               style={color !== 'none' ? { backgroundColor: color } : undefined}
               onClick={() => onChange(color)}
               title={color === 'none' ? 'No fill' : color}
-            >
-              {isColorSelected(color) && (
-                <span className={`checkmark ${color === 'none' ? 'checkmark-dark' : ''}`}>&#10003;</span>
-              )}
-            </li>
+            />
           ))}
         </ul>
 

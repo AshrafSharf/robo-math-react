@@ -77,6 +77,12 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
     fontSize: { type: 'number', min: 10, max: 48, default: 16, label: 'Font Size' },
   },
 
+  // MathText expressions (mathtext, write, writeonly, writewithout) - font style
+  mathtext: {
+    _style: 'font',
+    fontSize: { type: 'number', min: 12, max: 72, default: 22, label: 'Font Size' },
+  },
+
   // Polygon - stroke + fill style
   polygon: {
     _style: 'strokeFill',

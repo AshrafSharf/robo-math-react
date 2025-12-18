@@ -36,6 +36,11 @@ const EXPRESSION_TYPE_MAP = {
     'polygon': 'polygon',
     'plot': 'plot',
     'paraplot': 'paraplot',
+    // MathText expressions - all map to 'mathtext' for unified options
+    'mathtext': 'mathtext',
+    'write': 'mathtext',
+    'writeonly': 'mathtext',
+    'writewithout': 'mathtext',
 };
 
 export class ExpressionPipelineService {
@@ -216,6 +221,32 @@ export class ExpressionPipelineService {
             canPlayInfos: [],
             context: freshContext
         };
+
+        // Initialize registry from persisted command model options
+        commandModels.forEach((cmdModel) => {
+            if (cmdModel.id) {
+                // Load top-level style options from command model into registry
+                const styleOptions = {};
+                if (cmdModel.color != null) styleOptions.color = cmdModel.color;
+                if (cmdModel.fillColor != null) styleOptions.fillColor = cmdModel.fillColor;
+                if (cmdModel.strokeWidth != null) styleOptions.strokeWidth = cmdModel.strokeWidth;
+                if (cmdModel.strokeOpacity != null) styleOptions.strokeOpacity = cmdModel.strokeOpacity;
+                if (cmdModel.fillOpacity != null) styleOptions.fillOpacity = cmdModel.fillOpacity;
+
+                if (Object.keys(styleOptions).length > 0) {
+                    ExpressionOptionsRegistry.setById(cmdModel.id, styleOptions);
+                }
+
+                // Load expression-specific options from command model into registry
+                if (cmdModel.expressionOptions) {
+                    Object.entries(cmdModel.expressionOptions).forEach(([expType, options]) => {
+                        if (options && Object.keys(options).length > 0) {
+                            ExpressionOptionsRegistry.setExpressionOptions(cmdModel.id, expType, options);
+                        }
+                    });
+                }
+            }
+        });
 
         commandModels.forEach((cmdModel, index) => {
             const processResult = this.processExpression(

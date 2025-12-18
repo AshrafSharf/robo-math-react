@@ -361,6 +361,14 @@ export class CommandExecutor {
     if (styleOptions.strokeOpacity !== undefined) command.strokeOpacity = styleOptions.strokeOpacity;
     if (styleOptions.fillOpacity !== undefined) command.fillOpacity = styleOptions.fillOpacity;
 
+    // Update font size for mathtext commands
+    if (styleOptions.fontSize !== undefined) {
+      // For MathTextCommand (stores fontSize directly)
+      if (command.fontSize !== undefined) command.fontSize = styleOptions.fontSize;
+      // For WriteCommand, WriteOnlyCommand, WriteWithoutCommand (store in styleOptions)
+      if (command.styleOptions) command.styleOptions.fontSize = styleOptions.fontSize;
+    }
+
     // Clear old shape and re-init with new style
     command.clear();
     await this.initCommand(command);
