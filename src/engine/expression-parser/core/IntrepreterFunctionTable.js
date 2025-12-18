@@ -27,11 +27,11 @@ import { SCALEVExpression } from '../expressions/SCALEVExpression.js';
 import { PROVExpression } from '../expressions/PROVExpression.js';
 import { DCVExpression } from '../expressions/DCVExpression.js';
 import { AngleExpression } from '../expressions/AngleExpression.js';
-import { AngleXExpression } from '../expressions/AngleXExpression.js';
-import { AngleX2Expression } from '../expressions/AngleX2Expression.js';
-import { AngleRExpression } from '../expressions/AngleRExpression.js';
-import { AngleRtExpression } from '../expressions/AngleRtExpression.js';
-import { AngleOExpression } from '../expressions/AngleOExpression.js';
+import { Angle2Expression } from '../expressions/Angle2Expression.js';
+import { Angle3Expression } from '../expressions/Angle3Expression.js';
+import { Angle4Expression } from '../expressions/Angle4Expression.js';
+import { RightAngleExpression } from '../expressions/RightAngleExpression.js';
+import { Angle5Expression } from '../expressions/Angle5Expression.js';
 import { ArcExpression } from '../expressions/ArcExpression.js';
 import { IntersectExpression } from '../expressions/IntersectExpression.js';
 import { ProjectExpression } from '../expressions/ProjectExpression.js';
@@ -72,6 +72,10 @@ import { Forward3DExpression } from '../expressions/3d/Forward3DExpression.js';
 import { Backward3DExpression } from '../expressions/3d/Backward3DExpression.js';
 import { Move3DExpression } from '../expressions/3d/Move3DExpression.js';
 import { Reverse3DExpression } from '../expressions/3d/Reverse3DExpression.js';
+import { Angle3DExpression } from '../expressions/3d/Angle3DExpression.js';
+import { Angle3D2Expression } from '../expressions/3d/Angle3D2Expression.js';
+import { RightAngle3DExpression } from '../expressions/3d/RightAngle3DExpression.js';
+import { Sector3DExpression } from '../expressions/3d/Sector3DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { ParametricPlotExpression } from '../expressions/ParametricPlotExpression.js';
 import { FunctionDefinitionExpression } from '../expressions/FunctionDefinitionExpression.js';
@@ -168,6 +172,16 @@ export class IntrepreterFunctionTable {
         registerMultiArg('move3d', Move3DExpression);         // move vector to new position
         registerMultiArg('reverse3d', Reverse3DExpression);   // create reversed vector
 
+        // 3D angle expressions
+        // angle3d      = interior (angle arc between two rays from vertex)
+        // angle3d2     = reflex (the larger angle, >180 degrees)
+        // rightangle3d = right angle marker (90 degree square)
+        // sector3d     = filled pie-slice sector
+        registerMultiArg('angle3d', Angle3DExpression);           // interior angle arc
+        registerMultiArg('angle3d2', Angle3D2Expression);         // reflex angle arc
+        registerMultiArg('rightangle3d', RightAngle3DExpression); // right angle marker (90 degree square)
+        registerMultiArg('sector3d', Sector3DExpression);         // filled pie-slice sector
+
         registerMultiArg('plot', PlotExpression);
         registerMultiArg('paraplot', ParametricPlotExpression);
         registerMultiArg('label', LabelExpression);
@@ -213,12 +227,18 @@ export class IntrepreterFunctionTable {
         registerMultiArg('dcv', DCVExpression);    // decompose vector
 
         // Angle expressions
-        registerMultiArg('angle', AngleExpression);     // interior angle (default)
-        registerMultiArg('anglex', AngleXExpression);   // exterior angle (first)
-        registerMultiArg('anglex2', AngleX2Expression); // exterior angle (second)
-        registerMultiArg('angler', AngleRExpression);   // reflex angle
-        registerMultiArg('anglert', AngleRtExpression); // right angle (90°)
-        registerMultiArg('angleo', AngleOExpression);   // opposite/vertical angle
+        // angle  = interior (default angle between two rays)
+        // angle2 = exterior-first (exterior angle at first vector)
+        // angle3 = exterior-second (exterior angle at second vector)
+        // angle4 = reflex (angle > 180 degrees)
+        // rightangle = right angle marker (90 degree square)
+        // angle5 = opposite/vertical (angle across when two lines cross)
+        registerMultiArg('angle', AngleExpression);         // interior angle (default)
+        registerMultiArg('angle2', Angle2Expression);       // exterior angle (first)
+        registerMultiArg('angle3', Angle3Expression);       // exterior angle (second)
+        registerMultiArg('angle4', Angle4Expression);       // reflex angle
+        registerMultiArg('rightangle', RightAngleExpression); // right angle (90 degree square)
+        registerMultiArg('angle5', Angle5Expression);       // opposite/vertical angle
 
         // Coordinate extraction
         registerMultiArg('x', XPointExpression);

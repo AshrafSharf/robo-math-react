@@ -1,17 +1,16 @@
 import { BaseCommand } from './BaseCommand.js';
 import { RewriteWithoutEffect } from '../../mathtext/effects/rewrite-without-effect.js';
-import { wrapMultipleWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
-import { MathTextComponent } from '../../mathtext/components/math-text-component.js';
+import { PatternSelector } from '../../mathtext/utils/pattern-selector.js';
+import { TextItem } from '../../mathtext/models/text-item.js';
+import { TextItemCollection } from '../../mathtext/models/text-item-collection.js';
 
 /**
  * RewriteWithoutCommand - Animates everything EXCEPT the pattern-matched parts
- * on an existing MathTextComponent.
- *
- * Uses temp component to extract bounds, then queries original component for nodePaths.
+ * on an existing MathTextComponent. Returns TextItemCollection of excluded parts.
  *
  * Usage:
  *   M = mathtext(5, 2, "\tan(\theta) = ...")
- *   writewithout(M, "\theta")
+ *   thetas = writewithout(M, "\theta")  // Returns collection of theta parts
  */
 export class RewriteWithoutCommand extends BaseCommand {
     constructor(options = {}) {
@@ -22,32 +21,35 @@ export class RewriteWithoutCommand extends BaseCommand {
     }
 
     async doInit() {
-        // 1. Get original component
         this.mathComponent = this.commandContext.shapeRegistry[this.options.targetVariableName];
         if (!this.mathComponent) {
             console.warn(`RewriteWithoutCommand: "${this.options.targetVariableName}" not found in registry`);
             return;
         }
 
-        const originalContent = this.mathComponent.getContent();
-
-        // 2. Create TEMP component with wrapped bbox content (same position)
-        const wrappedContent = wrapMultipleWithBBox(originalContent, this.options.excludePatterns);
-        const tempComponent = MathTextComponent.createTempAtSamePosition(
+        this.selectionUnits = PatternSelector.getSelectionUnits(
             this.mathComponent,
-            wrappedContent
+            this.options.excludePatterns
         );
 
-        // 3. Extract BOUNDS from temp's bbox regions
-        const bboxBounds = tempComponent.getBBoxHighlightBounds();
+        // Return TextItemCollection of EXCLUDED items (the matched patterns we didn't write)
+        this.commandResult = this._createExcludedCollection();
+    }
 
-        // 4. Destroy temp - we only needed the bounds
-        tempComponent.destroy();
+    /**
+     * Create TextItemCollection from excluded (matched pattern) nodes
+     * @returns {TextItemCollection}
+     */
+    _createExcludedCollection() {
+        const collection = new TextItemCollection();
 
-        // 5. Use bounds to get nodePaths from ORIGINAL component (these are parts to EXCLUDE)
-        this.selectionUnits = this.mathComponent.computeSelectionUnitsFromBounds(bboxBounds);
+        // Each selection unit becomes a TextItem
+        this.selectionUnits.forEach(unit => {
+            const textItem = new TextItem(this.mathComponent, unit, null);
+            collection.add(textItem);
+        });
 
-        this.commandResult = this.mathComponent;
+        return collection;
     }
 
     async doPlay() {

@@ -1,16 +1,17 @@
 import { BaseCommand } from './BaseCommand.js';
 import { RewriteOnlyEffect } from '../../mathtext/effects/rewrite-only-effect.js';
-import { wrapMultipleWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
-import { MathTextComponent } from '../../mathtext/components/math-text-component.js';
+import { PatternSelector } from '../../mathtext/utils/pattern-selector.js';
+import { TextItem } from '../../mathtext/models/text-item.js';
+import { TextItemCollection } from '../../mathtext/models/text-item-collection.js';
+import { SelectionUnit } from '../../mathtext/models/selection-unit.js';
 
 /**
  * RewriteOnlyCommand - Animates ONLY the pattern-matched parts on an existing MathTextComponent.
- *
- * Uses temp component to extract bounds, then queries original component for nodePaths.
+ * Returns TextItemCollection of excluded (non-written) parts.
  *
  * Usage:
  *   M = mathtext(5, 2, "\tan(\theta) = ...")
- *   writeonly(M, "\theta")
+ *   excluded = writeonly(M, "\theta")  // Returns collection of non-theta parts
  */
 export class RewriteOnlyCommand extends BaseCommand {
     constructor(options = {}) {
@@ -21,32 +22,42 @@ export class RewriteOnlyCommand extends BaseCommand {
     }
 
     async doInit() {
-        // 1. Get original component
         this.mathComponent = this.commandContext.shapeRegistry[this.options.targetVariableName];
         if (!this.mathComponent) {
             console.warn(`RewriteOnlyCommand: "${this.options.targetVariableName}" not found in registry`);
             return;
         }
 
-        const originalContent = this.mathComponent.getContent();
-
-        // 2. Create TEMP component with wrapped bbox content (same position)
-        const wrappedContent = wrapMultipleWithBBox(originalContent, this.options.includePatterns);
-        const tempComponent = MathTextComponent.createTempAtSamePosition(
+        this.selectionUnits = PatternSelector.getSelectionUnits(
             this.mathComponent,
-            wrappedContent
+            this.options.includePatterns
         );
 
-        // 3. Extract BOUNDS from temp's bbox regions
-        const bboxBounds = tempComponent.getBBoxHighlightBounds();
+        // Return TextItemCollection of EXCLUDED items (what we didn't write)
+        this.commandResult = this._createExcludedCollection();
+    }
 
-        // 4. Destroy temp - we only needed the bounds
-        tempComponent.destroy();
+    /**
+     * Create TextItemCollection from excluded (non-selected) nodes
+     * @returns {TextItemCollection}
+     */
+    _createExcludedCollection() {
+        const excludedNodes = this.mathComponent.excludeTweenNodes(this.selectionUnits);
 
-        // 5. Use bounds to get nodePaths from ORIGINAL component
-        this.selectionUnits = this.mathComponent.computeSelectionUnitsFromBounds(bboxBounds);
+        const excludedUnit = new SelectionUnit();
+        excludedNodes.forEach(node => {
+            if (node.fragmentId) {
+                excludedUnit.addFragment(node.fragmentId);
+            }
+        });
 
-        this.commandResult = this.mathComponent;
+        const collection = new TextItemCollection();
+        if (excludedUnit.hasFragment()) {
+            const textItem = new TextItem(this.mathComponent, excludedUnit, null);
+            collection.add(textItem);
+        }
+
+        return collection;
     }
 
     async doPlay() {

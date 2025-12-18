@@ -21,7 +21,8 @@ export class PluginInitializer {
       '      extensions: ["bbox.js", "color.js"]\n' +
       '    },\n' +
       '    SVG:{\n' +
-      '    useFontCache:false\n' +
+      '    useFontCache:false,\n' +
+      '    addMMLclasses:true\n' +
       '    }\n' +
       '  });';
 

@@ -7,8 +7,7 @@
 import { BaseCommand } from './BaseCommand.js';
 import { TextItem } from '../../mathtext/models/text-item.js';
 import { TextItemCollection } from '../../mathtext/models/text-item-collection.js';
-import { wrapMultipleWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
-import { MathTextComponent } from '../../mathtext/components/math-text-component.js';
+import { PatternSelector } from '../../mathtext/utils/pattern-selector.js';
 
 export class SubOnlyCommand extends BaseCommand {
     /**
@@ -48,34 +47,16 @@ export class SubOnlyCommand extends BaseCommand {
      * @returns {TextItemCollection}
      */
     _extractTextItems() {
-        const originalContent = this.mathComponent.getContent();
-        const wrappedContent = wrapMultipleWithBBox(originalContent, this.options.includePatterns);
-
-        // Create temp component with bbox markers
-        const tempComponent = MathTextComponent.createTempAtSamePosition(
+        const selectionUnits = PatternSelector.getSelectionUnits(
             this.mathComponent,
-            wrappedContent
+            this.options.includePatterns
         );
 
-        // Extract bounds from temp's bbox regions
-        const bboxBounds = tempComponent.getBBoxHighlightBounds();
-
-        // Destroy temp - we only needed the bounds
-        tempComponent.destroy();
-
-        // Map bounds to selection units on the original component
-        const selectionUnits = this.mathComponent.computeSelectionUnitsFromBounds(bboxBounds);
-
-        // Create TextItemCollection
         const collection = new TextItemCollection();
-        for (let i = 0; i < selectionUnits.length; i++) {
-            const textItem = new TextItem(
-                this.mathComponent,
-                selectionUnits[i],
-                bboxBounds[i]
-            );
+        selectionUnits.forEach(unit => {
+            const textItem = new TextItem(this.mathComponent, unit, null);
             collection.add(textItem);
-        }
+        });
 
         return collection;
     }

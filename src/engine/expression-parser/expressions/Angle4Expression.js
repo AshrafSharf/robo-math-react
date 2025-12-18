@@ -1,20 +1,25 @@
 /**
- * AngleX (Exterior Angle First) expression - creates an exterior angle at first vector
+ * Angle4 (Reflex Angle) expression - creates a reflex angle (>180 degrees)
+ *
+ * angle4 = reflex (the larger angle, going the "long way" around)
  *
  * Syntax:
- *   anglex(graph, vertex, point1, point2)          - graph with points
- *   anglex(graph, vertex, point1, point2, radius)  - graph with custom radius
+ *   angle4(graph, vertex, point1, point2)          - using points
+ *   angle4(graph, vertex, point1, point2, radius)  - with custom radius
+ *   angle4(graph, line1, line2)                    - angle between two lines
+ *   angle4(graph, line1, line2, radius)            - with custom radius
  *
  * Collects 6 coordinates (vertex + point1 + point2) + optional radius
+ * Or 8 coordinates (line1 + line2) + optional radius
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { AngleCommand } from '../../commands/AngleCommand.js';
 import { angle_error_messages } from '../core/ErrorMessages.js';
 import { AngleUtil } from '../../../geom/AngleUtil.js';
 
-export class AngleXExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'anglex';
-    static ANGLE_TYPE = 'exterior-first';
+export class Angle4Expression extends AbstractNonArithmeticExpression {
+    static NAME = 'angle4';
+    static ANGLE_TYPE = 'reflex';
 
     constructor(subExpressions) {
         super();
@@ -26,7 +31,7 @@ export class AngleXExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError(angle_error_messages.MISSING_ARGS(AngleXExpression.NAME));
+            this.dispatchError(angle_error_messages.MISSING_ARGS(Angle4Expression.NAME));
         }
 
         // First arg must be graph
@@ -34,10 +39,9 @@ export class AngleXExpression extends AbstractNonArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(AngleXExpression.NAME));
+            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(Angle4Expression.NAME));
         }
 
-        // Collect all atomic values from remaining subexpressions
         const allCoords = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
@@ -47,19 +51,18 @@ export class AngleXExpression extends AbstractNonArithmeticExpression {
             }
         }
 
-        // Handle different input formats (6/7 = points, 8/9 = two lines)
         if (allCoords.length === 8 || allCoords.length === 9) {
             const line1 = { start: { x: allCoords[0], y: allCoords[1] }, end: { x: allCoords[2], y: allCoords[3] } };
             const line2 = { start: { x: allCoords[4], y: allCoords[5] }, end: { x: allCoords[6], y: allCoords[7] } };
             const angleData = AngleUtil.fromTwoLines(line1, line2);
-            if (!angleData) this.dispatchError(`${AngleXExpression.NAME}(): lines are parallel.`);
+            if (!angleData) this.dispatchError(`${Angle4Expression.NAME}(): lines are parallel.`);
             this.coordinates = [angleData.vertex.x, angleData.vertex.y, angleData.point1.x, angleData.point1.y, angleData.point2.x, angleData.point2.y];
             if (allCoords.length === 9) { this.radius = allCoords[8]; if (this.radius <= 0) this.radius = 0.8; }
         } else if (allCoords.length === 6 || allCoords.length === 7) {
             this.coordinates = allCoords.slice(0, 6);
             if (allCoords.length === 7) { this.radius = allCoords[6]; if (this.radius <= 0) this.radius = 0.8; }
         } else {
-            this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(AngleXExpression.NAME, allCoords.length));
+            this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(Angle4Expression.NAME, allCoords.length));
         }
     }
 
@@ -67,7 +70,7 @@ export class AngleXExpression extends AbstractNonArithmeticExpression {
     // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
-        return AngleXExpression.NAME;
+        return Angle4Expression.NAME;
     }
 
     /**
@@ -99,14 +102,14 @@ export class AngleXExpression extends AbstractNonArithmeticExpression {
     }
 
     getAngleType() {
-        return AngleXExpression.ANGLE_TYPE;
+        return Angle4Expression.ANGLE_TYPE;
     }
 
     getFriendlyToStr() {
         const v = this.getVertex();
         const p1 = this.getPoint1();
         const p2 = this.getPoint2();
-        return `AngleX[vertex(${v.x}, ${v.y}), p1(${p1.x}, ${p1.y}), p2(${p2.x}, ${p2.y})]`;
+        return `Angle4[vertex(${v.x}, ${v.y}), p1(${p1.x}, ${p1.y}), p2(${p2.x}, ${p2.y})]`;
     }
 
     toCommand(options = {}) {

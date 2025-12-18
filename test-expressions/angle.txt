@@ -1,0 +1,50 @@
+  2D Angle Test Expressions
+
+  g = g2d(0, 0, 16, 8, -5, 5, -5, 5, 1)
+  A = point(g, 0, 0)
+  B = point(g, 3, 0)
+  C = point(g, 0, 3)
+  angle(g, A, B, C)
+
+  g = g2d(0, 0, 16, 8, -5, 5, -5, 5, 1)
+  A = point(g, 0, 0)
+  B = point(g, 3, 0)
+  C = point(g, 0, 3)
+  rightangle(g, A, B, C)
+
+  g = g2d(0, 0, 16, 8, -5, 5, -5, 5, 1)
+  A = point(g, 0, 0)
+  B = point(g, 3, 0)
+  C = point(g, -2, 2)
+  angle4(g, A, B, C)
+
+  3D Angle Test Expressions
+
+  g = g3d(0, 0, 20, 20)
+  A = point3d(g, 0, 0, 0)
+  B = point3d(g, 3, 0, 0)
+  C = point3d(g, 0, 3, 0)
+  angle3d(g, A, B, C)
+
+  g = g3d(0, 0, 20, 20)
+  A = point3d(g, 0, 0, 0)
+  B = point3d(g, 3, 0, 0)
+  C = point3d(g, 0, 3, 0)
+  rightangle3d(g, A, B, C)
+
+  g = g3d(0, 0, 20, 20)
+  A = point3d(g, 0, 0, 0)
+  B = point3d(g, 3, 0, 0)
+  C = point3d(g, 0, 3, 0)
+  sector3d(g, A, B, C)
+
+  g = g3d(0, 0, 20, 20)
+  V1 = vector3d(g, 0, 0, 0, 3, 0, 0)
+  V2 = vector3d(g, 0, 0, 0, 0, 3, 0)
+  angle3d(g, V1, V2)
+
+  g = g3d(0, 0, 20, 20)
+  A = point3d(g, 0, 0, 0)
+  B = point3d(g, 3, 0, 0)
+  C = point3d(g, 0, 3, 0)
+  angle3d2(g, A, B, C)

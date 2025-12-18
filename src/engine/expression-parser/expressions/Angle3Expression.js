@@ -1,22 +1,25 @@
 /**
- * AngleR (Reflex Angle) expression - creates a reflex angle (>180 degrees)
+ * Angle3 (Exterior Angle Second) expression - creates an exterior angle at second vector
+ *
+ * angle3 = exterior-second (exterior angle measured from the second ray/vector)
  *
  * Syntax:
- *   angler(graph, vertex, point1, point2)          - using points
- *   angler(graph, vertex, point1, point2, radius)  - with custom radius
- *   angler(graph, vx, vy, p1x, p1y, p2x, p2y)      - using raw coordinates
- *   angler(graph, vx, vy, p1x, p1y, p2x, p2y, radius)
+ *   angle3(graph, vertex, point1, point2)          - using points
+ *   angle3(graph, vertex, point1, point2, radius)  - with custom radius
+ *   angle3(graph, line1, line2)                    - angle between two lines
+ *   angle3(graph, line1, line2, radius)            - with custom radius
  *
  * Collects 6 coordinates (vertex + point1 + point2) + optional radius
+ * Or 8 coordinates (line1 + line2) + optional radius
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { AngleCommand } from '../../commands/AngleCommand.js';
 import { angle_error_messages } from '../core/ErrorMessages.js';
 import { AngleUtil } from '../../../geom/AngleUtil.js';
 
-export class AngleRExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'angler';
-    static ANGLE_TYPE = 'reflex';
+export class Angle3Expression extends AbstractNonArithmeticExpression {
+    static NAME = 'angle3';
+    static ANGLE_TYPE = 'exterior-second';
 
     constructor(subExpressions) {
         super();
@@ -28,7 +31,7 @@ export class AngleRExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError(angle_error_messages.MISSING_ARGS(AngleRExpression.NAME));
+            this.dispatchError(angle_error_messages.MISSING_ARGS(Angle3Expression.NAME));
         }
 
         // First arg must be graph
@@ -36,7 +39,7 @@ export class AngleRExpression extends AbstractNonArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(AngleRExpression.NAME));
+            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(Angle3Expression.NAME));
         }
 
         const allCoords = [];
@@ -52,14 +55,14 @@ export class AngleRExpression extends AbstractNonArithmeticExpression {
             const line1 = { start: { x: allCoords[0], y: allCoords[1] }, end: { x: allCoords[2], y: allCoords[3] } };
             const line2 = { start: { x: allCoords[4], y: allCoords[5] }, end: { x: allCoords[6], y: allCoords[7] } };
             const angleData = AngleUtil.fromTwoLines(line1, line2);
-            if (!angleData) this.dispatchError(`${AngleRExpression.NAME}(): lines are parallel.`);
+            if (!angleData) this.dispatchError(`${Angle3Expression.NAME}(): lines are parallel.`);
             this.coordinates = [angleData.vertex.x, angleData.vertex.y, angleData.point1.x, angleData.point1.y, angleData.point2.x, angleData.point2.y];
             if (allCoords.length === 9) { this.radius = allCoords[8]; if (this.radius <= 0) this.radius = 0.8; }
         } else if (allCoords.length === 6 || allCoords.length === 7) {
             this.coordinates = allCoords.slice(0, 6);
             if (allCoords.length === 7) { this.radius = allCoords[6]; if (this.radius <= 0) this.radius = 0.8; }
         } else {
-            this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(AngleRExpression.NAME, allCoords.length));
+            this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(Angle3Expression.NAME, allCoords.length));
         }
     }
 
@@ -67,7 +70,7 @@ export class AngleRExpression extends AbstractNonArithmeticExpression {
     // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
-        return AngleRExpression.NAME;
+        return Angle3Expression.NAME;
     }
 
     /**
@@ -99,14 +102,14 @@ export class AngleRExpression extends AbstractNonArithmeticExpression {
     }
 
     getAngleType() {
-        return AngleRExpression.ANGLE_TYPE;
+        return Angle3Expression.ANGLE_TYPE;
     }
 
     getFriendlyToStr() {
         const v = this.getVertex();
         const p1 = this.getPoint1();
         const p2 = this.getPoint2();
-        return `AngleR[vertex(${v.x}, ${v.y}), p1(${p1.x}, ${p1.y}), p2(${p2.x}, ${p2.y})]`;
+        return `Angle3[vertex(${v.x}, ${v.y}), p1(${p1.x}, ${p1.y}), p2(${p2.x}, ${p2.y})]`;
     }
 
     toCommand(options = {}) {

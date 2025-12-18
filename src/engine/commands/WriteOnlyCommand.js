@@ -19,45 +19,44 @@
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathTextComponent } from '../../mathtext/components/math-text-component.js';
-import { wrapMultipleWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
+import { PatternSelector } from '../../mathtext/utils/pattern-selector.js';
+import { WriteOnlyEffect } from '../../mathtext/effects/write-only-effect.js';
+import { TextItem } from '../../mathtext/models/text-item.js';
+import { TextItemCollection } from '../../mathtext/models/text-item-collection.js';
+import { SelectionUnit } from '../../mathtext/models/selection-unit.js';
 
 export class WriteOnlyCommand extends BaseCommand {
     /**
      * Create a writeonly command
      * @param {string} mode - 'existing' or 'create'
      * @param {Object} options - Mode-specific options
-     *   For 'existing': { targetVariableName, includePattern }
-     *   For 'create': { row, col, latexString, includePattern, expression }
+     *   For 'existing': { targetVariableName, includePatterns }
+     *   For 'create': { row, col, latexString, includePatterns, expression }
      */
     constructor(mode, options = {}) {
         super();
         this.mode = mode;
         this.options = options;
         this.mathComponent = null;
+        this.selectionUnits = null;
     }
 
     /**
-     * Initialize the command - wrap inclusions with bbox and prepare for animation
+     * Initialize the command
      */
     async doInit() {
         if (this.mode === 'existing') {
-            // Look up existing MathTextComponent from shapeRegistry
             this.mathComponent = this.commandContext.shapeRegistry[this.options.targetVariableName];
             if (!this.mathComponent) {
                 console.warn(`WriteOnlyCommand: "${this.options.targetVariableName}" not found in registry`);
                 return;
             }
-            // For existing components, we assume they already have bbox markers
-            // or we work with them as-is
         } else {
-            // Create new MathTextComponent with bbox-wrapped inclusions
-            const wrappedLatex = wrapMultipleWithBBox(this.options.latexString, this.options.includePatterns);
-
             const coordinateMapper = this.diagram2d.coordinateMapper;
             const canvasSection = this.diagram2d.canvasSection;
 
             this.mathComponent = new MathTextComponent(
-                wrappedLatex,
+                this.options.latexString,
                 this.options.row,
                 this.options.col,
                 coordinateMapper,
@@ -65,25 +64,57 @@ export class WriteOnlyCommand extends BaseCommand {
                 { fontSize: 22, stroke: '#000000', fill: '#000000' }
             );
 
-            // Store reference in expression for variable assignment
             if (this.options.expression) {
                 this.options.expression.setMathTextComponent(this.mathComponent);
             }
         }
 
-        // Prepare component for animation - hide and disable strokes
+        this.selectionUnits = PatternSelector.getSelectionUnits(
+            this.mathComponent,
+            this.options.includePatterns
+        );
+
         this.mathComponent.hide();
         this.mathComponent.disableStroke();
 
-        this.commandResult = this.mathComponent;
+        // Return TextItemCollection of EXCLUDED items (what we didn't write)
+        this.commandResult = this._createExcludedCollection();
     }
 
     /**
-     * Play the write animation (only bbox-marked parts)
+     * Create TextItemCollection from excluded (non-selected) nodes
+     * @returns {TextItemCollection}
+     */
+    _createExcludedCollection() {
+        const excludedNodes = this.mathComponent.excludeTweenNodes(this.selectionUnits);
+
+        // Create a SelectionUnit from excluded nodes
+        const excludedUnit = new SelectionUnit();
+        excludedNodes.forEach(node => {
+            if (node.fragmentId) {
+                excludedUnit.addFragment(node.fragmentId);
+            }
+        });
+
+        const collection = new TextItemCollection();
+        if (excludedUnit.hasFragment()) {
+            const textItem = new TextItem(this.mathComponent, excludedUnit, null);
+            collection.add(textItem);
+        }
+
+        return collection;
+    }
+
+    /**
+     * Play the write animation
      */
     async playSingle() {
-        if (!this.mathComponent) return;
-        const effect = this.mathComponent.writeOnlyBBox();
+        if (!this.mathComponent || !this.selectionUnits?.length) return;
+
+        const nonSelectedNodes = this.mathComponent.excludeTweenNodes(this.selectionUnits);
+        nonSelectedNodes.forEach(node => node.disableStroke());
+
+        const effect = new WriteOnlyEffect(this.mathComponent, this.selectionUnits);
         return effect.play();
     }
 
@@ -91,12 +122,11 @@ export class WriteOnlyCommand extends BaseCommand {
      * Instant render without animation
      */
     doDirectPlay() {
-        if (this.mathComponent) {
-            this.mathComponent.show();
-            // Show only bbox content (end state of the effect)
-            const effect = this.mathComponent.writeOnlyBBox();
-            effect.toEndState();
-        }
+        if (!this.mathComponent || !this.selectionUnits?.length) return;
+        this.mathComponent.show();
+
+        const effect = new WriteOnlyEffect(this.mathComponent, this.selectionUnits);
+        effect.toEndState();
     }
 
     /**
@@ -113,7 +143,6 @@ export class WriteOnlyCommand extends BaseCommand {
      * Clear the math text component (only for 'create' mode)
      */
     clear() {
-        // Only remove DOM for components we created
         if (this.mode === 'create' && this.mathComponent && this.mathComponent.containerDOM) {
             const containerDOM = this.mathComponent.containerDOM;
             if (containerDOM.parentNode) {
@@ -121,6 +150,7 @@ export class WriteOnlyCommand extends BaseCommand {
             }
         }
         this.mathComponent = null;
+        this.selectionUnits = null;
         this.commandResult = null;
         this.isInitialized = false;
     }

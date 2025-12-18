@@ -39,11 +39,36 @@ write(sins)
 write(textat(cos, 0))
 
 
-M = mathtext("x^2 + y^2 = r^2", 0, 0)
-write(M)
+M = mathtext( 0, 0,"x^2 + y^2 = r^2")
 C = subonly(M, "x^2")
+fadeout(C)
 replace("a^2", C)
+or seq(fadeout(C), replace("a^2", C))
 
 // Option 2: Use textat to get specific item
 T = textat(C, 0)
 replace("a^2", T)
+
+
+
+M=writewithout(2,3,"\frac{2}{3}","2","3")
+M=writeonly(2,3,"\frac{2}{3}","2")
+M=writeonly(2,3,"\frac{2}{3}","3")
+
+
+
+# Usage example - using return of writewithout
+
+M = mathtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+hide(M)
+thetas = writewithout(M, "\theta")
+write(thetas)
+replace("x", thetas)
+
+
+M = mathtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+thetas = subonly(M, "\theta")
+replace("x", thetas)
+
+M=mathtext(5, 18, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+replace("x",subonly(M,"\sin"))

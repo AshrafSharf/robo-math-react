@@ -20,6 +20,17 @@ export class TextAtCommand extends BaseCommand {
     }
 
     async doInit() {
+        // If we have an inline expression (subonly/subwithout), run it first
+        if (this.options.inlineExpression) {
+            const subCommand = this.options.inlineExpression.toCommand();
+            await subCommand.init(this.commandContext);
+
+            // Get the collection and register with a temp name
+            const collection = this.options.inlineExpression.getResolvedValue();
+            this.options.collectionVariableName = `__textat_inline_${Date.now()}`;
+            this.commandContext.shapeRegistry[this.options.collectionVariableName] = collection;
+        }
+
         // Get the TextItemCollection from shapeRegistry (stored by SubOnlyCommand/SubWithoutCommand)
         const collection = this.commandContext.shapeRegistry[this.options.collectionVariableName];
         if (!collection) {

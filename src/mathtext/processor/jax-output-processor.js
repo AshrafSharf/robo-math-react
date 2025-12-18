@@ -119,4 +119,77 @@ export class JaxOutputProcessor {
       cheerio$(this).replaceWith(childPath);
     });
   }
+
+  /**
+   * DEBUG: Log the structure of rect elements to discover MathJax v2's consistent patterns
+   * Call this BEFORE rectToLinePathConverter to see the original structure
+   * @param {CheerioStatic} cheerio$ - Cheerio instance with SVG
+   */
+  debugLogRectStructure(cheerio$) {
+    console.log('\n========== MATHJAX SVG STRUCTURE DEBUG ==========\n');
+
+    cheerio$('rect').each((i, elem) => {
+      const rect = cheerio$(elem);
+      const existingAttrs = rect.attr();
+
+      console.log(`\n--- RECT #${i} ---`);
+      console.log('Attributes:', JSON.stringify(existingAttrs, null, 2));
+
+      // Walk up the parent chain to find structure markers
+      let current = rect.parent();
+      let depth = 0;
+      const maxDepth = 8;
+
+      while (current.length && depth < maxDepth) {
+        const tagName = current.prop('tagName') || current.get(0)?.name;
+        if (!tagName || tagName === 'html' || tagName === 'body') break;
+
+        const parentAttrs = current.attr() || {};
+        console.log(`Parent[${depth}] <${tagName}>:`, {
+          'data-mml-node': parentAttrs['data-mml-node'],
+          'data-c': parentAttrs['data-c'],
+          'class': parentAttrs['class'],
+          'meta': parentAttrs['meta'],
+          'transform': parentAttrs['transform']?.substring(0, 50),
+          'allAttrs': Object.keys(parentAttrs).join(', ')
+        });
+
+        current = current.parent();
+        depth++;
+      }
+
+      // Log siblings to understand context
+      const parent = rect.parent();
+      const siblings = parent.children();
+      console.log(`Siblings count: ${siblings.length}`);
+      siblings.each((si, sib) => {
+        const sibTag = cheerio$(sib).prop('tagName') || cheerio$(sib).get(0)?.name;
+        const sibMeta = cheerio$(sib).attr('meta');
+        const sibDataMml = cheerio$(sib).attr('data-mml-node');
+        if (sibTag !== 'rect') {
+          console.log(`  Sibling[${si}]: <${sibTag}> meta="${sibMeta}" data-mml-node="${sibDataMml}"`);
+        }
+      });
+    });
+
+    console.log('\n========== END DEBUG ==========\n');
+  }
+
+  /**
+   * Process SVG with debug logging enabled
+   * Use this instead of process() to see structure before conversion
+   * @param {string} svgHtml - Raw SVG from MathJax
+   * @param {number} strokeWidthInEx - Stroke width
+   * @returns {string} Processed SVG
+   */
+  processWithDebug(svgHtml, strokeWidthInEx) {
+    const cheerio$ = cheerio.load(svgHtml);
+
+    // Log BEFORE conversion
+    console.log('\n[DEBUG] Raw SVG from MathJax (before processing):');
+    this.debugLogRectStructure(cheerio$);
+
+    // Now do normal processing
+    return this.process(svgHtml, strokeWidthInEx);
+  }
 }

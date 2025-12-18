@@ -8,8 +8,7 @@ import { BaseCommand } from './BaseCommand.js';
 import { TextItem } from '../../mathtext/models/text-item.js';
 import { TextItemCollection } from '../../mathtext/models/text-item-collection.js';
 import { SelectionUnit } from '../../mathtext/models/selection-unit.js';
-import { wrapMultipleWithBBox } from '../../mathtext/utils/bbox-latex-wrapper.js';
-import { MathTextComponent } from '../../mathtext/components/math-text-component.js';
+import { PatternSelector } from '../../mathtext/utils/pattern-selector.js';
 
 export class SubWithoutCommand extends BaseCommand {
     /**
@@ -49,32 +48,21 @@ export class SubWithoutCommand extends BaseCommand {
      * @returns {TextItemCollection}
      */
     _extractTextItemsWithout() {
-        const originalContent = this.mathComponent.getContent();
-        const wrappedContent = wrapMultipleWithBBox(originalContent, this.options.excludePatterns);
-
-        // Create temp component with bbox markers
-        const tempComponent = MathTextComponent.createTempAtSamePosition(
+        const excludeSelectionUnits = PatternSelector.getSelectionUnits(
             this.mathComponent,
-            wrappedContent
+            this.options.excludePatterns
         );
 
-        // Extract bounds from temp's bbox regions (these are the EXCLUDED regions)
-        const bboxBounds = tempComponent.getBBoxHighlightBounds();
-
-        // Destroy temp - we only needed the bounds
-        tempComponent.destroy();
-
-        // Map bounds to selection units on the original component (to exclude)
-        const excludeSelectionUnits = this.mathComponent.computeSelectionUnitsFromBounds(bboxBounds);
-
         // Get the remaining nodes (everything NOT in the excluded selection units)
-        const remainingNodes = this.mathComponent.excludeTweenNodes(excludeSelectionUnits);
+        // Use ForSelection variant - no side effects (doesn't hide strokes)
+        const remainingNodes = this.mathComponent.excludeTweenNodesForSelection(excludeSelectionUnits);
 
         // Create a SelectionUnit from the remaining nodes
         const remainingSelectionUnit = new SelectionUnit();
         remainingNodes.forEach(node => {
-            if (node.fragmentId) {
-                remainingSelectionUnit.addFragment(node.fragmentId);
+            const nodePath = node.getNodePath ? node.getNodePath() : node.fragmentId;
+            if (nodePath) {
+                remainingSelectionUnit.addFragment(nodePath);
             }
         });
 

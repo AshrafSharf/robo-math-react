@@ -1,34 +1,37 @@
 /**
- * AngleO (Opposite/Vertical Angle) expression - creates an opposite angle
+ * RightAngle expression - creates a right angle indicator (90 degree square)
+ *
+ * rightangle = right angle marker (90 degree square corner indicator)
  *
  * Syntax:
- *   angleo(graph, vertex, point1, point2)          - using points
- *   angleo(graph, vertex, point1, point2, radius)  - with custom radius
- *   angleo(graph, vx, vy, p1x, p1y, p2x, p2y)      - using raw coordinates
- *   angleo(graph, vx, vy, p1x, p1y, p2x, p2y, radius)
+ *   rightangle(graph, vertex, point1, point2)          - using points
+ *   rightangle(graph, vertex, point1, point2, size)    - with custom size
+ *   rightangle(graph, line1, line2)                    - angle between two lines
+ *   rightangle(graph, line1, line2, size)              - with custom size
  *
- * Collects 6 coordinates (vertex + point1 + point2) + optional radius
+ * Collects 6 coordinates (vertex + point1 + point2) + optional size
+ * Or 8 coordinates (line1 + line2) + optional size
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { AngleCommand } from '../../commands/AngleCommand.js';
 import { angle_error_messages } from '../core/ErrorMessages.js';
 import { AngleUtil } from '../../../geom/AngleUtil.js';
 
-export class AngleOExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'angleo';
-    static ANGLE_TYPE = 'opposite';
+export class RightAngleExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'rightangle';
+    static ANGLE_TYPE = 'right';
 
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
         this.coordinates = [];
-        this.radius = 0.8;
+        this.radius = 0.5; // smaller default for right angle indicator
         this.graphExpression = null;
     }
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError(angle_error_messages.MISSING_ARGS(AngleOExpression.NAME));
+            this.dispatchError(angle_error_messages.MISSING_ARGS(RightAngleExpression.NAME));
         }
 
         // First arg must be graph
@@ -36,7 +39,7 @@ export class AngleOExpression extends AbstractNonArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(AngleOExpression.NAME));
+            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(RightAngleExpression.NAME));
         }
 
         const allCoords = [];
@@ -52,14 +55,14 @@ export class AngleOExpression extends AbstractNonArithmeticExpression {
             const line1 = { start: { x: allCoords[0], y: allCoords[1] }, end: { x: allCoords[2], y: allCoords[3] } };
             const line2 = { start: { x: allCoords[4], y: allCoords[5] }, end: { x: allCoords[6], y: allCoords[7] } };
             const angleData = AngleUtil.fromTwoLines(line1, line2);
-            if (!angleData) this.dispatchError(`${AngleOExpression.NAME}(): lines are parallel.`);
+            if (!angleData) this.dispatchError(`${RightAngleExpression.NAME}(): lines are parallel.`);
             this.coordinates = [angleData.vertex.x, angleData.vertex.y, angleData.point1.x, angleData.point1.y, angleData.point2.x, angleData.point2.y];
-            if (allCoords.length === 9) { this.radius = allCoords[8]; if (this.radius <= 0) this.radius = 0.8; }
+            if (allCoords.length === 9) { this.radius = allCoords[8]; if (this.radius <= 0) this.radius = 0.5; }
         } else if (allCoords.length === 6 || allCoords.length === 7) {
             this.coordinates = allCoords.slice(0, 6);
-            if (allCoords.length === 7) { this.radius = allCoords[6]; if (this.radius <= 0) this.radius = 0.8; }
+            if (allCoords.length === 7) { this.radius = allCoords[6]; if (this.radius <= 0) this.radius = 0.5; }
         } else {
-            this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(AngleOExpression.NAME, allCoords.length));
+            this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(RightAngleExpression.NAME, allCoords.length));
         }
     }
 
@@ -67,7 +70,7 @@ export class AngleOExpression extends AbstractNonArithmeticExpression {
     // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
-        return AngleOExpression.NAME;
+        return RightAngleExpression.NAME;
     }
 
     /**
@@ -99,14 +102,14 @@ export class AngleOExpression extends AbstractNonArithmeticExpression {
     }
 
     getAngleType() {
-        return AngleOExpression.ANGLE_TYPE;
+        return RightAngleExpression.ANGLE_TYPE;
     }
 
     getFriendlyToStr() {
         const v = this.getVertex();
         const p1 = this.getPoint1();
         const p2 = this.getPoint2();
-        return `AngleO[vertex(${v.x}, ${v.y}), p1(${p1.x}, ${p1.y}), p2(${p2.x}, ${p2.y})]`;
+        return `RightAngle[vertex(${v.x}, ${v.y}), p1(${p1.x}, ${p1.y}), p2(${p2.x}, ${p2.y})]`;
     }
 
     toCommand(options = {}) {

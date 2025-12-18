@@ -3,6 +3,7 @@
  *
  * Syntax:
  *   textat(collection, index)
+ *   textat(subonly(M, "pattern"), index)
  *
  * Returns a single TextItem that can be animated with write().
  * The extraction happens during command execution (doInit), not during resolve.
@@ -17,6 +18,7 @@ export class TextAtExpression extends AbstractNonArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.collectionVariableName = null;
+        this.inlineExpression = null;  // For inline subonly/subwithout
         this.index = 0;
         this.textItem = null;  // Set by command during doInit
     }
@@ -26,25 +28,32 @@ export class TextAtExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('textat() requires 2 arguments: textat(collection, index)');
         }
 
-        // First arg: collection variable
+        // First arg: collection variable or inline expression
         const collectionExpr = this.subExpressions[0];
         collectionExpr.resolve(context);
 
-        // Get the variable name for the collection
-        if (collectionExpr.variableName) {
-            this.collectionVariableName = collectionExpr.variableName;
-        } else {
-            this.dispatchError('textat() first argument must be a variable reference to a TextItemCollection');
-        }
+        // Check if it's an inline subonly/subwithout expression
+        const exprName = collectionExpr.getName && collectionExpr.getName();
+        const validSources = ['subonly', 'subwithout', 'writeonly', 'writewithout'];
 
-        // Verify the referenced expression exists and is a subonly/subwithout
-        const resolvedExpr = context.getReference(this.collectionVariableName);
-        if (!resolvedExpr) {
-            this.dispatchError(`textat(): Variable "${this.collectionVariableName}" not found`);
-        }
-        const exprName = resolvedExpr.getName && resolvedExpr.getName();
-        if (exprName !== 'subonly' && exprName !== 'subwithout') {
-            this.dispatchError(`textat(): "${this.collectionVariableName}" must be from subonly() or subwithout()`);
+        if (validSources.includes(exprName)) {
+            // Inline expression - store it for the command to execute
+            this.inlineExpression = collectionExpr;
+        } else if (collectionExpr.variableName) {
+            // Variable reference
+            this.collectionVariableName = collectionExpr.variableName;
+
+            // Verify the referenced expression exists and is a TextItemCollection source
+            const resolvedExpr = context.getReference(this.collectionVariableName);
+            if (!resolvedExpr) {
+                this.dispatchError(`textat(): Variable "${this.collectionVariableName}" not found`);
+            }
+            const refExprName = resolvedExpr.getName && resolvedExpr.getName();
+            if (!validSources.includes(refExprName)) {
+                this.dispatchError(`textat(): "${this.collectionVariableName}" must be from subonly(), subwithout(), writeonly(), or writewithout()`);
+            }
+        } else {
+            this.dispatchError('textat() first argument must be a TextItemCollection variable or subonly()/subwithout() expression');
         }
 
         // Second arg: index (numeric)
@@ -84,6 +93,7 @@ export class TextAtExpression extends AbstractNonArithmeticExpression {
     toCommand(options = {}) {
         return new TextAtCommand({
             collectionVariableName: this.collectionVariableName,
+            inlineExpression: this.inlineExpression,
             index: this.index,
             expression: this
         });

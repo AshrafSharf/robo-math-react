@@ -1,34 +1,37 @@
 /**
- * AngleRt (Right Angle) expression - creates a right angle indicator (90° square)
+ * Angle5 (Opposite/Vertical Angle) expression - creates an opposite angle
+ *
+ * angle5 = opposite/vertical (the angle directly across from the interior angle when two lines cross)
  *
  * Syntax:
- *   anglert(graph, vertex, point1, point2)          - using points
- *   anglert(graph, vertex, point1, point2, size)    - with custom size
- *   anglert(graph, vx, vy, p1x, p1y, p2x, p2y)      - using raw coordinates
- *   anglert(graph, vx, vy, p1x, p1y, p2x, p2y, size)
+ *   angle5(graph, vertex, point1, point2)          - using points
+ *   angle5(graph, vertex, point1, point2, radius)  - with custom radius
+ *   angle5(graph, line1, line2)                    - angle between two lines
+ *   angle5(graph, line1, line2, radius)            - with custom radius
  *
- * Collects 6 coordinates (vertex + point1 + point2) + optional size
+ * Collects 6 coordinates (vertex + point1 + point2) + optional radius
+ * Or 8 coordinates (line1 + line2) + optional radius
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { AngleCommand } from '../../commands/AngleCommand.js';
 import { angle_error_messages } from '../core/ErrorMessages.js';
 import { AngleUtil } from '../../../geom/AngleUtil.js';
 
-export class AngleRtExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'anglert';
-    static ANGLE_TYPE = 'right';
+export class Angle5Expression extends AbstractNonArithmeticExpression {
+    static NAME = 'angle5';
+    static ANGLE_TYPE = 'opposite';
 
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
         this.coordinates = [];
-        this.radius = 0.5; // smaller default for right angle indicator
+        this.radius = 0.8;
         this.graphExpression = null;
     }
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError(angle_error_messages.MISSING_ARGS(AngleRtExpression.NAME));
+            this.dispatchError(angle_error_messages.MISSING_ARGS(Angle5Expression.NAME));
         }
 
         // First arg must be graph
@@ -36,7 +39,7 @@ export class AngleRtExpression extends AbstractNonArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(AngleRtExpression.NAME));
+            this.dispatchError(angle_error_messages.GRAPH_REQUIRED(Angle5Expression.NAME));
         }
 
         const allCoords = [];
@@ -52,14 +55,14 @@ export class AngleRtExpression extends AbstractNonArithmeticExpression {
             const line1 = { start: { x: allCoords[0], y: allCoords[1] }, end: { x: allCoords[2], y: allCoords[3] } };
             const line2 = { start: { x: allCoords[4], y: allCoords[5] }, end: { x: allCoords[6], y: allCoords[7] } };
             const angleData = AngleUtil.fromTwoLines(line1, line2);
-            if (!angleData) this.dispatchError(`${AngleRtExpression.NAME}(): lines are parallel.`);
+            if (!angleData) this.dispatchError(`${Angle5Expression.NAME}(): lines are parallel.`);
             this.coordinates = [angleData.vertex.x, angleData.vertex.y, angleData.point1.x, angleData.point1.y, angleData.point2.x, angleData.point2.y];
-            if (allCoords.length === 9) { this.radius = allCoords[8]; if (this.radius <= 0) this.radius = 0.5; }
+            if (allCoords.length === 9) { this.radius = allCoords[8]; if (this.radius <= 0) this.radius = 0.8; }
         } else if (allCoords.length === 6 || allCoords.length === 7) {
             this.coordinates = allCoords.slice(0, 6);
-            if (allCoords.length === 7) { this.radius = allCoords[6]; if (this.radius <= 0) this.radius = 0.5; }
+            if (allCoords.length === 7) { this.radius = allCoords[6]; if (this.radius <= 0) this.radius = 0.8; }
         } else {
-            this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(AngleRtExpression.NAME, allCoords.length));
+            this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(Angle5Expression.NAME, allCoords.length));
         }
     }
 
@@ -67,7 +70,7 @@ export class AngleRtExpression extends AbstractNonArithmeticExpression {
     // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
-        return AngleRtExpression.NAME;
+        return Angle5Expression.NAME;
     }
 
     /**
@@ -99,14 +102,14 @@ export class AngleRtExpression extends AbstractNonArithmeticExpression {
     }
 
     getAngleType() {
-        return AngleRtExpression.ANGLE_TYPE;
+        return Angle5Expression.ANGLE_TYPE;
     }
 
     getFriendlyToStr() {
         const v = this.getVertex();
         const p1 = this.getPoint1();
         const p2 = this.getPoint2();
-        return `AngleRt[vertex(${v.x}, ${v.y}), p1(${p1.x}, ${p1.y}), p2(${p2.x}, ${p2.y})]`;
+        return `Angle5[vertex(${v.x}, ${v.y}), p1(${p1.x}, ${p1.y}), p2(${p2.x}, ${p2.y})]`;
     }
 
     toCommand(options = {}) {

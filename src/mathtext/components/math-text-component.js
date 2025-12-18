@@ -427,6 +427,15 @@ export class MathTextComponent {
     return mathNodeCalculator.excludeTweenNodes(this.mathGraphNode, selUnits);
   }
 
+  /**
+   * Exclude tween nodes for selection only - NO side effects.
+   * Used by SubWithoutCommand for pure selection without hiding strokes.
+   */
+  excludeTweenNodesForSelection(selUnits) {
+    const mathNodeCalculator = new MathNodeCalculator();
+    return mathNodeCalculator.excludeTweenNodesForSelection(this.mathGraphNode, selUnits);
+  }
+
   computeSelectionUnit(boundsInCTM, selectionUnit) {
     // Match the original implementation - delegate to mathGraphNode
     if (this.mathGraphNode && this.mathGraphNode.collectSelectionUnits) {

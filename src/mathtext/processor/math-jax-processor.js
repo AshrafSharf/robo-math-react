@@ -5,6 +5,9 @@ export class MathJaxProcessor {
 
   static SCRATCH_PAD_ID = 'scratchpad-Frame';
 
+  // Debug flag - set to true to log MathJax SVG structure
+  static DEBUG_SVG_STRUCTURE = false;
+
   static renderToString(inputMathText, textSizeInEx) {
     let latex;
 
@@ -108,5 +111,54 @@ export class MathJaxProcessor {
     }
 
     return false;
+  }
+
+  /**
+   * DEBUG: Render LaTeX and log the SVG structure to discover MathJax patterns
+   * Call from console: MathJaxProcessor.debugRenderLatex("\\frac{2}{3}", 0.07)
+   * @param {string} latex - LaTeX string to render
+   * @param {number} textSizeInEx - Text size (default 0.07)
+   */
+  static debugRenderLatex(latex, textSizeInEx = 0.07) {
+    console.log('\n========== DEBUG RENDER ==========');
+    console.log('Input LaTeX:', latex);
+
+    if (!window['TEXT_TO_ML']) {
+      console.error('TEXT_TO_ML not available!');
+      return;
+    }
+
+    let mathText = "\\displaystyle{" + latex + "}";
+    let scriptTag = { text: mathText, type: '' };
+    let parsedObj = window['TEXT_TO_ML'].Translate(scriptTag);
+
+    parsedObj['display'] = 'block';
+    parsedObj['inputID'] = 'scratchpad';
+
+    let scriptEL = document.getElementById("inputjaxForm");
+    scriptEL.MathJax = {
+      elementJax: {
+        root: parsedObj.root,
+        originalText: mathText,
+        inputID: 'scratchpad',
+        SVG: { isHidden: true, cwidth: 70966.4, em: 16.6, ex: 7.18, lineWidth: 10000000 },
+        outputJax: "SVG",
+        inputJax: 'TeX'
+      },
+      state: 4, checked: 1, newID: 100
+    };
+
+    document.getElementById('scratchpad-Frame').innerHTML = '';
+    window['MathJax'].OutputJax['SVG'].Process(scriptEL, {});
+
+    let svg = document.getElementById(MathJaxProcessor.SCRATCH_PAD_ID).innerHTML;
+    console.log('\nRaw SVG output:\n', svg);
+
+    // Use debug processor
+    const jaxOutputProcessor = new JaxOutputProcessor();
+    jaxOutputProcessor.processWithDebug(svg, textSizeInEx);
+
+    console.log('========== END DEBUG RENDER ==========\n');
+    return svg;
   }
 }

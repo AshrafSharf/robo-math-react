@@ -115,41 +115,76 @@ Result:   tan(θ) = sin(θ)/cos(θ)  (all animated)
 
 ### 2. writeonly - Animate ONLY marked parts
 
-Supports multiple patterns - each pattern is wrapped with bbox.
+Supports multiple patterns of different types:
+- **Structural patterns**: `\frac`, `\sqrt`, `\overline`, `\underline`
+- **Single characters**: A-Z, a-z, 0-9
+- **Greek letters**: `\alpha`, `\beta`, `\gamma`, etc.
+- **LaTeX patterns**: Multi-character strings (wrapped with bbox)
 
 ```
-# Single pattern
-writeonly(2, 3, "\tan(\theta)=...", "\theta")
+# Single character pattern
+writeonly(2, 3, "\sqrt[3]{8}", "3")
+
+# Structural pattern (fraction bar only)
+writeonly(2, 3, "\frac{2}{3}", "\frac")
+
+# Greek letter pattern
+writeonly(2, 3, "\alpha + \beta = \gamma", "\alpha")
 
 # Multiple patterns
 writeonly(2, 3, "\tan(\theta)=...", "\theta", "\tan")
 
-LaTeX wrapped: \tan(\bbox[0px]{\theta})=\frac{\sin(\bbox[0px]{\theta})}{...}
-
-Animates: Only θ symbols (bbox-marked)
+Animates: Only matched patterns
 Hidden:   Everything else stays hidden
-Result:   θ θ θ  (only thetas visible and animated)
 ```
 
 ### 3. writewithout - Animate everything EXCEPT marked parts
 
-Supports multiple patterns - each pattern is wrapped with bbox.
+Supports the same pattern types as writeonly.
 
 ```
-# Single pattern
-writewithout(2, 3, "\tan(\theta)=...", "\theta")
+# Exclude structural pattern (animate everything except fraction bar)
+writewithout(2, 3, "\frac{2}{3}", "\frac")
 
-# Multiple patterns
+# Exclude single character
+writewithout(2, 3, "\sqrt[3]{8}", "3")
+
+# Multiple exclusions
 writewithout(2, 3, "\tan(\theta)=...", "\theta", "\sin")
 
-LaTeX wrapped: \tan(\bbox[0px]{\theta})=\frac{\sin(\bbox[0px]{\theta})}{...}
-
-Animates: Everything except θ symbols
-Hidden:   θ symbols stay hidden
-Result:   tan( )=sin( )/cos( )  (thetas hidden)
+Animates: Everything except matched patterns
+Hidden:   Matched patterns stay hidden
 ```
 
-## BBox Marking System
+## Pattern Selection System
+
+All pattern-based commands use `PatternSelector` - a single abstraction that handles all pattern types:
+
+```
+PatternSelector.getSelectionUnits(mathComponent, patterns)
+    │
+    ├── Special Patterns → BoundsByLatex
+    │       │
+    │       ├── Structural (\frac, \sqrt) → Dedicated Extractors
+    │       │       ├── FracBarExtractor (fraction bars)
+    │       │       └── SqrtBarExtractor (radical + vinculum)
+    │       │
+    │       └── Characters/Greek → CharacterExtractor
+    │               ├── Single chars via meta attribute lookup
+    │               └── Greek letters (\alpha → MJMATHI-3B1)
+    │
+    └── LaTeX Patterns → Temp Component + BBox approach
+```
+
+Commands simply call:
+```javascript
+this.selectionUnits = PatternSelector.getSelectionUnits(
+    this.mathComponent,
+    this.options.includePatterns  // or excludePatterns
+);
+```
+
+## BBox Marking System (for multi-character LaTeX patterns)
 
 The `\bbox[0px]{...}` LaTeX command creates invisible boxes around content. MathJax renders these as `<g meta="mpadded">` groups in SVG.
 
@@ -404,6 +439,68 @@ This ensures animation works correctly even if:
 **Cause:** In playSingle, component is already visible (from directPlay). In playAll, component is freshly created and hidden.
 
 **Solution:** Ensure bounds extraction works with hidden containers (temp show)
+
+## Write vs Selection Operations
+
+The system has two distinct operations that filter tween nodes by selection units:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│           WRITE OPERATIONS vs SELECTION OPERATIONS              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  WRITE OPERATIONS (with side effects)                           │
+│  ─────────────────────────────────────                          │
+│  Purpose: Prepare nodes for animation                           │
+│  Side effect: disableStroke() on excluded nodes                 │
+│  Used by: WriteWithoutEffect, NonSelectionOrderTypeAnimator     │
+│                                                                 │
+│  Methods:                                                       │
+│  - MathNodeCalculator.removeMatchingNodes()                     │
+│  - MathNodeCalculator.excludeTweenNodes()                       │
+│  - MathTextComponent.excludeTweenNodes()                        │
+│                                                                 │
+│  SELECTION OPERATIONS (no side effects)                         │
+│  ───────────────────────────────────────                        │
+│  Purpose: Pure data extraction, no visual changes               │
+│  Side effect: NONE - just returns filtered node list            │
+│  Used by: SubWithoutCommand (returns TextItemCollection)        │
+│                                                                 │
+│  Methods:                                                       │
+│  - MathNodeCalculator.removeMatchingNodesForSelection()         │
+│  - MathNodeCalculator.excludeTweenNodesForSelection()           │
+│  - MathTextComponent.excludeTweenNodesForSelection()            │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Why Two Methods?
+
+**Write operations** (like `writewithout`) need to:
+1. Hide the excluded parts so they don't appear during animation
+2. Animate the remaining parts
+3. The `disableStroke()` call is essential
+
+**Selection operations** (like `subwithout`) only:
+1. Return a list of nodes for later use
+2. Must NOT modify visibility at all
+3. Calling `disableStroke()` would incorrectly hide content
+
+### Usage Example
+
+```javascript
+// WRITE: Animates everything except \sin, hides \sin strokes
+writewithout(4, 4, "\tan + \sin", "\sin")
+// Uses: excludeTweenNodes() which calls disableStroke() on \sin
+
+// SELECTION: Returns TextItemCollection of everything except \sin
+sins = subwithout(M, "\sin")
+// Uses: excludeTweenNodesForSelection() - NO side effects
+// The \sin strokes remain visible, only data is returned
+
+// Later use the selection:
+replace("x", sins)  // Works because \sin is still visible
+```
 
 ## Hide + Selective Write Workflow
 
@@ -666,20 +763,35 @@ The original component doesn't have bbox markers in its LaTeX. We need to:
 
 ## File References
 
+### Pattern Selection
+- `src/mathtext/utils/pattern-selector.js` - **Single entry point for all patterns**
+- `src/mathtext/utils/bounds-by-latex.js` - Routes special patterns to extractors
+- `src/mathtext/utils/frac-bar-extractor.js` - Fraction bar extraction
+- `src/mathtext/utils/sqrt-bar-extractor.js` - Square root/nth root extraction
+- `src/mathtext/utils/character-extractor.js` - Single chars and Greek letters
+- `src/mathtext/utils/bbox-latex-wrapper.js` - wrapWithBBox utility (for LaTeX patterns)
+- `src/mathtext/utils/bounds-extractor.js` - BBox detection
+
+### Components & Effects
 - `src/mathtext/components/math-text-component.js` - Core component
 - `src/mathtext/effects/write-effect.js` - WriteEffect
 - `src/mathtext/effects/write-only-effect.js` - WriteOnlyEffect
 - `src/mathtext/effects/write-without-effect.js` - WriteWithoutEffect
 - `src/mathtext/effects/rewrite-only-effect.js` - RewriteOnlyEffect (existing components)
 - `src/mathtext/effects/rewrite-without-effect.js` - RewriteWithoutEffect (existing components)
-- `src/mathtext/utils/bbox-latex-wrapper.js` - wrapWithBBox utility
-- `src/mathtext/utils/bounds-extractor.js` - BBox detection
+
+### Animators
 - `src/mathtext/animator/custom-order-type-animator.js` - Selection animator
 - `src/mathtext/animator/non-selection-order-type-animator.js` - Non-selection animator (create mode)
 - `src/mathtext/animator/rewrite-non-selection-animator.js` - Non-selection animator (existing mode)
+- `src/mathtext/animator/math-node-calculator.js` - Node exclusion/inclusion utilities
+
+### Commands
 - `src/engine/commands/WriteCommand.js` - Write command
 - `src/engine/commands/WriteOnlyCommand.js` - WriteOnly command (create mode)
 - `src/engine/commands/WriteWithoutCommand.js` - WriteWithout command (create mode)
 - `src/engine/commands/RewriteOnlyCommand.js` - RewriteOnly command (existing mode)
 - `src/engine/commands/RewriteWithoutCommand.js` - RewriteWithout command (existing mode)
+- `src/engine/commands/SubOnlyCommand.js` - Extract TextItems for patterns
+- `src/engine/commands/SubWithoutCommand.js` - Extract TextItems excluding patterns
 - `src/engine/controller/CommandEditorController.js` - Execution controller

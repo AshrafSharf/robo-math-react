@@ -63,11 +63,47 @@ export class MathNodeCalculator {
     const tweenableNodes = [];
     mathGraphNode.collectTweenNodes(tweenableNodes);
     let availableTweenableNodes = [].concat(tweenableNodes);
-    
+
     selectionUnits.forEach((selectionUnit) => {
       availableTweenableNodes = this.removeMatchingNodes(selectionUnit, availableTweenableNodes);
     });
-    
+
+    return availableTweenableNodes;
+  }
+
+  /**
+   * Remove matching nodes for selection only - NO side effects.
+   * Used by SubWithoutCommand for pure selection without hiding strokes.
+   */
+  removeMatchingNodesForSelection(selectionUnit, tweenableNodes) {
+    const remainingNodes = [].concat(tweenableNodes);
+    const fragmentPaths = selectionUnit.fragmentPaths;
+
+    fragmentPaths.forEach((fragmentPath) => {
+      tweenableNodes.forEach((tweenableNode) => {
+        if (tweenableNode.getNodePath() == fragmentPath) {
+          remove(remainingNodes, tweenableNode);
+          // NO disableStroke() - pure selection
+        }
+      });
+    });
+
+    return remainingNodes;
+  }
+
+  /**
+   * Exclude tween nodes for selection only - NO side effects.
+   * Used by SubWithoutCommand for pure selection without hiding strokes.
+   */
+  excludeTweenNodesForSelection(mathGraphNode, selectionUnits) {
+    const tweenableNodes = [];
+    mathGraphNode.collectTweenNodes(tweenableNodes);
+    let availableTweenableNodes = [].concat(tweenableNodes);
+
+    selectionUnits.forEach((selectionUnit) => {
+      availableTweenableNodes = this.removeMatchingNodesForSelection(selectionUnit, availableTweenableNodes);
+    });
+
     return availableTweenableNodes;
   }
   

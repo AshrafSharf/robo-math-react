@@ -4,13 +4,20 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App.jsx'
 import TestFeatures from './TestFeatures.jsx'
+import SvgStructureTest from './pages/SvgStructureTest.jsx'
 import { PluginInitializer } from './utils/plugin-initializer.js'
+import { MathJaxProcessor } from './mathtext/processor/math-jax-processor.js'
 
 // Initialize plugins (MathJax, GSAP, etc.) before rendering React app
 console.log('Starting plugin initialization...');
 PluginInitializer.initialize()
   .then(() => {
     console.log('Plugins initialized successfully');
+
+    // Expose MathJaxProcessor for console debugging
+    // Usage: MathJaxProcessor.debugRenderLatex("\\frac{2}{3}")
+    window.MathJaxProcessor = MathJaxProcessor;
+    console.log('Debug: MathJaxProcessor available. Call MathJaxProcessor.debugRenderLatex("\\\\frac{2}{3}") to test.');
 
     // Hide loading screen
     const loadingElement = document.getElementById('global-loading');
@@ -25,6 +32,7 @@ PluginInitializer.initialize()
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/test" element={<TestFeatures />} />
+            <Route path="/svg-structure" element={<SvgStructureTest />} />
           </Routes>
         </BrowserRouter>
       </StrictMode>,

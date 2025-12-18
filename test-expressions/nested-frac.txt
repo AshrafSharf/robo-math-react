@@ -1,0 +1,2 @@
+M=mathtext(4,4,"\frac{1}{\frac{1}{2}}")
+writewithout(M,"\frac")

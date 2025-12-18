@@ -325,6 +325,25 @@ export const angle_error_messages = {
 
   INVALID_GRAPH: (name, varName) =>
     `'${varName}' is not a graph.\n${name}(graph, vertex, p1, p2)`,
+
+  GRAPH_REQUIRED: (name) =>
+    `${name}() requires a g2d graph.\n${name}(g, vertex, p1, p2)`,
+};
+
+// ============= Angle3D Error Messages =============
+
+export const angle3d_error_messages = {
+  MISSING_ARGS: (name) =>
+    `${name}() needs more arguments.\n${name}(g, vertex, point1, point2)`,
+
+  WRONG_COORD_COUNT: (name, count) =>
+    `${name}() got ${count} coordinates.\nNeed 9: vertex(3) + p1(3) + p2(3)\nOr 12: vector1(6) + vector2(6)`,
+
+  GRAPH_REQUIRED: (name) =>
+    `${name}() requires a g3d graph.\n${name}(g3d, vertex, p1, p2)`,
+
+  INVALID_GRAPH: (name, varName) =>
+    `'${varName}' is not a 3D graph.\n${name}(g3d, vertex, p1, p2)`,
 };
 
 // ============= Plot Error Messages =============
