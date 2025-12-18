@@ -104,10 +104,27 @@ Gap length = 10000              Gap length = 0
 
 ## Command Types
 
+### Flexible Position Input
+
+All write commands accept flexible position input - you need 2 numbers (row, col), but they can come from:
+- Separate numbers: `write(4, 4, "latex")`
+- Point variable: `write(A, "latex")` where `A = point(4, 4)`
+- Inline point: `write(point(4, 4), "latex")`
+
+LaTeX strings and patterns can also be variables:
+```
+t1 = "\sqrt[3]{8}+\sqrt{2}"
+p1 = "\sqrt"
+p2 = "3"
+writeonly(A, t1, p1, p2)       // All variables
+writeonly(4, 4, t1, "\sqrt", p2) // Mixed
+```
+
 ### 1. write - Animate entire expression
 
 ```
 write(2, 3, "\tan(\theta)=\frac{\sin(\theta)}{\cos(\theta)}")
+write(A, t1)  // A is point, t1 is latex variable
 
 Animates: ALL paths in sequence
 Result:   tan(θ) = sin(θ)/cos(θ)  (all animated)
@@ -125,13 +142,12 @@ Supports multiple patterns of different types:
 # Single character pattern
 writeonly(2, 3, "\sqrt[3]{8}", "3")
 
-# Structural pattern (fraction bar only)
-writeonly(2, 3, "\frac{2}{3}", "\frac")
+# Using point variable and latex variable
+A = point(2, 3)
+t1 = "\sqrt[3]{8}"
+writeonly(A, t1, "\sqrt", "3")
 
-# Greek letter pattern
-writeonly(2, 3, "\alpha + \beta = \gamma", "\alpha")
-
-# Multiple patterns
+# Multiple patterns (can be variables too)
 writeonly(2, 3, "\tan(\theta)=...", "\theta", "\tan")
 
 Animates: Only matched patterns
@@ -143,14 +159,14 @@ Hidden:   Everything else stays hidden
 Supports the same pattern types as writeonly.
 
 ```
-# Exclude structural pattern (animate everything except fraction bar)
+# Exclude structural pattern
 writewithout(2, 3, "\frac{2}{3}", "\frac")
 
-# Exclude single character
-writewithout(2, 3, "\sqrt[3]{8}", "3")
-
-# Multiple exclusions
-writewithout(2, 3, "\tan(\theta)=...", "\theta", "\sin")
+# Using variables for position, latex, and patterns
+A = point(2, 3)
+t1 = "\sqrt[3]{8}"
+p1 = "\sqrt"
+writewithout(A, t1, p1, "3")
 
 Animates: Everything except matched patterns
 Hidden:   Matched patterns stay hidden
@@ -560,6 +576,51 @@ Both `RewriteOnlyEffect` and `RewriteWithoutEffect` support direct play after `h
 |------|--------|----------|
 | Animation | `playSingle()` | Pen traces selected/non-selected strokes |
 | Instant | `directPlay()` | `toEndState()` enables selected/non-selected strokes immediately |
+
+## moveto - Move TextItem to Target Position
+
+The `moveto()` expression animates moving a TextItem to a new position.
+
+### Syntax
+
+```
+moveto(T, P)           // Move TextItem T to point P on a graph
+moveto(T, T2)          // Move TextItem T to TextItem T2's position
+moveto(T, row, col)    // Move TextItem T to logical coordinates (row, col)
+```
+
+### Target Types
+
+| Target | Description | Coordinate Resolution |
+|--------|-------------|----------------------|
+| Point | Point on a graph | View coords + grapher canvas position |
+| TextItem | Another TextItem | Target's canvas bounds (top-left) |
+| Logical | Row, col coordinates | layoutMapper.logicalToPixel() |
+
+### Example Usage
+
+```
+M = mathtext(5, 2, "\tan(\theta)")
+thetas = subonly(M, "\theta")
+T = textat(thetas, 0)          // Get first theta as TextItem
+
+# Move to a point on a graph
+G = g2d(0, 0, 10, 8, -5, 5, -5, 5)
+P = point(G, 2, 3)
+moveto(T, P)
+
+# Move to another TextItem's position
+moveto(T, T2)
+
+# Move to logical coordinates
+moveto(T, 10, 4)
+```
+
+### Implementation
+
+- **Expression**: `MoveToExpression` (`src/engine/expression-parser/expressions/MoveToExpression.js`)
+- **Command**: `TextItemMoveToCommand` (`src/engine/commands/TextItemMoveToCommand.js`)
+- **Effect**: `MathTextMoveEffect` (0.8s duration)
 
 ## Rewrite Commands (Existing Components)
 
