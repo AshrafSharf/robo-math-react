@@ -1,0 +1,36 @@
+M=write(4,14,"\frac{a}{b} + c = d")
+T=subonly(M,"= d")
+topw(T, "numerator")
+
+
+
+
+
+M = write(4, 14, "\frac{a}{b} + c = d")
+T = subonly(M,"\frac{a}{b}")
+cancel(T, "0", "u")
+
+  Or with multiple items:
+  M = write(4, 14, "x^2 + 2x + 1")
+  T = subonly(M, "x")
+  cancel(T, "", "u", "red")
+
+  This will cancel all occurrences of "x" in the expression.
+
+  More examples:
+  // Cancel with replacement text
+  M = write(4, 14, "\frac{5}{10}")
+  T = subonly(M, "5")
+  cancel(T, "1", "u")
+
+  // Down diagonal cancel
+  M = write(4, 14, "a + b - c")
+  T = subonly(M, "b")
+  cancel(T, "", "d")
+
+  // X cancel
+  M = write(4, 14, "wrong answer")
+  T = subonly(M, "wrong")
+  cancel(T, "", "x", "red")
+
+  

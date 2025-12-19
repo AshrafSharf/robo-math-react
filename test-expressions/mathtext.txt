@@ -1,8 +1,11 @@
-
-
   M = mathtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
   writeonly(M, "\theta") 
   writewithout(M, "\theta")   
+
+  
+  M =  "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}"
+  writeonly(5,2, M, "\theta") 
+  writewithout(5,2,M, "\theta")  
 
 
 

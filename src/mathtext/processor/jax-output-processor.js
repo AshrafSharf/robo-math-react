@@ -1,8 +1,13 @@
 import { FontMapService } from '../services/font-map.service.js';
 import cheerio from 'cheerio-standalone';
-import { convertRectsToPath, convertLinesToPath } from './rect-to-path-converter.js';
-import { convertPolygonsToPath } from './polygon-to-path-converter.js';
-import { convertEllipsesToPath, convertCirclesToPath } from './ellipse-to-path-converter.js';
+import {
+  convertRectsToPath,
+  convertLinesToPath,
+  convertPolygonsToPath,
+  convertEllipsesToPath,
+  convertCirclesToPath,
+  convertCancelArrows
+} from './svg-converters/index.js';
 
 export class JaxOutputProcessor {
 
@@ -47,6 +52,7 @@ export class JaxOutputProcessor {
     convertPolygonsToPath(cheerio$, strokeWidthInEx);
     convertEllipsesToPath(cheerio$, strokeWidthInEx);
     convertCirclesToPath(cheerio$, strokeWidthInEx);
+    convertCancelArrows(cheerio$, strokeWidthInEx);
 
     //return svgHtml;
     return cheerio$.root().html();

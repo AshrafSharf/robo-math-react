@@ -93,6 +93,9 @@ import { SurroundExpression } from '../expressions/SurroundExpression.js';
 import { MoveToExpression } from '../expressions/MoveToExpression.js';
 import { TextAtExpression } from '../expressions/TextAtExpression.js';
 import { ReplaceTextItemExpression } from '../expressions/ReplaceTextItemExpression.js';
+import { TopWriteExpression } from '../expressions/TopWriteExpression.js';
+import { BottomWriteExpression } from '../expressions/BottomWriteExpression.js';
+import { CancelExpression } from '../expressions/CancelExpression.js';
 import { SequenceExpression } from '../expressions/SequenceExpression.js';
 import { ParallelExpression } from '../expressions/ParallelExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
@@ -195,6 +198,9 @@ export class IntrepreterFunctionTable {
         registerMultiArg('moveto', MoveToExpression);
         registerMultiArg('textat', TextAtExpression);
         registerMultiArg('replace', ReplaceTextItemExpression);
+        registerMultiArg('topw', TopWriteExpression);
+        registerMultiArg('bottomw', BottomWriteExpression);
+        registerMultiArg('cancel', CancelExpression);
         registerMultiArg('seq', SequenceExpression);
         registerMultiArg('para', ParallelExpression);
 

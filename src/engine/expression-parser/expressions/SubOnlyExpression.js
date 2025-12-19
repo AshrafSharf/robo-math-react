@@ -36,13 +36,14 @@ export class SubOnlyExpression extends AbstractNonArithmeticExpression {
         }
         this.targetVariableName = targetExpr.variableName;
 
-        // Verify the referenced expression exists and is a MathTextExpression
+        // Verify the referenced expression exists and is a MathTextExpression or WriteExpression
         const resolvedExpr = context.getReference(this.targetVariableName);
         if (!resolvedExpr) {
             this.dispatchError(`subonly(): Variable "${this.targetVariableName}" not found`);
         }
-        if (resolvedExpr.getName && resolvedExpr.getName() !== 'mathtext') {
-            this.dispatchError(`subonly(): "${this.targetVariableName}" must be a mathtext expression`);
+        const validSources = ['mathtext', 'write'];
+        if (resolvedExpr.getName && !validSources.includes(resolvedExpr.getName())) {
+            this.dispatchError(`subonly(): "${this.targetVariableName}" must be a mathtext or write expression`);
         }
 
         // Remaining args: patterns to extract (strings)

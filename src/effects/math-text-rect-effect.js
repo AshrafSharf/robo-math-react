@@ -45,14 +45,8 @@ export class MathTextRectEffect extends BaseEffect {
       return;
     }
 
-    const rectBounds = {
-      x: canvasBounds.x,
-      y: canvasBounds.y,
-      width: canvasBounds.width,
-      height: canvasBounds.height
-    };
-
-    this.rectShape = new MathTextRectShape(this.targetSvg, rectBounds, {
+    // Bounds2 has x, y, width, height getters - pass directly
+    this.rectShape = new MathTextRectShape(this.targetSvg, canvasBounds, {
       stroke: this.options.stroke || '#333',
       strokeWidth: this.options.strokeWidth || 2,
       fill: this.options.fill || 'transparent',

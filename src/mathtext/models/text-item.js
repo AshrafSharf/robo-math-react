@@ -1,3 +1,5 @@
+import { Bounds2 } from '../../geom/Bounds2.js';
+
 /**
  * TextItem - Represents a single extracted part of a MathTextComponent
  *
@@ -100,7 +102,7 @@ export class TextItem {
     /**
      * Get bounds relative to a canvas section (for annotation layer positioning)
      * @param {HTMLElement} canvasSection - The canvas section element
-     * @returns {{x: number, y: number, width: number, height: number}}
+     * @returns {Bounds2} Bounds2 object with canvas-relative coordinates
      */
     getCanvasBounds(canvasSection) {
         const clientBounds = this.getClientBounds();
@@ -113,12 +115,9 @@ export class TextItem {
         const containerTop = this.mathComponent.componentState.top || 0;
 
         // Add container position to get canvas-relative coordinates
-        return {
-            x: containerLeft + clientBounds.x,
-            y: containerTop + clientBounds.y,
-            width: clientBounds.width,
-            height: clientBounds.height
-        };
+        const x = containerLeft + clientBounds.x;
+        const y = containerTop + clientBounds.y;
+        return new Bounds2(x, y, x + clientBounds.width, y + clientBounds.height);
     }
 
     // ===== SVG METHODS =====

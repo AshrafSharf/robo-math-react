@@ -49,6 +49,14 @@ export class TextItemCollection {
     }
 
     /**
+     * Get the number of items (JS convention)
+     * @returns {number}
+     */
+    get length() {
+        return this.items.length;
+    }
+
+    /**
      * Get the parent MathTextComponent (all items share same parent)
      * @returns {MathTextComponent|null}
      */

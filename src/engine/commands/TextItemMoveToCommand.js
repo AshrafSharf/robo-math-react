@@ -10,6 +10,7 @@
  */
 import { BaseCommand } from './BaseCommand.js';
 import { MathTextMoveEffect } from '../../effects/math-text-move-effect.js';
+import { MathTextPositionUtil } from '../../mathtext/utils/math-text-position-util.js';
 
 export class TextItemMoveToCommand extends BaseCommand {
     constructor(textItemVariableName, targetType, targetData, graphExpression = null) {
@@ -180,10 +181,7 @@ export class TextItemMoveToCommand extends BaseCommand {
         }
 
         // Return top-left corner of target bounds
-        return {
-            x: canvasBounds.x,
-            y: canvasBounds.y
-        };
+        return MathTextPositionUtil.getTopLeft(canvasBounds);
     }
 
     /**

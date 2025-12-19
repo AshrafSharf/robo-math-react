@@ -12,8 +12,12 @@ function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// Operators that can have flexible whitespace around them
+const OPERATORS = '=+\\-*/^<>≤≥≠±×÷';
+
 /**
  * Wraps all occurrences of a part within a LaTeX string with \bbox[0px]{...}
+ * Allows flexible whitespace around operators (e.g., "=d" matches "= d").
  *
  * @param {string} full - The full LaTeX string
  * @param {string} part - The part to wrap (can be a LaTeX fragment like \theta)
@@ -22,16 +26,35 @@ function escapeRegex(str) {
  * @example
  * wrapWithBBox('\\tan(\\theta)=\\frac{\\sin(\\theta)}{\\cos(\\theta)}', '\\theta')
  * // Returns: '\\tan(\\bbox[0px]{\\theta})=\\frac{\\sin(\\bbox[0px]{\\theta})}{\\cos(\\bbox[0px]{\\theta})}'
+ *
+ * @example
+ * wrapWithBBox('a + b = c', '=c')
+ * // Returns: 'a + b \\bbox[0px]{= c}' (matches despite space difference)
  */
 export function wrapWithBBox(full, part) {
   if (!full || !part) {
     return full;
   }
 
-  const escapedPart = escapeRegex(part);
-  const regex = new RegExp(escapedPart, 'g');
+  // Build a flexible pattern that allows optional whitespace around operators
+  // Process char by char to build the regex pattern
+  let flexiblePattern = '';
+  for (let i = 0; i < part.length; i++) {
+    const char = part[i];
+    const escapedChar = escapeRegex(char);
 
-  return full.replace(regex, `\\bbox[0px]{${part}}`);
+    if (OPERATORS.includes(char)) {
+      // Allow optional whitespace around operators
+      flexiblePattern += `\\s*${escapedChar}\\s*`;
+    } else {
+      flexiblePattern += escapedChar;
+    }
+  }
+
+  const regex = new RegExp(flexiblePattern, 'g');
+
+  // Use captured match to preserve original whitespace
+  return full.replace(regex, (match) => `\\bbox[0px]{${match}}`);
 }
 
 /**
