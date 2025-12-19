@@ -35,7 +35,8 @@
       "Bash(npm run test:expressions:*)",
       "Bash(ls:*)",
       "Bash(mv:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "WebFetch(domain:provility-lib.s3.amazonaws.com)"
     ],
     "deny": [],
     "ask": []

@@ -29,7 +29,21 @@ export class PluginInitializer {
       '        lozenge: ["\\\\unicode{x25CA}", 0],\n' +
       '        diamond: ["\\\\unicode{x25C7}", 0],\n' +
       '        therefore: ["\\\\unicode{x2234}", 0],\n' +
-      '        because: ["\\\\unicode{x2235}", 0]\n' +
+      '        because: ["\\\\unicode{x2235}", 0],\n' +
+      '        curvearrowleft: ["\\\\unicode{x21B6}", 0],\n' +
+      '        curvearrowright: ["\\\\unicode{x21B7}", 0],\n' +
+      '        circlearrowleft: ["\\\\unicode{x21BA}", 0],\n' +
+      '        circlearrowright: ["\\\\unicode{x21BB}", 0],\n' +
+      '        twoheadleftarrow: ["\\\\unicode{x219E}", 0],\n' +
+      '        twoheadrightarrow: ["\\\\unicode{x21A0}", 0],\n' +
+      '        leftarrowtail: ["\\\\unicode{x21A2}", 0],\n' +
+      '        rightarrowtail: ["\\\\unicode{x21A3}", 0],\n' +
+      '        xleftarrow: ["\\\\mathrel{\\\\mathop{\\\\longleftarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xrightarrow: ["\\\\mathrel{\\\\mathop{\\\\longrightarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xLeftarrow: ["\\\\mathrel{\\\\mathop{\\\\Longleftarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xRightarrow: ["\\\\mathrel{\\\\mathop{\\\\Longrightarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xleftrightarrow: ["\\\\mathrel{\\\\mathop{\\\\longleftrightarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xLeftrightarrow: ["\\\\mathrel{\\\\mathop{\\\\Longleftrightarrow}\\\\limits^{#2}_{#1}}", 2, ""]\n' +
       '      }\n' +
       '    },\n' +
       '    SVG:{\n' +

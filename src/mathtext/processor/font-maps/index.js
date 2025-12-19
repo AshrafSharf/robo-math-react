@@ -5,6 +5,7 @@ import { digitsMap } from './digits-map.js';
 import { symbolsMap } from './symbols-map.js';
 import { greekMap } from './greek-map.js';
 import { geometricMap } from './geometric-map.js';
+import { arrowsMap } from './arrows-map.js';
 
 // Combined font map with all characters
 export const mainFontMapValues = {
@@ -14,6 +15,7 @@ export const mainFontMapValues = {
   ...symbolsMap,
   ...greekMap,
   ...geometricMap,
+  ...arrowsMap,
 };
 
 // Re-export individual maps for direct access if needed
@@ -24,4 +26,5 @@ export {
   symbolsMap,
   greekMap,
   geometricMap,
+  arrowsMap,
 };
