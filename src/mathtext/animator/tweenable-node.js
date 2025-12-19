@@ -91,9 +91,28 @@ export class TweenableNode {
 
   setStroke(strokeColor) {
     const elementId = this.mathNodeGraph.elementId;
-    this.strokeColor = strokeColor;
-    $(`#${elementId}`).attr('stroke', strokeColor);
-    $(`#${elementId}`).css('stroke', strokeColor);
+    const $element = $(`#${elementId}`);
+    // Preserve element's fill color if it was set by \color{} - check ancestors too
+    const fillColor = this.findInheritedFill($element[0]);
+    const effectiveColor = (fillColor && fillColor !== 'none' && fillColor !== 'currentColor')
+      ? fillColor
+      : strokeColor;
+    this.strokeColor = effectiveColor;
+    $element.attr('stroke', effectiveColor);
+    $element.css('stroke', effectiveColor);
+  }
+
+  // Find fill color from element or its ancestors
+  findInheritedFill(element) {
+    let current = element;
+    while (current && current.tagName) {
+      const fill = current.getAttribute ? current.getAttribute('fill') : null;
+      if (fill && fill !== 'none' && fill !== 'currentColor') {
+        return fill;
+      }
+      current = current.parentNode || current.parentElement;
+    }
+    return null;
   }
 
   getSVGNode() {

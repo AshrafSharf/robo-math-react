@@ -14,12 +14,35 @@ export class MathNodeGraph {
     this.type = type;
     this.cherrioElement = cherrioElement;
     this.mathAnimatorFactory = mathAnimatorFactory;
-    this.strokeColor = strokeColor;
     this.children = [];
     this.nodePath = '';
-    
+
+    // Preserve element's fill color if set by \color{} command - check ancestors too
+    const fillColor = this.findInheritedFillCheerio(cherrioElement);
+    const effectiveColor = (fillColor && fillColor !== 'none' && fillColor !== 'currentColor')
+      ? fillColor
+      : strokeColor;
+    this.strokeColor = effectiveColor;
+
     this.cherrioElement.attr('id', this.elementId);
     this.cherrioElement.attr('stroke', this.strokeColor);
+  }
+
+  // Find fill color from cheerio element or its ancestors
+  findInheritedFillCheerio(element) {
+    let current = element;
+    while (current && current.length > 0) {
+      const fill = current.attr('fill');
+      if (fill && fill !== 'none' && fill !== 'currentColor') {
+        return fill;
+      }
+      current = current.parent();
+      // Stop at root or if no more parents
+      if (!current || current.length === 0 || current[0].type === 'root') {
+        break;
+      }
+    }
+    return null;
   }
 
   enableStroke() {

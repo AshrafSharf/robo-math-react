@@ -282,10 +282,34 @@ export class MathTextComponent {
 
   applyStrokeColor() {
     // Apply stroke color to paths after rendering
+    // Respect \color{} by using fill color as stroke if present
     if (this.containerDOM) {
-      $("path", this.containerDOM).attr('stroke', this.getFontStroke());
-      $("path", this.containerDOM).css('stroke', this.getFontStroke());
+      const defaultStroke = this.getFontStroke();
+      $("path", this.containerDOM).each((i, path) => {
+        const $path = $(path);
+        // Check for fill color - may be on path or inherited from parent <g> elements
+        let fillColor = this.findInheritedFill(path);
+        // Use fill color if it's a valid color (not 'none' or 'currentColor')
+        const strokeColor = (fillColor && fillColor !== 'none' && fillColor !== 'currentColor')
+          ? fillColor
+          : defaultStroke;
+        $path.attr('stroke', strokeColor);
+        $path.css('stroke', strokeColor);
+      });
     }
+  }
+
+  // Find fill color from element or its ancestors
+  findInheritedFill(element) {
+    let current = element;
+    while (current && current.tagName) {
+      const fill = current.getAttribute ? current.getAttribute('fill') : $(current).attr('fill');
+      if (fill && fill !== 'none' && fill !== 'currentColor') {
+        return fill;
+      }
+      current = current.parentNode || current.parentElement;
+    }
+    return null;
   }
 
   // Convenience methods for bbox-based animations (hides SelectionUnit implementation)
