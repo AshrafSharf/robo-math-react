@@ -1,0 +1,29 @@
+Long/Extensible Arrows (with text)
+
+  \xrightarrow{above}
+  \xrightarrow[below]{above}
+  \xleftarrow{text}
+
+  Curved Arrows (AMSsymbols)
+
+  | Command           | Symbol |
+  |-------------------|--------|
+  | \curvearrowright  | ↷      |
+  | \curvearrowleft   | ↶      |
+  | \circlearrowright | ↻      |
+  | \circlearrowleft  | ↺      |
+  | \hookrightarrow   | ↪      |
+  | \hookleftarrow    | ↩      |
+
+  Hooked/Tailed Arrows
+
+  | Command            | Symbol |
+  |--------------------|--------|
+  | \rightarrowtail    | ↣      |
+  | \leftarrowtail     | ↢      |
+  | \twoheadrightarrow | ↠      |
+  | \twoheadleftarrow  | ↞      |
+
+  However, for pen-tracing animation, some of these may need strokeable paths added to
+  font map js. Can you check which arrows currently work with animation and add support for any
+   that don't?
