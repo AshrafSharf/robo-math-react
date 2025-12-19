@@ -9,7 +9,7 @@ import SVG from 'svg.js';
 import { Graphsheet2d } from '../geom/graphing/graphsheet-2d.js';
 import { GridOptions } from '../geom/graphing/grid-options.js';
 import { ZoomUtils } from '../utils/zoom-utils.js';
-import { IdUtil } from '../shared/utils/id-util.js';
+import { IdUtil } from '../utils/id-util.js';
 import { ComponentState } from './component-state.js';
 import { getXScaleBuilder, getYScaleBuilder } from '../geom/graphing/graph-scales.js';
 

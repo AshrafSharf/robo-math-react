@@ -10,7 +10,7 @@ import $ from 'jquery';
 import SVG from 'svg.js';
 import { GraphsheetPolar } from '../geom/graphing/graphsheet-polar.js';
 import { GridOptions } from '../geom/graphing/grid-options.js';
-import { IdUtil } from '../shared/utils/id-util.js';
+import { IdUtil } from '../utils/id-util.js';
 import { ComponentState } from './component-state.js';
 
 // Shape imports

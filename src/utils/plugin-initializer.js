@@ -18,7 +18,19 @@ export class PluginInitializer {
       '    skipStartupTypeset:false,\n' +
       '    tex2jax: {inlineMath: [["$","$"],["\\\\(","\\\\)"]]},\n' +
       '    TeX: {\n' +
-      '      extensions: ["bbox.js", "color.js"]\n' +
+      '      extensions: ["bbox.js", "color.js", "cancel.js", "enclose.js"],\n' +
+      '      Macros: {\n' +
+      '        square: ["\\\\unicode{x25A1}", 0],\n' +
+      '        blacksquare: ["\\\\unicode{x25A0}", 0],\n' +
+      '        triangle: ["\\\\unicode{x25B3}", 0],\n' +
+      '        blacktriangle: ["\\\\unicode{x25B2}", 0],\n' +
+      '        triangledown: ["\\\\unicode{x25BD}", 0],\n' +
+      '        blacktriangledown: ["\\\\unicode{x25BC}", 0],\n' +
+      '        lozenge: ["\\\\unicode{x25CA}", 0],\n' +
+      '        diamond: ["\\\\unicode{x25C7}", 0],\n' +
+      '        therefore: ["\\\\unicode{x2234}", 0],\n' +
+      '        because: ["\\\\unicode{x2235}", 0]\n' +
+      '      }\n' +
       '    },\n' +
       '    SVG:{\n' +
       '    useFontCache:false,\n' +
@@ -107,12 +119,13 @@ export class PluginInitializer {
         window.MathJax.Hub.Queue(function () {
           console.log("Performing test render to load all MathJax extensions...");
 
-          // Create a test element with content that triggers AMSmath and other extensions
+          // Create a test element with content that triggers extensions and preloads special chars
           const testDiv = document.createElement('div');
           testDiv.id = 'mathjax-init-test';
           testDiv.style.position = 'absolute';
           testDiv.style.left = '-9999px';
-          testDiv.innerHTML = '$$\\displaystyle{x^2 + 2x + 1}$$';
+          // Include special characters to preload their font definitions
+          testDiv.innerHTML = '$$\\displaystyle{x^2 + 2x + 1 \\square \\therefore \\triangle \\mathbb{N}}$$';
           document.body.appendChild(testDiv);
 
           // Queue the test typeset

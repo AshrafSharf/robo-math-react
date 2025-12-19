@@ -11,7 +11,7 @@ import { RoboEventManager } from '../../events/robo-event-manager.js';
 import { PenDef } from '../../pen/pen-def.js';
 import { Bounds2 } from '../../geom/Bounds2.js';
 import { BoundsExtractor } from '../utils/bounds-extractor.js';
-import { TextExUtil } from '../../shared/utils/text-ex-util.js';
+import { TextExUtil } from '../../utils/text-ex-util.js';
 import { TweenMax, Power2 } from 'gsap';
 import { WriteEffect } from '../effects/write-effect.js';
 import { WriteOnlyEffect } from '../effects/write-only-effect.js';

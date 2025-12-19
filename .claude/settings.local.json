@@ -33,7 +33,8 @@
       "Bash(curl:*)",
       "Bash(xargs basename:*)",
       "Bash(npm run test:expressions:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []

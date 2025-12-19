@@ -1,6 +1,6 @@
 import { RectPathGenerator } from '../path-generators/rect-path-generator.js';
 import { TweenablePath } from '../animator/tweenable-path.js';
-import { IdUtil } from '../shared/utils/id-util.js';
+import { IdUtil } from '../utils/id-util.js';
 import { Bounds2 } from '../geom/Bounds2.js';
 
 /**

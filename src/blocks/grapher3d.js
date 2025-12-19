@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import { setupCoordinateSystem as setupLHSCoordinateSystem } from '../3d/lhs/lhs_coordinate_system.js';
 import { setupCoordinateSystem as setupRHSCoordinateSystem } from '../3d/native/coordinate_system.js';
 import { Diagram3DFactory } from '../3d/diagram_3d_factory.js';
-import { IdUtil } from '../shared/utils/id-util.js';
+import { IdUtil } from '../utils/id-util.js';
 
 export class Grapher3D {
     constructor(containerElement, options = {}) {

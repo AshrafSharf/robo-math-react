@@ -1,4 +1,4 @@
-import { IdUtil } from '../shared/utils/id-util.js';
+import { IdUtil } from '../utils/id-util.js';
 import { PenDef } from './pen-def.js';
 import { RoboEventManager } from '../events/robo-event-manager.js';
 import { PenEvent } from '../events/pen-event.js';

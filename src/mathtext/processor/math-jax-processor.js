@@ -1,5 +1,5 @@
 import { JaxOutputProcessor } from "./jax-output-processor.js";
-import { StringUtil } from "../../shared/utils/string-util.js";
+import { StringUtil } from "../../utils/string-util.js";
 
 export class MathJaxProcessor {
 

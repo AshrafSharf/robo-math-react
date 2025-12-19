@@ -1,7 +1,7 @@
 import { Bounds2 } from '../geom/Bounds2.js';
 import { ScriptShapeHighlighter } from './script-shape-highlighter.js';
 import { BaseStylableSubject } from './base-stylable-subject.js';
-import { IdUtil } from '../shared/utils/id-util.js';
+import { IdUtil } from '../utils/id-util.js';
 import { TexToSVGShapeEffect } from '../effects/shape-effects/tex-to-svg-shape-effect.js';
 import { ShapeDrawEffect } from '../effects/shape-effects/shape-draw-effect.js';
 import { TweenMax } from 'gsap';

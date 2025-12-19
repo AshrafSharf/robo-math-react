@@ -1,6 +1,6 @@
 import { TexSVGComponent } from './components/tex-svg-component.js';
 import { ComponentState } from './component-state.js';
-import { IdUtil } from './shared/utils/id-util.js';
+import { IdUtil } from '../utils/id-util.js';
 
 export class TexSVGContainer {
   constructor(options = {}) {
