@@ -73,7 +73,7 @@ const CommandItem = ({
             className="glyphicon glyphicon-play cmd-play-single-left"
             onClick={(e) => {
               e.stopPropagation();
-              onPlaySingle(command);
+              onPlaySingle(command.id);
             }}
             title="Play this only"
           />

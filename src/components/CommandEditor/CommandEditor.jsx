@@ -134,8 +134,8 @@ const CommandEditor = ({
   }, [commands, updateCommands]);
 
   // Play single command with animation
-  const handlePlaySingle = useCallback((command) => {
-    if (onPlaySingle) onPlaySingle(command);
+  const handlePlaySingle = useCallback((commandId) => {
+    if (onPlaySingle) onPlaySingle(commandId);
   }, [onPlaySingle]);
 
   // Play all commands with animation

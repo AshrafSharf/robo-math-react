@@ -34,3 +34,8 @@ cancel(T, "0", "u")
   cancel(T, "", "x", "red")
 
   
+
+M = write(4, 10, "x^2 + y^2")
+T = subonly(M, "x^2")
+arrow(T,"bl", "S", 60, "squared", 70, 5)
+
