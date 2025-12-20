@@ -40,8 +40,8 @@ const CommandList = ({
   return (
     <>
       {commands.map((command, index) => {
-        const errorForCommand = errors.find(e => e.index === index);
-        const canPlayInfo = canPlayInfos.find(c => c.index === index);
+        const errorForCommand = errors.find(e => e.id === command.id);
+        const canPlayInfo = canPlayInfos.find(c => c.id === command.id);
         return (
           <CommandItem
             key={command.id}

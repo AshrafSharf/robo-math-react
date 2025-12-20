@@ -200,6 +200,7 @@ function AppContent() {
           <PageTabBar
             isSidebarCollapsed={isSidebarCollapsed}
             controller={controller}
+            onPlaybackStart={() => setIsSidebarCollapsed(true)}
           />
           <div
             ref={containerRef}

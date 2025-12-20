@@ -1,6 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useLesson } from '../../context';
-import { InteractiveCommandController } from '../../../engine/controller/InteractiveCommandController.js';
 import PlaybackBar from '../PlaybackBar/PlaybackBar';
 import './PageTabBar.css';
 
@@ -28,12 +27,11 @@ const PageTab = ({ page, isActive, onClick, onDelete, canDelete }) => {
   );
 };
 
-const PageTabBar = ({ isSidebarCollapsed, controller }) => {
+const PageTabBar = ({ isSidebarCollapsed, controller, onPlaybackStart }) => {
   const { lesson, activePage, setActivePage, addPage, deletePage } = useLesson();
   const canDelete = lesson.pages.length > 1;
 
   const [showPlaybackBar, setShowPlaybackBar] = useState(false);
-  const interactiveControllerRef = useRef(null);
 
   const handlePlayClick = useCallback(async () => {
     if (!controller?.roboCanvas) {
@@ -41,32 +39,18 @@ const PageTabBar = ({ isSidebarCollapsed, controller }) => {
       return;
     }
 
-    // Cancel any pending execution from the main controller
     controller.cancelPendingExecution();
-
-    // Create new interactive controller with same roboCanvas
-    const interactiveController = new InteractiveCommandController(controller.roboCanvas);
-    interactiveController.setCommandModels(controller.commandModels);
-
-    // Initialize (clears canvas, prepares commands, does NOT play)
-    const success = await interactiveController.initialize();
+    const success = await controller.startInteractivePlay();
     if (success) {
-      interactiveControllerRef.current = interactiveController;
       setShowPlaybackBar(true);
+      onPlaybackStart?.();
     }
-  }, [controller]);
+  }, [controller, onPlaybackStart]);
 
-  const handleClosePlayback = useCallback(() => {
-    if (interactiveControllerRef.current) {
-      interactiveControllerRef.current.destroy();
-      interactiveControllerRef.current = null;
-    }
+  const handleClosePlayback = useCallback(async () => {
+    await controller?.stopAndDrawInteractive();
     setShowPlaybackBar(false);
-
-    // Re-execute main controller to restore normal view
-    if (controller) {
-      controller.executeAll(controller.commandModels);
-    }
+    controller?.executeAll(controller.commandModels);
   }, [controller]);
 
   return (
@@ -84,16 +68,28 @@ const PageTabBar = ({ isSidebarCollapsed, controller }) => {
             />
           ))}
         </div>
-        <button
-          className="play-page-btn"
-          onClick={handlePlayClick}
-          title="Interactive Playback"
-          disabled={!controller?.roboCanvas || !controller.commandModels?.length}
-        >
-          <svg viewBox="0 0 24 24" width="14" height="14">
-            <path fill="currentColor" d="M8 5v14l11-7L8 5z"/>
-          </svg>
-        </button>
+        {showPlaybackBar ? (
+          <button
+            className="stop-page-btn"
+            onClick={handleClosePlayback}
+            title="Stop Playback"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M6 6h12v12H6z"/>
+            </svg>
+          </button>
+        ) : (
+          <button
+            className="play-page-btn"
+            onClick={handlePlayClick}
+            title="Interactive Playback"
+            disabled={!controller?.roboCanvas || !controller.commandModels?.length}
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <path fill="currentColor" d="M8 5v14l11-7L8 5z"/>
+            </svg>
+          </button>
+        )}
         <button
           className="add-page-btn"
           onClick={addPage}
@@ -103,9 +99,9 @@ const PageTabBar = ({ isSidebarCollapsed, controller }) => {
         </button>
       </div>
 
-      {showPlaybackBar && interactiveControllerRef.current && (
+      {showPlaybackBar && (
         <PlaybackBar
-          controller={interactiveControllerRef.current}
+          controller={controller}
           onClose={handleClosePlayback}
         />
       )}

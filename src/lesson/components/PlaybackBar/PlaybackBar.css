@@ -4,6 +4,12 @@
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
+    cursor: grab;
+    user-select: none;
+}
+
+.playback-bar.dragging {
+    cursor: grabbing;
 }
 
 .playback-controls {
@@ -25,7 +31,7 @@
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    cursor: pointer;
+    cursor: pointer !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -51,24 +57,76 @@
     height: 20px;
 }
 
-.play-stop-btn {
+/* Play button - green */
+.play-btn {
     width: 44px;
     height: 36px;
-    background: #4a9eff;
+    background: #22c55e;
     border: none;
 }
 
-.play-stop-btn svg {
+.play-btn svg {
     width: 22px;
     height: 22px;
 }
 
-.play-stop-btn:hover:not(:disabled) {
-    background: #5aafff;
+.play-btn:hover:not(:disabled) {
+    background: #4ade80;
 }
 
-.play-stop-btn:active:not(:disabled) {
-    background: #3a8eef;
+.play-btn:active:not(:disabled) {
+    background: #16a34a;
+}
+
+/* Pause button slot - fixed width to prevent layout shift */
+.pause-btn-slot {
+    width: 44px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Pause button - orange, shown when animating */
+.pause-btn {
+    width: 44px;
+    height: 36px;
+    background: #f59e0b;
+    border: none;
+}
+
+.pause-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.pause-btn:hover:not(:disabled) {
+    background: #fbbf24;
+}
+
+.pause-btn:active:not(:disabled) {
+    background: #d97706;
+}
+
+/* Stop button - red, shown when animating */
+.stop-btn {
+    width: 44px;
+    height: 36px;
+    background: #ef4444;
+    border: none;
+}
+
+.stop-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.stop-btn:hover:not(:disabled) {
+    background: #f87171;
+}
+
+.stop-btn:active:not(:disabled) {
+    background: #dc2626;
 }
 
 .playback-progress {

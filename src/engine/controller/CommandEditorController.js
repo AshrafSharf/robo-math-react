@@ -5,10 +5,13 @@
  * Manages its own state - completely decoupled from React.
  * Emits events for state changes that UI can subscribe to.
  */
+import { TweenMax } from 'gsap';
 import { ExpressionPipelineService } from '../services/ExpressionPipelineService.js';
 import { ExpressionContext } from '../expression-parser/core/ExpressionContext.js';
 import { CommandContext } from '../context/CommandContext.js';
 import { CommandExecutor } from '../context/CommandExecutor.js';
+import { AutoPlayer } from './players/AutoPlayer.js';
+import { InteractivePlayer } from './players/InteractivePlayer.js';
 
 const LATEX_VARIABLES_KEY = 'robomath-latex-variables';
 
@@ -33,6 +36,18 @@ export class CommandEditorController {
 
         // Event callbacks - UI subscribes to these
         this.onStateChange = null;  // Called on any state change
+        this.onInteractiveStateChange = null;  // Called on interactive player state change
+
+        // Internal players (NOT exposed directly)
+        this._autoPlayer = new AutoPlayer(this);
+        this._interactivePlayer = new InteractivePlayer(this);
+
+        // Wire up interactive player state changes
+        this._interactivePlayer.onStateChange = (state) => {
+            if (this.onInteractiveStateChange) {
+                this.onInteractiveStateChange(state);
+            }
+        };
     }
 
     // ============================================
@@ -280,15 +295,91 @@ export class CommandEditorController {
     }
 
     pause() {
-        this.commandExecutor.pause();
+        TweenMax.pauseAll();
     }
 
-    async resume() {
-        return this.commandExecutor.resume();
+    resume() {
+        TweenMax.resumeAll();
     }
 
     async redrawSingle(expressionId, styleOptions) {
         return this.commandExecutor.redrawSingle(expressionId, styleOptions);
+    }
+
+    // ============================================
+    // Auto Mode API
+    // ============================================
+
+    async startAutoPlay() {
+        return this._autoPlayer.start();
+    }
+
+    async playAllAuto() {
+        return this._autoPlayer.playAll();
+    }
+
+    async playUpToAuto(index) {
+        return this._autoPlayer.playUpTo(index);
+    }
+
+    async playSingleAuto(index) {
+        return this._autoPlayer.playSingle(index);
+    }
+
+    pauseAuto() {
+        this._autoPlayer.pause();
+    }
+
+    resumeAuto() {
+        this._autoPlayer.resume();
+    }
+
+    stopAuto() {
+        this._autoPlayer.stop();
+    }
+
+    // ============================================
+    // Interactive Mode API
+    // ============================================
+
+    async startInteractivePlay() {
+        return this._interactivePlayer.start();
+    }
+
+    async playNextInteractive() {
+        return this._interactivePlayer.playNext();
+    }
+
+    async playPreviousInteractive() {
+        return this._interactivePlayer.playPrevious();
+    }
+
+    async playInteractive() {
+        return this._interactivePlayer.playNext();
+    }
+
+    stopInteractive() {
+        this._interactivePlayer.stop();
+    }
+
+    async stopAndDrawInteractive() {
+        return this._interactivePlayer.stopAndDraw();
+    }
+
+    pauseInteractive() {
+        this._interactivePlayer.pause();
+    }
+
+    resumeInteractive() {
+        this._interactivePlayer.resume();
+    }
+
+    async goToInteractive(index) {
+        return this._interactivePlayer.goTo(index);
+    }
+
+    getInteractiveState() {
+        return this._interactivePlayer.getState();
     }
 
     // ============================================

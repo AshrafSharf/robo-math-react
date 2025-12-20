@@ -80,18 +80,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4a9eff;
+  color: #22c55e;
   flex-shrink: 0;
 }
 
 .play-page-btn:hover:not(:disabled) {
-  background: #e8f4ff;
-  color: #2a7edf;
+  background: #ecfdf5;
+  color: #16a34a;
 }
 
 .play-page-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.stop-page-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+.stop-page-btn:hover {
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 .add-page-btn {
