@@ -97,6 +97,7 @@ import { TopWriteExpression } from '../expressions/TopWriteExpression.js';
 import { BottomWriteExpression } from '../expressions/BottomWriteExpression.js';
 import { CancelExpression } from '../expressions/CancelExpression.js';
 import { ArrowExpression } from '../expressions/ArrowExpression.js';
+import { DistanceMarkerExpression } from '../expressions/DistanceMarkerExpression.js';
 import { SequenceExpression } from '../expressions/SequenceExpression.js';
 import { ParallelExpression } from '../expressions/ParallelExpression.js';
 import { RefExpression } from '../expressions/RefExpression.js';
@@ -204,6 +205,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('bottomw', BottomWriteExpression);
         registerMultiArg('cancel', CancelExpression);
         registerMultiArg('arrow', ArrowExpression);
+        registerMultiArg('dm', DistanceMarkerExpression);
         registerMultiArg('seq', SequenceExpression);
         registerMultiArg('para', ParallelExpression);
         registerMultiArg('ref', RefExpression);

@@ -43,47 +43,31 @@ export class MeasurementIndicatorPrimitiveShape extends GeomPrimitiveShape {
   generatePath() {
     // modelCoordinates: [x1, y1, x2, y2] representing start and end points
     const [x1, y1, x2, y2] = this.modelCoordinates;
-    
+
     // Convert to view coordinates
     const startView = this.getViewCoordinates([x1, y1]);
     const endView = this.getViewCoordinates([x2, y2]);
-    
+
     let startX = startView[0], startY = startView[1];
     let endX = endView[0], endY = endView[1];
-    
-    // Apply perpendicular offset if specified
-    if (this.options.offset !== 0) {
-      // Calculate direction vector in model space
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      const length = Math.sqrt(dx * dx + dy * dy);
-      
-      if (length > 0) {
-        // Calculate perpendicular direction (rotate 90 degrees)
-        const perpX = -dy / length;
-        const perpY = dx / length;
-        
-        // Apply offset in model space
-        const offsetX1 = x1 + perpX * this.options.offset;
-        const offsetY1 = y1 + perpY * this.options.offset;
-        const offsetX2 = x2 + perpX * this.options.offset;
-        const offsetY2 = y2 + perpY * this.options.offset;
-        
-        // Convert offset positions to view coordinates
-        const offsetStartView = this.getViewCoordinates([offsetX1, offsetY1]);
-        const offsetEndView = this.getViewCoordinates([offsetX2, offsetY2]);
-        
-        startX = offsetStartView[0];
-        startY = offsetStartView[1];
-        endX = offsetEndView[0];
-        endY = offsetEndView[1];
-      }
-    }
-    
-    // Calculate direction vector
+
+    // Calculate direction vector in view/pixel space
     const dx = endX - startX;
     const dy = endY - startY;
     const length = Math.sqrt(dx * dx + dy * dy);
+
+    // Apply perpendicular offset in pixel space if specified
+    if (this.options.offset !== 0 && length > 0) {
+      // Calculate perpendicular direction in view space (rotate 90 degrees)
+      const perpX = -dy / length;
+      const perpY = dx / length;
+
+      // Apply offset in pixel space
+      startX += perpX * this.options.offset;
+      startY += perpY * this.options.offset;
+      endX += perpX * this.options.offset;
+      endY += perpY * this.options.offset;
+    }
     
     if (length === 0) {
       // If start and end are the same, clear all paths
@@ -107,17 +91,17 @@ export class MeasurementIndicatorPrimitiveShape extends GeomPrimitiveShape {
     mainPath.lineTo(endX, endY);
     this.mainLine.attr('d', mainPath.toString());
     
-    // Build the start marker path
+    // Build the start marker path (top to bottom)
     const markerHalfLen = this.options.markerLength / 2;
     const startMarkerPath = d3.path();
-    startMarkerPath.moveTo(startX + perpX * markerHalfLen, startY + perpY * markerHalfLen);
-    startMarkerPath.lineTo(startX - perpX * markerHalfLen, startY - perpY * markerHalfLen);
+    startMarkerPath.moveTo(startX - perpX * markerHalfLen, startY - perpY * markerHalfLen);
+    startMarkerPath.lineTo(startX + perpX * markerHalfLen, startY + perpY * markerHalfLen);
     this.startMarker.attr('d', startMarkerPath.toString());
-    
-    // Build the end marker path
+
+    // Build the end marker path (top to bottom)
     const endMarkerPath = d3.path();
-    endMarkerPath.moveTo(endX + perpX * markerHalfLen, endY + perpY * markerHalfLen);
-    endMarkerPath.lineTo(endX - perpX * markerHalfLen, endY - perpY * markerHalfLen);
+    endMarkerPath.moveTo(endX - perpX * markerHalfLen, endY - perpY * markerHalfLen);
+    endMarkerPath.lineTo(endX + perpX * markerHalfLen, endY + perpY * markerHalfLen);
     this.endMarker.attr('d', endMarkerPath.toString());
   }
 
@@ -140,10 +124,10 @@ export class MeasurementIndicatorPrimitiveShape extends GeomPrimitiveShape {
       this.shapeGroup.show();
       
       // Get the native SVG path elements in the correct order:
-      // Start marker -> Main line -> End marker
+      // Main line -> Start marker (left) -> End marker (right)
       const pathElements = [
-        this.startMarker.node,
         this.mainLine.node,
+        this.startMarker.node,
         this.endMarker.node
       ];
       

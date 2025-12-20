@@ -489,6 +489,22 @@ export const label_error_messages = {
     `label() needs a graph.\nFirst argument must be graph.`,
 };
 
+// ============= Distance Marker Error Messages =============
+
+export const dm_error_messages = {
+  MISSING_ARGS: () =>
+    `dm() needs graph, coords, text.\nUsage: dm(g, x1,y1,x2,y2, "text")`,
+
+  GRAPH_REQUIRED: () =>
+    `dm() needs a graph.\nFirst argument must be graph.`,
+
+  TEXT_REQUIRED: () =>
+    `dm() needs a text label.\nUse quoted string: "text"`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `dm() got ${count} coordinates.\nNeed exactly 4: x1, y1, x2, y2`,
+};
+
 // ============= Assignment Error Messages =============
 
 export const assignment_error_messages = {
@@ -547,6 +563,7 @@ const messagesByType = {
   rotate: rotate_error_messages,
   translate: translate_error_messages,
   label: label_error_messages,
+  dm: dm_error_messages,
   assignment: assignment_error_messages,
 };
 

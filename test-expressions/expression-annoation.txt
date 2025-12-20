@@ -39,3 +39,20 @@ M = write(4, 10, "x^2 + y^2")
 T = subonly(M, "x^2")
 arrow(T,"bl", "S", 60, "squared", 70, 5)
 
+// ============= Distance Marker Examples =============
+
+// Basic distance marker with coordinates
+G = g2d(0, 0, 16, 8, -10, 10, -10, 10, 1)
+dm(G, 0, 0, 5, 0, "5 units")
+
+// Distance marker using points
+A = point(G, 2, 3)
+B = point(G, 8, 5)
+dm(G, A, B, "\\sqrt{40}")
+
+// With text offset (text above line by 0.5 units)
+dm(G, 0, -3, 6, -3, "d = 6", 0.5)
+
+// With marker offset (parallel marker shifted by 1 unit)
+dm(G, -5, 0, -5, 5, "5 units", 0.3, 1)
+
