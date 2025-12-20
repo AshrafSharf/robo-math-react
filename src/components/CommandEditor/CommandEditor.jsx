@@ -308,6 +308,7 @@ const CommandEditor = ({
         {settingsPanelOpen && (
           <SettingsPanel
             command={commands.find(c => c.id === selectedId)}
+            commands={commands}
             onUpdate={(updates) => {
               const currentCmd = commands.find(c => c.id === selectedId);
               if (currentCmd) {

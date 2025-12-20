@@ -124,6 +124,8 @@ function normalizeTypeName(name) {
     'writeonly': 'mathtext',
     'writewithout': 'mathtext',
     'text': 'label',
+    // Ref expression
+    'ref': 'ref',
   };
 
   const normalizedName = name.toLowerCase();
@@ -163,6 +165,36 @@ export function getExpressionDisplayName(expressionType) {
     'polygon': 'Polygon',
     'plot': 'Plot',
     'paraplot': 'Parametric Plot',
+    'ref': 'Reference',
   };
   return displayNames[expressionType] || expressionType || 'Unknown';
+}
+
+/**
+ * Check if expression type needs the Ref tab
+ * @param {string} expressionType - The expression type
+ * @returns {boolean}
+ */
+export function hasRefTab(expressionType) {
+  return expressionType === 'ref';
+}
+
+/**
+ * Detect the inner expression type from ref content
+ * Used for dynamic Style tab configuration
+ * @param {string} refContent - The ref tab content string
+ * @returns {string|null} - The inner expression type or null
+ */
+export function detectRefInnerType(refContent) {
+  if (!refContent || refContent.trim() === '') return null;
+
+  try {
+    const ast = parse(refContent);
+    if (!ast || ast.length === 0) return null;
+
+    const result = extractTypeFromAST(ast[0]);
+    return result.type;
+  } catch {
+    return null;
+  }
 }

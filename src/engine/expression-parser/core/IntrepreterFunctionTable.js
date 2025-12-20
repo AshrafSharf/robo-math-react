@@ -98,6 +98,7 @@ import { BottomWriteExpression } from '../expressions/BottomWriteExpression.js';
 import { CancelExpression } from '../expressions/CancelExpression.js';
 import { SequenceExpression } from '../expressions/SequenceExpression.js';
 import { ParallelExpression } from '../expressions/ParallelExpression.js';
+import { RefExpression } from '../expressions/RefExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
 import { SubtractionExpression } from '../expressions/SubtractionExpression.js';
@@ -203,6 +204,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('cancel', CancelExpression);
         registerMultiArg('seq', SequenceExpression);
         registerMultiArg('para', ParallelExpression);
+        registerMultiArg('ref', RefExpression);
 
         // Function definition and calling
         registerMultiArg('def', FunctionDefinitionExpression);

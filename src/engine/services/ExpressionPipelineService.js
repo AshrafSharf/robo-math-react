@@ -41,6 +41,8 @@ const EXPRESSION_TYPE_MAP = {
     'write': 'mathtext',
     'writeonly': 'mathtext',
     'writewithout': 'mathtext',
+    // Ref expression
+    'ref': 'ref',
 };
 
 export class ExpressionPipelineService {
@@ -179,6 +181,9 @@ export class ExpressionPipelineService {
             radialLines: registryOptions.radialLines,
             concentricCircles: registryOptions.concentricCircles,
             angleLabels: registryOptions.angleLabels,
+
+            // Ref expression content
+            content: registryOptions.content,
         };
 
         const command = expression.toCommand(commandOptions);

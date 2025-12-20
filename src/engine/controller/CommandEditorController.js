@@ -111,12 +111,12 @@ export class CommandEditorController {
         this.commandModels = commandModels;
 
         // Create fresh context for variable resolution
-        const freshExprContext = new ExpressionContext();
+        const newContext = new ExpressionContext();
 
         // Process all commands through pipeline
         const pipelineResult = this.pipelineService.processCommandList(
             commandModels,
-            freshExprContext
+            newContext
         );
 
         // Update state
@@ -130,13 +130,14 @@ export class CommandEditorController {
 
         // Clear after successful compilation
         this.clearAndReset();
-        this.expressionContext = freshExprContext;
+        this.expressionContext = newContext;
 
         // Create command context with layout dependencies
         const diagram = this.getDiagram();
         const pen = this.roboCanvas?.penTracer || null;
         const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection, pen);
-        commandContext.annotationLayer = this.roboCanvas?.getAnnotationLayer();
+        commandContext.annotationLayer = this.roboCanvas.getAnnotationLayer();
+        commandContext.expressionContext = newContext;
 
         // Set up executor
         this.commandExecutor.setDiagram2d(diagram);
@@ -190,10 +191,10 @@ export class CommandEditorController {
         this.roboCanvas.clearAll();
 
         // Re-process to get fresh commands (needed because we cleared)
-        const freshExprContext = new ExpressionContext();
+        const newContext = new ExpressionContext();
         const pipelineResult = this.pipelineService.processCommandList(
             this.commandModels,
-            freshExprContext
+            newContext
         );
 
         this._setErrors(pipelineResult.errors);
@@ -215,13 +216,14 @@ export class CommandEditorController {
             return;
         }
 
-        this.expressionContext = freshExprContext;
+        this.expressionContext = newContext;
 
         // Create command context with layout dependencies
         const diagram = this.getDiagram();
         const pen = this.roboCanvas?.penTracer || null;
         const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection, pen);
-        commandContext.annotationLayer = this.roboCanvas?.getAnnotationLayer();
+        commandContext.annotationLayer = this.roboCanvas.getAnnotationLayer();
+        commandContext.expressionContext = newContext;
 
         // Clear old commands before setting new ones (removes old DOM elements)
         this.commandExecutor.clearCommands();
@@ -257,10 +259,10 @@ export class CommandEditorController {
         this.roboCanvas.clearAll();
 
         // Re-process to get fresh commands
-        const freshExprContext = new ExpressionContext();
+        const newContext = new ExpressionContext();
         const pipelineResult = this.pipelineService.processCommandList(
             this.commandModels,
-            freshExprContext
+            newContext
         );
 
         this._setErrors(pipelineResult.errors);
@@ -271,13 +273,14 @@ export class CommandEditorController {
             return;
         }
 
-        this.expressionContext = freshExprContext;
+        this.expressionContext = newContext;
 
         // Create command context with layout dependencies
         const diagram = this.getDiagram();
         const pen = this.roboCanvas?.penTracer || null;
         const commandContext = new CommandContext(diagram.coordinateMapper, diagram.canvasSection, pen);
-        commandContext.annotationLayer = this.roboCanvas?.getAnnotationLayer();
+        commandContext.annotationLayer = this.roboCanvas.getAnnotationLayer();
+        commandContext.expressionContext = newContext;
 
         // Clear old commands before setting new ones (removes old DOM elements)
         this.commandExecutor.clearCommands();

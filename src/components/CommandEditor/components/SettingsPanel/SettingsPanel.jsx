@@ -1,11 +1,15 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 import SettingsTabs from './SettingsTabs';
 import StyleTab from './tabs/StyleTab';
 import ExpressionOptionsTab from './tabs/ExpressionOptionsTab';
 import AnimationTab from './tabs/AnimationTab';
-import { detectExpressionType, hasOptionsPanel } from '../../utils/expressionTypeDetector';
+import RefTab from './tabs/RefTab';
+import { detectExpressionType, hasOptionsPanel, hasRefTab, detectRefInnerType } from '../../utils/expressionTypeDetector';
 import { ExpressionOptionsRegistry } from '../../../../engine/expression-parser/core/ExpressionOptionsRegistry';
+import { extractVariables } from '../../auto_complete';
 
 /**
  * Tabbed Settings Panel for command properties
@@ -13,7 +17,7 @@ import { ExpressionOptionsRegistry } from '../../../../engine/expression-parser/
  * Tab 2: Expression Options (dynamic based on expression type)
  * Tab 3: Animation (speed)
  */
-const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorElement, onApplySpeedToAll }) => {
+const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, anchorElement, onApplySpeedToAll }) => {
   const panelRef = useRef(null);
   const [position, setPosition] = useState(null); // null until calculated
   const [arrowPosition, setArrowPosition] = useState(50);
@@ -22,12 +26,40 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [wasDragged, setWasDragged] = useState(false); // Track if user dragged the panel
   const [optionsVersion, setOptionsVersion] = useState(0); // Force re-read from registry
+  const [size, setSize] = useState({ width: 400, height: 300 });
 
   // Detect expression type
   const expressionType = useMemo(() => {
     const { type } = detectExpressionType(command?.expression);
     return type;
   }, [command?.expression]);
+
+  // Check if this is a ref expression
+  const isRefExpression = hasRefTab(expressionType);
+
+  // Get ref content from command model
+  const refContent = command?.expressionOptions?.ref?.content || '';
+
+  // Detect inner expression type for dynamic Style tab styling
+  const refInnerType = useMemo(() => {
+    if (!isRefExpression) return null;
+    return detectRefInnerType(refContent);
+  }, [isRefExpression, refContent]);
+
+  // Use inner type for styling if available, otherwise use expression type
+  const effectiveStyleType = refInnerType || expressionType;
+
+  // Calculate command index for autocomplete
+  const currentLineIndex = useMemo(() => {
+    if (!commands || !command) return 0;
+    return commands.findIndex(c => c.id === command.id);
+  }, [commands, command]);
+
+  // Create variable provider for autocomplete
+  const variableProvider = useCallback((lineIndex) => {
+    if (!commands) return [];
+    return extractVariables(commands, lineIndex);
+  }, [commands]);
 
   // Calculate position based on anchor element (only on initial render or if not dragged)
   useEffect(() => {
@@ -219,12 +251,30 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     }
   };
 
+  // Handle ref content change - save to registry and trigger redraw
+  const handleRefContentChange = (content) => {
+    if (!command?.id) return;
+
+    // Update the registry with the new content
+    ExpressionOptionsRegistry.setExpressionOptions(command.id, 'ref', { content });
+
+    // Update command model for persistence
+    const updatedExpressionOptions = {
+      ...command.expressionOptions,
+      ref: { ...(command.expressionOptions?.ref || {}), content }
+    };
+    onUpdate({ expressionOptions: updatedExpressionOptions });
+
+    // Force re-read from registry
+    setOptionsVersion(v => v + 1);
+  };
+
   // Switch to a valid tab if current tab becomes disabled
   useEffect(() => {
-    if (activeTab === 'expression' && !hasOptionsPanel(expressionType)) {
+    if (activeTab === 'expression' && !hasOptionsPanel(effectiveStyleType)) {
       setActiveTab('style');
     }
-  }, [expressionType, activeTab]);
+  }, [effectiveStyleType, activeTab]);
 
   // Drag handlers
   const handleMouseDown = (e) => {
@@ -276,59 +326,79 @@ const SettingsPanel = ({ command, onUpdate, onRedrawSingle, onClose, anchorEleme
     >
       <div className="arrow" style={{ top: `${arrowPosition}%` }} />
 
-      {/* Header with tabs - draggable */}
-      <div
-        className="popover-title tabbed-header"
-        onMouseDown={handleMouseDown}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      <ResizableBox
+        width={size.width}
+        height={size.height}
+        minConstraints={[400, 300]}
+        onResize={(e, { size: newSize }) => setSize(newSize)}
+        resizeHandles={['se']}
       >
-        <span className="settings-title">Settings</span>
-        <i
-          className="glyphicon glyphicon-remove settings-close-btn"
-          onClick={onClose}
-        />
-      </div>
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header with tabs - draggable */}
+          <div
+            className="popover-title tabbed-header"
+            onMouseDown={handleMouseDown}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          >
+            <span className="settings-title">Settings</span>
+            <i
+              className="glyphicon glyphicon-remove settings-close-btn"
+              onClick={onClose}
+            />
+          </div>
 
-      {/* Tab navigation */}
-      <SettingsTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        expressionType={expressionType}
-      />
-
-      {/* Tab content */}
-      <div className="popover-content tab-content">
-        {activeTab === 'style' && (
-          <StyleTab
-            command={command}
+          {/* Tab navigation */}
+          <SettingsTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
             expressionType={expressionType}
-            expressionOptions={currentExpressionOptions}
-            onUpdate={onUpdate}
-            onColorChange={handleColorChange}
-            onFillColorChange={handleFillColorChange}
-            onStrokeWidthChange={handleStrokeWidthChange}
-            onStrokeOpacityChange={handleStrokeOpacityChange}
-            onFillOpacityChange={handleFillOpacityChange}
-            onFontSizeChange={handleFontSizeChange}
+            innerExpressionType={refInnerType}
           />
-        )}
 
-        {activeTab === 'expression' && hasOptionsPanel(expressionType) && (
-          <ExpressionOptionsTab
-            expressionType={expressionType}
-            options={currentExpressionOptions}
-            onChange={handleExpressionOptionChange}
-          />
-        )}
+          {/* Tab content */}
+          <div className="popover-content tab-content" style={{ flex: 1, overflow: 'auto' }}>
+            {activeTab === 'style' && (
+              <StyleTab
+                command={command}
+                expressionType={effectiveStyleType}
+                expressionOptions={currentExpressionOptions}
+                onUpdate={onUpdate}
+                onColorChange={handleColorChange}
+                onFillColorChange={handleFillColorChange}
+                onStrokeWidthChange={handleStrokeWidthChange}
+                onStrokeOpacityChange={handleStrokeOpacityChange}
+                onFillOpacityChange={handleFillOpacityChange}
+                onFontSizeChange={handleFontSizeChange}
+              />
+            )}
 
-        {activeTab === 'animation' && (
-          <AnimationTab
-            speed={command.speed}
-            onSpeedChange={(speed) => onUpdate({ speed })}
-            onApplyToAllChange={onApplySpeedToAll}
-          />
-        )}
-      </div>
+            {activeTab === 'expression' && hasOptionsPanel(effectiveStyleType) && (
+              <ExpressionOptionsTab
+                expressionType={effectiveStyleType}
+                options={currentExpressionOptions}
+                onChange={handleExpressionOptionChange}
+              />
+            )}
+
+            {activeTab === 'ref' && isRefExpression && (
+              <RefTab
+                content={refContent}
+                onChange={handleRefContentChange}
+                variableProvider={variableProvider}
+                currentLineIndex={currentLineIndex}
+              />
+            )}
+
+            {activeTab === 'animation' && (
+              <AnimationTab
+                speed={command.speed}
+                onSpeedChange={(speed) => onUpdate({ speed })}
+                onApplyToAllChange={onApplySpeedToAll}
+              />
+            )}
+          </div>
+        </div>
+      </ResizableBox>
     </div>,
     document.body
   );

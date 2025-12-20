@@ -84,6 +84,49 @@ topw(T, "numerator")      // Draws overbrace with "numerator" above "a+b"
 bottomw(T, "denominator") // Draws underbrace with "denominator" below
 ```
 
+### CancelCommand
+
+Draws diagonal strikethrough lines over selected math text:
+
+```
+M = write("\frac{a+b}{c}")
+T = subonly(M, "a")
+cancel(T, "0", "u")   // Diagonal strike with arrow pointing to "0"
+cancel(T, "", "d")    // Down diagonal (no text)
+cancel(T, "", "x")    // X pattern (cross)
+```
+
+**2D Phantom (Width × Height):**
+
+For cancel, we need both width AND height to size the diagonal correctly:
+
+```javascript
+// Create phantom box matching target dimensions
+const phantomContent = `\\phantom{\\rule{${width}px}{${height}px}}`;
+
+// Wrap in cancel command
+const latex = `\\cancel{${phantomContent}}`;      // up diagonal
+const latex = `\\bcancel{${phantomContent}}`;     // down diagonal
+const latex = `\\xcancel{${phantomContent}}`;     // X pattern
+const latex = `\\cancelto{text}{${phantomContent}}`; // with annotation
+```
+
+**Positioning Strategy - Left/Bottom Align:**
+
+For cancel overlays, we use left-align horizontally and bottom-align vertically because the phantom (and thus the diagonal) is at the bottom of the component structure:
+
+```javascript
+const pathBounds = MathTextPositionUtil.getPathBoundsInContainer(mathComponent.containerDOM);
+
+// Left align: paths left edge at target left edge
+const x = targetBounds.minX - pathBounds.offsetX;
+
+// Bottom align: paths bottom at target bottom (phantom is at bottom of cancelto)
+const y = targetBounds.maxY - pathBounds.offsetY - pathBounds.height;
+
+mathComponent.setCanvasPosition(x, y);
+```
+
 ### Potential Extensions
 
 - **Arrows**: `\xrightarrow[\phantom{\hspace{W}}]{label}` for arrows spanning content
@@ -94,7 +137,32 @@ bottomw(T, "denominator") // Draws underbrace with "denominator" below
 
 - `src/engine/commands/TopWriteCommand.js`
 - `src/engine/commands/BottomWriteCommand.js`
+- `src/engine/commands/CancelCommand.js`
 - `src/mathtext/utils/math-text-position-util.js`
+- `src/mathtext/processor/svg-converters/cancel-arrow-converter.js`
+
+## Cancel Arrow Post-Processing
+
+MathJax's `\cancelto` renders a diagonal line with an arrow head pointing to the annotation text. For pen animation, we:
+
+1. **Remove arrow head polygons** - Closed paths (ending with `Z`) are arrow heads
+2. **Shorten diagonal lines** - The line extends to where the arrow tip was
+
+### Trim Strategies
+
+The converter supports multiple strategies via `setTrimStrategy()`:
+
+| Strategy | Description |
+|----------|-------------|
+| `'fixed'` | Trim 28% from both ends - simple, tested fallback |
+| `'calculated'` | Measure arrow head size, trim based on actual dimensions (default) |
+| `'none'` | Just remove arrow heads, no line trimming |
+
+```javascript
+import { setTrimStrategy } from './cancel-arrow-converter.js';
+setTrimStrategy('calculated');  // Use precise calculation
+setTrimStrategy('fixed');       // Use fixed percentage
+```
 
 ## Key Insight
 
@@ -102,3 +170,4 @@ The pattern separates concerns:
 1. **LaTeX** handles the visual structure (braces, annotations)
 2. **JavaScript** handles the dynamic measurement and positioning
 3. **MathJax** renders everything consistently with the rest of the math
+4. **Post-processors** adjust MathJax output for animation needs (e.g., cancel arrows)

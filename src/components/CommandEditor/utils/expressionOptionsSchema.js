@@ -121,6 +121,12 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
   ellipse: {
     _style: 'strokeFill',
   },
+
+  // Ref - dynamic style based on inner expression
+  ref: {
+    _style: null, // Dynamic - determined by inner expression type
+    content: { type: 'text', default: '', label: 'Expression' },
+  },
 };
 
 // Animation options (for Animation tab)
@@ -139,6 +145,8 @@ export function getDefaultOptions(expressionType) {
 
   const defaults = {};
   Object.entries(schema).forEach(([key, config]) => {
+    // Skip internal keys (like _style) and null configs
+    if (key.startsWith('_') || !config) return;
     defaults[key] = config.default;
   });
   return defaults;
