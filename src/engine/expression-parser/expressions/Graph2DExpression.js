@@ -42,6 +42,14 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
         this.row2 = values[2];
         this.col2 = values[3];
 
+        // Validate that end bounds are greater than start bounds
+        if (this.row2 <= this.row1) {
+            this.dispatchError(`g2d() end row (${this.row2}) must be greater than start row (${this.row1})`);
+        }
+        if (this.col2 <= this.col1) {
+            this.dispatchError(`g2d() end col (${this.col2}) must be greater than start col (${this.col1})`);
+        }
+
         // Optional: xMin, xMax (indices 4, 5)
         if (values.length >= 6) {
             this.xRange = [values[4], values[5]];

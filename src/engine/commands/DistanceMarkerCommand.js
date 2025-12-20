@@ -11,6 +11,7 @@ import { BaseCommand } from './BaseCommand.js';
 import { WriteEffect } from '../../mathtext/effects/write-effect.js';
 import { RoboEventManager } from '../../events/robo-event-manager.js';
 import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
+import { MathTextPositionUtil } from '../../mathtext/utils/math-text-position-util.js';
 
 // Default text offset in pixels (so text doesn't overlap the line)
 const DEFAULT_TEXT_OFFSET = 15;
@@ -133,6 +134,11 @@ export class DistanceMarkerCommand extends BaseCommand {
                 offset: textPixelOffset
             }
         );
+
+        // Center the text horizontally on the midpoint
+        if (this.textComponent) {
+            MathTextPositionUtil.centerHorizontally(this.textComponent.containerDOM);
+        }
 
         // Store command result for potential external access
         this.commandResult = {

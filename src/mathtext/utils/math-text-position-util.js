@@ -176,4 +176,19 @@ export class MathTextPositionUtil {
             y: (bounds.y ?? bounds.minY) + bounds.height
         };
     }
+
+    /**
+     * Center a container horizontally by adjusting its left position.
+     * Useful for centering labels on a midpoint.
+     * @param {HTMLElement} container - The container DOM element
+     */
+    static centerHorizontally(container) {
+        if (!container) return;
+
+        const bounds = this.getPathBoundsInContainer(container);
+        if (bounds.width > 0) {
+            const currentLeft = parseFloat(container.style.left) || 0;
+            container.style.left = (currentLeft - bounds.width / 2) + 'px';
+        }
+    }
 }
