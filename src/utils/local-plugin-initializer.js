@@ -1,0 +1,227 @@
+import { FontDefs } from '../mathtext/font-defs.js';
+import { FontMapService } from '../mathtext/services/font-map.service.js';
+
+export class LocalPluginInitializer {
+  static initialize() {
+    this.addMathJaxConfig();
+    this.addMathJaxDOM();
+    return this.addPluginLibraries();
+  }
+
+  static addMathJaxConfig() {
+    let mathJaxConfigText = 'MathJax.Hub.Config({\n' +
+      '    extensions: ["tex2jax.js"],\n' +
+      '    jax: ["input/TeX","output/SVG"],\n' +
+      '    showProcessingMessages:true,\n' +
+      '    showMathMenu:false,\n' +
+      '    messageStyle:\'none\',\n' +
+      '    skipStartupTypeset:false,\n' +
+      '    tex2jax: {inlineMath: [["$","$"],["\\\\(","\\\\)"]]},\n' +
+      '    TeX: {\n' +
+      '      extensions: ["bbox.js", "color.js", "cancel.js", "enclose.js"],\n' +
+      '      Macros: {\n' +
+      '        square: ["\\\\unicode{x25A1}", 0],\n' +
+      '        blacksquare: ["\\\\unicode{x25A0}", 0],\n' +
+      '        triangle: ["\\\\unicode{x25B3}", 0],\n' +
+      '        blacktriangle: ["\\\\unicode{x25B2}", 0],\n' +
+      '        triangledown: ["\\\\unicode{x25BD}", 0],\n' +
+      '        blacktriangledown: ["\\\\unicode{x25BC}", 0],\n' +
+      '        lozenge: ["\\\\unicode{x25CA}", 0],\n' +
+      '        diamond: ["\\\\unicode{x25C7}", 0],\n' +
+      '        therefore: ["\\\\unicode{x2234}", 0],\n' +
+      '        because: ["\\\\unicode{x2235}", 0],\n' +
+      '        curvearrowleft: ["\\\\unicode{x21B6}", 0],\n' +
+      '        curvearrowright: ["\\\\unicode{x21B7}", 0],\n' +
+      '        circlearrowleft: ["\\\\unicode{x21BA}", 0],\n' +
+      '        circlearrowright: ["\\\\unicode{x21BB}", 0],\n' +
+      '        twoheadleftarrow: ["\\\\unicode{x219E}", 0],\n' +
+      '        twoheadrightarrow: ["\\\\unicode{x21A0}", 0],\n' +
+      '        leftarrowtail: ["\\\\unicode{x21A2}", 0],\n' +
+      '        rightarrowtail: ["\\\\unicode{x21A3}", 0],\n' +
+      '        xleftarrow: ["\\\\mathrel{\\\\mathop{\\\\longleftarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xrightarrow: ["\\\\mathrel{\\\\mathop{\\\\longrightarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xLeftarrow: ["\\\\mathrel{\\\\mathop{\\\\Longleftarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xRightarrow: ["\\\\mathrel{\\\\mathop{\\\\Longrightarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xleftrightarrow: ["\\\\mathrel{\\\\mathop{\\\\longleftrightarrow}\\\\limits^{#2}_{#1}}", 2, ""],\n' +
+      '        xLeftrightarrow: ["\\\\mathrel{\\\\mathop{\\\\Longleftrightarrow}\\\\limits^{#2}_{#1}}", 2, ""]\n' +
+      '      }\n' +
+      '    },\n' +
+      '    SVG:{\n' +
+      '    useFontCache:false,\n' +
+      '    addMMLclasses:true\n' +
+      '    }\n' +
+      '  });';
+
+    const mathJaxConfigScript = document.createElement("script");
+    mathJaxConfigScript.type = "text/x-mathjax-config";
+    mathJaxConfigScript.textContent = mathJaxConfigText;
+    document.head.appendChild(mathJaxConfigScript);
+  }
+
+  static addMathJaxDOM() {
+    const jaxContainerDOM = document.createElement('div');
+    jaxContainerDOM.id = 'jax-container-dom';
+    document.body.appendChild(jaxContainerDOM);
+
+    const mathJaxDOM = `<div id="scratchpad-Frame"></div>
+                                      <div id="inputjaxForm"></div>
+                                      <div class="box" id="box" style="visibility:hidden">
+                                        <div id="MathOutput" class="output"></div>
+                                      </div>
+                                      <div id="svg-math-annotation"></div>`;
+    jaxContainerDOM.innerHTML = mathJaxDOM;
+
+    const mathOutputElem = document.getElementById('MathOutput');
+    if (mathOutputElem) {
+      mathOutputElem.innerText = "$${}$$";
+    }
+  }
+
+  static addPluginLibraries() {
+    console.log("LocalPluginInitializer: loading from local assets");
+
+    const mathJaxLibs = [
+      {url: "mathjax/unpacked/MathJax.js", parent: document.head},
+      {url: "mathjax/unpacked/app-triggered/mtable-loader.js", parent: document.head},
+      {url: "mathjax/unpacked/app-triggered/multiline-loader.js", parent: document.head},
+      {url: "mathjax/unpacked/app-triggered/ms-loader.js", parent: document.head},
+      {url: "mathjax/unpacked/app-triggered/mmultiscript-loader.js", parent: document.head},
+      {url: "mathjax/unpacked/app-triggered/menclose-loader.js", parent: document.head},
+      {url: "mathjax/unpacked/app-triggered/rep-key-list.js", parent: document.head},
+      {url: "external/BezierPlugin.min.js", parent: document.head},
+      {url: "external/dom-to-image.js", parent: document.head},
+      {url: "external/DrawSVGPlugin.min.js", parent: document.head},
+      {url: "external/MorphSVGPlugin.min.js", parent: document.head},
+      {url: "external/SplitText.min.js", parent: document.head}
+    ];
+
+    const libPromises = mathJaxLibs.map((libPath => {
+      return this.importScript(libPath.url, libPath.parent);
+    }));
+
+    const mathJaxLoadedPromise = Promise.all(libPromises).then(() => {
+      console.log("Local MATHJAX Libraries added successfully");
+    }).catch((err) => {
+      console.error("Error occurred while loading local MATHJAX Libraries", err);
+    });
+
+    const hookLoadedPromise = mathJaxLoadedPromise.then(() => {
+      console.log("Loading MathJax hook.js...");
+      return this.importScript("mathjax/hook.js", document.head);
+    }).then(() => {
+      console.log("MathJax hook.js loaded successfully");
+    }).catch((err) => {
+      console.error("Error loading hook.js:", err);
+      throw err;
+    });
+
+    const hubPromise = new Promise((resolve, reject) => {
+      hookLoadedPromise.then(() => {
+        console.log("Hook loaded, adding to Hub.Queue");
+
+        if (!window.MathJax || !window.MathJax.Hub) {
+          console.error("MathJax.Hub not available!");
+          reject(new Error("MathJax.Hub not available"));
+          return;
+        }
+
+        window.MathJax.Hub.Queue(function () {
+          console.log("Performing test render to load all MathJax extensions...");
+
+          const testDiv = document.createElement('div');
+          testDiv.id = 'mathjax-init-test';
+          testDiv.style.position = 'absolute';
+          testDiv.style.left = '-9999px';
+          testDiv.innerHTML = '$$\\displaystyle{x^2 + 2x + 1 \\square \\therefore \\triangle \\mathbb{N}}$$';
+          document.body.appendChild(testDiv);
+
+          window.MathJax.Hub.Queue(['Typeset', window.MathJax.Hub, testDiv]);
+        });
+
+        window.MathJax.Hub.Queue(function () {
+          console.log("Test render complete. Initializing font system...");
+
+          const testDiv = document.getElementById('mathjax-init-test');
+          if (testDiv) {
+            testDiv.remove();
+          }
+
+          try {
+            if (!window.MathJax.OutputJax || !window.MathJax.OutputJax.SVG) {
+              console.error("MathJax.OutputJax.SVG not available yet");
+              reject(new Error("MathJax.OutputJax.SVG not available"));
+              return;
+            }
+
+            if (!window.MathJax.OutputJax.SVG.FONTDATA) {
+              console.log("Initializing FONTDATA structure...");
+              window.MathJax.OutputJax.SVG.FONTDATA = {
+                FONTS: {},
+                VARIANT: {},
+                RANGES: [],
+                DELIMITERS: {},
+                RULECHAR: 0x2212,
+                REMAP: {}
+              };
+            }
+
+            if (!window.MathJax.OutputJax.SVG.FONTDATA.FONTS) {
+              window.MathJax.OutputJax.SVG.FONTDATA.FONTS = {};
+            }
+
+            console.log("Initializing FontMapService");
+            FontMapService.getInstance();
+
+            console.log("Loading FontDefs...");
+            FontDefs.loadAllDefs();
+            console.log("FontDefs.loadAllDefs completed");
+          } catch(err) {
+            console.error("Error in Hub.Queue callback:", err);
+            reject(err);
+          }
+        });
+
+        window.MathJax.Hub.Queue(function () {
+          console.log("MathJax fully initialized and ready");
+
+          if (!window.TEXT_TO_ML || !window.TEXT_TO_ML.Translate) {
+            reject(new Error("TEXT_TO_ML not available after initialization"));
+            return;
+          }
+
+          console.log("All systems ready");
+          resolve(true);
+        });
+      }).catch(err => {
+        console.error("Error in hub promise:", err);
+        reject(err);
+      });
+    });
+    return hubPromise;
+  }
+
+  static importScript(url, parentContainer) {
+    // Load from local public/assets folder
+    const rootPath = "/assets";
+    const fullPath = rootPath + "/" + url;
+
+    return new Promise((resolve, reject) => {
+      let s = document.createElement("script");
+      s.onload = () => {
+        console.log("Loaded:", fullPath);
+        resolve();
+      };
+      s.onerror = (e) => {
+        console.error("Failed to load:", fullPath);
+        if (url.startsWith('external/') || url.startsWith('mathjax/unpacked/app-triggered/')) {
+          console.warn("Non-critical plugin failed, continuing:", url);
+          resolve();
+        } else {
+          reject(e);
+        }
+      };
+      s.src = fullPath;
+      parentContainer.appendChild(s);
+    });
+  }
+}

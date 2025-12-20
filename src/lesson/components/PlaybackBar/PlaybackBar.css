@@ -1,0 +1,103 @@
+.playback-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+.playback-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 32px;
+    min-width: 320px;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.playback-btn {
+    width: 40px;
+    height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.playback-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.playback-btn:active:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.playback-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.playback-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.play-stop-btn {
+    width: 44px;
+    height: 36px;
+    background: #4a9eff;
+    border: none;
+}
+
+.play-stop-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.play-stop-btn:hover:not(:disabled) {
+    background: #5aafff;
+}
+
+.play-stop-btn:active:not(:disabled) {
+    background: #3a8eef;
+}
+
+.playback-progress {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: system-ui, -apple-system, sans-serif;
+    min-width: 60px;
+    text-align: center;
+}
+
+.close-btn {
+    margin-left: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+}
+
+.close-btn svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+}
+
+.close-btn:hover:not(:disabled) {
+    background: rgba(255, 80, 80, 0.3);
+}
+
+.close-btn:hover svg {
+    opacity: 1;
+}

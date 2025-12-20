@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App.jsx'
 import TestFeatures from './TestFeatures.jsx'
 import SvgStructureTest from './pages/SvgStructureTest.jsx'
-import { PluginInitializer } from './utils/plugin-initializer.js'
+import { LocalPluginInitializer as PluginInitializer } from './utils/local-plugin-initializer.js'
 import { MathJaxProcessor } from './mathtext/processor/math-jax-processor.js'
 
 // Initialize plugins (MathJax, GSAP, etc.) before rendering React app

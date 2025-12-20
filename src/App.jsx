@@ -37,17 +37,18 @@ function AppContent() {
 
   // Command execution hook
   const {
-    handleExecute: hookHandleExecute,
-    handleExecuteAll: hookHandleExecuteAll,
-    handlePlaySingle: hookHandlePlaySingle,
-    handlePlayAll: hookHandlePlayAll,
-    handleChange: hookHandleChange,
-    handleStop: hookHandleStop,
-    handlePause: hookHandlePause,
-    handleResume: hookHandleResume,
-    redrawSingle: hookRedrawSingle,
-    handleExpressionFocus: hookHandleExpressionFocus,
-    handleExpressionBlur: hookHandleExpressionBlur,
+    controller,
+    handleExecute,
+    handleExecuteAll,
+    handlePlaySingle,
+    handlePlayAll,
+    handleChange,
+    handleStop,
+    handlePause,
+    handleResume,
+    redrawSingle,
+    handleExpressionFocus,
+    handleExpressionBlur,
     errors,
     canPlayInfos,
     clearAndRerender,
@@ -79,9 +80,9 @@ function AppContent() {
     clearAndRerender();
 
     if (activePage.commands?.length > 0) {
-      hookHandleChange(activePage.commands);
+      handleChange(activePage.commands);
     }
-  }, [activePage.id, activePage.commands, roboCanvas, clearAndRerender, hookHandleChange]);
+  }, [activePage.id, activePage.commands, roboCanvas, clearAndRerender, handleChange]);
 
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -176,17 +177,17 @@ function AppContent() {
         <CommandEditorWithPopup
           commands={activePage.commands}
           onCommandsChange={handleCommandsChange}
-          onExecute={hookHandleExecute}
-          onExecuteAll={hookHandleExecuteAll}
-          onPlaySingle={hookHandlePlaySingle}
-          onPlayAll={hookHandlePlayAll}
-          onStop={hookHandleStop}
-          onPause={hookHandlePause}
-          onResume={hookHandleResume}
-          onChange={hookHandleChange}
-          onRedrawSingle={hookRedrawSingle}
-          onExpressionFocus={hookHandleExpressionFocus}
-          onExpressionBlur={hookHandleExpressionBlur}
+          onExecute={handleExecute}
+          onExecuteAll={handleExecuteAll}
+          onPlaySingle={handlePlaySingle}
+          onPlayAll={handlePlayAll}
+          onStop={handleStop}
+          onPause={handlePause}
+          onResume={handleResume}
+          onChange={handleChange}
+          onRedrawSingle={redrawSingle}
+          onExpressionFocus={handleExpressionFocus}
+          onExpressionBlur={handleExpressionBlur}
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isSidebarCollapsed}
           isExecuting={isExecuting}
@@ -196,7 +197,10 @@ function AppContent() {
 
         {/* Canvas Area with Tab Bar */}
         <div className="canvas-area">
-          <PageTabBar isSidebarCollapsed={isSidebarCollapsed} />
+          <PageTabBar
+            isSidebarCollapsed={isSidebarCollapsed}
+            controller={controller}
+          />
           <div
             ref={containerRef}
             className={`robo-shell-main-playsurface ${isSidebarCollapsed ? 'expanded' : ''}`}

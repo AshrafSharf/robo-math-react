@@ -2,49 +2,68 @@
  * useCommandExecution Hook
  *
  * Thin React bridge to CommandEditorController.
- * All execution logic lives in the controller - this hook just bridges to React state.
- * Debouncing is handled by the controller, not by React.
+ * Just subscribes to controller events and triggers React re-renders.
+ * All logic lives in the controller.
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { CommandEditorController } from '../engine/controller/CommandEditorController.js';
 import { FOCUS_EVENT, BLUR_EVENT } from '../engine/focus/index.js';
 import { LATEX_VARS_CHANGED_EVENT } from '../components/CommandEditor/CommandEditor.jsx';
 
-/**
- * Hook for connecting CommandEditor to the execution system
- *
- * @param {RoboCanvas} roboCanvas - RoboCanvas instance
- * @param {Object} options - Configuration options
- * @param {number} options.debounceMs - Debounce delay (default: 500ms)
- * @returns {Object} Hook return value
- */
 export function useCommandExecution(roboCanvas, options = {}) {
     const { debounceMs = 500 } = options;
 
-    // React state (UI only)
-    const [isExecuting, setIsExecuting] = useState(false);
-    const [errors, setErrors] = useState([]);
-    const [canPlayInfos, setCanPlayInfos] = useState([]);
+    // Controller state (mirrored from controller for React re-renders)
+    const [state, setState] = useState({
+        errors: [],
+        canPlayInfos: [],
+        isExecuting: false
+    });
 
-    // Track currently focused expression for re-dispatch after execution
+    // Track focused expression
     const focusedExpressionIdRef = useRef(null);
 
-    // Controller instance (single ref, not recreated)
+    // Controller instance
     const controllerRef = useRef(null);
 
-    // Initialize controller once with debounce config
+    // Initialize controller once
     if (!controllerRef.current) {
         controllerRef.current = new CommandEditorController(null, { debounceMs });
     }
 
     const controller = controllerRef.current;
 
-    // Update roboCanvas reference when it changes
+    // Update roboCanvas when it changes
     useEffect(() => {
         controller.setRoboCanvas(roboCanvas);
     }, [roboCanvas, controller]);
 
-    // Dispatch active shape event to update focus indicator
+    // Subscribe to controller state changes
+    useEffect(() => {
+        controller.onStateChange = (newState) => {
+            setState(newState);
+        };
+
+        return () => {
+            controller.onStateChange = null;
+        };
+    }, [controller]);
+
+    // Listen for latex variable changes
+    useEffect(() => {
+        const handleLatexVarsChange = () => {
+            if (controller.commandModels.length > 0) {
+                controller.executeAll(controller.commandModels);
+            }
+        };
+        document.addEventListener(LATEX_VARS_CHANGED_EVENT, handleLatexVarsChange);
+
+        return () => {
+            document.removeEventListener(LATEX_VARS_CHANGED_EVENT, handleLatexVarsChange);
+        };
+    }, [controller]);
+
+    // Focus handling
     const setActiveShape = useCallback((expressionId) => {
         if (expressionId === null) return;
 
@@ -63,164 +82,88 @@ export function useCommandExecution(roboCanvas, options = {}) {
         }));
     }, [controller, roboCanvas]);
 
-    // Wire up controller callbacks to React state
-    useEffect(() => {
-        controller.onErrorsChange = setErrors;
-        controller.onCanPlayInfosChange = setCanPlayInfos;
-        controller.onExecutingChange = setIsExecuting;
-
-        // Update active shape after execution completes (shapes may have moved/recreated)
-        controller.onExecutionComplete = () => {
-            if (focusedExpressionIdRef.current !== null) {
-                setActiveShape(focusedExpressionIdRef.current);
-            }
-        };
-
-        // Listen for latex variable changes and re-execute
-        const handleLatexVarsChange = () => {
-            if (controller.commandModels.length > 0) {
-                controller.executeAll(controller.commandModels);
-            }
-        };
-        document.addEventListener(LATEX_VARS_CHANGED_EVENT, handleLatexVarsChange);
-
-        return () => {
-            controller.onErrorsChange = null;
-            controller.onCanPlayInfosChange = null;
-            controller.onExecutingChange = null;
-            controller.onExecutionComplete = null;
-            document.removeEventListener(LATEX_VARS_CHANGED_EVENT, handleLatexVarsChange);
-        };
-    }, [controller, setActiveShape]);
-
-    /**
-     * Handle command change (from input)
-     * Controller handles debouncing internally
-     */
-    const handleChange = useCallback((commandModels) => {
-        controller.setCommandModels(commandModels);
-    }, [controller]);
-
-    /**
-     * Handle single command execution (from direct input)
-     */
-    const handleExecute = useCallback((command) => {
-        // This is handled via handleChange with debounce
-    }, []);
-
-    /**
-     * Handle play single command
-     */
-    const handlePlaySingle = useCallback((commandModel) => {
-        controller.cancelPendingExecution();
-        controller.playSingle(commandModel.id);
-    }, [controller]);
-
-    /**
-     * Handle play up to command
-     */
-    const handlePlayUpTo = useCallback((commandModel) => {
-        controller.cancelPendingExecution();
-        controller.playUpTo(commandModel.id);
-    }, [controller]);
-
-    /**
-     * Handle play all commands with animation
-     */
-    const handlePlayAll = useCallback(() => {
-        controller.cancelPendingExecution();
-        controller.playAll();
-    }, [controller]);
-
-    /**
-     * Handle execute all
-     */
-    const handleExecuteAll = useCallback((commandModels) => {
-        controller.cancelPendingExecution();
-        controller.executeAll(commandModels);
-    }, [controller]);
-
-    /**
-     * Handle stop
-     */
-    const handleStop = useCallback(() => {
-        controller.stop();
-    }, [controller]);
-
-    /**
-     * Handle pause
-     */
-    const handlePause = useCallback(() => {
-        controller.pause();
-    }, [controller]);
-
-    /**
-     * Handle resume
-     */
-    const handleResume = useCallback(() => {
-        controller.resume();
-    }, [controller]);
-
-    /**
-     * Clear and rerender
-     */
-    const clearAndRerender = useCallback(() => {
-        controller.clearAndReset();
-    }, [controller]);
-
-    /**
-     * Redraw a single command with new style options
-     */
-    const redrawSingle = useCallback((expressionId, styleOptions) => {
-        return controller.redrawSingle(expressionId, styleOptions);
-    }, [controller]);
-
-    /**
-     * Handle expression input focus - track focused expression and show indicator
-     * @param {number} expressionId - The expression/command ID
-     */
     const handleExpressionFocus = useCallback((expressionId) => {
         focusedExpressionIdRef.current = expressionId;
         setActiveShape(expressionId);
     }, [setActiveShape]);
 
-    /**
-     * Handle expression input blur - clear focus tracking and hide indicator
-     */
     const handleExpressionBlur = useCallback(() => {
         focusedExpressionIdRef.current = null;
         document.dispatchEvent(new CustomEvent(BLUR_EVENT));
     }, []);
 
-    // Cleanup on unmount
+    // Cleanup
     useEffect(() => {
         return () => {
             controller.destroy();
         };
     }, [controller]);
 
-    return {
-        // State
-        isExecuting,
-        errors,
-        canPlayInfos,
+    // ============================================
+    // Handler wrappers (delegate to controller)
+    // ============================================
 
-        // Handlers
+    const handleExecute = useCallback((commandModels) => {
+        controller.executeAll(commandModels);
+    }, [controller]);
+
+    const handleExecuteAll = useCallback((commandModels) => {
+        controller.executeAll(commandModels);
+    }, [controller]);
+
+    const handlePlaySingle = useCallback((commandId) => {
+        controller.playSingle(commandId);
+    }, [controller]);
+
+    const handlePlayAll = useCallback(() => {
+        controller.playAll();
+    }, [controller]);
+
+    const handleChange = useCallback((commandModels) => {
+        controller.setCommandModels(commandModels);
+    }, [controller]);
+
+    const handleStop = useCallback(() => {
+        controller.stop();
+    }, [controller]);
+
+    const handlePause = useCallback(() => {
+        controller.pause();
+    }, [controller]);
+
+    const handleResume = useCallback(() => {
+        controller.resume();
+    }, [controller]);
+
+    const redrawSingle = useCallback((expressionId, styleOptions) => {
+        return controller.redrawSingle(expressionId, styleOptions);
+    }, [controller]);
+
+    const clearAndRerender = useCallback(() => {
+        controller.clearAndReset();
+    }, [controller]);
+
+    return {
+        // State (from controller)
+        ...state,
+
+        // Controller reference
+        controller,
+
+        // Handler wrappers for legacy API
         handleExecute,
         handleExecuteAll,
         handlePlaySingle,
-        handlePlayUpTo,
         handlePlayAll,
         handleChange,
         handleStop,
         handlePause,
         handleResume,
-        clearAndRerender,
         redrawSingle,
-        handleExpressionFocus,
-        handleExpressionBlur,
+        clearAndRerender,
 
-        // Direct controller access (if needed)
-        controller
+        // Focus handlers
+        handleExpressionFocus,
+        handleExpressionBlur
     };
 }

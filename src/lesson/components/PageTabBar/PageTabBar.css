@@ -70,6 +70,30 @@
   color: #c62828;
 }
 
+.play-page-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4a9eff;
+  flex-shrink: 0;
+}
+
+.play-page-btn:hover:not(:disabled) {
+  background: #e8f4ff;
+  color: #2a7edf;
+}
+
+.play-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .add-page-btn {
   width: 24px;
   height: 24px;
