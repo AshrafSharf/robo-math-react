@@ -1,13 +1,15 @@
 /**
- * ArrowCommand - Draws a curved arrow from a TextItem with annotation text
+ * ArrowCommand - Draws a circle around TextItem, curved arrow, and annotation text
  *
  * Creates:
- * - CurvedArrowShape on annotation layer
+ * - AnnotationCircleShape around TextItem
+ * - CurvedArrowShape from circle to annotation
  * - AnnotationTextComponent for text at arrowhead
  *
- * Animation: Arrow draws first, then text writes (handled directly)
+ * Animation sequence: Circle draws, then arrow, then text
  */
 import { BaseCommand } from './BaseCommand.js';
+import { AnnotationCircleShape } from '../../script-shapes/annotation-circle-shape.js';
 import { CurvedArrowShape } from '../../script-shapes/curved-arrow-shape.js';
 import { CurvedArrowPathGenerator } from '../../path-generators/curved-arrow-path-generator.js';
 import { AnnotationTextComponent } from '../../mathtext/components/annotation-text-component.js';
@@ -18,6 +20,7 @@ export class ArrowCommand extends BaseCommand {
     constructor(options = {}) {
         super();
         this.options = options;
+        this.circleShape = null;
         this.arrowShape = null;
         this.textComponent = null;
     }
@@ -59,9 +62,23 @@ export class ArrowCommand extends BaseCommand {
         const direction = this.options.direction || 'E';
         const length = this.options.length || 50;
         const offset = this.options.offset || 5;
-        const curvature = this.options.curvature || 0;
+        const curvature = this.options.curvature || 50;
+        const circlePadding = 8;
 
-        const start = CurvedArrowPathGenerator.calculateStartPoint(bounds, anchor, direction, offset);
+        // Create the circle shape around TextItem
+        this.circleShape = new AnnotationCircleShape(
+            annotationLayer,
+            bounds,
+            {
+                padding: circlePadding,
+                stroke: this.color || '#333',
+                strokeWidth: this.strokeWidth || 1.5
+            }
+        );
+        this.circleShape.create();
+
+        // Arrow starts from circle edge (bounds + padding + offset)
+        const start = CurvedArrowPathGenerator.calculateStartPoint(bounds, anchor, direction, circlePadding + offset);
         const end = CurvedArrowPathGenerator.calculateEndPoint(start, direction, length);
 
         // Create the curved arrow shape on annotation layer
@@ -100,7 +117,7 @@ export class ArrowCommand extends BaseCommand {
             this.textComponent.disableStroke();
         }
 
-        this.commandResult = { arrowShape: this.arrowShape, textComponent: this.textComponent };
+        this.commandResult = { circleShape: this.circleShape, arrowShape: this.arrowShape, textComponent: this.textComponent };
     }
 
     /**
@@ -142,7 +159,10 @@ export class ArrowCommand extends BaseCommand {
     }
 
     async playSingle() {
-        // Reset both to hidden state upfront
+        // Reset all to hidden state upfront
+        if (this.circleShape) {
+            this.circleShape.hide();
+        }
         if (this.arrowShape) {
             this.arrowShape.hide();
         }
@@ -151,7 +171,15 @@ export class ArrowCommand extends BaseCommand {
             this.textComponent.disableStroke();
         }
 
-        // Phase 1: Animate the arrow
+        // Phase 1: Animate the circle
+        if (this.circleShape) {
+            const startPoint = RoboEventManager.getLastVisitedPenPoint();
+            await new Promise(resolve => {
+                this.circleShape.renderWithAnimation(startPoint, resolve);
+            });
+        }
+
+        // Phase 2: Animate the arrow
         if (this.arrowShape) {
             const startPoint = RoboEventManager.getLastVisitedPenPoint();
             await new Promise(resolve => {
@@ -159,7 +187,7 @@ export class ArrowCommand extends BaseCommand {
             });
         }
 
-        // Phase 2: Animate the text
+        // Phase 3: Animate the text
         if (this.textComponent) {
             const textEffect = new WriteEffect(this.textComponent);
             await textEffect.play();
@@ -167,6 +195,11 @@ export class ArrowCommand extends BaseCommand {
     }
 
     doDirectPlay() {
+        // Instant render circle
+        if (this.circleShape) {
+            this.circleShape.renderEndState();
+        }
+
         // Instant render arrow
         if (this.arrowShape) {
             this.arrowShape.renderEndState();
@@ -184,6 +217,10 @@ export class ArrowCommand extends BaseCommand {
     }
 
     clear() {
+        if (this.circleShape) {
+            this.circleShape.remove();
+            this.circleShape = null;
+        }
         if (this.arrowShape) {
             this.arrowShape.remove();
             this.arrowShape = null;
