@@ -9,7 +9,7 @@ const CommandMenuBar = ({
   onPause,
   onResume,
   onDeleteAll,
-  onImport,
+  onOpenLatex,
   onToggleSidebar,
   onPopupMode,
   isExecuting,
@@ -67,11 +67,11 @@ const CommandMenuBar = ({
       </a>
 
       <a
-        className="btn btn-default import-btn pull-left"
-        onClick={onImport}
-        title="Import Expressions"
+        className="btn btn-default latex-btn pull-left"
+        onClick={onOpenLatex}
+        title="LaTeX Editor"
       >
-        <i className="glyphicon glyphicon-import" />
+        <span style={{ fontSize: '18px' }}>∑</span>
       </a>
 
       {/* Popup mode button - only visible in collapsed state */}

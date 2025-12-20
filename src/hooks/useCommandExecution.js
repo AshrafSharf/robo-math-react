@@ -8,6 +8,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { CommandEditorController } from '../engine/controller/CommandEditorController.js';
 import { FOCUS_EVENT, BLUR_EVENT } from '../engine/focus/index.js';
+import { LATEX_VARS_CHANGED_EVENT } from '../components/CommandEditor/CommandEditor.jsx';
 
 /**
  * Hook for connecting CommandEditor to the execution system
@@ -75,11 +76,20 @@ export function useCommandExecution(roboCanvas, options = {}) {
             }
         };
 
+        // Listen for latex variable changes and re-execute
+        const handleLatexVarsChange = () => {
+            if (controller.commandModels.length > 0) {
+                controller.executeAll(controller.commandModels);
+            }
+        };
+        document.addEventListener(LATEX_VARS_CHANGED_EVENT, handleLatexVarsChange);
+
         return () => {
             controller.onErrorsChange = null;
             controller.onCanPlayInfosChange = null;
             controller.onExecutingChange = null;
             controller.onExecutionComplete = null;
+            document.removeEventListener(LATEX_VARS_CHANGED_EVENT, handleLatexVarsChange);
         };
     }, [controller, setActiveShape]);
 

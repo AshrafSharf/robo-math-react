@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import CommandEditorWithPopup from './components/CommandEditor/CommandEditorWithPopup';
 import RoboCanvasGridOverlay from './components/RoboCanvasGridOverlay';
 import AnnotationLayer from './components/AnnotationLayer';
+import ImportModal from './components/CommandEditor/components/ImportModal/ImportModal';
 import './App.css';
 import { RoboCanvas } from './RoboCanvas.js';
 import { useCommandExecution } from './hooks/useCommandExecution.js';
 import { IntrepreterFunctionTable } from './engine/expression-parser/core/IntrepreterFunctionTable.js';
 import { LessonProvider, useLesson, useLessonPersistence, PageTabBar, LessonHeader } from './lesson';
 import { ExpressionFocusManager } from './engine/focus/index.js';
+import { createCommand } from './components/CommandEditor/utils/commandModel';
 
 function AppContent() {
   const { lesson, activePage, updatePageCommands, setLesson } = useLesson();
@@ -16,6 +18,7 @@ function AppContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showGrid, setShowGrid] = useState(false);
   const [roboCanvas, setRoboCanvas] = useState(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const containerRef = useRef(null);
   const prevPageIdRef = useRef(activePage.id);
 
@@ -89,6 +92,23 @@ function AppContent() {
     updatePageCommands(activePage.id, commands);
   }, [activePage.id, updatePageCommands]);
 
+  // Handle import from ImportModal
+  const handleOpenImport = useCallback(() => {
+    setImportModalOpen(true);
+  }, []);
+
+  const handleImport = useCallback((lines) => {
+    // Create commands for each line
+    const newCommands = lines.map((expression, index) => {
+      const cmd = createCommand(index + 1);
+      cmd.expression = expression;
+      return cmd;
+    });
+
+    // Replace all commands with imported ones
+    updatePageCommands(activePage.id, newCommands);
+  }, [activePage.id, updatePageCommands]);
+
   // Callback when annotation layer SVG is ready
   const handleAnnotationLayerReady = useCallback((svgElement) => {
     if (roboCanvas) {
@@ -147,7 +167,7 @@ function AppContent() {
             <h3 style={{ margin: 0, color: 'white', display: 'inline-block' }}>Robo Math</h3>
           </a>
         </div>
-        <LessonHeader showGrid={showGrid} onShowGridChange={setShowGrid} />
+        <LessonHeader showGrid={showGrid} onShowGridChange={setShowGrid} onOpenImport={handleOpenImport} />
       </div>
 
       {/* Main Shell */}
@@ -189,6 +209,13 @@ function AppContent() {
           </div>
         </div>
       </div>
+
+      {/* Import Modal */}
+      <ImportModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={handleImport}
+      />
     </div>
   );
 }

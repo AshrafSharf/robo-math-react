@@ -10,6 +10,8 @@ import { ExpressionContext } from '../expression-parser/core/ExpressionContext.j
 import { CommandContext } from '../context/CommandContext.js';
 import { CommandExecutor } from '../context/CommandExecutor.js';
 
+const LATEX_VARIABLES_KEY = 'robomath-latex-variables';
+
 export class CommandEditorController {
     constructor(roboCanvas, options = {}) {
         this.roboCanvas = roboCanvas;
@@ -98,6 +100,39 @@ export class CommandEditorController {
     }
 
     /**
+     * Get latex variable command models from localStorage
+     * These are prepended to user commands so variables are defined first
+     * @private
+     */
+    _getLatexVariableModels() {
+        try {
+            const stored = localStorage.getItem(LATEX_VARIABLES_KEY);
+            if (!stored) return [];
+
+            const variables = JSON.parse(stored);
+            if (!Array.isArray(variables)) return [];
+
+            // Convert to command models with negative IDs to avoid conflicts
+            return variables
+                .filter(v => v.variable && v.variable.trim())
+                .map((v, index) => ({
+                    id: -(index + 1),  // Negative IDs for latex vars
+                    expression: `${v.variable} = "${v.latex}"`,
+                    // No styling for variable definitions
+                    color: null,
+                    fillColor: null,
+                    strokeWidth: 2,
+                    speed: 5,
+                    label: false,
+                    isLatexVariable: true  // Mark for identification
+                }));
+        } catch (e) {
+            console.error('Failed to load latex variables:', e);
+            return [];
+        }
+    }
+
+    /**
      * Execute all commands from scratch
      * Flow: parse → resolve → toCommand → (if no errors) → clear → execute
      * @returns {Promise}
@@ -110,12 +145,16 @@ export class CommandEditorController {
 
         this.commandModels = commandModels;
 
+        // Get latex variable models and prepend to user commands
+        const latexVarModels = this._getLatexVariableModels();
+        const allModels = [...latexVarModels, ...commandModels];
+
         // Create fresh context for variable resolution
         const newContext = new ExpressionContext();
 
         // Process all commands through pipeline
         const pipelineResult = this.pipelineService.processCommandList(
-            commandModels,
+            allModels,
             newContext
         );
 
@@ -190,10 +229,14 @@ export class CommandEditorController {
         // Clear canvas
         this.roboCanvas.clearAll();
 
+        // Get latex variable models and prepend to user commands
+        const latexVarModels = this._getLatexVariableModels();
+        const allModels = [...latexVarModels, ...this.commandModels];
+
         // Re-process to get fresh commands (needed because we cleared)
         const newContext = new ExpressionContext();
         const pipelineResult = this.pipelineService.processCommandList(
-            this.commandModels,
+            allModels,
             newContext
         );
 
@@ -258,10 +301,14 @@ export class CommandEditorController {
         // Clear canvas
         this.roboCanvas.clearAll();
 
+        // Get latex variable models and prepend to user commands
+        const latexVarModels = this._getLatexVariableModels();
+        const allModels = [...latexVarModels, ...this.commandModels];
+
         // Re-process to get fresh commands
         const newContext = new ExpressionContext();
         const pipelineResult = this.pipelineService.processCommandList(
-            this.commandModels,
+            allModels,
             newContext
         );
 

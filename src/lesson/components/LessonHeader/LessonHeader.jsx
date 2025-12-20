@@ -3,7 +3,7 @@ import { useLesson } from '../../context';
 import { useLessonPersistence } from '../../context/useLessonPersistence';
 import './LessonHeader.css';
 
-const LessonHeader = ({ showGrid, onShowGridChange }) => {
+const LessonHeader = ({ showGrid, onShowGridChange, onOpenImport }) => {
   const { lesson, setLessonName, newLesson } = useLesson();
   const { downloadLesson } = useLessonPersistence(lesson, null);
 
@@ -21,6 +21,13 @@ const LessonHeader = ({ showGrid, onShowGridChange }) => {
         title="New Lesson"
       >
         New
+      </button>
+      <button
+        className="lesson-header-btn"
+        onClick={onOpenImport}
+        title="Import Expressions"
+      >
+        Import
       </button>
       <input
         type="text"

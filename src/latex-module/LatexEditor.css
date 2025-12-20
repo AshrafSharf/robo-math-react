@@ -1,0 +1,55 @@
+.latex-editor-container {
+  border: 1px solid #3e4451;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #282c34;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* CodeMirror 6 specific styles */
+.latex-editor-container .cm-editor {
+  background-color: #282c34;
+  color: #abb2bf;
+  flex: 1;
+}
+
+.latex-editor-container .cm-scroller {
+  overflow: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.latex-editor-container .cm-content {
+  padding: 15px;
+}
+
+.latex-editor-container .cm-line {
+  padding: 0;
+}
+
+/* Ensure proper cursor visibility and behavior */
+.latex-editor-container .cm-cursor {
+  border-left: 2px solid #528bff;
+  animation: blink 1.2s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+/* Selection styling */
+.latex-editor-container .cm-selectionBackground {
+  background-color: #3e4451 !important;
+}
+
+.latex-editor-container .cm-focused .cm-selectionBackground {
+  background-color: #3e4451 !important;
+}
+
+/* Remove outline when focused */
+.latex-editor-container .cm-editor.cm-focused {
+  outline: none;
+}

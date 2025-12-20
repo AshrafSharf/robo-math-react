@@ -5,10 +5,13 @@ import CommandMenuBar from './components/CommandMenuBar/CommandMenuBar';
 import CommandList from './components/CommandList/CommandList';
 import SettingsPanel from './components/SettingsPanel/SettingsPanel';
 import NewCommandButton from './components/NewCommandButton/NewCommandButton';
-import ImportModal from './components/ImportModal/ImportModal';
+import { LatexBuilderModal } from '../../latex-module';
 import { CommandProvider } from './context/CommandContext';
 import { createCommand, getNextId } from './utils/commandModel';
 import './CommandEditor.css';
+
+// Event to notify controller of latex variable changes
+export const LATEX_VARS_CHANGED_EVENT = 'latex-vars-changed';
 
 /**
  * Main CommandEditor component
@@ -48,7 +51,7 @@ const CommandEditor = ({
   const commands = externalCommands ?? localCommands;
   const [selectedId, setSelectedId] = useState(1);
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
-  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [latexModalOpen, setLatexModalOpen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const containerRef = useRef(null);
@@ -192,25 +195,16 @@ const CommandEditor = ({
     if (onToggleSidebar) onToggleSidebar();
   }, [onToggleSidebar]);
 
-  // Open import modal
-  const handleOpenImport = useCallback(() => {
-    setImportModalOpen(true);
+  // Open LaTeX editor modal
+  const handleOpenLatex = useCallback(() => {
+    setLatexModalOpen(true);
   }, []);
 
-  // Import expressions from modal
-  const handleImport = useCallback((lines) => {
-    // Create commands for each line
-    let currentId = getNextId(commands);
-    const newCommands = lines.map((expression, index) => {
-      const cmd = createCommand(currentId + index);
-      cmd.expression = expression;
-      return cmd;
-    });
-
-    // Replace all commands with imported ones
-    updateCommands(newCommands);
-    setSelectedId(newCommands[0] ? newCommands[0].id : 1);
-  }, [commands, updateCommands]);
+  // Handle latex variables change - trigger re-execution
+  const handleLatexVariablesChange = useCallback(() => {
+    // Dispatch event to notify controller
+    document.dispatchEvent(new CustomEvent(LATEX_VARS_CHANGED_EVENT));
+  }, []);
 
   // Determine CSS class based on mode
   const editorClass = isPopupMode
@@ -235,7 +229,7 @@ const CommandEditor = ({
             onPause={handlePause}
             onResume={handleResume}
             onDeleteAll={handleDeleteAll}
-            onImport={handleOpenImport}
+            onOpenLatex={handleOpenLatex}
             onToggleSidebar={handleToggleSidebar}
             onPopupMode={onPopupMode}
             isExecuting={isExecuting}
@@ -325,10 +319,10 @@ const CommandEditor = ({
           />
         )}
 
-        <ImportModal
-          isOpen={importModalOpen}
-          onClose={() => setImportModalOpen(false)}
-          onImport={handleImport}
+        <LatexBuilderModal
+          isOpen={latexModalOpen}
+          onClose={() => setLatexModalOpen(false)}
+          onVariablesChange={handleLatexVariablesChange}
         />
       </div>
     </CommandProvider>
