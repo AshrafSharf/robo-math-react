@@ -9,6 +9,7 @@
 import { BaseCommand } from '../commands/BaseCommand.js';
 import { NumericExpression } from '../expression-parser/expressions/NumericExpression.js';
 import { AssignmentExpression } from '../expression-parser/expressions/AssignmentExpression.js';
+import { ExpressionOptionsRegistry } from '../expression-parser/core/ExpressionOptionsRegistry.js';
 import { TweenMax } from 'gsap';
 
 export class FromToCommand extends BaseCommand {
@@ -37,7 +38,7 @@ export class FromToCommand extends BaseCommand {
             TweenMax.to(animData, this.duration, {
                 value: this.toValue,
                 ease: 'Power2.easeInOut',
-                onUpdate: () => {
+                onUpdate: async () => {
                     // Update variable to interpolated value
                     this.expressionContext.updateReference(
                         this.variableName,
@@ -45,9 +46,9 @@ export class FromToCommand extends BaseCommand {
                     );
 
                     // Clear and recreate dependent commands
-                    this._updateDependentCommands();
+                    await this._updateDependentCommands();
                 },
-                onComplete: () => {
+                onComplete: async () => {
                     // Update variable to final value
                     this.expressionContext.updateReference(
                         this.variableName,
@@ -55,7 +56,7 @@ export class FromToCommand extends BaseCommand {
                     );
 
                     // Final update
-                    this._updateDependentCommands();
+                    await this._updateDependentCommands();
 
                     resolve();
                 }
@@ -66,44 +67,41 @@ export class FromToCommand extends BaseCommand {
     /**
      * Clear existing dependent commands and recreate with updated values
      */
-    _updateDependentCommands() {
-        console.log('🔄 _updateDependentCommands', {
-            clearing: this.currentCommands.length,
-            dependents: this.orderedDependents.length
-        });
-
-        // First: Clear previous frame's commands
+    async _updateDependentCommands() {
+        // Clear previous frame's commands
         for (const cmd of this.currentCommands) {
-            console.log('  🗑️ Clearing command:', cmd?.labelName);
             if (cmd && typeof cmd.clear === 'function') {
                 cmd.clear();
             }
         }
         this.currentCommands = [];
 
-        // Then: Resolve, create, and play new commands
+        // Resolve, create, and play new commands
         for (const { expr, label } of this.orderedDependents) {
             expr.resolve(this.expressionContext);
             const cmdExpr = this._getCommandableExpr(expr);
             if (cmdExpr && typeof cmdExpr.toCommand === 'function') {
-                const newCmd = cmdExpr.toCommand(this.options);
+                const originalCmd = label ? this.commandContext.commandRegistry[label] : null;
+                const originalOptions = originalCmd ? this._extractOptions(originalCmd) : {};
+                const mergedOptions = { ...originalOptions, ...this.options };
+
+                const newCmd = cmdExpr.toCommand(mergedOptions);
                 newCmd.diagram2d = this.diagram2d;
                 newCmd.setCommandContext(this.commandContext);
                 if (label) {
                     newCmd.setLabelName(label);
                 }
-                console.log('  ✨ Creating command:', label, {
-                    diagram2d: !!newCmd.diagram2d,
-                    commandContext: !!newCmd.commandContext
-                });
-                newCmd.directPlay();
+
+                // Set color from original command (color is set via setColor, not options)
+                if (originalCmd && originalCmd.color) {
+                    newCmd.setColor(originalCmd.color);
+                }
+
+                await newCmd.init(this.commandContext);
+                newCmd.doDirectPlay();
                 this.currentCommands.push(newCmd);
-            } else {
-                console.log('  ⚠️ No toCommand for:', label);
             }
         }
-
-        console.log('🔄 _updateDependentCommands done, created:', this.currentCommands.length);
     }
 
     /**
@@ -116,15 +114,43 @@ export class FromToCommand extends BaseCommand {
         return expr;
     }
 
-    directPlay() {
-        console.log('🎯 FromTo.directPlay called', {
-            variableName: this.variableName,
-            toValue: this.toValue,
-            diagram2d: !!this.diagram2d,
-            commandContext: !!this.commandContext,
-            orderedDependents: this.orderedDependents.length
-        });
+    /**
+     * Extract styling options from original command and registry
+     * @param {BaseCommand} cmd - Original command
+     * @returns {Object} Options object with styling properties
+     */
+    _extractOptions(cmd) {
+        const options = {};
 
+        // First: Get options from registry (settings panel stores here)
+        if (cmd.expressionId) {
+            const rawOptions = ExpressionOptionsRegistry.getRawById(cmd.expressionId);
+            this._copyStyleProps(rawOptions, options);
+        }
+
+        // Second: Override with values directly on command
+        this._copyStyleProps(cmd, options);
+
+        return options;
+    }
+
+    /**
+     * Copy non-null style properties from source to target
+     * @param {Object} source - Source object with style properties
+     * @param {Object} target - Target options object to copy into
+     */
+    _copyStyleProps(source, target) {
+        if (!source) return;
+
+        const styleProps = ['color', 'strokeWidth', 'fillOpacity', 'strokeOpacity', 'radius', 'fill'];
+        for (const prop of styleProps) {
+            if (source[prop] != null) {
+                target[prop] = source[prop];
+            }
+        }
+    }
+
+    async directPlay() {
         // Update variable to final value
         this.expressionContext.updateReference(
             this.variableName,
@@ -132,7 +158,7 @@ export class FromToCommand extends BaseCommand {
         );
 
         // Clear previous and create new commands at final value
-        this._updateDependentCommands();
+        await this._updateDependentCommands();
     }
 
     /**
