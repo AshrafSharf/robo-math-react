@@ -85,14 +85,7 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
         }
 
         // Register as dependent of user variables in the equation (for fromTo support)
-        if (this.equation) {
-            const userVars = MathFunctionCompiler.extractUserVariables(this.equation, ['x']);
-            for (const varName of userVars) {
-                if (context.hasReference(varName)) {
-                    context.addDependent(varName, this);
-                }
-            }
-        }
+        MathFunctionCompiler.registerDependencies(this.equation, ['x'], context, this);
 
         // Optional domain arguments
         if (this.subExpressions.length >= 4) {

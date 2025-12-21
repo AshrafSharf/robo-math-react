@@ -38,7 +38,23 @@ P = plot(G, "a * sin(x)")
 fromTo(a, 1, 5)  // Sine wave amplitude animates from 1 to 5
 ```
 
-Plot expressions use `getScopeWithDependencies()` to register as dependents of variables in their equation. When `a` changes, the plot is re-resolved and recompiled with the new scope.
+### Animating Parametric Plots
+```
+G = g2d(0, 0, 20, 20, -5, 5, -5, 5, 1)
+r = 1
+C = paraplot(G, "r * cos(t)", "r * sin(t)")
+fromTo(r, 1, 4)  // Circle expands from radius 1 to 4
+```
+
+### Function Definitions with fun()
+```
+G = g2d(0, 0, 20, 20)
+a = 2
+f = def(x, "a * sin(x)")
+P = plot(G, f)
+Q = point(G, 3, fun(f, 3))   // Point ON the curve at x=3
+fromTo(a, 1, 5)              // Both plot AND point update together
+```
 
 ## Design
 
@@ -55,6 +71,98 @@ This builds a dependency graph:
 A ──► P1 ──► L ──► C
   └──► P2 ──┘
 ```
+
+### MathJS Expression Dependencies
+
+Expressions using mathjs strings (`plot`, `paraplot`, `fun`) need special handling because variables are embedded in strings like `"a * sin(x)"`.
+
+**Solution:** `MathFunctionCompiler.registerDependencies()` parses the equation to find user variables.
+
+```javascript
+MathFunctionCompiler.extractUserVariables("a * sin(x) + b", ['x'])
+// Returns: ['a', 'b']
+// Excludes: functions (sin), built-ins (pi, e), parameters (x)
+```
+
+**Two Registration Modes:**
+
+1. **Explicit Mode** (plot, paraplot) - registers the expression itself:
+```javascript
+// In PlotExpression.resolve():
+MathFunctionCompiler.registerDependencies(this.equation, ['x'], context, this);
+//                                                                       ^^^^
+//                                                            explicit expression
+```
+
+2. **Caller Mode** (fun) - registers the parent expression:
+```javascript
+// In FunctionCallExpression.resolve():
+MathFunctionCompiler.registerDependencies(funcDef.getBodyString(), funcDef.getParameters(), context);
+//                                                                                          ^^^^^^^
+//                                                                              no 4th arg = caller mode
+```
+
+**Why Caller Mode for fun()?**
+
+`fun()` is a subexpression that produces a value, not a shape:
+- `toCommand()` returns `null`
+- `canPlay()` returns `false`
+- It just produces a numeric value via `getVariableAtomicValues()`
+
+When used in `point(G, 3, fun(f, 3))`:
+- The **caller** is the PointExpression (set by `ExpressionPipelineService.setCaller()`)
+- `fun()` calls `context.getReference('a')` which registers the **caller** (point) as dependent
+- When `a` changes, the **point** gets re-resolved (not just fun)
+
+This is generic - works for any expression using `fun()`: point, line, circle, vector, etc.
+
+**fun() Execution Flow with fromTo:**
+
+```
+Q = point(G, 3, fun(f, 3))   // f = def(x, "a * sin(x)")
+fromTo(a, 1, 5)
+
+Initial resolution:
+────────────────────
+PointExpression.resolve()
+       │
+       ├─► fun(f, 3).resolve()
+       │         │
+       │         ├─► Gets funcDef from context
+       │         ├─► Compiles with current scope {a: 1}
+       │         └─► Evaluates → returns value (e.g., 2.52)
+       │
+       ▼
+Point uses 2.52 as y-coordinate
+       │
+       ▼
+PointCommand created and rendered
+
+
+When fromTo updates 'a':
+────────────────────────
+fromTo changes a: 1 → 5
+       │
+       ▼
+Point is in 'a' dependents list (registered by fun's caller mode)
+       │
+       ▼
+Point.resolve(context) called again
+       │
+       ├─► fun(f, 3).resolve()
+       │         │
+       │         ├─► Gets funcDef from context
+       │         ├─► Compiles with NEW scope {a: 5}
+       │         └─► Evaluates → returns NEW value (e.g., -4.79)
+       │
+       ▼
+Point uses -4.79 as y-coordinate
+       │
+       ▼
+PointCommand.toCommand() → PointCommand.directPlay()
+```
+
+**Key insight:** `fun()` has no command. The parent expression (point) is re-resolved by fromTo, and during re-resolution `fun()` naturally re-executes with updated context.
 
 ### Topological Ordering (Kahn's Algorithm)
 
@@ -135,6 +243,10 @@ FromToCommand.doPlay() or directPlay()
 - `src/engine/fromTo/FromToExpression.js` - Expression with dependency resolution
 - `src/engine/fromTo/FromToCommand.js` - Command with animation logic
 - `src/engine/expression-parser/core/ExpressionContext.js` - Dependency tracking
+- `src/engine/expression-parser/utils/MathFunctionCompiler.js` - Parses mathjs strings, extracts variables, registers dependencies
+- `src/engine/expression-parser/expressions/PlotExpression.js` - Uses explicit mode
+- `src/engine/expression-parser/expressions/ParametricPlotExpression.js` - Uses explicit mode
+- `src/engine/expression-parser/expressions/FunctionCallExpression.js` - Uses caller mode
 
 ## Notes
 

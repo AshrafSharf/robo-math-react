@@ -78,6 +78,36 @@ export class MathFunctionCompiler {
             !paramSet.has(name)
         );
     }
+
+    /**
+     * Register an expression as dependent of user variables in equation(s).
+     * Used by plot/paraplot/fun for fromTo animation support.
+     * @param {string|string[]} equations - One or more math expressions
+     * @param {string[]} parameters - Parameter names to exclude e.g., ['x'] or ['t']
+     * @param {Object} context - ExpressionContext
+     * @param {Object} [expression] - Expression to register. If omitted, uses context.currentCaller
+     */
+    static registerDependencies(equations, parameters, context, expression = null) {
+        const eqArray = Array.isArray(equations) ? equations : [equations];
+        const registered = new Set();
+
+        for (const eq of eqArray) {
+            if (!eq) continue;
+            const userVars = this.extractUserVariables(eq, parameters);
+            for (const varName of userVars) {
+                if (!registered.has(varName) && context.hasReference(varName)) {
+                    if (expression) {
+                        // Explicit: register this expression (plot, paraplot)
+                        context.addDependent(varName, expression);
+                    } else {
+                        // Caller mode: register currentCaller via getReference (fun)
+                        context.getReference(varName);
+                    }
+                    registered.add(varName);
+                }
+            }
+        }
+    }
     /**
      * Compile a math expression string to a callable function
      * @param {string} expression - Math expression e.g., "x^2 + a*y"

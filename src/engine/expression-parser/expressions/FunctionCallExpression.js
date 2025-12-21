@@ -13,6 +13,7 @@
 
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { FunctionDefinitionExpression } from './FunctionDefinitionExpression.js';
+import { MathFunctionCompiler } from '../utils/MathFunctionCompiler.js';
 
 export class FunctionCallExpression extends AbstractNonArithmeticExpression {
     static NAME = 'fun';
@@ -46,6 +47,14 @@ export class FunctionCallExpression extends AbstractNonArithmeticExpression {
         if (!(funcDef instanceof FunctionDefinitionExpression)) {
             this.dispatchError(`'${funcName}' is not a function definition (created with def())`);
         }
+
+        // Register caller as dependent of user variables in function body (for fromTo)
+        // Uses caller mode (no 4th arg) - parent expression gets registered, not fun itself
+        MathFunctionCompiler.registerDependencies(
+            funcDef.getBodyString(),
+            funcDef.getParameters(),
+            context
+        );
 
         // Remaining args are function arguments
         const argValues = [];

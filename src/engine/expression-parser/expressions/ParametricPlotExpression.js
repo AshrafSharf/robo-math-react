@@ -59,6 +59,14 @@ export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
         this.yFunctionDef = yResult.funcDef;
         this.compiledYFunction = yResult.compiled;
 
+        // Register as dependent of user variables in both equations (for fromTo support)
+        MathFunctionCompiler.registerDependencies(
+            [this.xEquation, this.yEquation],
+            ['t'],
+            context,
+            this
+        );
+
         // Optional t range arguments (tMin, tMax)
         if (this.subExpressions.length >= 5) {
             this.subExpressions[3].resolve(context);

@@ -57,3 +57,31 @@ P = plot(G, "sin(x + p)")
 fromTo(p, 0, 6.28)
 ```
 Sine wave shifts one full period.
+
+## Paraplot: Animated Circle Radius
+```
+G = g2d(0, 0, 20, 20, -5, 5, -5, 5, 1)
+r = 1
+P = paraplot(G, "r * cos(t)", "r * sin(t)")
+fromTo(r, 1, 4)
+```
+Circle expands from radius 1 to 4.
+
+## Paraplot: Animated Ellipse
+```
+G = g2d(0, 0, 20, 20, -5, 5, -5, 5, 1)
+a = 1
+b = 2
+P = paraplot(G, "a * cos(t)", "b * sin(t)")
+fromTo(a, 1, 4)
+```
+Ellipse width animates while height stays constant.
+
+## Paraplot: Lissajous Curve
+```
+G = g2d(0, 0, 20, 20, -5, 5, -5, 5, 1)
+n = 1
+P = paraplot(G, "3 * cos(t)", "3 * sin(n * t)", 0, 6.28)
+fromTo(n, 1, 5)
+```
+Lissajous pattern morphs as frequency ratio changes.
