@@ -113,6 +113,7 @@ import { ParallelExpression } from '../expressions/ParallelExpression.js';
 import { RefExpression } from '../expressions/RefExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
+import { FromToExpression } from '../../fromTo/FromToExpression.js';
 import { SubtractionExpression } from '../expressions/SubtractionExpression.js';
 import { MultiplicationExpression } from '../expressions/MultiplicationExpression.js';
 import { DivisionExpression } from '../expressions/DivisionExpression.js';
@@ -304,6 +305,9 @@ export class IntrepreterFunctionTable {
         registerMultiArg('rotate', RotateExpression);     // rotate shape around center
         registerMultiArg('translate', TranslateExpression); // translate shape by dx, dy
         registerMultiArg('scale', ScaleExpression);       // scale shape around center
+
+        // Variable animation
+        registerMultiArg('fromto', FromToExpression);     // animate variable from value to value
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

@@ -2,7 +2,7 @@ start "Assignment Or Arithmetic or Command Name "
  = (assignmentExpression/additive/call)+
 
 assignmentExpression "Assignment"
-= lhs:labelLiteral "=" rhs:callOrAdditive
+= lhs:labelLiteral "=" _ rhs:callOrAdditive
 {
 
 var lhsAndRhsArguments=[];

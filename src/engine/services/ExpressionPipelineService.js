@@ -80,7 +80,8 @@ export class ExpressionPipelineService {
             const expression = this.interpreter.evalExpression(ast[0]);
             result.expression = expression;
 
-            // 3. Resolve variables in context
+            // 3. Resolve variables in context (set caller for dependency tracking)
+            context.setCaller(expression);
             expression.resolve(context);
 
             // 4. Determine if expression can play
