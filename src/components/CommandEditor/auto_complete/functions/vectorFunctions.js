@@ -99,14 +99,6 @@ export const VECTOR_FUNCTIONS = {
     altSignatures: ['vecdiff(g, vectorA, vectorB)', 'vecdiff(g, vectorA, vectorB, startPoint)'],
     category: 'Vectors'
   },
-  scalev: {
-    name: 'scalev',
-    signature: '(g, vector, scalar)',
-    args: ['g: Graph', 'vector: Vector', 'scalar: number'],
-    description: 'Scale vector by scalar',
-    altSignatures: ['scalev(g, vector, scalar)', 'scalev(g, vector, scalar, startPoint)'],
-    category: 'Vectors'
-  },
   vecproject: {
     name: 'vecproject',
     signature: '(g, vector, target)',

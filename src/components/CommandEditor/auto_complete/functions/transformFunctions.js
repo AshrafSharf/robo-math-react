@@ -21,10 +21,10 @@ export const TRANSFORM_FUNCTIONS = {
   },
   rotate: {
     name: 'rotate',
-    signature: '(g, point, center, angle)',
-    args: ['g: Graph', 'point: Point', 'center: Point', 'angle: number'],
-    description: 'Rotate point around center',
-    altSignatures: ['rotate(g, point, center, angle)'],
+    signature: '(g, shape, angle)',
+    args: ['g: Graph', 'shape: Point|Line|Vec|Circle|Polygon', 'angle: number'],
+    description: 'Rotate shape around center (default: origin)',
+    altSignatures: ['rotate(g, shape, angle)', 'rotate(g, shape, angle, cx, cy)', 'rotate(g, shape, angle, centerPoint)'],
     category: 'Transforms'
   },
   project: {
@@ -37,10 +37,18 @@ export const TRANSFORM_FUNCTIONS = {
   },
   translate: {
     name: 'translate',
-    signature: '(g, point, dx, dy)',
-    args: ['g: Graph', 'point: Point', 'dx: number', 'dy: number'],
-    description: 'Translate point by offset',
-    altSignatures: ['translate(g, point, dx, dy)'],
+    signature: '(g, shape, dx, dy)',
+    args: ['g: Graph', 'shape: Point|Line|Vec|Circle|Polygon|Plot', 'dx: number', 'dy: number'],
+    description: 'Translate shape by offset',
+    altSignatures: ['translate(g, shape, dx, dy)'],
+    category: 'Transforms'
+  },
+  scale: {
+    name: 'scale',
+    signature: '(g, shape, factor)',
+    args: ['g: Graph', 'shape: Point|Line|Vec|Circle|Polygon', 'factor: number'],
+    description: 'Scale shape around center (default: origin)',
+    altSignatures: ['scale(g, shape, factor)', 'scale(g, shape, factor, cx, cy)', 'scale(g, shape, factor, centerPoint)'],
     category: 'Transforms'
   }
 };

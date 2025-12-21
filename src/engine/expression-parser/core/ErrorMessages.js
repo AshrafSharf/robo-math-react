@@ -473,6 +473,28 @@ export const translate_error_messages = {
     `Variable '${varName}' not defined.\nDefine it before using.`,
 };
 
+// ============= Scale Error Messages =============
+
+export const scale_error_messages = {
+  WRONG_ARG_COUNT: (count) =>
+    `scale() needs 3-5 args.\nGot ${count}. scale(g, shape, factor)`,
+
+  GRAPH_REQUIRED: () =>
+    `scale() needs a graph.\nFirst argument must be graph.`,
+
+  INVALID_SHAPE: (type) =>
+    `Cannot scale ${type}.\nUse point, line, vec, circle, polygon.`,
+
+  FACTOR_NOT_NUMBER: () =>
+    `Scale factor must be a number.\nscale(g, shape, factor)`,
+
+  INVALID_CENTER: () =>
+    `Invalid scale center.\nUse point or (cx, cy) coords.`,
+
+  VARIABLE_NOT_FOUND: (varName) =>
+    `Variable '${varName}' not defined.\nDefine it before using.`,
+};
+
 // ============= Label Error Messages =============
 
 export const label_error_messages = {
@@ -562,6 +584,7 @@ const messagesByType = {
   reflect: reflect_error_messages,
   rotate: rotate_error_messages,
   translate: translate_error_messages,
+  scale: scale_error_messages,
   label: label_error_messages,
   dm: dm_error_messages,
   assignment: assignment_error_messages,

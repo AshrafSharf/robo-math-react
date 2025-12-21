@@ -136,6 +136,63 @@ export class TransformationUtil {
         return vertices.map(v => TransformationUtil.translatePoint(v, dx, dy));
     }
 
+    // ==================== SCALING ====================
+
+    /**
+     * Scale a point around a center by a scale factor
+     * @param {Object} point - {x, y} point to scale
+     * @param {number} scaleFactor - scale factor (>1 enlarges, <1 shrinks, negative mirrors)
+     * @param {Object} center - {x, y} scale center (default: origin)
+     * @returns {Object} scaled point {x, y}
+     */
+    static scalePoint(point, scaleFactor, center = { x: 0, y: 0 }) {
+        return {
+            x: center.x + (point.x - center.x) * scaleFactor,
+            y: center.y + (point.y - center.y) * scaleFactor
+        };
+    }
+
+    /**
+     * Scale a line (both endpoints) around a center
+     * @param {Object} start - {x, y} start point
+     * @param {Object} end - {x, y} end point
+     * @param {number} scaleFactor - scale factor
+     * @param {Object} center - {x, y} scale center (default: origin)
+     * @returns {Object} { start: {x, y}, end: {x, y} }
+     */
+    static scaleLine(start, end, scaleFactor, center = { x: 0, y: 0 }) {
+        return {
+            start: TransformationUtil.scalePoint(start, scaleFactor, center),
+            end: TransformationUtil.scalePoint(end, scaleFactor, center)
+        };
+    }
+
+    /**
+     * Scale a circle (scale center position and radius)
+     * @param {Object} circleCenter - {x, y} center of the circle
+     * @param {number} radius - circle radius
+     * @param {number} scaleFactor - scale factor
+     * @param {Object} scaleCenter - {x, y} scale center (default: origin)
+     * @returns {Object} { center: {x, y}, radius: number }
+     */
+    static scaleCircle(circleCenter, radius, scaleFactor, scaleCenter = { x: 0, y: 0 }) {
+        return {
+            center: TransformationUtil.scalePoint(circleCenter, scaleFactor, scaleCenter),
+            radius: Math.abs(radius * scaleFactor)
+        };
+    }
+
+    /**
+     * Scale a polygon (all vertices)
+     * @param {Array} vertices - array of {x, y} points
+     * @param {number} scaleFactor - scale factor
+     * @param {Object} center - {x, y} scale center (default: origin)
+     * @returns {Array} array of scaled {x, y} points
+     */
+    static scalePolygon(vertices, scaleFactor, center = { x: 0, y: 0 }) {
+        return vertices.map(v => TransformationUtil.scalePoint(v, scaleFactor, center));
+    }
+
     // ==================== UTILITIES ====================
 
     /**

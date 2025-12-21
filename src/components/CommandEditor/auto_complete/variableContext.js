@@ -107,7 +107,6 @@ function getTypeForFunction(funcName) {
     chain: 'Vector|Line',
     vecsum: 'Vector|Line',
     vecdiff: 'Vector|Line',
-    scalev: 'Vector|Line',
     polar: 'Vector',
     vecproject: 'Vector',
     decompose: 'Vector',
@@ -142,11 +141,13 @@ function getTypeForFunction(funcName) {
     // Transforms
     intersect: 'Point',
     reflect: 'Point',
-    rotate: 'Point',
     project: 'Point',
     interpolate: 'Point',
     dilate: 'Point',
-    translate: 'Point',
+    // rotate/translate/scale preserve shape type - return 'any' for polymorphic detection
+    rotate: 'any',
+    translate: 'any',
+    scale: 'any',
 
     // Utilities
     dist: 'number',

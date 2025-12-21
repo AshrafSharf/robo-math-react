@@ -23,7 +23,7 @@ import { ReverseExpression } from '../expressions/ReverseExpression.js';
 import { ChainExpression } from '../expressions/ChainExpression.js';
 import { VecSumExpression } from '../expressions/VecSumExpression.js';
 import { VecDiffExpression } from '../expressions/VecDiffExpression.js';
-import { SCALEVExpression } from '../expressions/SCALEVExpression.js';
+import { ScaleExpression } from '../expressions/ScaleExpression.js';
 import { VecProjectExpression } from '../expressions/VecProjectExpression.js';
 import { DecomposeExpression } from '../expressions/DecomposeExpression.js';
 import { AngleExpression } from '../expressions/AngleExpression.js';
@@ -234,7 +234,6 @@ export class IntrepreterFunctionTable {
         registerMultiArg('chain', ChainExpression);    // tail at tip (for vector addition)
         registerMultiArg('vecsum', VecSumExpression);  // add vectors
         registerMultiArg('vecdiff', VecDiffExpression);  // subtract vectors
-        registerMultiArg('scalev', SCALEVExpression); // scale vector
         registerMultiArg('vecproject', VecProjectExpression);  // project onto vector
         registerMultiArg('decompose', DecomposeExpression);    // decompose vector
 
@@ -282,6 +281,7 @@ export class IntrepreterFunctionTable {
         // Shape transformations
         registerMultiArg('rotate', RotateExpression);     // rotate shape around center
         registerMultiArg('translate', TranslateExpression); // translate shape by dx, dy
+        registerMultiArg('scale', ScaleExpression);       // scale shape around center
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

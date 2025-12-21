@@ -115,7 +115,7 @@ function normalizeTypeName(name) {
     'chain': 'vector',
     'vecsum': 'vector',
     'vecdiff': 'vector',
-    'scalev': 'vector',
+    'scale': null,  // scale preserves shape type (polymorphic)
     'vecproject': 'vector',
     'decompose': 'vector',
     // Math text expressions
