@@ -1,36 +1,38 @@
 /**
- * ADDVExpression - creates the result vector of adding two vectors
+ * ChainExpression - positions vector B so its tail is at vector A's tip (tail-to-tip)
  *
  * Syntax:
- *   addv(graph, vecA, vecB)              - add vectors, result starts at origin
- *   addv(graph, vecA, vecB, point)       - add vectors, result starts at point
- *   addv(graph, vecA, vecB, x, y)        - add vectors, result starts at (x, y)
+ *   chain(graph, vecA, vecB)       - place vecB's tail at vecA's tip
  *
- * Returns the mathematical sum a + b as a vector.
+ * Returns a copy of vecB positioned with its start at vecA's end.
+ * Useful for vector addition visualization (tip-to-tail method).
  *
  * Examples:
- *   A = vec(g, 0, 0, 3, 0)
- *   B = vec(g, 0, 0, 0, 2)
- *   addv(g, A, B)                        // result: (0,0) -> (3,2)
- *   addv(g, A, B, point(g, 1, 1))        // result: (1,1) -> (4,3)
+ *   A = vector(g, 0, 0, 3, 0)    // horizontal vector
+ *   B = vector(g, 0, 0, 0, 2)    // vertical vector
+ *   chain(g, A, B)               // B positioned at tip of A: (3,0) -> (3,2)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { VectorCommand } from '../../commands/VectorCommand.js';
+import { ChainCommand } from '../../commands/ChainCommand.js';
 import { VectorUtil } from '../../../geom/VectorUtil.js';
 
-export class ADDVExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'addv';
+export class ChainExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'chain';
 
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
         this.coordinates = []; // [x1, y1, x2, y2]
         this.graphExpression = null;
+        this.originalShapeVarName = null;  // Vector B's variable name
+        this.dx = 0;
+        this.dy = 0;
+        this.inputType = 'vec'; // 'vec' or 'line'
     }
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('addv() requires: addv(graph, vectorA, vectorB)');
+            this.dispatchError('chain() requires: chain(graph, vectorA, vectorB)');
         }
 
         // Resolve all subexpressions
@@ -41,10 +43,10 @@ export class ADDVExpression extends AbstractNonArithmeticExpression {
         // First arg must be graph
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('addv() requires graph as first argument');
+            this.dispatchError('chain() requires graph as first argument');
         }
 
-        // Second arg is vector A
+        // Second arg is vector A (target - where we want to attach B)
         const vecAExpr = this._getResolvedExpression(context, this.subExpressions[1]);
         const aStartVal = vecAExpr.getStartValue ? vecAExpr.getStartValue() : vecAExpr.getVariableAtomicValues().slice(0, 2);
         const aEndVal = vecAExpr.getEndValue ? vecAExpr.getEndValue() : vecAExpr.getVariableAtomicValues().slice(2, 4);
@@ -52,41 +54,29 @@ export class ADDVExpression extends AbstractNonArithmeticExpression {
         const aStart = { x: aStartVal[0], y: aStartVal[1] };
         const aEnd = { x: aEndVal[0], y: aEndVal[1] };
 
-        // Third arg is vector B
+        // Third arg is vector B (source - the one we're moving) - detect input type and store variable name
         const vecBExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+        this.inputType = vecBExpr.getName() === 'line' ? 'line' : 'vec';
+        this.originalShapeVarName = this.subExpressions[2].variableName || vecBExpr.variableName;
+
         const bStartVal = vecBExpr.getStartValue ? vecBExpr.getStartValue() : vecBExpr.getVariableAtomicValues().slice(0, 2);
         const bEndVal = vecBExpr.getEndValue ? vecBExpr.getEndValue() : vecBExpr.getVariableAtomicValues().slice(2, 4);
 
         const bStart = { x: bStartVal[0], y: bStartVal[1] };
         const bEnd = { x: bEndVal[0], y: bEndVal[1] };
 
-        // Optional fourth+ args define result start point
-        let resultStart = null;
-        if (this.subExpressions.length >= 4) {
-            const fourthArg = this._getResolvedExpression(context, this.subExpressions[3]);
-            const fourthValues = fourthArg.getVariableAtomicValues();
+        // Compute translation: B's tail moves to A's tip
+        this.dx = aEnd.x - bStart.x;
+        this.dy = aEnd.y - bStart.y;
 
-            if (fourthValues.length >= 2) {
-                // Point expression
-                resultStart = { x: fourthValues[0], y: fourthValues[1] };
-            } else if (this.subExpressions.length >= 5) {
-                // Two numbers (x, y)
-                const fifthArg = this._getResolvedExpression(context, this.subExpressions[4]);
-                resultStart = {
-                    x: fourthValues[0],
-                    y: fifthArg.getVariableAtomicValues()[0]
-                };
-            }
-        }
-
-        // Use VectorUtil to add vectors
-        const result = VectorUtil.addVectors(aStart, aEnd, bStart, bEnd, resultStart);
+        // Use VectorUtil to place B's tail at A's tip
+        const result = VectorUtil.tailAtTip(aStart, aEnd, bStart, bEnd);
 
         this.coordinates = [result.start.x, result.start.y, result.end.x, result.end.y];
     }
 
     getName() {
-        return ADDVExpression.NAME;
+        return ChainExpression.NAME;
     }
 
     getGeometryType() {
@@ -121,12 +111,23 @@ export class ADDVExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getVectorPoints();
-        return `addv[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `chain[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {
-        const pts = this.getVectorPoints();
-        return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
+        const shiftedData = {
+            start: { x: this.coordinates[0], y: this.coordinates[1] },
+            end: { x: this.coordinates[2], y: this.coordinates[3] }
+        };
+        return new ChainCommand(
+            this.graphExpression,
+            this.originalShapeVarName,
+            shiftedData,
+            this.dx,
+            this.dy,
+            this.inputType,
+            options
+        );
     }
 
     canPlay() {

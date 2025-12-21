@@ -1,36 +1,38 @@
 /**
- * SUBVExpression - creates the result vector of subtracting two vectors
+ * VecDiffExpression - creates the result vector of subtracting two vectors
  *
  * Syntax:
- *   subv(graph, vecA, vecB)              - subtract vectors (A - B), result starts at origin
- *   subv(graph, vecA, vecB, point)       - subtract vectors, result starts at point
- *   subv(graph, vecA, vecB, x, y)        - subtract vectors, result starts at (x, y)
+ *   vecdiff(graph, vecA, vecB)              - subtract vectors (A - B), result starts at origin
+ *   vecdiff(graph, vecA, vecB, point)       - subtract vectors, result starts at point
+ *   vecdiff(graph, vecA, vecB, x, y)        - subtract vectors, result starts at (x, y)
  *
  * Returns the mathematical difference a - b as a vector.
  *
  * Examples:
- *   A = vec(g, 0, 0, 3, 2)
- *   B = vec(g, 0, 0, 1, 1)
- *   subv(g, A, B)                        // result: (0,0) -> (2,1)
- *   subv(g, A, B, point(g, 1, 1))        // result: (1,1) -> (3,2)
+ *   A = vector(g, 0, 0, 3, 2)
+ *   B = vector(g, 0, 0, 1, 1)
+ *   vecdiff(g, A, B)                        // result: (0,0) -> (2,1)
+ *   vecdiff(g, A, B, point(g, 1, 1))        // result: (1,1) -> (3,2)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
+import { LineCommand } from '../../commands/LineCommand.js';
 import { VectorUtil } from '../../../geom/VectorUtil.js';
 
-export class SUBVExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'subv';
+export class VecDiffExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'vecdiff';
 
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
         this.coordinates = []; // [x1, y1, x2, y2]
         this.graphExpression = null;
+        this.inputType = 'vec'; // 'vec' or 'line'
     }
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('subv() requires: subv(graph, vectorA, vectorB)');
+            this.dispatchError('vecdiff() requires: vecdiff(graph, vectorA, vectorB)');
         }
 
         // Resolve all subexpressions
@@ -41,11 +43,12 @@ export class SUBVExpression extends AbstractNonArithmeticExpression {
         // First arg must be graph
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('subv() requires graph as first argument');
+            this.dispatchError('vecdiff() requires graph as first argument');
         }
 
-        // Second arg is vector A
+        // Second arg is vector A - detect input type
         const vecAExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.inputType = vecAExpr.getName() === 'line' ? 'line' : 'vec';
         const aStartVal = vecAExpr.getStartValue ? vecAExpr.getStartValue() : vecAExpr.getVariableAtomicValues().slice(0, 2);
         const aEndVal = vecAExpr.getEndValue ? vecAExpr.getEndValue() : vecAExpr.getVariableAtomicValues().slice(2, 4);
 
@@ -81,7 +84,7 @@ export class SUBVExpression extends AbstractNonArithmeticExpression {
         this.coordinates = [result.start.x, result.start.y, result.end.x, result.end.y];
     }
 
-    getName() { return SUBVExpression.NAME; }
+    getName() { return VecDiffExpression.NAME; }
     getGeometryType() { return 'line'; }
     getVariableAtomicValues() { return this.coordinates.slice(); }
     getStartValue() { return [this.coordinates[0], this.coordinates[1]]; }
@@ -90,6 +93,9 @@ export class SUBVExpression extends AbstractNonArithmeticExpression {
     toCommand(options = {}) {
         const start = { x: this.coordinates[0], y: this.coordinates[1] };
         const end = { x: this.coordinates[2], y: this.coordinates[3] };
+        if (this.inputType === 'line') {
+            return new LineCommand(this.graphExpression, start, end, options);
+        }
         return new VectorCommand(this.graphExpression, start, end, options);
     }
 

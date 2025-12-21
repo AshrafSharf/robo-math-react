@@ -1,5 +1,5 @@
 /**
- * TTVCommand - Command for rendering a tail-to-tip positioned vector with animation
+ * ChainCommand - Command for rendering a chained (tail-to-tip) positioned vector with animation
  *
  * Uses VectorCommand as delegate to create the repositioned shape.
  * For animated mode: creates shape without animation, then plays TranslateEffect.
@@ -7,20 +7,22 @@
  */
 import { BaseCommand } from './BaseCommand.js';
 import { VectorCommand } from './VectorCommand.js';
+import { LineCommand } from './LineCommand.js';
 import { TranslateEffect } from '../../effects/translate-effect.js';
 import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 
-export class TTVCommand extends BaseCommand {
+export class ChainCommand extends BaseCommand {
     /**
-     * Create a tail-to-tip vector command
+     * Create a chain vector command
      * @param {Object} graphExpression - The graph expression
      * @param {string} originalShapeVarName - Variable name of vector B (for registry lookup)
      * @param {Object} shiftedData - Computed repositioned coordinates {start, end}
      * @param {number} dx - Translation in x direction
      * @param {number} dy - Translation in y direction
+     * @param {string} inputType - 'vec' or 'line'
      * @param {Object} options - Additional options
      */
-    constructor(graphExpression, originalShapeVarName, shiftedData, dx, dy, options = {}) {
+    constructor(graphExpression, originalShapeVarName, shiftedData, dx, dy, inputType = 'vec', options = {}) {
         super();
         this.graphExpression = graphExpression;
         this.graphContainer = null;
@@ -28,6 +30,7 @@ export class TTVCommand extends BaseCommand {
         this.shiftedData = shiftedData;
         this.dx = dx;
         this.dy = dy;
+        this.inputType = inputType;
         this.options = options;
 
         // Set during init/play
@@ -42,7 +45,7 @@ export class TTVCommand extends BaseCommand {
      */
     async doInit() {
         if (!this.graphExpression) {
-            const err = new Error(common_error_messages.GRAPH_REQUIRED('ttv'));
+            const err = new Error(common_error_messages.GRAPH_REQUIRED('chain'));
             err.expressionId = this.expressionId;
             throw err;
         }
@@ -65,7 +68,7 @@ export class TTVCommand extends BaseCommand {
         // Look up original shape (vector B) from registry - required for translation animation
         this.originalShape = this.commandContext.shapeRegistry[this.originalShapeVarName];
         if (!this.originalShape) {
-            throw new Error(`TTVCommand: original shape '${this.originalShapeVarName}' not found in registry`);
+            throw new Error(`ChainCommand: original shape '${this.originalShapeVarName}' not found in registry`);
         }
     }
 
@@ -74,8 +77,9 @@ export class TTVCommand extends BaseCommand {
      * @returns {Promise}
      */
     async play() {
-        // Create repositioned shape via delegate command
-        this.delegateCommand = new VectorCommand(this.graphExpression, this.shiftedData.start, this.shiftedData.end);
+        // Create repositioned shape via delegate command (VectorCommand or LineCommand based on input type)
+        const CommandClass = this.inputType === 'line' ? LineCommand : VectorCommand;
+        this.delegateCommand = new CommandClass(this.graphExpression, this.shiftedData.start, this.shiftedData.end);
         this.delegateCommand.diagram2d = this.diagram2d;
         this.delegateCommand.setColor(this.color);
         if (this.labelName) {
@@ -99,8 +103,9 @@ export class TTVCommand extends BaseCommand {
      * @returns {Promise}
      */
     async directPlay() {
-        // Create repositioned shape via delegate command
-        this.delegateCommand = new VectorCommand(this.graphExpression, this.shiftedData.start, this.shiftedData.end);
+        // Create repositioned shape via delegate command (VectorCommand or LineCommand based on input type)
+        const CommandClass = this.inputType === 'line' ? LineCommand : VectorCommand;
+        this.delegateCommand = new CommandClass(this.graphExpression, this.shiftedData.start, this.shiftedData.end);
         this.delegateCommand.diagram2d = this.diagram2d;
         this.delegateCommand.setColor(this.color);
         if (this.labelName) {

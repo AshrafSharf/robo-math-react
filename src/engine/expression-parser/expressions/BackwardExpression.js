@@ -1,22 +1,22 @@
 /**
- * FWVExpression - shifts a vector forward along its direction
+ * BackwardExpression - shifts a vector backward (opposite to its direction)
  *
  * Syntax:
- *   fwv(graph, vec, distance)    - shift vector forward by distance
- *   fwv(graph, line, distance)   - shift line forward by distance (returns vector)
+ *   backward(graph, vec, distance)    - shift vector backward by distance
+ *   backward(graph, line, distance)   - shift line backward by distance (returns vector)
  *
- * Returns a new vector shifted forward (in the direction of the original vector).
+ * Returns a new vector shifted backward (opposite to the direction of the original vector).
  *
  * Examples:
- *   V = vec(g, 0, 0, 3, 2)
- *   fwv(g, V, 1)                 // vector shifted 1 unit forward along its direction
+ *   V = vector(g, 0, 0, 3, 2)
+ *   backward(g, V, 1)                 // vector shifted 1 unit backward
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { FWVCommand } from '../../commands/FWVCommand.js';
+import { BackwardCommand } from '../../commands/BackwardCommand.js';
 import { VectorUtil } from '../../../geom/VectorUtil.js';
 
-export class FWVExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'fwv';
+export class BackwardExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'backward';
 
     constructor(subExpressions) {
         super();
@@ -26,11 +26,12 @@ export class FWVExpression extends AbstractNonArithmeticExpression {
         this.originalShapeVarName = null;
         this.dx = 0;
         this.dy = 0;
+        this.inputType = 'vec'; // 'vec' or 'line'
     }
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('fwv() requires: fwv(graph, vector, distance)');
+            this.dispatchError('backward() requires: backward(graph, vector, distance)');
         }
 
         // Resolve all subexpressions
@@ -41,11 +42,12 @@ export class FWVExpression extends AbstractNonArithmeticExpression {
         // First arg must be graph
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('fwv() requires graph as first argument');
+            this.dispatchError('backward() requires graph as first argument');
         }
 
-        // Second arg is vector/line - store variable name for registry lookup
+        // Second arg is vector/line - detect input type and store variable name
         const sourceExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.inputType = sourceExpr.getName() === 'line' ? 'line' : 'vec';
         this.originalShapeVarName = this.subExpressions[1].variableName || sourceExpr.variableName;
 
         const startVal = sourceExpr.getStartValue ? sourceExpr.getStartValue() : sourceExpr.getVariableAtomicValues().slice(0, 2);
@@ -58,19 +60,19 @@ export class FWVExpression extends AbstractNonArithmeticExpression {
         const distExpr = this._getResolvedExpression(context, this.subExpressions[2]);
         const distance = distExpr.getVariableAtomicValues()[0];
 
-        // Compute dx, dy from unit vector × distance
+        // Compute dx, dy from unit vector × distance (negative for backward)
         const dir = VectorUtil.getUnitVector(start, end);
-        this.dx = dir.x * distance;
-        this.dy = dir.y * distance;
+        this.dx = -dir.x * distance;
+        this.dy = -dir.y * distance;
 
-        // Use VectorUtil to shift forward
-        const result = VectorUtil.shiftForward(start, end, distance);
+        // Use VectorUtil to shift backward
+        const result = VectorUtil.shiftBackward(start, end, distance);
 
         this.coordinates = [result.start.x, result.start.y, result.end.x, result.end.y];
     }
 
     getName() {
-        return FWVExpression.NAME;
+        return BackwardExpression.NAME;
     }
 
     getGeometryType() {
@@ -105,7 +107,7 @@ export class FWVExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getVectorPoints();
-        return `fwv[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `backward[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {
@@ -113,12 +115,13 @@ export class FWVExpression extends AbstractNonArithmeticExpression {
             start: { x: this.coordinates[0], y: this.coordinates[1] },
             end: { x: this.coordinates[2], y: this.coordinates[3] }
         };
-        return new FWVCommand(
+        return new BackwardCommand(
             this.graphExpression,
             this.originalShapeVarName,
             shiftedData,
             this.dx,
             this.dy,
+            this.inputType,
             options
         );
     }

@@ -97,8 +97,20 @@ function getTypeForFunction(funcName) {
     pll: 'Line',
 
     // Vectors
-    perpv: 'Vector',
-    plv: 'Vector',
+    perpv: 'Vector|Line',
+    offset: 'Vector|Line',
+    forward: 'Vector|Line',
+    backward: 'Vector|Line',
+    perpshift: 'Vector|Line',
+    placeat: 'Vector|Line',
+    reverse: 'Vector|Line',
+    chain: 'Vector|Line',
+    vecsum: 'Vector|Line',
+    vecdiff: 'Vector|Line',
+    scalev: 'Vector|Line',
+    polar: 'Vector',
+    vecproject: 'Vector',
+    decompose: 'Vector',
 
     // Coordinates - return numbers or points
     x: 'number',

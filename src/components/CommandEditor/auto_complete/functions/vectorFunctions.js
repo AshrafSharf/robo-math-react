@@ -11,116 +11,116 @@ export const VECTOR_FUNCTIONS = {
     altSignatures: ['perpv(g: Graph, line: Line, point: Point)', 'perpv(g: Graph, line: Line, point: Point, length: number)'],
     category: 'Vectors'
   },
-  plv: {
-    name: 'plv',
+  offset: {
+    name: 'offset',
     signature: '(g, line, point)',
     args: ['g: Graph', 'line: Line', 'point: Point'],
     description: 'Parallel vector through point',
-    altSignatures: ['plv(g: Graph, line: Line, point: Point)', 'plv(g: Graph, line: Line, point: Point, length: number)'],
+    altSignatures: ['offset(g: Graph, line: Line, point: Point)', 'offset(g: Graph, line: Line, point: Point, length: number)'],
     category: 'Vectors'
   },
-  rav: {
-    name: 'rav',
+  polar: {
+    name: 'polar',
     signature: '(g, length, angle)',
     args: ['g: Graph', 'length: number', 'angle: number'],
     description: 'Vector from polar (radius, angle in degrees)',
-    altSignatures: ['rav(g, length, angle)', 'rav(g, length, angle, fromX, fromY)', 'rav(g, length, angle, fromPoint)'],
+    altSignatures: ['polar(g, length, angle)', 'polar(g, length, angle, fromX, fromY)', 'polar(g, length, angle, fromPoint)'],
     category: 'Vectors'
   },
   uv: {
     name: 'uv',
     signature: '(g, shape)',
-    args: ['g: Graph', 'shape: Line|Vec'],
+    args: ['g: Graph', 'shape: Line|Vector'],
     description: 'Unit vector (normalized direction)',
-    altSignatures: ['uv(g, line)', 'uv(g, vec)', 'uv(g, p1, p2)'],
+    altSignatures: ['uv(g, line)', 'uv(g, vector)', 'uv(g, p1, p2)'],
     category: 'Vectors'
   },
-  fwv: {
-    name: 'fwv',
-    signature: '(g, vec, dist)',
-    args: ['g: Graph', 'vec: Vec', 'dist: number'],
+  forward: {
+    name: 'forward',
+    signature: '(g, vector, dist)',
+    args: ['g: Graph', 'vector: Vector', 'dist: number'],
     description: 'Shift vector forward along its direction',
-    altSignatures: ['fwv(g, vec, distance)', 'fwv(g, line, distance)'],
+    altSignatures: ['forward(g, vector, distance)', 'forward(g, line, distance)'],
     category: 'Vectors'
   },
-  bwv: {
-    name: 'bwv',
-    signature: '(g, vec, dist)',
-    args: ['g: Graph', 'vec: Vec', 'dist: number'],
+  backward: {
+    name: 'backward',
+    signature: '(g, vector, dist)',
+    args: ['g: Graph', 'vector: Vector', 'dist: number'],
     description: 'Shift vector backward (opposite direction)',
-    altSignatures: ['bwv(g, vec, distance)', 'bwv(g, line, distance)'],
+    altSignatures: ['backward(g, vector, distance)', 'backward(g, line, distance)'],
     category: 'Vectors'
   },
-  pmv: {
-    name: 'pmv',
-    signature: '(g, vec, dist)',
-    args: ['g: Graph', 'vec: Vec', 'dist: number'],
+  perpshift: {
+    name: 'perpshift',
+    signature: '(g, vector, dist)',
+    args: ['g: Graph', 'vector: Vector', 'dist: number'],
     description: 'Shift vector perpendicular (+left, -right)',
-    altSignatures: ['pmv(g, vec, distance)', 'pmv(g, line, distance)'],
+    altSignatures: ['perpshift(g, vector, distance)', 'perpshift(g, line, distance)'],
     category: 'Vectors'
   },
-  cpv: {
-    name: 'cpv',
-    signature: '(g, vec, point)',
-    args: ['g: Graph', 'vec: Vec', 'point: Point'],
+  placeat: {
+    name: 'placeat',
+    signature: '(g, vector, point)',
+    args: ['g: Graph', 'vector: Vector', 'point: Point'],
     description: 'Copy vector to new starting point',
-    altSignatures: ['cpv(g, vec, point)', 'cpv(g, vec, x, y)'],
+    altSignatures: ['placeat(g, vector, point)', 'placeat(g, vector, x, y)'],
     category: 'Vectors'
   },
-  rvv: {
-    name: 'rvv',
-    signature: '(g, vec, point)',
-    args: ['g: Graph', 'vec: Vec', 'point: Point'],
+  reverse: {
+    name: 'reverse',
+    signature: '(g, vector, point)',
+    args: ['g: Graph', 'vector: Vector', 'point: Point'],
     description: 'Reverse vector at new starting point',
-    altSignatures: ['rvv(g, vec, point)', 'rvv(g, vec, x, y)'],
+    altSignatures: ['reverse(g, vector, point)', 'reverse(g, vector, x, y)'],
     category: 'Vectors'
   },
-  ttv: {
-    name: 'ttv',
-    signature: '(g, vecA, vecB)',
-    args: ['g: Graph', 'vecA: Vec', 'vecB: Vec'],
-    description: 'Place vecB tail at vecA tip (tip-to-tail)',
-    altSignatures: ['ttv(g, vecA, vecB)'],
+  chain: {
+    name: 'chain',
+    signature: '(g, vectorA, vectorB)',
+    args: ['g: Graph', 'vectorA: Vector', 'vectorB: Vector'],
+    description: 'Place vectorB tail at vectorA tip (tip-to-tail)',
+    altSignatures: ['chain(g, vectorA, vectorB)'],
     category: 'Vectors'
   },
-  addv: {
-    name: 'addv',
-    signature: '(g, vecA, vecB)',
-    args: ['g: Graph', 'vecA: Vec', 'vecB: Vec'],
+  vecsum: {
+    name: 'vecsum',
+    signature: '(g, vectorA, vectorB)',
+    args: ['g: Graph', 'vectorA: Vector', 'vectorB: Vector'],
     description: 'Vector addition (A + B)',
-    altSignatures: ['addv(g, vecA, vecB)', 'addv(g, vecA, vecB, startPoint)'],
+    altSignatures: ['vecsum(g, vectorA, vectorB)', 'vecsum(g, vectorA, vectorB, startPoint)'],
     category: 'Vectors'
   },
-  subv: {
-    name: 'subv',
-    signature: '(g, vecA, vecB)',
-    args: ['g: Graph', 'vecA: Vec', 'vecB: Vec'],
+  vecdiff: {
+    name: 'vecdiff',
+    signature: '(g, vectorA, vectorB)',
+    args: ['g: Graph', 'vectorA: Vector', 'vectorB: Vector'],
     description: 'Vector subtraction (A - B)',
-    altSignatures: ['subv(g, vecA, vecB)', 'subv(g, vecA, vecB, startPoint)'],
+    altSignatures: ['vecdiff(g, vectorA, vectorB)', 'vecdiff(g, vectorA, vectorB, startPoint)'],
     category: 'Vectors'
   },
   scalev: {
     name: 'scalev',
-    signature: '(g, vec, scalar)',
-    args: ['g: Graph', 'vec: Vec', 'scalar: number'],
+    signature: '(g, vector, scalar)',
+    args: ['g: Graph', 'vector: Vector', 'scalar: number'],
     description: 'Scale vector by scalar',
-    altSignatures: ['scalev(g, vec, scalar)', 'scalev(g, vec, scalar, startPoint)'],
+    altSignatures: ['scalev(g, vector, scalar)', 'scalev(g, vector, scalar, startPoint)'],
     category: 'Vectors'
   },
-  prov: {
-    name: 'prov',
-    signature: '(g, vec, target)',
-    args: ['g: Graph', 'vec: Vec', 'target: Vec'],
+  vecproject: {
+    name: 'vecproject',
+    signature: '(g, vector, target)',
+    args: ['g: Graph', 'vector: Vector', 'target: Vector'],
     description: 'Project vector onto target vector',
-    altSignatures: ['prov(g, vecToProject, vecTarget)'],
+    altSignatures: ['vecproject(g, vectorToProject, vectorTarget)'],
     category: 'Vectors'
   },
-  dcv: {
-    name: 'dcv',
-    signature: '(g, vec, ref)',
-    args: ['g: Graph', 'vec: Vec', 'ref: Vec'],
+  decompose: {
+    name: 'decompose',
+    signature: '(g, vector, ref)',
+    args: ['g: Graph', 'vector: Vector', 'ref: Vector'],
     description: 'Decompose vector (parallel/perpendicular)',
-    altSignatures: ['dcv(g, vec, ref)', 'dcv(g, vec, ref, 1) for perpendicular'],
+    altSignatures: ['decompose(g, vector, ref)', 'decompose(g, vector, ref, "perp") for perpendicular'],
     category: 'Vectors'
   }
 };

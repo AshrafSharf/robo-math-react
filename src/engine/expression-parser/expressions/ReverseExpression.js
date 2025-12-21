@@ -1,36 +1,38 @@
 /**
- * RVVExpression - creates a reversed vector at a new starting point
+ * ReverseExpression - creates a reversed vector at a new starting point
  *
  * Syntax:
- *   rvv(graph, vec, point)       - reverse vector and place at point
- *   rvv(graph, vec, x, y)        - reverse vector and place at (x, y)
- *   rvv(graph, line, point)      - reverse line as vector at point
+ *   reverse(graph, vec, point)       - reverse vector and place at point
+ *   reverse(graph, vec, x, y)        - reverse vector and place at (x, y)
+ *   reverse(graph, line, point)      - reverse line as vector at point
  *
  * Returns a new vector with opposite direction at the new starting point.
  * Useful for vector subtraction visualization: a - b = a + (-b)
  *
  * Examples:
- *   V = vec(g, 0, 0, 3, 2)
- *   rvv(g, V, point(g, 1, 1))    // reversed V starting at (1, 1)
- *   rvv(g, V, 2, 3)              // reversed V starting at (2, 3)
+ *   V = vector(g, 0, 0, 3, 2)
+ *   reverse(g, V, point(g, 1, 1))    // reversed V starting at (1, 1)
+ *   reverse(g, V, 2, 3)              // reversed V starting at (2, 3)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
+import { LineCommand } from '../../commands/LineCommand.js';
 import { VectorUtil } from '../../../geom/VectorUtil.js';
 
-export class RVVExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'rvv';
+export class ReverseExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'reverse';
 
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
         this.coordinates = []; // [x1, y1, x2, y2]
         this.graphExpression = null;
+        this.inputType = 'vec'; // 'vec' or 'line'
     }
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('rvv() requires: rvv(graph, vector, point) or rvv(graph, vector, x, y)');
+            this.dispatchError('reverse() requires: reverse(graph, vector, point) or reverse(graph, vector, x, y)');
         }
 
         // Resolve all subexpressions
@@ -41,11 +43,12 @@ export class RVVExpression extends AbstractNonArithmeticExpression {
         // First arg must be graph
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('rvv() requires graph as first argument');
+            this.dispatchError('reverse() requires graph as first argument');
         }
 
-        // Second arg is vector/line
+        // Second arg is vector/line - detect input type
         const sourceExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.inputType = sourceExpr.getName() === 'line' ? 'line' : 'vec';
         const startVal = sourceExpr.getStartValue ? sourceExpr.getStartValue() : sourceExpr.getVariableAtomicValues().slice(0, 2);
         const endVal = sourceExpr.getEndValue ? sourceExpr.getEndValue() : sourceExpr.getVariableAtomicValues().slice(2, 4);
 
@@ -68,7 +71,7 @@ export class RVVExpression extends AbstractNonArithmeticExpression {
                 y: fourthArg.getVariableAtomicValues()[0]
             };
         } else {
-            this.dispatchError('rvv() requires a point or (x, y) coordinates for new start');
+            this.dispatchError('reverse() requires a point or (x, y) coordinates for new start');
         }
 
         // Use VectorUtil to reverse at new position
@@ -78,7 +81,7 @@ export class RVVExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return RVVExpression.NAME;
+        return ReverseExpression.NAME;
     }
 
     getGeometryType() {
@@ -113,11 +116,14 @@ export class RVVExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getVectorPoints();
-        return `rvv[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `reverse[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {
         const pts = this.getVectorPoints();
+        if (this.inputType === 'line') {
+            return new LineCommand(this.graphExpression, pts[0], pts[1], options);
+        }
         return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
     }
 

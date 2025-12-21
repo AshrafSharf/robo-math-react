@@ -1,36 +1,38 @@
 /**
- * CPVExpression - copies a vector to a new starting point
+ * PlaceAtExpression - copies a vector to a new starting point
  *
  * Syntax:
- *   cpv(graph, vec, point)       - copy vector to start at point
- *   cpv(graph, vec, x, y)        - copy vector to start at (x, y)
- *   cpv(graph, line, point)      - copy line as vector to start at point
+ *   placeat(graph, vec, point)       - copy vector to start at point
+ *   placeat(graph, vec, x, y)        - copy vector to start at (x, y)
+ *   placeat(graph, line, point)      - copy line as vector to start at point
  *
  * Returns a new vector with the same direction and magnitude at the new starting point.
  * Useful for parallelogram construction and vector translation.
  *
  * Examples:
- *   V = vec(g, 0, 0, 3, 2)
- *   cpv(g, V, point(g, 1, 1))    // copy V to start at (1, 1)
- *   cpv(g, V, 2, 3)              // copy V to start at (2, 3)
+ *   V = vector(g, 0, 0, 3, 2)
+ *   placeat(g, V, point(g, 1, 1))    // copy V to start at (1, 1)
+ *   placeat(g, V, 2, 3)              // copy V to start at (2, 3)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
+import { LineCommand } from '../../commands/LineCommand.js';
 import { VectorUtil } from '../../../geom/VectorUtil.js';
 
-export class CPVExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'cpv';
+export class PlaceAtExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'placeat';
 
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
         this.coordinates = []; // [x1, y1, x2, y2]
         this.graphExpression = null;
+        this.inputType = 'vec'; // 'vec' or 'line'
     }
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('cpv() requires: cpv(graph, vector, point) or cpv(graph, vector, x, y)');
+            this.dispatchError('placeat() requires: placeat(graph, vector, point) or placeat(graph, vector, x, y)');
         }
 
         // Resolve all subexpressions
@@ -41,11 +43,12 @@ export class CPVExpression extends AbstractNonArithmeticExpression {
         // First arg must be graph
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('cpv() requires graph as first argument');
+            this.dispatchError('placeat() requires graph as first argument');
         }
 
-        // Second arg is vector/line
+        // Second arg is vector/line - detect input type
         const sourceExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.inputType = sourceExpr.getName() === 'line' ? 'line' : 'vec';
         const startVal = sourceExpr.getStartValue ? sourceExpr.getStartValue() : sourceExpr.getVariableAtomicValues().slice(0, 2);
         const endVal = sourceExpr.getEndValue ? sourceExpr.getEndValue() : sourceExpr.getVariableAtomicValues().slice(2, 4);
 
@@ -68,7 +71,7 @@ export class CPVExpression extends AbstractNonArithmeticExpression {
                 y: fourthArg.getVariableAtomicValues()[0]
             };
         } else {
-            this.dispatchError('cpv() requires a point or (x, y) coordinates for new start');
+            this.dispatchError('placeat() requires a point or (x, y) coordinates for new start');
         }
 
         // Use VectorUtil to copy at new position
@@ -78,7 +81,7 @@ export class CPVExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return CPVExpression.NAME;
+        return PlaceAtExpression.NAME;
     }
 
     getGeometryType() {
@@ -113,11 +116,14 @@ export class CPVExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getVectorPoints();
-        return `cpv[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `placeat[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {
         const pts = this.getVectorPoints();
+        if (this.inputType === 'line') {
+            return new LineCommand(this.graphExpression, pts[0], pts[1], options);
+        }
         return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
     }
 

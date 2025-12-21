@@ -1,23 +1,23 @@
 /**
- * PMVExpression - shifts a vector perpendicular to its direction
+ * PerpShiftExpression - shifts a vector perpendicular to its direction
  *
  * Syntax:
- *   pmv(graph, vec, distance)    - shift vector perpendicular by distance
- *   pmv(graph, line, distance)   - shift line perpendicular by distance (returns vector)
+ *   perpshift(graph, vec, distance)    - shift vector perpendicular by distance
+ *   perpshift(graph, line, distance)   - shift line perpendicular by distance (returns vector)
  *
  * Positive distance shifts to the left (CCW), negative to the right (CW).
  *
  * Examples:
- *   V = vec(g, 0, 0, 3, 0)
- *   pmv(g, V, 1)                 // vector shifted 1 unit upward (perpendicular)
- *   pmv(g, V, -1)                // vector shifted 1 unit downward
+ *   V = vector(g, 0, 0, 3, 0)
+ *   perpshift(g, V, 1)                 // vector shifted 1 unit upward (perpendicular)
+ *   perpshift(g, V, -1)                // vector shifted 1 unit downward
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { PMVCommand } from '../../commands/PMVCommand.js';
+import { PerpShiftCommand } from '../../commands/PerpShiftCommand.js';
 import { VectorUtil } from '../../../geom/VectorUtil.js';
 
-export class PMVExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'pmv';
+export class PerpShiftExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'perpshift';
 
     constructor(subExpressions) {
         super();
@@ -27,11 +27,12 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
         this.originalShapeVarName = null;
         this.dx = 0;
         this.dy = 0;
+        this.inputType = 'vec'; // 'vec' or 'line'
     }
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('pmv() requires: pmv(graph, vector, distance)');
+            this.dispatchError('perpshift() requires: perpshift(graph, vector, distance)');
         }
 
         // Resolve all subexpressions
@@ -42,11 +43,12 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
         // First arg must be graph
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('pmv() requires graph as first argument');
+            this.dispatchError('perpshift() requires graph as first argument');
         }
 
-        // Second arg is vector/line - store variable name for registry lookup
+        // Second arg is vector/line - detect input type and store variable name
         const sourceExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.inputType = sourceExpr.getName() === 'line' ? 'line' : 'vec';
         this.originalShapeVarName = this.subExpressions[1].variableName || sourceExpr.variableName;
 
         const startVal = sourceExpr.getStartValue ? sourceExpr.getStartValue() : sourceExpr.getVariableAtomicValues().slice(0, 2);
@@ -71,7 +73,7 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return PMVExpression.NAME;
+        return PerpShiftExpression.NAME;
     }
 
     getGeometryType() {
@@ -106,7 +108,7 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getVectorPoints();
-        return `pmv[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `perpshift[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {
@@ -114,12 +116,13 @@ export class PMVExpression extends AbstractNonArithmeticExpression {
             start: { x: this.coordinates[0], y: this.coordinates[1] },
             end: { x: this.coordinates[2], y: this.coordinates[3] }
         };
-        return new PMVCommand(
+        return new PerpShiftCommand(
             this.graphExpression,
             this.originalShapeVarName,
             shiftedData,
             this.dx,
             this.dy,
+            this.inputType,
             options
         );
     }

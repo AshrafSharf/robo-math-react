@@ -1,27 +1,27 @@
 /**
- * RAVExpression - creates a vector using polar coordinates (radius/length and angle)
+ * PolarExpression - creates a vector using polar coordinates (radius/length and angle)
  *
  * Syntax:
- *   rav(graph, length, angleDeg)              - vector from origin
- *   rav(graph, length, angleDeg, fromX, fromY) - vector from specified point
- *   rav(graph, length, angleDeg, fromPoint)   - vector from point expression
+ *   polar(graph, length, angleDeg)              - vector from origin
+ *   polar(graph, length, angleDeg, fromX, fromY) - vector from specified point
+ *   polar(graph, length, angleDeg, fromPoint)   - vector from point expression
  *
  * Returns vector coordinates [x1, y1, x2, y2]. When used standalone, renders as a vector (arrow).
  * Angle is in degrees: 0=right, 90=up, 180=left, 270=down
  *
  * Examples:
- *   rav(g, 5, 0)                // horizontal vector from (0,0) to (5,0)
- *   rav(g, 3, 90)               // vertical vector from (0,0) to (0,3)
- *   rav(g, 4, 45)               // diagonal vector at 45 degrees
- *   rav(g, 5, 30, 1, 2)         // vector from (1,2) at 30 degrees
- *   rav(g, 5, 60, A)            // vector from point A at 60 degrees
+ *   polar(g, 5, 0)                // horizontal vector from (0,0) to (5,0)
+ *   polar(g, 3, 90)               // vertical vector from (0,0) to (0,3)
+ *   polar(g, 4, 45)               // diagonal vector at 45 degrees
+ *   polar(g, 5, 30, 1, 2)         // vector from (1,2) at 30 degrees
+ *   polar(g, 5, 60, A)            // vector from point A at 60 degrees
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
 import { LineUtil } from '../../../geom/LineUtil.js';
 
-export class RAVExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'rav';
+export class PolarExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'polar';
 
     constructor(subExpressions) {
         super();
@@ -32,7 +32,7 @@ export class RAVExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('rav() requires: rav(graph, length, angle) or rav(graph, length, angle, fromX, fromY)');
+            this.dispatchError('polar() requires: polar(graph, length, angle) or polar(graph, length, angle, fromX, fromY)');
         }
 
         // Resolve all subexpressions first
@@ -44,7 +44,7 @@ export class RAVExpression extends AbstractNonArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('rav() requires graph as first argument');
+            this.dispatchError('polar() requires graph as first argument');
         }
 
         // Get length and angle
@@ -58,12 +58,12 @@ export class RAVExpression extends AbstractNonArithmeticExpression {
         let origin = { x: 0, y: 0 };
 
         if (this.subExpressions.length === 4) {
-            // rav(graph, length, angle, fromPoint)
+            // polar(graph, length, angle, fromPoint)
             const fromExpr = this._getResolvedExpression(context, this.subExpressions[3]);
             const fromValues = fromExpr.getVariableAtomicValues();
             origin = { x: fromValues[0], y: fromValues[1] };
         } else if (this.subExpressions.length >= 5) {
-            // rav(graph, length, angle, fromX, fromY)
+            // polar(graph, length, angle, fromX, fromY)
             const fromXExpr = this._getResolvedExpression(context, this.subExpressions[3]);
             const fromYExpr = this._getResolvedExpression(context, this.subExpressions[4]);
             origin = {
@@ -77,7 +77,7 @@ export class RAVExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return RAVExpression.NAME;
+        return PolarExpression.NAME;
     }
 
     getGeometryType() {
@@ -125,7 +125,7 @@ export class RAVExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getVectorPoints();
-        return `rav[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `polar[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {

@@ -1,5 +1,5 @@
 /**
- * PMVCommand - Command for rendering a perpendicular-shifted vector with animation
+ * ForwardCommand - Command for rendering a forward-shifted vector with animation
  *
  * Uses VectorCommand as delegate to create the shifted shape.
  * For animated mode: creates shape without animation, then plays TranslateEffect.
@@ -7,20 +7,22 @@
  */
 import { BaseCommand } from './BaseCommand.js';
 import { VectorCommand } from './VectorCommand.js';
+import { LineCommand } from './LineCommand.js';
 import { TranslateEffect } from '../../effects/translate-effect.js';
 import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 
-export class PMVCommand extends BaseCommand {
+export class ForwardCommand extends BaseCommand {
     /**
-     * Create a perpendicular-shifted vector command
+     * Create a forward vector command
      * @param {Object} graphExpression - The graph expression
      * @param {string} originalShapeVarName - Variable name of original vector (for registry lookup)
      * @param {Object} shiftedData - Computed shifted coordinates {start, end}
      * @param {number} dx - Translation in x direction
      * @param {number} dy - Translation in y direction
+     * @param {string} inputType - 'vec' or 'line'
      * @param {Object} options - Additional options
      */
-    constructor(graphExpression, originalShapeVarName, shiftedData, dx, dy, options = {}) {
+    constructor(graphExpression, originalShapeVarName, shiftedData, dx, dy, inputType = 'vec', options = {}) {
         super();
         this.graphExpression = graphExpression;
         this.graphContainer = null;
@@ -28,6 +30,7 @@ export class PMVCommand extends BaseCommand {
         this.shiftedData = shiftedData;
         this.dx = dx;
         this.dy = dy;
+        this.inputType = inputType;
         this.options = options;
 
         // Set during init/play
@@ -42,7 +45,7 @@ export class PMVCommand extends BaseCommand {
      */
     async doInit() {
         if (!this.graphExpression) {
-            const err = new Error(common_error_messages.GRAPH_REQUIRED('pmv'));
+            const err = new Error(common_error_messages.GRAPH_REQUIRED('forward'));
             err.expressionId = this.expressionId;
             throw err;
         }
@@ -65,7 +68,7 @@ export class PMVCommand extends BaseCommand {
         // Look up original shape from registry - required for translation animation
         this.originalShape = this.commandContext.shapeRegistry[this.originalShapeVarName];
         if (!this.originalShape) {
-            throw new Error(`PMVCommand: original shape '${this.originalShapeVarName}' not found in registry`);
+            throw new Error(`ForwardCommand: original shape '${this.originalShapeVarName}' not found in registry`);
         }
     }
 
@@ -74,8 +77,9 @@ export class PMVCommand extends BaseCommand {
      * @returns {Promise}
      */
     async play() {
-        // Create shifted shape via delegate command
-        this.delegateCommand = new VectorCommand(this.graphExpression, this.shiftedData.start, this.shiftedData.end);
+        // Create shifted shape via delegate command (VectorCommand or LineCommand based on input type)
+        const CommandClass = this.inputType === 'line' ? LineCommand : VectorCommand;
+        this.delegateCommand = new CommandClass(this.graphExpression, this.shiftedData.start, this.shiftedData.end);
         this.delegateCommand.diagram2d = this.diagram2d;
         this.delegateCommand.setColor(this.color);
         if (this.labelName) {
@@ -99,8 +103,9 @@ export class PMVCommand extends BaseCommand {
      * @returns {Promise}
      */
     async directPlay() {
-        // Create shifted shape via delegate command
-        this.delegateCommand = new VectorCommand(this.graphExpression, this.shiftedData.start, this.shiftedData.end);
+        // Create shifted shape via delegate command (VectorCommand or LineCommand based on input type)
+        const CommandClass = this.inputType === 'line' ? LineCommand : VectorCommand;
+        this.delegateCommand = new CommandClass(this.graphExpression, this.shiftedData.start, this.shiftedData.end);
         this.delegateCommand.diagram2d = this.diagram2d;
         this.delegateCommand.setColor(this.color);
         if (this.labelName) {

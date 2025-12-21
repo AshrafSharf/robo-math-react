@@ -1,39 +1,46 @@
 /**
- * PLV (Parallel Vector) expression - creates a parallel vector through a point
+ * OffsetExpression (Parallel Vector) - creates a parallel vector through a point
  *
  * Syntax:
- *   plv(graph, line/vec, point)          - parallel to line/vec, through point, same length
- *   plv(graph, line/vec, point, length)  - parallel to line/vec, through point, custom length
+ *   offset(graph, line/vec, point)          - parallel to line/vec, through point, same length
+ *   offset(graph, line/vec, point, length)  - parallel to line/vec, through point, custom length
  *
  * Uses LineUtil.parallelThrough for calculation, renders as vector (arrow)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
+import { LineCommand } from '../../commands/LineCommand.js';
 import { LineUtil } from '../../../geom/LineUtil.js';
 
-export class PLVExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'plv';
+export class OffsetExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'offset';
 
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
         this.coordinates = []; // [x1, y1, x2, y2]
         this.graphExpression = null;
+        this.inputType = 'vec'; // 'vec' or 'line'
     }
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError(`plv() needs arguments.\nUsage: plv(g, line, point)`);
+            this.dispatchError(`offset() needs arguments.\nUsage: offset(g, line, point)`);
         }
 
         // First arg is graph reference - resolve and store the actual expression
         this.subExpressions[0].resolve(context);
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
+        // Detect input type from second argument (line/vec)
+        this.subExpressions[1].resolve(context);
+        const sourceExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.inputType = sourceExpr.getName() === 'line' ? 'line' : 'vec';
+
         // Collect all atomic values from remaining subexpressions
         const allCoords = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
-            this.subExpressions[i].resolve(context);
+            if (i > 1) this.subExpressions[i].resolve(context);
             const atomicValues = this.subExpressions[i].getVariableAtomicValues();
             for (let j = 0; j < atomicValues.length; j++) {
                 allCoords.push(atomicValues[j]);
@@ -44,7 +51,7 @@ export class PLVExpression extends AbstractNonArithmeticExpression {
         this._validateAndSetLength(allCoords);
 
         if (allCoords.length !== 7) {
-            this.dispatchError(`plv() needs 6 coordinates.\nGot ${allCoords.length - 1}, need: line(4) + point(2)`);
+            this.dispatchError(`offset() needs 6 coordinates.\nGot ${allCoords.length - 1}, need: line(4) + point(2)`);
         }
 
         // Extract coordinates: x1, y1, x2, y2, px, py, length
@@ -82,7 +89,7 @@ export class PLVExpression extends AbstractNonArithmeticExpression {
     // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
-        return PLVExpression.NAME;
+        return OffsetExpression.NAME;
     }
 
     /**
@@ -134,11 +141,14 @@ export class PLVExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getVectorPoints();
-        return `PLV[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `offset[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {
         const pts = this.getVectorPoints();
+        if (this.inputType === 'line') {
+            return new LineCommand(this.graphExpression, pts[0], pts[1], options);
+        }
         return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
     }
 

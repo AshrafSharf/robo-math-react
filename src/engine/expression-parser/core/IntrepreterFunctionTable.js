@@ -13,19 +13,19 @@ import { RALExpression } from '../expressions/RALExpression.js';
 import { PerpLExpression } from '../expressions/PerpLExpression.js';
 import { PLLExpression } from '../expressions/PLLExpression.js';
 import { PerpVExpression } from '../expressions/PerpVExpression.js';
-import { PLVExpression } from '../expressions/PLVExpression.js';
-import { RAVExpression } from '../expressions/RAVExpression.js';
-import { FWVExpression } from '../expressions/FWVExpression.js';
-import { BWVExpression } from '../expressions/BWVExpression.js';
-import { PMVExpression } from '../expressions/PMVExpression.js';
-import { CPVExpression } from '../expressions/CPVExpression.js';
-import { RVVExpression } from '../expressions/RVVExpression.js';
-import { TTVExpression } from '../expressions/TTVExpression.js';
-import { ADDVExpression } from '../expressions/ADDVExpression.js';
-import { SUBVExpression } from '../expressions/SUBVExpression.js';
+import { OffsetExpression } from '../expressions/OffsetExpression.js';
+import { PolarExpression } from '../expressions/PolarExpression.js';
+import { ForwardExpression } from '../expressions/ForwardExpression.js';
+import { BackwardExpression } from '../expressions/BackwardExpression.js';
+import { PerpShiftExpression } from '../expressions/PerpShiftExpression.js';
+import { PlaceAtExpression } from '../expressions/PlaceAtExpression.js';
+import { ReverseExpression } from '../expressions/ReverseExpression.js';
+import { ChainExpression } from '../expressions/ChainExpression.js';
+import { VecSumExpression } from '../expressions/VecSumExpression.js';
+import { VecDiffExpression } from '../expressions/VecDiffExpression.js';
 import { SCALEVExpression } from '../expressions/SCALEVExpression.js';
-import { PROVExpression } from '../expressions/PROVExpression.js';
-import { DCVExpression } from '../expressions/DCVExpression.js';
+import { VecProjectExpression } from '../expressions/VecProjectExpression.js';
+import { DecomposeExpression } from '../expressions/DecomposeExpression.js';
 import { AngleExpression } from '../expressions/AngleExpression.js';
 import { Angle2Expression } from '../expressions/Angle2Expression.js';
 import { Angle3Expression } from '../expressions/Angle3Expression.js';
@@ -224,19 +224,19 @@ export class IntrepreterFunctionTable {
 
         // Vector utilities (short aliases)
         registerMultiArg('perpv', PerpVExpression); // perpendicular vector
-        registerMultiArg('plv', PLVExpression);    // parallel vector
-        registerMultiArg('rav', RAVExpression);    // vector from radius and angle (polar)
-        registerMultiArg('fwv', FWVExpression);    // shift vector forward
-        registerMultiArg('bwv', BWVExpression);    // shift vector backward
-        registerMultiArg('pmv', PMVExpression);    // shift vector perpendicular
-        registerMultiArg('cpv', CPVExpression);    // copy vector at new position
-        registerMultiArg('rvv', RVVExpression);    // reverse vector at position
-        registerMultiArg('ttv', TTVExpression);    // tail at tip (for vector addition)
-        registerMultiArg('addv', ADDVExpression);  // add vectors
-        registerMultiArg('subv', SUBVExpression);  // subtract vectors
+        registerMultiArg('offset', OffsetExpression);    // parallel vector
+        registerMultiArg('polar', PolarExpression);    // vector from radius and angle (polar)
+        registerMultiArg('forward', ForwardExpression);    // shift vector forward
+        registerMultiArg('backward', BackwardExpression);    // shift vector backward
+        registerMultiArg('perpshift', PerpShiftExpression);    // shift vector perpendicular
+        registerMultiArg('placeat', PlaceAtExpression);    // copy vector at new position
+        registerMultiArg('reverse', ReverseExpression);    // reverse vector at position
+        registerMultiArg('chain', ChainExpression);    // tail at tip (for vector addition)
+        registerMultiArg('vecsum', VecSumExpression);  // add vectors
+        registerMultiArg('vecdiff', VecDiffExpression);  // subtract vectors
         registerMultiArg('scalev', SCALEVExpression); // scale vector
-        registerMultiArg('prov', PROVExpression);  // project onto vector
-        registerMultiArg('dcv', DCVExpression);    // decompose vector
+        registerMultiArg('vecproject', VecProjectExpression);  // project onto vector
+        registerMultiArg('decompose', DecomposeExpression);    // decompose vector
 
         // Angle expressions
         // angle  = interior (default angle between two rays)

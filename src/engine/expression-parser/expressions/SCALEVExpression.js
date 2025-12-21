@@ -8,7 +8,7 @@
  * Returns the scaled vector. Negative scalar reverses direction.
  *
  * Examples:
- *   V = vec(g, 0, 0, 2, 1)
+ *   V = vector(g, 0, 0, 2, 1)
  *   scalev(g, V, 2)                      // double length: (0,0) -> (4,2)
  *   scalev(g, V, -1)                     // reversed: (0,0) -> (-2,-1)
  */

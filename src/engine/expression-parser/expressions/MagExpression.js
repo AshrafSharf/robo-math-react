@@ -11,7 +11,7 @@
  * Examples:
  *   L = line(g, 0, 0, 3, 4)
  *   mag(L)                    // returns 5 (length of line)
- *   V = vec(g, 0, 0, 3, 4)
+ *   V = vector(g, 0, 0, 3, 4)
  *   mag(V)                    // returns 5 (length of vector)
  *   A = point(g, 0, 0)
  *   B = point(g, 6, 8)
