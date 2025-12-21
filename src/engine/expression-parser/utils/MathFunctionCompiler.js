@@ -46,9 +46,38 @@
  * - "a*sin(b*x + c)"       → parameterized sine (a,b,c from scope)
  */
 
-import { compile } from 'mathjs';
+import { compile, parse } from 'mathjs';
 
 export class MathFunctionCompiler {
+    /**
+     * Extract user-defined variable names from a math expression.
+     * Excludes: function names (sin, cos), built-ins (pi, e), and parameters.
+     * @param {string} expression - Math expression e.g., "a * sin(x) + b"
+     * @param {string[]} parameters - Parameter names to exclude e.g., ['x']
+     * @returns {string[]} User variable names e.g., ['a', 'b']
+     */
+    static extractUserVariables(expression, parameters = ['x']) {
+        const node = parse(expression);
+
+        // Function names to exclude
+        const funcNames = new Set(
+            node.filter(n => n.isFunctionNode).map(f => f.fn.name || f.name)
+        );
+
+        // Built-in constants
+        const builtIns = new Set(['pi', 'e', 'i', 'Infinity', 'NaN']);
+
+        // Parameters to exclude
+        const paramSet = new Set(parameters);
+
+        // Get unique symbol names that are user variables
+        const allSymbols = node.filter(n => n.isSymbolNode).map(s => s.name);
+        return [...new Set(allSymbols)].filter(name =>
+            !funcNames.has(name) &&
+            !builtIns.has(name) &&
+            !paramSet.has(name)
+        );
+    }
     /**
      * Compile a math expression string to a callable function
      * @param {string} expression - Math expression e.g., "x^2 + a*y"

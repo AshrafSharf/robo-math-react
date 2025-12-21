@@ -30,6 +30,16 @@ fromTo(A, 3, 8)           // ALL shapes update together
 fromTo(A, 0, 10, { duration: 2 })  // 2-second animation
 ```
 
+### Animating Plot Parameters
+```
+G = g2d(0, 0, 20, 8, -10, 10, -5, 5, 1)
+a = 1
+P = plot(G, "a * sin(x)")
+fromTo(a, 1, 5)  // Sine wave amplitude animates from 1 to 5
+```
+
+Plot expressions use `getScopeWithDependencies()` to register as dependents of variables in their equation. When `a` changes, the plot is re-resolved and recompiled with the new scope.
+
 ## Design
 
 ### Dependency Tracking
