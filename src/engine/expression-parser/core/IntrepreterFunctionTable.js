@@ -10,10 +10,8 @@ import { VLExpression } from '../expressions/VLExpression.js';
 import { HLExpression } from '../expressions/HLExpression.js';
 import { XLExpression } from '../expressions/XLExpression.js';
 import { RALExpression } from '../expressions/RALExpression.js';
-import { PerpLExpression } from '../expressions/PerpLExpression.js';
 import { PLLExpression } from '../expressions/PLLExpression.js';
-import { PerpVExpression } from '../expressions/PerpVExpression.js';
-import { OffsetExpression } from '../expressions/OffsetExpression.js';
+import { PerpExpression } from '../expressions/PerpExpression.js';
 import { PolarExpression } from '../expressions/PolarExpression.js';
 import { ForwardExpression } from '../expressions/ForwardExpression.js';
 import { BackwardExpression } from '../expressions/BackwardExpression.js';
@@ -48,7 +46,7 @@ import { MidExpression } from '../expressions/MidExpression.js';
 import { R2PExpression } from '../expressions/R2PExpression.js';
 import { A2PExpression } from '../expressions/A2PExpression.js';
 import { MagExpression } from '../expressions/MagExpression.js';
-import { UVExpression } from '../expressions/UVExpression.js';
+import { NormExpression } from '../expressions/NormExpression.js';
 import { MapExpression } from '../expressions/MapExpression.js';
 import { HideExpression } from '../expressions/visibility/HideExpression.js';
 import { ShowExpression } from '../expressions/visibility/ShowExpression.js';
@@ -214,17 +212,15 @@ export class IntrepreterFunctionTable {
         registerMultiArg('def', FunctionDefinitionExpression);
         registerMultiArg('fun', FunctionCallExpression);
 
-        // Line utilities (short aliases)
+        // Line utilities
         registerMultiArg('vl', VLExpression);      // vertical line
         registerMultiArg('hl', HLExpression);      // horizontal line
         registerMultiArg('xl', XLExpression);      // extend line
         registerMultiArg('ral', RALExpression);    // line from radius and angle (polar)
-        registerMultiArg('perpl', PerpLExpression); // perpendicular line
-        registerMultiArg('pll', PLLExpression);    // parallel line
+        registerMultiArg('pll', PLLExpression);    // parallel (line or vector based on input)
+        registerMultiArg('perp', PerpExpression);  // perpendicular (line or vector based on input)
 
-        // Vector utilities (short aliases)
-        registerMultiArg('perpv', PerpVExpression); // perpendicular vector
-        registerMultiArg('offset', OffsetExpression);    // parallel vector
+        // Vector utilities
         registerMultiArg('polar', PolarExpression);    // vector from radius and angle (polar)
         registerMultiArg('forward', ForwardExpression);    // shift vector forward
         registerMultiArg('backward', BackwardExpression);    // shift vector backward
@@ -262,7 +258,7 @@ export class IntrepreterFunctionTable {
 
         // Measurement utilities
         registerMultiArg('mag', MagExpression);     // magnitude/distance
-        registerMultiArg('uv', UVExpression);       // unit vector
+        registerMultiArg('norm', NormExpression);   // normalized direction
         registerMultiArg('map', MapExpression);     // linear interpolation
 
         // Visibility controls

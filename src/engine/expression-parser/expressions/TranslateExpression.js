@@ -1,13 +1,16 @@
 /**
- * Translate expression - translates a shape by dx, dy
+ * Translate expression - translates one or more shapes by dx, dy
  *
  * Syntax:
- *   translate(graph, shape, dx, dy)
+ *   translate(graph, shape, dx, dy)                    - single shape
+ *   translate(graph, shape1, shape2, ..., dx, dy)      - multiple shapes (parallel animation)
  *
- * Supported shapes: point, line, vec, circle, polygon
+ * Supported shapes: point, line, vec, circle, polygon, plot
  *
- * The translated shape is a NEW shape with correct model coordinates.
- * The original shape is unchanged.
+ * The translated shape(s) are NEW shapes with correct model coordinates.
+ * The original shapes are unchanged.
+ *
+ * When translating multiple shapes, returns a ShapeCollection.
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { TranslateCommand } from '../../commands/TranslateCommand.js';
@@ -30,19 +33,23 @@ export class TranslateExpression extends AbstractArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        this.originalData = null;   // Original shape coordinates
-        this.translatedData = null; // Computed translated coordinates
+        this.originalData = null;   // Original shape coordinates (single shape mode)
+        this.translatedData = null; // Computed translated coordinates (single shape mode)
         this.originalShapeName = null;  // 'point', 'line', 'vector', 'circle', 'polygon'
         this.originalShapeType = null;  // GEOMETRY_TYPES value
         this.originalShapeVariableName = null;  // Variable name for registry lookup
         this.dx = 0;  // Translation in x
         this.dy = 0;  // Translation in y
         this.graphExpression = null;
+
+        // Multi-shape mode
+        this.isMultiShape = false;
+        this.shapeDataArray = [];  // [{originalShapeVarName, translatedData, originalShapeName, originalShapeType}, ...]
     }
 
     resolve(context) {
-        // Validate argument count: exactly 4 args (graph, shape, dx, dy)
-        if (this.subExpressions.length !== 4) {
+        // Validate argument count: at least 4 args (graph, shape, dx, dy)
+        if (this.subExpressions.length < 4) {
             this.dispatchError(translate_error_messages.WRONG_ARG_COUNT(this.subExpressions.length));
         }
 
@@ -54,39 +61,107 @@ export class TranslateExpression extends AbstractArithmeticExpression {
             this.dispatchError(translate_error_messages.GRAPH_REQUIRED());
         }
 
-        // Second arg: shape to translate
-        this.subExpressions[1].resolve(context);
-        const shapeExpr = this._getResolvedExpression(context, this.subExpressions[1]);
-        this.originalShapeType = this._getGeometryType(shapeExpr);
-        this.originalShapeName = shapeExpr.getName();
+        // Last two args are dx, dy
+        const dxIndex = this.subExpressions.length - 2;
+        const dyIndex = this.subExpressions.length - 1;
 
-        // Store the variable name for registry lookup
-        this.originalShapeVariableName = this._getVariableName(this.subExpressions[1]);
-
-        if (!TranslateExpression.SUPPORTED_TYPES.has(this.originalShapeType)) {
-            this.dispatchError(translate_error_messages.INVALID_SHAPE(shapeExpr.getName()));
-        }
-
-        // Third arg: dx
-        this.subExpressions[2].resolve(context);
-        const dxExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+        // Resolve and validate dx
+        this.subExpressions[dxIndex].resolve(context);
+        const dxExpr = this._getResolvedExpression(context, this.subExpressions[dxIndex]);
         const dxValues = dxExpr.getVariableAtomicValues();
         if (dxValues.length !== 1) {
             this.dispatchError(translate_error_messages.DX_NOT_NUMBER());
         }
         this.dx = dxValues[0];
 
-        // Fourth arg: dy
-        this.subExpressions[3].resolve(context);
-        const dyExpr = this._getResolvedExpression(context, this.subExpressions[3]);
+        // Resolve and validate dy
+        this.subExpressions[dyIndex].resolve(context);
+        const dyExpr = this._getResolvedExpression(context, this.subExpressions[dyIndex]);
         const dyValues = dyExpr.getVariableAtomicValues();
         if (dyValues.length !== 1) {
             this.dispatchError(translate_error_messages.DY_NOT_NUMBER());
         }
         this.dy = dyValues[0];
 
-        // Extract original data and compute translation based on shape type
-        this._extractAndTranslate(shapeExpr);
+        // Shape args are from index 1 to dxIndex-1
+        const shapeCount = dxIndex - 1;
+        this.isMultiShape = shapeCount > 1;
+
+        if (this.isMultiShape) {
+            // Multi-shape mode: process each shape
+            this.shapeDataArray = [];
+            for (let i = 1; i <= shapeCount; i++) {
+                this.subExpressions[i].resolve(context);
+                const shapeExpr = this._getResolvedExpression(context, this.subExpressions[i]);
+                const shapeType = this._getGeometryType(shapeExpr);
+                const shapeName = shapeExpr.getName();
+                const shapeVarName = this._getVariableName(this.subExpressions[i]);
+
+                if (!TranslateExpression.SUPPORTED_TYPES.has(shapeType)) {
+                    this.dispatchError(translate_error_messages.INVALID_SHAPE(shapeName));
+                }
+
+                // Compute translated data for this shape
+                const translatedData = this._computeTranslatedData(shapeExpr, shapeType);
+
+                this.shapeDataArray.push({
+                    originalShapeVarName: shapeVarName,
+                    translatedData,
+                    originalShapeName: shapeName,
+                    originalShapeType: shapeType
+                });
+            }
+        } else {
+            // Single shape mode: existing behavior
+            this.subExpressions[1].resolve(context);
+            const shapeExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+            this.originalShapeType = this._getGeometryType(shapeExpr);
+            this.originalShapeName = shapeExpr.getName();
+            this.originalShapeVariableName = this._getVariableName(this.subExpressions[1]);
+
+            if (!TranslateExpression.SUPPORTED_TYPES.has(this.originalShapeType)) {
+                this.dispatchError(translate_error_messages.INVALID_SHAPE(this.originalShapeName));
+            }
+
+            // Extract original data and compute translation based on shape type
+            this._extractAndTranslate(shapeExpr);
+        }
+    }
+
+    /**
+     * Compute translated data for a shape (used in multi-shape mode)
+     */
+    _computeTranslatedData(shapeExpr, shapeType) {
+        switch (shapeType) {
+            case GEOMETRY_TYPES.POINT: {
+                const point = this._getPointCoords(shapeExpr);
+                return { point: TransformationUtil.translatePoint(point, this.dx, this.dy) };
+            }
+            case GEOMETRY_TYPES.LINE: {
+                const linePoints = this._getLinePoints(shapeExpr);
+                return TransformationUtil.translateLine(linePoints.start, linePoints.end, this.dx, this.dy);
+            }
+            case GEOMETRY_TYPES.CIRCLE: {
+                const center = shapeExpr.getCenter();
+                const radius = shapeExpr.getRadius();
+                return TransformationUtil.translateCircle(center, radius, this.dx, this.dy);
+            }
+            case GEOMETRY_TYPES.POLYGON: {
+                const vertices = shapeExpr.getVertices();
+                return { vertices: TransformationUtil.translatePolygon(vertices, this.dx, this.dy) };
+            }
+            case GEOMETRY_TYPES.PLOT: {
+                return {
+                    dx: this.dx,
+                    dy: this.dy,
+                    compiledFunction: shapeExpr.getCompiledFunction(),
+                    equation: shapeExpr.getEquation(),
+                    domain: shapeExpr.getDomain()
+                };
+            }
+            default:
+                return null;
+        }
     }
 
     /**
@@ -364,13 +439,29 @@ export class TranslateExpression extends AbstractArithmeticExpression {
     }
 
     getFriendlyToStr() {
+        if (this.isMultiShape) {
+            const shapeNames = this.shapeDataArray.map(s => s.originalShapeName).join(', ');
+            return `Translate[${shapeNames}, (${this.dx}, ${this.dy})]`;
+        }
         return `Translate[${this.originalShapeName}, (${this.dx}, ${this.dy})]`;
     }
 
     /**
-     * Create command for the translated shape
+     * Create command for the translated shape(s)
      */
     toCommand(options = {}) {
+        if (this.isMultiShape) {
+            // Multi-shape mode: pass shape data array
+            return new TranslateCommand(
+                this.graphExpression,
+                this.shapeDataArray,
+                this.dx,
+                this.dy,
+                { ...options, isMultiShape: true }
+            );
+        }
+
+        // Single shape mode: existing behavior
         return new TranslateCommand(
             this.graphExpression,
             this.originalShapeVariableName,
@@ -387,6 +478,9 @@ export class TranslateExpression extends AbstractArithmeticExpression {
      * Can play if we have valid translated data
      */
     canPlay() {
+        if (this.isMultiShape) {
+            return this.shapeDataArray.length > 0;
+        }
         return this.translatedData !== null;
     }
 }

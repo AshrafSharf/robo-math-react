@@ -19,20 +19,20 @@ export const LINE_FUNCTIONS = {
     altSignatures: ['hl(g: Graph, y: number)', 'hl(g: Graph, y: number, x1: number, x2: number)'],
     category: 'Lines'
   },
-  perpl: {
-    name: 'perpl',
-    signature: '(g, line, point)',
-    args: ['g: Graph', 'line: Line', 'point: Point'],
-    description: 'Perpendicular line through point',
-    altSignatures: ['perpl(g: Graph, line: Line, point: Point)', 'perpl(g: Graph, line: Line, point: Point, length: number)'],
+  perp: {
+    name: 'perp',
+    signature: '(g, ref, point)',
+    args: ['g: Graph', 'ref: Line|Vector', 'point: Point'],
+    description: 'Perpendicular through point (line or vector based on input)',
+    altSignatures: ['perp(g, line, point)', 'perp(g, vector, point)', 'perp(g, ref, point, length)'],
     category: 'Lines'
   },
   pll: {
     name: 'pll',
-    signature: '(g, line, point)',
-    args: ['g: Graph', 'line: Line', 'point: Point'],
-    description: 'Parallel line through point',
-    altSignatures: ['pll(g: Graph, line: Line, point: Point)', 'pll(g: Graph, line: Line, point: Point, length: number)'],
+    signature: '(g, ref, point)',
+    args: ['g: Graph', 'ref: Line|Vector', 'point: Point'],
+    description: 'Parallel through point (line or vector based on input)',
+    altSignatures: ['pll(g, line, point)', 'pll(g, vector, point)', 'pll(g, ref, point, length)'],
     category: 'Lines'
   },
   xl: {

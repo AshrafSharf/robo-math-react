@@ -9,7 +9,7 @@ export class CirclePrimitiveShape extends GeomPrimitiveShape {
     if (options.strokeWidth) this.styleObj['stroke-width'] = options.strokeWidth;
     if (options.stroke) this.styleObj.stroke = options.stroke;
     if (options.fill) this.styleObj.fill = options.fill;
-    if (options.fillOpacity !== undefined) this.styleObj['fill-opacity'] = options.fillOpacity;
+    this.styleObj['fill-opacity'] = options.fillOpacity !== undefined ? options.fillOpacity : 0.1;
   }
   generatePath() {
     const cx = this.graphsheet2d.toViewX(this.modelCoordinates[0]);
@@ -51,7 +51,7 @@ export class CirclePrimitiveShape extends GeomPrimitiveShape {
   enableStroke() {
     // Restore stroke and fill after animation
     this.primitiveShape.attr('stroke-dasharray', '0,0');
-    this.primitiveShape.attr('fill-opacity', this.styleObj['fill-opacity'] || 0);
+    this.primitiveShape.attr('fill-opacity', this.styleObj['fill-opacity']);
   }
   
   getPreCompletionHandler() {

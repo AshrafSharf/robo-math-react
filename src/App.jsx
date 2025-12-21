@@ -220,6 +220,7 @@ function AppContent() {
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImport={handleImport}
+        initialExpressions={activePage.commands?.map(cmd => cmd.expression) || []}
       />
     </div>
   );

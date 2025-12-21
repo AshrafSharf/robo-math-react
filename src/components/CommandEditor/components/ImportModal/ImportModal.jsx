@@ -11,7 +11,7 @@ import './ImportModal.css';
 /**
  * Import Modal with CodeMirror editor for bulk importing expressions
  */
-const ImportModal = ({ isOpen, onClose, onImport }) => {
+const ImportModal = ({ isOpen, onClose, onImport, initialExpressions = [] }) => {
   const containerRef = useRef(null);
   const editorViewRef = useRef(null);
   const [value, setValue] = useState('');
@@ -20,8 +20,13 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
   useEffect(() => {
     if (!isOpen || !containerRef.current) return;
 
+    // Build initial content from expressions (filter out empty ones)
+    const initialContent = initialExpressions
+      .filter(expr => expr && expr.trim())
+      .join('\n');
+
     const startState = EditorState.create({
-      doc: '',
+      doc: initialContent,
       extensions: [
         lineNumbers(),
         javascript(),
@@ -89,13 +94,14 @@ const ImportModal = ({ isOpen, onClose, onImport }) => {
     });
 
     editorViewRef.current = view;
+    setValue(initialContent);
     view.focus();
 
     return () => {
       view.destroy();
       editorViewRef.current = null;
     };
-  }, [isOpen]);
+  }, [isOpen, initialExpressions]);
 
   const handleImport = () => {
     if (!value.trim()) return;

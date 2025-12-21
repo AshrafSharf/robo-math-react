@@ -3,22 +3,6 @@
  */
 
 export const VECTOR_FUNCTIONS = {
-  perpv: {
-    name: 'perpv',
-    signature: '(g, line, point)',
-    args: ['g: Graph', 'line: Line', 'point: Point'],
-    description: 'Perpendicular vector through point',
-    altSignatures: ['perpv(g: Graph, line: Line, point: Point)', 'perpv(g: Graph, line: Line, point: Point, length: number)'],
-    category: 'Vectors'
-  },
-  offset: {
-    name: 'offset',
-    signature: '(g, line, point)',
-    args: ['g: Graph', 'line: Line', 'point: Point'],
-    description: 'Parallel vector through point',
-    altSignatures: ['offset(g: Graph, line: Line, point: Point)', 'offset(g: Graph, line: Line, point: Point, length: number)'],
-    category: 'Vectors'
-  },
   polar: {
     name: 'polar',
     signature: '(g, length, angle)',
@@ -27,12 +11,12 @@ export const VECTOR_FUNCTIONS = {
     altSignatures: ['polar(g, length, angle)', 'polar(g, length, angle, fromX, fromY)', 'polar(g, length, angle, fromPoint)'],
     category: 'Vectors'
   },
-  uv: {
-    name: 'uv',
-    signature: '(g, shape)',
-    args: ['g: Graph', 'shape: Line|Vector'],
-    description: 'Unit vector (normalized direction)',
-    altSignatures: ['uv(g, line)', 'uv(g, vector)', 'uv(g, p1, p2)'],
+  norm: {
+    name: 'norm',
+    signature: '(shape)',
+    args: ['shape: Line|Vector'],
+    description: 'Normalized direction (unit vector)',
+    altSignatures: ['norm(line)', 'norm(vector)', 'norm(p1, p2)', 'norm(x, y)'],
     category: 'Vectors'
   },
   forward: {

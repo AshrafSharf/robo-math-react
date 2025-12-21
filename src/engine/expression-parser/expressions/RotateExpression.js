@@ -1,15 +1,20 @@
 /**
- * Rotate expression - rotates a shape around a center point
+ * Rotate expression - rotates one or more shapes around a center point
  *
  * Syntax:
- *   rotate(graph, shape, angle)              - rotate around origin (0, 0)
- *   rotate(graph, shape, angle, cx, cy)      - rotate around point (cx, cy)
- *   rotate(graph, shape, angle, centerPoint) - rotate around a point expression
+ *   rotate(graph, shape, angle)                    - rotate around origin (0, 0)
+ *   rotate(graph, shape, angle, cx, cy)            - rotate around point (cx, cy)
+ *   rotate(graph, shape, angle, centerPoint)       - rotate around a point expression
+ *   rotate(graph, s1, s2, ..., angle)              - rotate multiple shapes (parallel animation)
+ *   rotate(graph, s1, s2, ..., angle, cx, cy)      - rotate multiple shapes around point
+ *   rotate(graph, s1, s2, ..., angle, centerPoint) - rotate multiple shapes around point
  *
  * Supported shapes: point, line, vec, circle, polygon
  *
- * The rotated shape is a NEW shape with correct model coordinates.
- * The original shape is unchanged.
+ * The rotated shape(s) are NEW shapes with correct model coordinates.
+ * The original shapes are unchanged.
+ *
+ * When rotating multiple shapes, returns a ShapeCollection.
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { RotateCommand } from '../../commands/RotateCommand.js';
@@ -31,19 +36,23 @@ export class RotateExpression extends AbstractArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        this.originalData = null;   // Original shape coordinates
-        this.rotatedData = null;    // Computed rotated coordinates
+        this.originalData = null;   // Original shape coordinates (single shape mode)
+        this.rotatedData = null;    // Computed rotated coordinates (single shape mode)
         this.originalShapeName = null;  // 'point', 'line', 'vector', 'circle', 'polygon'
         this.originalShapeType = null;  // GEOMETRY_TYPES value
         this.originalShapeVariableName = null;  // Variable name for registry lookup (e.g., "P")
         this.angle = 0;             // Rotation angle in degrees
         this.center = { x: 0, y: 0 }; // Rotation center
         this.graphExpression = null;
+
+        // Multi-shape mode
+        this.isMultiShape = false;
+        this.shapeDataArray = [];  // [{originalShapeVarName, rotatedData, originalShapeName, originalShapeType}, ...]
     }
 
     resolve(context) {
-        // Validate argument count: 3-5 args (graph, shape, angle, [center or cx, cy])
-        if (this.subExpressions.length < 3 || this.subExpressions.length > 5) {
+        // Validate argument count: at least 3 args (graph, shape, angle)
+        if (this.subExpressions.length < 3) {
             this.dispatchError(rotate_error_messages.WRONG_ARG_COUNT(this.subExpressions.length));
         }
 
@@ -55,46 +64,151 @@ export class RotateExpression extends AbstractArithmeticExpression {
             this.dispatchError(rotate_error_messages.GRAPH_REQUIRED());
         }
 
-        // Second arg: shape to rotate
-        this.subExpressions[1].resolve(context);
-        const shapeExpr = this._getResolvedExpression(context, this.subExpressions[1]);
-        this.originalShapeType = this._getGeometryType(shapeExpr);
-        this.originalShapeName = shapeExpr.getName();
+        // Determine where angle and optional center are located
+        // Strategy: resolve from end to find center (if any), then angle
+        const { angleIndex, center } = this._findAngleAndCenter(context);
+        this.center = center;
 
-        // Store the variable name for registry lookup (e.g., "P" from "rotate(G, P, 45)")
-        this.originalShapeVariableName = this._getVariableName(this.subExpressions[1]);
-
-        if (!RotateExpression.SUPPORTED_TYPES.has(this.originalShapeType)) {
-            this.dispatchError(rotate_error_messages.INVALID_SHAPE(shapeExpr.getName()));
-        }
-
-        // Third arg: angle in degrees
-        this.subExpressions[2].resolve(context);
-        const angleExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+        // Get angle value
+        this.subExpressions[angleIndex].resolve(context);
+        const angleExpr = this._getResolvedExpression(context, this.subExpressions[angleIndex]);
         const angleValues = angleExpr.getVariableAtomicValues();
         if (angleValues.length !== 1) {
             this.dispatchError(rotate_error_messages.ANGLE_NOT_NUMBER());
         }
         this.angle = angleValues[0];
 
-        // Optional: center point (default origin)
-        this.center = { x: 0, y: 0 };
-        if (this.subExpressions.length >= 4) {
-            const centerCoords = [];
-            for (let i = 3; i < this.subExpressions.length; i++) {
-                this.subExpressions[i].resolve(context);
-                const centerExpr = this._getResolvedExpression(context, this.subExpressions[i]);
-                const values = centerExpr.getVariableAtomicValues();
-                centerCoords.push(...values);
-            }
-            if (centerCoords.length !== 2) {
-                this.dispatchError(rotate_error_messages.INVALID_CENTER());
-            }
-            this.center = { x: centerCoords[0], y: centerCoords[1] };
+        // Shape args are from index 1 to angleIndex-1
+        const shapeCount = angleIndex - 1;
+        if (shapeCount < 1) {
+            this.dispatchError(rotate_error_messages.WRONG_ARG_COUNT(this.subExpressions.length));
         }
 
-        // Extract original data and compute rotation based on shape type
-        this._extractAndRotate(shapeExpr);
+        this.isMultiShape = shapeCount > 1;
+
+        if (this.isMultiShape) {
+            // Multi-shape mode: process each shape
+            this.shapeDataArray = [];
+            for (let i = 1; i <= shapeCount; i++) {
+                this.subExpressions[i].resolve(context);
+                const shapeExpr = this._getResolvedExpression(context, this.subExpressions[i]);
+                const shapeType = this._getGeometryType(shapeExpr);
+                const shapeName = shapeExpr.getName();
+                const shapeVarName = this._getVariableName(this.subExpressions[i]);
+
+                if (!RotateExpression.SUPPORTED_TYPES.has(shapeType)) {
+                    this.dispatchError(rotate_error_messages.INVALID_SHAPE(shapeName));
+                }
+
+                // Compute rotated data for this shape
+                const rotatedData = this._computeRotatedData(shapeExpr, shapeType);
+
+                this.shapeDataArray.push({
+                    originalShapeVarName: shapeVarName,
+                    rotatedData,
+                    originalShapeName: shapeName,
+                    originalShapeType: shapeType
+                });
+            }
+        } else {
+            // Single shape mode: existing behavior
+            this.subExpressions[1].resolve(context);
+            const shapeExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+            this.originalShapeType = this._getGeometryType(shapeExpr);
+            this.originalShapeName = shapeExpr.getName();
+            this.originalShapeVariableName = this._getVariableName(this.subExpressions[1]);
+
+            if (!RotateExpression.SUPPORTED_TYPES.has(this.originalShapeType)) {
+                this.dispatchError(rotate_error_messages.INVALID_SHAPE(this.originalShapeName));
+            }
+
+            // Extract original data and compute rotation based on shape type
+            this._extractAndRotate(shapeExpr);
+        }
+    }
+
+    /**
+     * Find angle index and center point by examining args from end
+     * Returns { angleIndex, center }
+     */
+    _findAngleAndCenter(context) {
+        const len = this.subExpressions.length;
+
+        // Try to detect center point pattern from end
+        // Case 1: Last arg is a point expression (like P or point(1,2))
+        // Case 2: Last 2 args are numbers (cx, cy)
+        // Case 3: No center, last arg is angle
+
+        // Resolve last arg to check
+        this.subExpressions[len - 1].resolve(context);
+        const lastExpr = this._getResolvedExpression(context, this.subExpressions[len - 1]);
+        const lastType = this._getGeometryType(lastExpr);
+        const lastValues = lastExpr.getVariableAtomicValues();
+
+        // If last arg is a point geometry type, it's the center
+        if (lastType === GEOMETRY_TYPES.POINT) {
+            return {
+                angleIndex: len - 2,
+                center: { x: lastValues[0], y: lastValues[1] }
+            };
+        }
+
+        // Check if last 2 args are single numbers (cx, cy)
+        if (len >= 4 && lastValues.length === 1) {
+            this.subExpressions[len - 2].resolve(context);
+            const secondLastExpr = this._getResolvedExpression(context, this.subExpressions[len - 2]);
+            const secondLastValues = secondLastExpr.getVariableAtomicValues();
+
+            if (secondLastValues.length === 1) {
+                // Check if third-to-last is also a single number (potential angle)
+                // If so, last 2 are cx, cy
+                if (len >= 5) {
+                    this.subExpressions[len - 3].resolve(context);
+                    const thirdLastExpr = this._getResolvedExpression(context, this.subExpressions[len - 3]);
+                    const thirdLastValues = thirdLastExpr.getVariableAtomicValues();
+                    if (thirdLastValues.length === 1) {
+                        // Pattern: ..., angle, cx, cy
+                        return {
+                            angleIndex: len - 3,
+                            center: { x: secondLastValues[0], y: lastValues[0] }
+                        };
+                    }
+                }
+            }
+        }
+
+        // No center detected, last arg is angle
+        return {
+            angleIndex: len - 1,
+            center: { x: 0, y: 0 }
+        };
+    }
+
+    /**
+     * Compute rotated data for a shape (used in multi-shape mode)
+     */
+    _computeRotatedData(shapeExpr, shapeType) {
+        switch (shapeType) {
+            case GEOMETRY_TYPES.POINT: {
+                const point = this._getPointCoords(shapeExpr);
+                return { point: TransformationUtil.rotatePoint(point, this.angle, this.center) };
+            }
+            case GEOMETRY_TYPES.LINE: {
+                const linePoints = this._getLinePoints(shapeExpr);
+                return TransformationUtil.rotateLine(linePoints.start, linePoints.end, this.angle, this.center);
+            }
+            case GEOMETRY_TYPES.CIRCLE: {
+                const center = shapeExpr.getCenter();
+                const radius = shapeExpr.getRadius();
+                return TransformationUtil.rotateCircle(center, radius, this.angle, this.center);
+            }
+            case GEOMETRY_TYPES.POLYGON: {
+                const vertices = shapeExpr.getVertices();
+                return { vertices: TransformationUtil.rotatePolygon(vertices, this.angle, this.center) };
+            }
+            default:
+                return null;
+        }
     }
 
     /**
@@ -351,13 +465,29 @@ export class RotateExpression extends AbstractArithmeticExpression {
     }
 
     getFriendlyToStr() {
+        if (this.isMultiShape) {
+            const shapeNames = this.shapeDataArray.map(s => s.originalShapeName).join(', ');
+            return `Rotate[${shapeNames}, ${this.angle}°, center(${this.center.x}, ${this.center.y})]`;
+        }
         return `Rotate[${this.originalShapeName}, ${this.angle}°, center(${this.center.x}, ${this.center.y})]`;
     }
 
     /**
-     * Create command for the rotated shape
+     * Create command for the rotated shape(s)
      */
     toCommand(options = {}) {
+        if (this.isMultiShape) {
+            // Multi-shape mode: pass shape data array
+            return new RotateCommand(
+                this.graphExpression,
+                this.shapeDataArray,
+                this.angle,
+                this.center,
+                { ...options, isMultiShape: true }
+            );
+        }
+
+        // Single shape mode: existing behavior
         return new RotateCommand(
             this.graphExpression,
             this.originalShapeVariableName,  // Variable name for registry lookup
@@ -374,6 +504,9 @@ export class RotateExpression extends AbstractArithmeticExpression {
      * Can play if we have valid rotated data
      */
     canPlay() {
+        if (this.isMultiShape) {
+            return this.shapeDataArray.length > 0;
+        }
         return this.rotatedData !== null;
     }
 }

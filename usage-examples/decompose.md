@@ -51,3 +51,8 @@ perp = decompose(g, A, B, "perp")
 | `B = vector(g, 0, 0, 3, 0)` | Horizontal reference vector |
 | `parallel = decompose(g, A, B)` | Parallel component - projection of A along B's direction |
 | `perp = decompose(g, A, B, "perp")` | Perpendicular component - orthogonal to B |
+
+## Animation
+
+The vector draws progressively from tail to tip.
+An arrowhead appears at the end as the drawing completes.

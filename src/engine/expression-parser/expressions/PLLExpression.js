@@ -1,17 +1,16 @@
 /**
- * PLL (Parallel Line) expression - creates a parallel line through a point
+ * PLL (Parallel) expression - creates a parallel line or vector through a point
  *
  * Syntax:
- *   pll(graph, line, point)          - parallel to line, through point
- *   pll(graph, line, point, length)  - with custom length
- *   pll(graph, x1, y1, x2, y2, px, py)        - using raw coordinates
- *   pll(graph, x1, y1, x2, y2, px, py, len)   - with length
+ *   pll(graph, line/vec, point)          - parallel, same length as reference
+ *   pll(graph, line/vec, point, length)  - parallel with custom length
  *
- * Collects 6 coordinates (line + point) or 7 (line + point + length)
- * Uses LineUtil.parallelThrough for calculation
+ * Returns line if input is line, vector if input is vector.
+ * Uses LineUtil.parallelThrough for calculation.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { LineCommand } from '../../commands/LineCommand.js';
+import { VectorCommand } from '../../commands/VectorCommand.js';
 import { LineUtil } from '../../../geom/LineUtil.js';
 
 export class PLLExpression extends AbstractNonArithmeticExpression {
@@ -20,8 +19,9 @@ export class PLLExpression extends AbstractNonArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        this.coordinates = []; // [x1, y1, x2, y2] - the result parallel line
+        this.coordinates = []; // [x1, y1, x2, y2] - the result parallel
         this.graphExpression = null;
+        this.inputType = 'line'; // 'vec' or 'line'
     }
 
     resolve(context) {
@@ -29,14 +29,19 @@ export class PLLExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(`pll() needs arguments.\nUsage: pll(g, line, point)`);
         }
 
-        // First arg is graph reference - resolve and store the actual expression
+        // First arg is graph reference
         this.subExpressions[0].resolve(context);
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        // Detect input type from second argument (line/vec)
+        this.subExpressions[1].resolve(context);
+        const sourceExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.inputType = sourceExpr.getName() === 'line' ? 'line' : 'vec';
 
         // Collect all atomic values from remaining subexpressions
         const allCoords = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
-            this.subExpressions[i].resolve(context);
+            if (i > 1) this.subExpressions[i].resolve(context);
             const atomicValues = this.subExpressions[i].getVariableAtomicValues();
             for (let j = 0; j < atomicValues.length; j++) {
                 allCoords.push(atomicValues[j]);
@@ -129,7 +134,10 @@ export class PLLExpression extends AbstractNonArithmeticExpression {
 
     toCommand(options = {}) {
         const pts = this.getLinePoints();
-        return new LineCommand(this.graphExpression, pts[0], pts[1], options);
+        if (this.inputType === 'line') {
+            return new LineCommand(this.graphExpression, pts[0], pts[1], options);
+        }
+        return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
     }
 
     canPlay() {

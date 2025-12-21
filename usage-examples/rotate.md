@@ -1,0 +1,7 @@
+G = g2d(2, 2, 20, 20)
+A = point(G, -4, 2)
+B = point(G, -2, 2)
+L = line(G, A, B)
+C = circle(G, -3, 0, 1)
+T = polygon(G, -5, -2, -3, -2, -4, -1)
+rotated2 = rotate(G, A, B, L, C, T, -120, -3, 1)

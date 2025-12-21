@@ -433,7 +433,7 @@ export const reflect_error_messages = {
 
 export const rotate_error_messages = {
   WRONG_ARG_COUNT: (count) =>
-    `rotate() needs 3-5 args.\nGot ${count}. rotate(g, shape, angle)`,
+    `rotate() needs at least 3 args.\nGot ${count}. rotate(g, shape, angle) or rotate(g, s1, s2, ..., angle)`,
 
   GRAPH_REQUIRED: () =>
     `rotate() needs a graph.\nFirst argument must be graph.`,
@@ -455,7 +455,7 @@ export const rotate_error_messages = {
 
 export const translate_error_messages = {
   WRONG_ARG_COUNT: (count) =>
-    `translate() needs 4 args.\nGot ${count}. translate(g, shape, dx, dy)`,
+    `translate() needs at least 4 args.\nGot ${count}. translate(g, shape, dx, dy) or translate(g, s1, s2, ..., dx, dy)`,
 
   GRAPH_REQUIRED: () =>
     `translate() needs a graph.\nFirst argument must be graph.`,
