@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import Draggable from 'react-draggable';
 import { EditorView, lineNumbers, keymap } from '@codemirror/view';
 import { EditorState, Prec } from '@codemirror/state';
 import { javascript } from '@codemirror/lang-javascript';
@@ -14,7 +15,44 @@ import './ImportModal.css';
 const ImportModal = ({ isOpen, onClose, onImport, initialExpressions = [] }) => {
   const containerRef = useRef(null);
   const editorViewRef = useRef(null);
+  const nodeRef = useRef(null);
+  const resizeRef = useRef(null);
   const [value, setValue] = useState('');
+  const [size, setSize] = useState({ width: 700, height: 500 });
+
+  // Resize handling
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleMouseMove = (e) => {
+      if (!resizeRef.current) return;
+      const rect = nodeRef.current.getBoundingClientRect();
+      const newWidth = Math.min(Math.max(400, e.clientX - rect.left + 10), window.innerWidth - rect.left - 20);
+      const newHeight = Math.min(Math.max(300, e.clientY - rect.top + 10), window.innerHeight - rect.top - 20);
+      setSize({ width: newWidth, height: newHeight });
+    };
+
+    const handleMouseUp = () => {
+      resizeRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isOpen]);
+
+  const startResize = (e) => {
+    e.preventDefault();
+    resizeRef.current = true;
+    document.body.style.cursor = 'se-resize';
+    document.body.style.userSelect = 'none';
+  };
 
   // Initialize CodeMirror
   useEffect(() => {
@@ -58,8 +96,7 @@ const ImportModal = ({ isOpen, onClose, onImport, initialExpressions = [] }) => 
           },
           ".cm-content": {
             padding: "8px 0",
-            caretColor: "#000",
-            minHeight: "250px"
+            caretColor: "#000"
           },
           ".cm-line": {
             padding: "2px 8px",
@@ -69,8 +106,7 @@ const ImportModal = ({ isOpen, onClose, onImport, initialExpressions = [] }) => 
             outline: "none"
           },
           ".cm-scroller": {
-            overflow: "auto",
-            maxHeight: "400px"
+            overflow: "auto"
           },
           ".cm-gutters": {
             backgroundColor: "#f7f7f7",
@@ -127,27 +163,35 @@ const ImportModal = ({ isOpen, onClose, onImport, initialExpressions = [] }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="import-modal-overlay" onClick={onClose} onKeyDown={handleKeyDown}>
-      <div className="import-modal" onClick={e => e.stopPropagation()}>
-        <div className="import-modal-header">
-          <h3>Import Expressions</h3>
-          <button className="import-modal-close" onClick={onClose}>
-            <i className="glyphicon glyphicon-remove" />
-          </button>
+    <div className="import-modal-overlay" onKeyDown={handleKeyDown}>
+      <Draggable handle=".import-modal-header" nodeRef={nodeRef} bounds="parent">
+        <div
+          ref={nodeRef}
+          className="import-modal"
+          style={{ width: size.width, height: size.height }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="import-modal-header">
+            <h3>Import Expressions</h3>
+            <button className="import-modal-close" onClick={onClose}>
+              <i className="glyphicon glyphicon-remove" />
+            </button>
+          </div>
+          <div className="import-modal-body">
+            <p className="import-modal-hint">Enter one expression per line:</p>
+            <div ref={containerRef} className="import-modal-editor" />
+          </div>
+          <div className="import-modal-footer">
+            <button className="btn btn-default" onClick={onClose}>
+              Cancel
+            </button>
+            <button className="btn btn-primary" onClick={handleImport}>
+              Import
+            </button>
+          </div>
+          <div className="import-modal-resize" onMouseDown={startResize} />
         </div>
-        <div className="import-modal-body">
-          <p className="import-modal-hint">Enter one expression per line:</p>
-          <div ref={containerRef} className="import-modal-editor" />
-        </div>
-        <div className="import-modal-footer">
-          <button className="btn btn-default" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="btn btn-primary" onClick={handleImport}>
-            Import
-          </button>
-        </div>
-      </div>
+      </Draggable>
     </div>
   );
 };

@@ -4,37 +4,39 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1050;
 }
 
 .import-modal {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   background: white;
-  border-radius: 4px;
-  width: 600px;
-  max-width: 90vw;
-  max-height: 90vh;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
 }
 
 .import-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e5e5e5;
-  background: #f8f8f8;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  background: #f5f5f5;
+  cursor: move;
+  user-select: none;
 }
 
 .import-modal-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
+  color: #555;
 }
 
 .import-modal-close {
@@ -42,7 +44,7 @@
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: #666;
+  color: #888;
   line-height: 1;
 }
 
@@ -51,9 +53,11 @@
 }
 
 .import-modal-body {
-  padding: 0;
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .import-modal-hint {
@@ -63,28 +67,31 @@
   font-size: 12px;
   background: #fafafa;
   border-bottom: 1px solid #eee;
+  flex-shrink: 0;
 }
 
 .import-modal-editor {
-  border: none;
+  flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .import-modal-editor .cm-editor {
-  border: none;
+  height: 100%;
 }
 
-.import-modal-editor .cm-editor.cm-focused {
-  outline: none;
+.import-modal-editor .cm-scroller {
+  height: 100%;
 }
 
 .import-modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 12px 16px;
-  border-top: 1px solid #e5e5e5;
-  background: #f8f8f8;
+  padding: 10px 12px;
+  border-top: 1px solid #ddd;
+  background: #f5f5f5;
+  flex-shrink: 0;
 }
 
 .import-modal-footer .btn {
@@ -114,4 +121,14 @@
 .import-modal-footer .btn-primary:hover {
   background: #286090;
   border-color: #204d74;
+}
+
+.import-modal-resize {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, #ccc 50%, #ccc 60%, transparent 60%, transparent 70%, #ccc 70%, #ccc 80%, transparent 80%);
 }

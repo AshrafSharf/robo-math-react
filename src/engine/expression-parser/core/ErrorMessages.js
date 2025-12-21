@@ -477,7 +477,7 @@ export const translate_error_messages = {
 
 export const scale_error_messages = {
   WRONG_ARG_COUNT: (count) =>
-    `scale() needs 3-5 args.\nGot ${count}. scale(g, shape, factor)`,
+    `scale() needs at least 3 args.\nGot ${count}. scale(g, shape, factor) or scale(g, s1, s2, ..., factor)`,
 
   GRAPH_REQUIRED: () =>
     `scale() needs a graph.\nFirst argument must be graph.`,
