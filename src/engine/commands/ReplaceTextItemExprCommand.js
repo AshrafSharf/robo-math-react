@@ -1,8 +1,8 @@
 /**
- * ReplaceTextItemExprCommand - Replaces a TextItem from an inline textat expression
+ * ReplaceTextItemExprCommand - Replaces a TextItem from an inline item expression
  *
- * Used when replace() is called with an inline textat expression: replace("x", textat(thetas, 0))
- * The textItem is looked up via the textat expression's collection variable.
+ * Used when replace() is called with an inline item expression: replace("x", item(thetas, 0))
+ * The textItem is looked up via the item expression's collection variable.
  *
  * Extends ReplaceTextItemCommand - only overrides doInit() to handle collection+index lookup.
  */
@@ -30,7 +30,7 @@ export class ReplaceTextItemExprCommand extends ReplaceTextItemCommand {
 
             // Get the collection and register with a temp name
             const collection = this.collectionInlineExpression.getResolvedValue();
-            this.targetVariableName = `__replace_textat_inline_${Date.now()}`;
+            this.targetVariableName = `__replace_item_inline_${Date.now()}`;
             this.commandContext.shapeRegistry[this.targetVariableName] = collection;
         }
 
@@ -52,7 +52,7 @@ export class ReplaceTextItemExprCommand extends ReplaceTextItemCommand {
         this.targetTextItems.push(textItem);
 
         // Register textItem with temp name for FadeOutCommand
-        const tempName = `__replace_textat_${Date.now()}`;
+        const tempName = `__replace_item_${Date.now()}`;
         this.commandContext.shapeRegistry[tempName] = textItem;
 
         // Create FadeOutCommand for the target

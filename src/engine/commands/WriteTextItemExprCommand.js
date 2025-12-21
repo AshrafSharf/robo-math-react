@@ -1,8 +1,8 @@
 /**
- * WriteTextItemExprCommand - Animates a TextItem from an inline textat expression
+ * WriteTextItemExprCommand - Animates a TextItem from an inline item expression
  *
- * Used when write() is called with an inline textat expression: write(textat(thetas, 0))
- * The textItem is looked up via the textat expression's collection variable.
+ * Used when write() is called with an inline item expression: write(item(thetas, 0))
+ * The textItem is looked up via the item expression's collection variable.
  */
 import { BaseCommand } from './BaseCommand.js';
 import { RewriteOnlyEffect } from '../../mathtext/effects/rewrite-only-effect.js';

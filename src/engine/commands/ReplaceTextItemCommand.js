@@ -65,7 +65,7 @@ export class ReplaceTextItemCommand extends BaseCommand {
                 return;
             }
         } else {
-            // It's a single TextItem (from textat)
+            // It's a single TextItem (from item)
             this.targetTextItems.push(target);
         }
 

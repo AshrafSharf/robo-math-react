@@ -3,7 +3,7 @@
  *
  * Syntax:
  *   replace("latex", textItemVar)           - Replace using variable
- *   replace("latex", textat(collection, i)) - Replace using inline textat
+ *   replace("latex", item(collection, i)) - Replace using inline item
  *   replace("latex", subonly(M, "pattern")) - Replace using inline subonly
  *   replace("latex", subwithout(M, "pat"))  - Replace using inline subwithout
  *
@@ -25,10 +25,10 @@ export class ReplaceTextItemExpression extends AbstractNonArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.sourceString = null;
-        // Mode: 'variable', 'textat_expr', or 'sub_expr' (subonly/subwithout)
+        // Mode: 'variable', 'item_expr', or 'sub_expr' (subonly/subwithout)
         this.mode = null;
         this.targetVariableName = null;
-        // For inline textat
+        // For inline item
         this.textItemExpression = null;
         // For inline subonly/subwithout
         this.subExpression = null;
@@ -44,14 +44,14 @@ export class ReplaceTextItemExpression extends AbstractNonArithmeticExpression {
         sourceExpr.resolve(context);
         this.sourceString = sourceExpr.getStringValue();
 
-        // Arg 1: target TextItem, TextItemCollection, or inline textat
+        // Arg 1: target TextItem, TextItemCollection, or inline item
         const targetExpr = this.subExpressions[1];
         targetExpr.resolve(context);
 
         // Check what kind of target expression we have
         const targetName = targetExpr.getName && targetExpr.getName();
-        if (targetName === 'textat') {
-            this.mode = 'textat_expr';
+        if (targetName === 'item') {
+            this.mode = 'item_expr';
             this.textItemExpression = targetExpr;
         } else if (targetName === 'subonly' || targetName === 'subwithout') {
             this.mode = 'sub_expr';
@@ -60,7 +60,7 @@ export class ReplaceTextItemExpression extends AbstractNonArithmeticExpression {
             this.mode = 'variable';
             this.targetVariableName = targetExpr.variableName;
         } else {
-            this.dispatchError('replace() second argument must be a TextItem variable, textat(), subonly(), or subwithout() expression');
+            this.dispatchError('replace() second argument must be a TextItem variable, item(), subonly(), or subwithout() expression');
         }
 
         this.isResolved = true;
@@ -80,12 +80,12 @@ export class ReplaceTextItemExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand() {
-        if (this.mode === 'textat_expr') {
+        if (this.mode === 'item_expr') {
             return new ReplaceTextItemExprCommand(
                 this.sourceString,
                 this.textItemExpression.collectionVariableName,
                 this.textItemExpression.index,
-                this.textItemExpression.inlineExpression  // Pass inline expression if textat has one
+                this.textItemExpression.inlineExpression  // Pass inline expression if item has one
             );
         }
         if (this.mode === 'sub_expr') {

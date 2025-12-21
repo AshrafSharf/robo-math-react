@@ -9,11 +9,12 @@ import { Base3DCommand } from './Base3DCommand.js';
 import { animateVectorSlide } from '../../../3d/common/animator/vector_slide_animator.js';
 
 export class Forward3DCommand extends Base3DCommand {
-    constructor(vectorExpression, originalShapeVarName, scalar, options = {}) {
+    constructor(vectorExpression, originalShapeVarName, scalar, inputType = 'vec', options = {}) {
         super();
         this.vectorExpression = vectorExpression;
         this.originalShapeVarName = originalShapeVarName;
         this.scalar = scalar;
+        this.inputType = inputType; // 'vector3d' or 'line3d'
         this.options = options;
 
         this.graphContainer = null;
@@ -27,7 +28,7 @@ export class Forward3DCommand extends Base3DCommand {
     async doInit() {
         const graphExpression = this.vectorExpression.graphExpression;
         if (!graphExpression || typeof graphExpression.getGrapher !== 'function') {
-            throw new Error('forward3d() requires a vector3d with a valid g3d graph');
+            throw new Error('forward3d() requires a vector3d or line3d with a valid g3d graph');
         }
 
         this.graphContainer = graphExpression.getGrapher();
@@ -67,15 +68,19 @@ export class Forward3DCommand extends Base3DCommand {
 
     async play() {
         const scene = this.graphContainer.getScene();
-        const color = this.options.styleOptions?.color;
-        const vectorOptions = {
-            shaftRadius: this.options.styleOptions?.strokeWidth,
-            headLength: this.options.styleOptions?.headLength,
-            headRadius: this.options.styleOptions?.headRadius
-        };
+        const styleOptions = this.options.styleOptions || {};
 
-        const createVector = (start, end) => {
-            return this.graphContainer.diagram3d.vector(start, end, '', color, vectorOptions);
+        const createShape = (start, end) => {
+            if (this.inputType === 'line3d') {
+                return this.graphContainer.diagram3d.lineByTwoPoints(start, end, styleOptions.color, {
+                    strokeWidth: styleOptions.strokeWidth
+                });
+            }
+            return this.graphContainer.diagram3d.vector(start, end, '', styleOptions.color, {
+                shaftRadius: styleOptions.strokeWidth,
+                headLength: styleOptions.headLength,
+                headRadius: styleOptions.headRadius
+            });
         };
 
         return new Promise((resolve) => {
@@ -84,13 +89,13 @@ export class Forward3DCommand extends Base3DCommand {
                 this.vectorEnd,
                 this.forwardStart,
                 this.forwardEnd,
-                createVector,
+                createShape,
                 scene,
                 {
                     duration: 2,
-                    onComplete: (finalVector) => {
-                        this.forwardShape = finalVector;
-                        this.commandResult = finalVector;
+                    onComplete: (finalShape) => {
+                        this.forwardShape = finalShape;
+                        this.commandResult = finalShape;
                         resolve();
                     }
                 }
@@ -99,12 +104,28 @@ export class Forward3DCommand extends Base3DCommand {
     }
 
     async directPlay() {
-        this.forwardShape = this.graphContainer.diagram3d.vector(
-            this.forwardStart,
-            this.forwardEnd,
-            '',
-            this.options.styleOptions?.color
-        );
+        const styleOptions = this.options.styleOptions || {};
+
+        if (this.inputType === 'line3d') {
+            this.forwardShape = this.graphContainer.diagram3d.lineByTwoPoints(
+                this.forwardStart,
+                this.forwardEnd,
+                styleOptions.color,
+                { strokeWidth: styleOptions.strokeWidth }
+            );
+        } else {
+            this.forwardShape = this.graphContainer.diagram3d.vector(
+                this.forwardStart,
+                this.forwardEnd,
+                '',
+                styleOptions.color,
+                {
+                    shaftRadius: styleOptions.strokeWidth,
+                    headLength: styleOptions.headLength,
+                    headRadius: styleOptions.headRadius
+                }
+            );
+        }
         this.commandResult = this.forwardShape;
     }
 
@@ -115,35 +136,7 @@ export class Forward3DCommand extends Base3DCommand {
             scene.remove(this.forwardShape);
         }
 
-        const color = this.options.styleOptions?.color;
-        const vectorOptions = {
-            shaftRadius: this.options.styleOptions?.strokeWidth,
-            headLength: this.options.styleOptions?.headLength,
-            headRadius: this.options.styleOptions?.headRadius
-        };
-
-        const createVector = (start, end) => {
-            return this.graphContainer.diagram3d.vector(start, end, '', color, vectorOptions);
-        };
-
-        return new Promise((resolve) => {
-            animateVectorSlide(
-                this.vectorStart,
-                this.vectorEnd,
-                this.forwardStart,
-                this.forwardEnd,
-                createVector,
-                scene,
-                {
-                    duration: 2,
-                    onComplete: (finalVector) => {
-                        this.forwardShape = finalVector;
-                        this.commandResult = finalVector;
-                        resolve();
-                    }
-                }
-            );
-        });
+        return this.play();
     }
 
     getLabelPosition() {

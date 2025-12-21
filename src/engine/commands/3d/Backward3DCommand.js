@@ -9,11 +9,12 @@ import { Base3DCommand } from './Base3DCommand.js';
 import { animateVectorSlide } from '../../../3d/common/animator/vector_slide_animator.js';
 
 export class Backward3DCommand extends Base3DCommand {
-    constructor(vectorExpression, originalShapeVarName, scalar, options = {}) {
+    constructor(vectorExpression, originalShapeVarName, scalar, inputType = 'vec', options = {}) {
         super();
         this.vectorExpression = vectorExpression;
         this.originalShapeVarName = originalShapeVarName;
         this.scalar = scalar;
+        this.inputType = inputType; // 'vector3d' or 'line3d'
         this.options = options;
 
         this.graphContainer = null;
@@ -27,7 +28,7 @@ export class Backward3DCommand extends Base3DCommand {
     async doInit() {
         const graphExpression = this.vectorExpression.graphExpression;
         if (!graphExpression || typeof graphExpression.getGrapher !== 'function') {
-            throw new Error('backward3d() requires a vector3d with a valid g3d graph');
+            throw new Error('backward3d() requires a vector3d or line3d with a valid g3d graph');
         }
 
         this.graphContainer = graphExpression.getGrapher();
@@ -67,15 +68,19 @@ export class Backward3DCommand extends Base3DCommand {
 
     async play() {
         const scene = this.graphContainer.getScene();
-        const color = this.options.styleOptions?.color;
-        const vectorOptions = {
-            shaftRadius: this.options.styleOptions?.strokeWidth,
-            headLength: this.options.styleOptions?.headLength,
-            headRadius: this.options.styleOptions?.headRadius
-        };
+        const styleOptions = this.options.styleOptions || {};
 
-        const createVector = (start, end) => {
-            return this.graphContainer.diagram3d.vector(start, end, '', color, vectorOptions);
+        const createShape = (start, end) => {
+            if (this.inputType === 'line3d') {
+                return this.graphContainer.diagram3d.lineByTwoPoints(start, end, styleOptions.color, {
+                    strokeWidth: styleOptions.strokeWidth
+                });
+            }
+            return this.graphContainer.diagram3d.vector(start, end, '', styleOptions.color, {
+                shaftRadius: styleOptions.strokeWidth,
+                headLength: styleOptions.headLength,
+                headRadius: styleOptions.headRadius
+            });
         };
 
         return new Promise((resolve) => {
@@ -84,13 +89,13 @@ export class Backward3DCommand extends Base3DCommand {
                 this.vectorEnd,
                 this.backwardStart,
                 this.backwardEnd,
-                createVector,
+                createShape,
                 scene,
                 {
                     duration: 2,
-                    onComplete: (finalVector) => {
-                        this.backwardShape = finalVector;
-                        this.commandResult = finalVector;
+                    onComplete: (finalShape) => {
+                        this.backwardShape = finalShape;
+                        this.commandResult = finalShape;
                         resolve();
                     }
                 }
@@ -99,12 +104,28 @@ export class Backward3DCommand extends Base3DCommand {
     }
 
     async directPlay() {
-        this.backwardShape = this.graphContainer.diagram3d.vector(
-            this.backwardStart,
-            this.backwardEnd,
-            '',
-            this.options.styleOptions?.color
-        );
+        const styleOptions = this.options.styleOptions || {};
+
+        if (this.inputType === 'line3d') {
+            this.backwardShape = this.graphContainer.diagram3d.lineByTwoPoints(
+                this.backwardStart,
+                this.backwardEnd,
+                styleOptions.color,
+                { strokeWidth: styleOptions.strokeWidth }
+            );
+        } else {
+            this.backwardShape = this.graphContainer.diagram3d.vector(
+                this.backwardStart,
+                this.backwardEnd,
+                '',
+                styleOptions.color,
+                {
+                    shaftRadius: styleOptions.strokeWidth,
+                    headLength: styleOptions.headLength,
+                    headRadius: styleOptions.headRadius
+                }
+            );
+        }
         this.commandResult = this.backwardShape;
     }
 
@@ -115,35 +136,7 @@ export class Backward3DCommand extends Base3DCommand {
             scene.remove(this.backwardShape);
         }
 
-        const color = this.options.styleOptions?.color;
-        const vectorOptions = {
-            shaftRadius: this.options.styleOptions?.strokeWidth,
-            headLength: this.options.styleOptions?.headLength,
-            headRadius: this.options.styleOptions?.headRadius
-        };
-
-        const createVector = (start, end) => {
-            return this.graphContainer.diagram3d.vector(start, end, '', color, vectorOptions);
-        };
-
-        return new Promise((resolve) => {
-            animateVectorSlide(
-                this.vectorStart,
-                this.vectorEnd,
-                this.backwardStart,
-                this.backwardEnd,
-                createVector,
-                scene,
-                {
-                    duration: 2,
-                    onComplete: (finalVector) => {
-                        this.backwardShape = finalVector;
-                        this.commandResult = finalVector;
-                        resolve();
-                    }
-                }
-            );
-        });
+        return this.play();
     }
 
     getLabelPosition() {

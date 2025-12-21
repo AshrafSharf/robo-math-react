@@ -50,5 +50,29 @@ export const TRANSFORM_FUNCTIONS = {
     description: 'Scale shape around center (default: origin)',
     altSignatures: ['scale(g, shape, factor)', 'scale(g, shape, factor, cx, cy)', 'scale(g, shape, factor, centerPoint)'],
     category: 'Transforms'
+  },
+  translate3d: {
+    name: 'translate3d',
+    signature: '(shape, dx, dy, dz)',
+    args: ['shape: 3D shape(s)', 'dx: number', 'dy: number', 'dz: number'],
+    description: 'Translate 3D shape by offset',
+    altSignatures: ['translate3d(V, 1, 2, 3)', 'translate3d(V1, V2, 1, 2, 3)', 'translate3d(V, deltaVector)'],
+    category: 'Transforms'
+  },
+  rotate3d: {
+    name: 'rotate3d',
+    signature: '(shape, angle, axis)',
+    args: ['shape: 3D shape(s)', 'angle: number', 'axis: "x"|"y"|"z"'],
+    description: 'Rotate 3D shape around axis',
+    altSignatures: ['rotate3d(V, 45, "x")', 'rotate3d(V1, V2, 90, "y")', 'rotate3d(V, angle, cx, cy, cz, axis)'],
+    category: 'Transforms'
+  },
+  scale3d: {
+    name: 'scale3d',
+    signature: '(shape, factor)',
+    args: ['shape: 3D shape(s)', 'factor: number'],
+    description: 'Scale 3D shape from origin',
+    altSignatures: ['scale3d(V, 2)', 'scale3d(V1, V2, 0.5)', 'scale3d(V, factor, cx, cy, cz)'],
+    category: 'Transforms'
   }
 };

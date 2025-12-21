@@ -1,0 +1,7 @@
+G = g2d(2, 2, 30,30)
+A = point(G, -4, 2)
+B = point(G, -2, 2)
+L = line(G, A, B)
+C = circle(G, -3, 0, 1)
+T = polygon(G, -5, -2, -3, -2, -4, -1)
+seq(translate(G, A, B, L, C, T, 6, 0),rotate(G, A, B, L, C, T, 45),scale(G, A, B, L, C, T, 0.5, -3, 1))

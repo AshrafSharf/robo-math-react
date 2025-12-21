@@ -1,20 +1,21 @@
 /**
- * Move3DCommand - Command for creating and animating a 3D vector moving to a new position
+ * Move3DCommand - Command for creating and animating a 3D vector or line moving to a new position
  *
- * Creates a NEW vector at the target position.
- * Animation: shows vector sliding from original to target position.
- * Pen follows the tail (start point) of the vector.
+ * Creates a NEW vector/line at the target position.
+ * Animation: shows vector/line sliding from original to target position.
+ * Pen follows the tail (start point) of the vector/line.
  */
 import { Base3DCommand } from './Base3DCommand.js';
 import { animateVectorSlide } from '../../../3d/common/animator/vector_slide_animator.js';
 
 export class Move3DCommand extends Base3DCommand {
-    constructor(vectorExpression, originalShapeVarName, targetPosition, movedCoords, options = {}) {
+    constructor(vectorExpression, originalShapeVarName, targetPosition, movedCoords, inputType = 'vector3d', options = {}) {
         super();
         this.vectorExpression = vectorExpression;
         this.originalShapeVarName = originalShapeVarName;
         this.targetPosition = targetPosition;
         this.movedCoords = movedCoords;
+        this.inputType = inputType; // 'vector3d' or 'line3d'
         this.options = options;
 
         this.graphContainer = null;
@@ -28,7 +29,7 @@ export class Move3DCommand extends Base3DCommand {
     async doInit() {
         const graphExpression = this.vectorExpression.graphExpression;
         if (!graphExpression || typeof graphExpression.getGrapher !== 'function') {
-            throw new Error('move3d() requires a vector3d with a valid g3d graph');
+            throw new Error('move3d() requires a vector3d or line3d with a valid g3d graph');
         }
 
         this.graphContainer = graphExpression.getGrapher();
@@ -56,15 +57,19 @@ export class Move3DCommand extends Base3DCommand {
 
     async play() {
         const scene = this.graphContainer.getScene();
-        const color = this.options.styleOptions?.color;
-        const vectorOptions = {
-            shaftRadius: this.options.styleOptions?.strokeWidth,
-            headLength: this.options.styleOptions?.headLength,
-            headRadius: this.options.styleOptions?.headRadius
-        };
+        const styleOptions = this.options.styleOptions || {};
 
-        const createVector = (start, end) => {
-            return this.graphContainer.diagram3d.vector(start, end, '', color, vectorOptions);
+        const createShape = (start, end) => {
+            if (this.inputType === 'line3d') {
+                return this.graphContainer.diagram3d.lineByTwoPoints(start, end, styleOptions.color, {
+                    strokeWidth: styleOptions.strokeWidth
+                });
+            }
+            return this.graphContainer.diagram3d.vector(start, end, '', styleOptions.color, {
+                shaftRadius: styleOptions.strokeWidth,
+                headLength: styleOptions.headLength,
+                headRadius: styleOptions.headRadius
+            });
         };
 
         return new Promise((resolve) => {
@@ -73,13 +78,13 @@ export class Move3DCommand extends Base3DCommand {
                 this.originalEnd,
                 this.movedStart,
                 this.movedEnd,
-                createVector,
+                createShape,
                 scene,
                 {
                     duration: 2,
-                    onComplete: (finalVector) => {
-                        this.movedShape = finalVector;
-                        this.commandResult = finalVector;
+                    onComplete: (finalShape) => {
+                        this.movedShape = finalShape;
+                        this.commandResult = finalShape;
                         resolve();
                     }
                 }
@@ -88,12 +93,28 @@ export class Move3DCommand extends Base3DCommand {
     }
 
     async directPlay() {
-        this.movedShape = this.graphContainer.diagram3d.vector(
-            this.movedStart,
-            this.movedEnd,
-            '',
-            this.options.styleOptions?.color
-        );
+        const styleOptions = this.options.styleOptions || {};
+
+        if (this.inputType === 'line3d') {
+            this.movedShape = this.graphContainer.diagram3d.lineByTwoPoints(
+                this.movedStart,
+                this.movedEnd,
+                styleOptions.color,
+                { strokeWidth: styleOptions.strokeWidth }
+            );
+        } else {
+            this.movedShape = this.graphContainer.diagram3d.vector(
+                this.movedStart,
+                this.movedEnd,
+                '',
+                styleOptions.color,
+                {
+                    shaftRadius: styleOptions.strokeWidth,
+                    headLength: styleOptions.headLength,
+                    headRadius: styleOptions.headRadius
+                }
+            );
+        }
         this.commandResult = this.movedShape;
     }
 
@@ -104,35 +125,7 @@ export class Move3DCommand extends Base3DCommand {
             scene.remove(this.movedShape);
         }
 
-        const color = this.options.styleOptions?.color;
-        const vectorOptions = {
-            shaftRadius: this.options.styleOptions?.strokeWidth,
-            headLength: this.options.styleOptions?.headLength,
-            headRadius: this.options.styleOptions?.headRadius
-        };
-
-        const createVector = (start, end) => {
-            return this.graphContainer.diagram3d.vector(start, end, '', color, vectorOptions);
-        };
-
-        return new Promise((resolve) => {
-            animateVectorSlide(
-                this.originalStart,
-                this.originalEnd,
-                this.movedStart,
-                this.movedEnd,
-                createVector,
-                scene,
-                {
-                    duration: 2,
-                    onComplete: (finalVector) => {
-                        this.movedShape = finalVector;
-                        this.commandResult = finalVector;
-                        resolve();
-                    }
-                }
-            );
-        });
+        return this.play();
     }
 
     getLabelPosition() {

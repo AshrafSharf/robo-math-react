@@ -509,4 +509,34 @@ export class ScaleExpression extends AbstractArithmeticExpression {
         }
         return this.scaledData !== null;
     }
+
+    // ===== Collection access methods (for item() expression) =====
+
+    /**
+     * Get shape data at index (for item() extraction)
+     * @param {number} index
+     * @returns {Object|null} Shape data or null if index out of bounds
+     */
+    getShapeDataAt(index) {
+        if (!this.isMultiShape || index < 0 || index >= this.shapeDataArray.length) {
+            return null;
+        }
+        return this.shapeDataArray[index];
+    }
+
+    /**
+     * Get collection size
+     * @returns {number}
+     */
+    getCollectionSize() {
+        return this.isMultiShape ? this.shapeDataArray.length : 0;
+    }
+
+    /**
+     * Check if this is a collection (multi-shape mode)
+     * @returns {boolean}
+     */
+    isCollection() {
+        return this.isMultiShape;
+    }
 }

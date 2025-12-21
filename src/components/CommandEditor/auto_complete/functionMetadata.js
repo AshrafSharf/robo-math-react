@@ -5,7 +5,7 @@
  * Functions are organized by category in separate files under ./functions/
  */
 
-import { GEOMETRY_FUNCTIONS, GEOMETRY_3D_FUNCTIONS } from './functions/geometryFunctions.js';
+import { GEOMETRY_FUNCTIONS, GEOMETRY_3D_FUNCTIONS, VECTOR_3D_FUNCTIONS } from './functions/geometryFunctions.js';
 import { ANGLE_FUNCTIONS } from './functions/angleFunctions.js';
 import { LINE_FUNCTIONS } from './functions/lineFunctions.js';
 import { VECTOR_FUNCTIONS } from './functions/vectorFunctions.js';
@@ -21,6 +21,7 @@ import { UTILITY_FUNCTIONS, VISIBILITY_FUNCTIONS, FUNCTION_DEFINITION_FUNCTIONS 
 export const FUNCTION_METADATA = {
   ...GEOMETRY_FUNCTIONS,
   ...GEOMETRY_3D_FUNCTIONS,
+  ...VECTOR_3D_FUNCTIONS,
   ...ANGLE_FUNCTIONS,
   ...LINE_FUNCTIONS,
   ...VECTOR_FUNCTIONS,

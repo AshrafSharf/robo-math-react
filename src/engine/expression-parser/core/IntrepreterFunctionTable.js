@@ -70,6 +70,18 @@ import { Forward3DExpression } from '../expressions/3d/Forward3DExpression.js';
 import { Backward3DExpression } from '../expressions/3d/Backward3DExpression.js';
 import { Move3DExpression } from '../expressions/3d/Move3DExpression.js';
 import { Reverse3DExpression } from '../expressions/3d/Reverse3DExpression.js';
+import { Rotate3DExpression } from '../expressions/3d/Rotate3DExpression.js';
+import { Translate3DExpression } from '../expressions/3d/Translate3DExpression.js';
+import { Scale3DExpression } from '../expressions/3d/Scale3DExpression.js';
+import { PLL3DExpression } from '../expressions/3d/PLL3DExpression.js';
+import { Perp3DExpression } from '../expressions/3d/Perp3DExpression.js';
+import { PerpShift3DExpression } from '../expressions/3d/PerpShift3DExpression.js';
+import { PlaceAt3DExpression } from '../expressions/3d/PlaceAt3DExpression.js';
+import { Chain3DExpression } from '../expressions/3d/Chain3DExpression.js';
+import { VecSum3DExpression } from '../expressions/3d/VecSum3DExpression.js';
+import { VecDiff3DExpression } from '../expressions/3d/VecDiff3DExpression.js';
+import { VecProject3DExpression } from '../expressions/3d/VecProject3DExpression.js';
+import { Decompose3DExpression } from '../expressions/3d/Decompose3DExpression.js';
 import { Angle3DExpression } from '../expressions/3d/Angle3DExpression.js';
 import { Angle3D2Expression } from '../expressions/3d/Angle3D2Expression.js';
 import { RightAngle3DExpression } from '../expressions/3d/RightAngle3DExpression.js';
@@ -89,7 +101,7 @@ import { SubOnlyExpression } from '../expressions/SubOnlyExpression.js';
 import { SubWithoutExpression } from '../expressions/SubWithoutExpression.js';
 import { SurroundExpression } from '../expressions/SurroundExpression.js';
 import { MoveToExpression } from '../expressions/MoveToExpression.js';
-import { TextAtExpression } from '../expressions/TextAtExpression.js';
+import { ItemExpression } from '../expressions/ItemExpression.js';
 import { ReplaceTextItemExpression } from '../expressions/ReplaceTextItemExpression.js';
 import { TopWriteExpression } from '../expressions/TopWriteExpression.js';
 import { BottomWriteExpression } from '../expressions/BottomWriteExpression.js';
@@ -171,10 +183,24 @@ export class IntrepreterFunctionTable {
         registerMultiArg('pyramid', Pyramid3DExpression);
 
         // 3D vector operations
-        registerMultiArg('forward3d', Forward3DExpression);   // animate vector sliding forward
-        registerMultiArg('backward3d', Backward3DExpression); // animate vector sliding backward
-        registerMultiArg('move3d', Move3DExpression);         // move vector to new position
-        registerMultiArg('reverse3d', Reverse3DExpression);   // create reversed vector
+        registerMultiArg('forward3d', Forward3DExpression);     // animate vector/line sliding forward
+        registerMultiArg('backward3d', Backward3DExpression);   // animate vector/line sliding backward
+        registerMultiArg('move3d', Move3DExpression);           // move vector/line to new position
+        registerMultiArg('reverse3d', Reverse3DExpression);     // create reversed vector/line
+        registerMultiArg('pll3d', PLL3DExpression);             // parallel line/vector through point
+        registerMultiArg('perp3d', Perp3DExpression);           // perpendicular line/vector through point
+        registerMultiArg('perpshift3d', PerpShift3DExpression); // shift vector perpendicular (animated)
+        registerMultiArg('placeat3d', PlaceAt3DExpression);     // copy vector/line to new position
+        registerMultiArg('chain3d', Chain3DExpression);         // tail-to-tip positioning (animated)
+        registerMultiArg('vecsum3d', VecSum3DExpression);       // add two vectors
+        registerMultiArg('vecdiff3d', VecDiff3DExpression);     // subtract two vectors
+        registerMultiArg('vecproject3d', VecProject3DExpression); // project vector onto another
+        registerMultiArg('decompose3d', Decompose3DExpression); // decompose vector to components
+
+        // 3D shape transformations
+        registerMultiArg('rotate3d', Rotate3DExpression);       // rotate shape around axis
+        registerMultiArg('translate3d', Translate3DExpression); // translate shape by delta
+        registerMultiArg('scale3d', Scale3DExpression);         // scale shape by factor
 
         // 3D angle expressions
         // angle3d      = interior (angle arc between two rays from vertex)
@@ -197,7 +223,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('subwithout', SubWithoutExpression);
         registerMultiArg('surround', SurroundExpression);
         registerMultiArg('moveto', MoveToExpression);
-        registerMultiArg('textat', TextAtExpression);
+        registerMultiArg('item', ItemExpression);
         registerMultiArg('replace', ReplaceTextItemExpression);
         registerMultiArg('topw', TopWriteExpression);
         registerMultiArg('bottomw', BottomWriteExpression);

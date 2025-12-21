@@ -1,19 +1,20 @@
 /**
- * Reverse3DCommand - Command for creating a reversed (flipped) 3D vector
+ * Reverse3DCommand - Command for creating a reversed (flipped) 3D vector or line
  *
- * Creates a NEW vector with opposite direction.
- * Animation: shows reversed vector growing from the pivot point.
+ * Creates a NEW vector/line with opposite direction.
+ * Animation: shows reversed shape growing from the pivot point.
  * Pen follows the tip as it grows outward.
  */
 import { Base3DCommand } from './Base3DCommand.js';
 import { animateVectorSlide } from '../../../3d/common/animator/vector_slide_animator.js';
 
 export class Reverse3DCommand extends Base3DCommand {
-    constructor(vectorExpression, originalShapeVarName, reversedCoords, options = {}) {
+    constructor(vectorExpression, originalShapeVarName, reversedCoords, inputType = 'vector3d', options = {}) {
         super();
         this.vectorExpression = vectorExpression;
         this.originalShapeVarName = originalShapeVarName;
         this.reversedCoords = reversedCoords;
+        this.inputType = inputType; // 'vector3d' or 'line3d'
         this.options = options;
 
         this.graphContainer = null;
@@ -27,7 +28,7 @@ export class Reverse3DCommand extends Base3DCommand {
     async doInit() {
         const graphExpression = this.vectorExpression.graphExpression;
         if (!graphExpression || typeof graphExpression.getGrapher !== 'function') {
-            throw new Error('reverse3d() requires a vector3d with a valid g3d graph');
+            throw new Error('reverse3d() requires a vector3d or line3d with a valid g3d graph');
         }
 
         this.graphContainer = graphExpression.getGrapher();
@@ -55,15 +56,19 @@ export class Reverse3DCommand extends Base3DCommand {
 
     async play() {
         const scene = this.graphContainer.getScene();
-        const color = this.options.styleOptions?.color;
-        const vectorOptions = {
-            shaftRadius: this.options.styleOptions?.strokeWidth,
-            headLength: this.options.styleOptions?.headLength,
-            headRadius: this.options.styleOptions?.headRadius
-        };
+        const styleOptions = this.options.styleOptions || {};
 
-        const createVector = (start, end) => {
-            return this.graphContainer.diagram3d.vector(start, end, '', color, vectorOptions);
+        const createShape = (start, end) => {
+            if (this.inputType === 'line3d') {
+                return this.graphContainer.diagram3d.lineByTwoPoints(start, end, styleOptions.color, {
+                    strokeWidth: styleOptions.strokeWidth
+                });
+            }
+            return this.graphContainer.diagram3d.vector(start, end, '', styleOptions.color, {
+                shaftRadius: styleOptions.strokeWidth,
+                headLength: styleOptions.headLength,
+                headRadius: styleOptions.headRadius
+            });
         };
 
         return new Promise((resolve) => {
@@ -72,13 +77,13 @@ export class Reverse3DCommand extends Base3DCommand {
                 this.originalEnd,
                 this.reversedStart,
                 this.reversedEnd,
-                createVector,
+                createShape,
                 scene,
                 {
                     duration: 2,
-                    onComplete: (finalVector) => {
-                        this.reversedShape = finalVector;
-                        this.commandResult = finalVector;
+                    onComplete: (finalShape) => {
+                        this.reversedShape = finalShape;
+                        this.commandResult = finalShape;
                         resolve();
                     }
                 }
@@ -87,12 +92,28 @@ export class Reverse3DCommand extends Base3DCommand {
     }
 
     async directPlay() {
-        this.reversedShape = this.graphContainer.diagram3d.vector(
-            this.reversedStart,
-            this.reversedEnd,
-            '',
-            this.options.styleOptions?.color
-        );
+        const styleOptions = this.options.styleOptions || {};
+
+        if (this.inputType === 'line3d') {
+            this.reversedShape = this.graphContainer.diagram3d.lineByTwoPoints(
+                this.reversedStart,
+                this.reversedEnd,
+                styleOptions.color,
+                { strokeWidth: styleOptions.strokeWidth }
+            );
+        } else {
+            this.reversedShape = this.graphContainer.diagram3d.vector(
+                this.reversedStart,
+                this.reversedEnd,
+                '',
+                styleOptions.color,
+                {
+                    shaftRadius: styleOptions.strokeWidth,
+                    headLength: styleOptions.headLength,
+                    headRadius: styleOptions.headRadius
+                }
+            );
+        }
         this.commandResult = this.reversedShape;
     }
 
@@ -103,35 +124,7 @@ export class Reverse3DCommand extends Base3DCommand {
             scene.remove(this.reversedShape);
         }
 
-        const color = this.options.styleOptions?.color;
-        const vectorOptions = {
-            shaftRadius: this.options.styleOptions?.strokeWidth,
-            headLength: this.options.styleOptions?.headLength,
-            headRadius: this.options.styleOptions?.headRadius
-        };
-
-        const createVector = (start, end) => {
-            return this.graphContainer.diagram3d.vector(start, end, '', color, vectorOptions);
-        };
-
-        return new Promise((resolve) => {
-            animateVectorSlide(
-                this.originalStart,
-                this.originalEnd,
-                this.reversedStart,
-                this.reversedEnd,
-                createVector,
-                scene,
-                {
-                    duration: 2,
-                    onComplete: (finalVector) => {
-                        this.reversedShape = finalVector;
-                        this.commandResult = finalVector;
-                        resolve();
-                    }
-                }
-            );
-        });
+        return this.play();
     }
 
     getLabelPosition() {

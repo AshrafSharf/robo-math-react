@@ -4,3 +4,5 @@ L = line(G, A, point(G, 3, 1))
 C = circle(G, 2, 6, 1)
 A2 = translate(G, A, 2, 3)
 result = translate(G, A, L, C, 2, 3)
+
+

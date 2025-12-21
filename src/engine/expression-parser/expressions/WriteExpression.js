@@ -37,7 +37,7 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         this.collectionVariableName = null;
         // For 'textitem_var' mode
         this.textItemVariableName = null;
-        // For 'textitem_expr' mode (inline textat)
+        // For 'textitem_expr' mode (inline item)
         this.textItemExpression = null;
         // Reference to created MathTextComponent (set by command after init)
         this.mathTextComponent = null;
@@ -52,9 +52,9 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
             const targetExpr = this.subExpressions[0];
             targetExpr.resolve(context);
 
-            // Check if target is a textat expression (returns TextItem)
+            // Check if target is an item expression (returns TextItem)
             const targetName = targetExpr.getName && targetExpr.getName();
-            if (targetName === 'textat') {
+            if (targetName === 'item') {
                 this.mode = 'textitem_expr';
                 this.textItemExpression = targetExpr;
                 return;
@@ -77,8 +77,8 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
                     return;
                 }
 
-                // Check for textat variable (returns TextItem)
-                if (exprName === 'textat') {
+                // Check for item variable (returns TextItem)
+                if (exprName === 'item') {
                     this.mode = 'textitem_var';
                     this.textItemVariableName = targetExpr.variableName;
                     return;
@@ -91,7 +91,7 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
                     return;
                 }
 
-                this.dispatchError(`write(): "${targetExpr.variableName}" must be a mathtext, subonly, subwithout, writeonly, writewithout, or textat expression`);
+                this.dispatchError(`write(): "${targetExpr.variableName}" must be a mathtext, subonly, subwithout, writeonly, writewithout, or item expression`);
             } else {
                 this.dispatchError('write() argument must be a variable reference');
             }
@@ -160,7 +160,7 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         } else if (this.mode === 'textitem_var') {
             return new WriteTextItemVarCommand(this.textItemVariableName);
         } else if (this.mode === 'textitem_expr') {
-            // Inline textat expression: write(textat(thetas, 0))
+            // Inline item expression: write(item(thetas, 0))
             return new WriteTextItemExprCommand(
                 this.textItemExpression.collectionVariableName,
                 this.textItemExpression.index

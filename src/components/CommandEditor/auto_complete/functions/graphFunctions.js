@@ -50,5 +50,45 @@ export const GRAPH_FUNCTIONS = {
     description: 'MathText label with pen animation on graph',
     altSignatures: ['label(g, "latex", x, y)', 'label(g, "latex", point)'],
     category: 'Graph'
+  },
+  mathtext: {
+    name: 'mathtext',
+    signature: '(row, col, "latex")',
+    args: ['row: number', 'col: number', 'latex: string'],
+    description: 'Create math text at logical position',
+    altSignatures: ['mathtext(0, 0, "x^2 + y^2")'],
+    category: 'Graph'
+  },
+  write: {
+    name: 'write',
+    signature: '(target)',
+    args: ['target: MathText|TextItem|Collection'],
+    description: 'Animate writing math text',
+    altSignatures: ['write(M)', 'write(row, col, "latex")', 'write(collection)', 'write(textItem)'],
+    category: 'Graph'
+  },
+  subonly: {
+    name: 'subonly',
+    signature: '(M, "pattern")',
+    args: ['M: MathText', 'pattern: string'],
+    description: 'Get text items matching pattern',
+    altSignatures: ['subonly(M, "x")', 'subonly(M, "\\\\cos")'],
+    category: 'Graph'
+  },
+  subwithout: {
+    name: 'subwithout',
+    signature: '(M, "pattern")',
+    args: ['M: MathText', 'pattern: string'],
+    description: 'Get text items excluding pattern',
+    altSignatures: ['subwithout(M, "x")', 'subwithout(M, "\\\\sin")'],
+    category: 'Graph'
+  },
+  replace: {
+    name: 'replace',
+    signature: '("latex", textItem)',
+    args: ['latex: string', 'textItem: TextItem'],
+    description: 'Replace text item with new latex',
+    altSignatures: ['replace("y", item(S, 0))', 'replace("latex", subonly(M, "x"))'],
+    category: 'Graph'
   }
 };

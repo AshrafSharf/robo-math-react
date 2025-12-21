@@ -9,7 +9,7 @@ import { RewriteOnlyEffect } from '../../mathtext/effects/rewrite-only-effect.js
 
 export class WriteTextItemVarCommand extends BaseCommand {
     /**
-     * @param {string} textItemVariableName - Variable name of the TextItem (from textat)
+     * @param {string} textItemVariableName - Variable name of the TextItem (from item)
      */
     constructor(textItemVariableName) {
         super();
@@ -19,7 +19,7 @@ export class WriteTextItemVarCommand extends BaseCommand {
     }
 
     async doInit() {
-        // Get the TextItem from shapeRegistry (stored by TextAtCommand)
+        // Get the TextItem from shapeRegistry (stored by ItemCommand)
         this.textItem = this.commandContext.shapeRegistry[this.textItemVariableName];
         if (!this.textItem) {
             console.warn(`WriteTextItemVarCommand: "${this.textItemVariableName}" not found in registry`);

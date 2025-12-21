@@ -1,16 +1,19 @@
 /**
- * Reverse3DExpression - creates a reversed (flipped) 3D vector
+ * Reverse3DExpression - creates a reversed (flipped) 3D vector or line
  *
  * Syntax:
  *   reverse3d(vectorVar)              - create reversed vector at same tail position
+ *   reverse3d(lineVar)                - create reversed line at same start position
  *
- * This creates a new vector with opposite direction, pivoting around the tail (start point).
- * The new vector points in the opposite direction from the original.
+ * This creates a new vector/line with opposite direction, pivoting around the start point.
+ * The new shape points in the opposite direction from the original.
  *
  * Examples:
  *   g = g3d(0, 0, 20, 20)
  *   V = vector3d(g, 0, 0, 0, 3, 2, 1)
  *   reverse3d(V)                      // creates vector from (0,0,0) to (-3,-2,-1)
+ *   L = line3d(g, 0, 0, 0, 2, 2, 2)
+ *   reverse3d(L)                      // creates line from (0,0,0) to (-2,-2,-2)
  */
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
 import { Reverse3DCommand } from '../../../commands/3d/Reverse3DCommand.js';
@@ -24,6 +27,7 @@ export class Reverse3DExpression extends AbstractNonArithmeticExpression {
         this.vectorExpression = null;
         this.originalShapeVarName = null;
         this.coordinates = []; // [x1, y1, z1, x2, y2, z2] - reversed vector coords
+        this.inputType = 'vector3d'; // 'vector3d' or 'line3d'
     }
 
     resolve(context) {
@@ -36,13 +40,15 @@ export class Reverse3DExpression extends AbstractNonArithmeticExpression {
             this.subExpressions[i].resolve(context);
         }
 
-        // First arg must be a vector3d variable reference
+        // First arg must be a vector3d or line3d variable reference
         this.vectorExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         this.originalShapeVarName = this.subExpressions[0].variableName || this.vectorExpression.variableName;
 
-        if (!this.vectorExpression || this.vectorExpression.getName() !== 'vector3d') {
-            this.dispatchError('reverse3d() requires a vector3d as first argument');
+        const shapeType = this.vectorExpression?.getGeometryType?.() || this.vectorExpression?.getName();
+        if (shapeType !== 'vector3d' && shapeType !== 'line3d') {
+            this.dispatchError('reverse3d() requires a vector3d or line3d as first argument');
         }
+        this.inputType = shapeType;
 
         // Get original vector data
         const origCoords = this.vectorExpression.getVariableAtomicValues();
@@ -70,7 +76,7 @@ export class Reverse3DExpression extends AbstractNonArithmeticExpression {
     }
 
     getGeometryType() {
-        return 'vector3d';
+        return this.inputType;
     }
 
     getVariableAtomicValues() {
@@ -109,6 +115,7 @@ export class Reverse3DExpression extends AbstractNonArithmeticExpression {
             this.vectorExpression,
             this.originalShapeVarName,
             this.coordinates,
+            this.inputType,
             options
         );
     }

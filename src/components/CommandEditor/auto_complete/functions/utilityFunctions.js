@@ -18,6 +18,14 @@ export const UTILITY_FUNCTIONS = {
     description: 'Linear interpolation: a + t*(b-a)',
     altSignatures: ['map(0.5, 0, 100) → 50', 'map(0.25, P1, P2) → point 25% from P1 to P2'],
     category: 'Utilities'
+  },
+  item: {
+    name: 'item',
+    signature: '(collection, index)',
+    args: ['collection: Collection', 'index: number'],
+    description: 'Get item from collection by index',
+    altSignatures: ['item(S, 0) // Get first item', 'T = item(shapes, 1) // Get second shape'],
+    category: 'Utilities'
   }
 };
 

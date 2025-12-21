@@ -26,6 +26,7 @@ export class Forward3DExpression extends AbstractNonArithmeticExpression {
         this.vectorExpression = null;
         this.originalShapeVarName = null;
         this.scalar = 1;
+        this.inputType = 'vector3d'; // 'vector3d' or 'line3d'
     }
 
     resolve(context) {
@@ -38,13 +39,15 @@ export class Forward3DExpression extends AbstractNonArithmeticExpression {
             this.subExpressions[i].resolve(context);
         }
 
-        // First arg must be a vector3d variable reference
+        // First arg must be a vector3d or line3d variable reference
         this.vectorExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         this.originalShapeVarName = this.subExpressions[0].variableName || this.vectorExpression.variableName;
 
-        if (!this.vectorExpression || this.vectorExpression.getName() !== 'vector3d') {
-            this.dispatchError('forward3d() requires a vector3d as first argument');
+        const shapeType = this.vectorExpression?.getGeometryType?.() || this.vectorExpression?.getName();
+        if (shapeType !== 'vector3d' && shapeType !== 'line3d') {
+            this.dispatchError('forward3d() requires a vector3d or line3d as first argument');
         }
+        this.inputType = shapeType;
 
         // Second arg (optional) is scalar distance
         if (this.subExpressions.length >= 2) {
@@ -58,7 +61,7 @@ export class Forward3DExpression extends AbstractNonArithmeticExpression {
     }
 
     getGeometryType() {
-        return 'vector3d';
+        return this.inputType;
     }
 
     getVariableAtomicValues() {
@@ -75,6 +78,7 @@ export class Forward3DExpression extends AbstractNonArithmeticExpression {
             this.vectorExpression,
             this.originalShapeVarName,
             this.scalar,
+            this.inputType,
             options
         );
     }

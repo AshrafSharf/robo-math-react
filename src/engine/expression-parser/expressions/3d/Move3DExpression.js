@@ -1,17 +1,21 @@
 /**
- * Move3DExpression - animates moving a 3D vector to a new position
+ * Move3DExpression - animates moving a 3D vector or line to a new position
  *
  * Syntax:
  *   move3d(vectorVar, point3d)        - move vector to start at point3d
  *   move3d(vectorVar, x, y, z)        - move vector to start at (x, y, z)
+ *   move3d(lineVar, point3d)          - move line to start at point3d
+ *   move3d(lineVar, x, y, z)          - move line to start at (x, y, z)
  *
- * This creates a new vector at the original position and animates it moving to the target.
+ * This creates a new vector/line at the original position and animates it moving to the target.
  *
  * Examples:
  *   g = g3d(0, 0, 20, 20)
  *   V = vector3d(g, 0, 0, 0, 3, 2, 1)
  *   move3d(V, point3d(g, 2, 2, 2))    // move V to start at (2,2,2)
  *   move3d(V, 1, 1, 1)                // move V to start at (1,1,1)
+ *   L = line3d(g, 0, 0, 0, 2, 2, 2)
+ *   move3d(L, 1, 1, 1)                // move L to start at (1,1,1)
  */
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
 import { Move3DCommand } from '../../../commands/3d/Move3DCommand.js';
@@ -26,6 +30,7 @@ export class Move3DExpression extends AbstractNonArithmeticExpression {
         this.originalShapeVarName = null;
         this.targetPosition = null; // {x, y, z}
         this.coordinates = []; // [x1, y1, z1, x2, y2, z2] - moved vector coords
+        this.inputType = 'vector3d'; // 'vector3d' or 'line3d'
     }
 
     resolve(context) {
@@ -38,13 +43,15 @@ export class Move3DExpression extends AbstractNonArithmeticExpression {
             this.subExpressions[i].resolve(context);
         }
 
-        // First arg must be a vector3d variable reference
+        // First arg must be a vector3d or line3d variable reference
         this.vectorExpression = this._getResolvedExpression(context, this.subExpressions[0]);
         this.originalShapeVarName = this.subExpressions[0].variableName || this.vectorExpression.variableName;
 
-        if (!this.vectorExpression || this.vectorExpression.getName() !== 'vector3d') {
-            this.dispatchError('move3d() requires a vector3d as first argument');
+        const shapeType = this.vectorExpression?.getGeometryType?.() || this.vectorExpression?.getName();
+        if (shapeType !== 'vector3d' && shapeType !== 'line3d') {
+            this.dispatchError('move3d() requires a vector3d or line3d as first argument');
         }
+        this.inputType = shapeType;
 
         // Get original vector data
         const origCoords = this.vectorExpression.getVariableAtomicValues();
@@ -92,7 +99,7 @@ export class Move3DExpression extends AbstractNonArithmeticExpression {
     }
 
     getGeometryType() {
-        return 'vector3d';
+        return this.inputType;
     }
 
     getVariableAtomicValues() {
@@ -132,6 +139,7 @@ export class Move3DExpression extends AbstractNonArithmeticExpression {
             this.originalShapeVarName,
             this.targetPosition,
             this.coordinates,
+            this.inputType,
             options
         );
     }

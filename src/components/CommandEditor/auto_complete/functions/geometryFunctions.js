@@ -82,3 +82,113 @@ export const GEOMETRY_3D_FUNCTIONS = {
     category: '3D Geometry'
   }
 };
+
+/**
+ * 3D Vector operation function metadata
+ */
+export const VECTOR_3D_FUNCTIONS = {
+  forward3d: {
+    name: 'forward3d',
+    signature: '(vec, scalar?)',
+    args: ['vec: Vector3D|Line3D', 'scalar?: number'],
+    description: 'Slide vector/line forward along its direction (animated)',
+    altSignatures: ['forward3d(vec)', 'forward3d(vec, scalar)'],
+    category: '3D Geometry'
+  },
+  backward3d: {
+    name: 'backward3d',
+    signature: '(vec, scalar?)',
+    args: ['vec: Vector3D|Line3D', 'scalar?: number'],
+    description: 'Slide vector/line backward along its direction (animated)',
+    altSignatures: ['backward3d(vec)', 'backward3d(vec, scalar)'],
+    category: '3D Geometry'
+  },
+  move3d: {
+    name: 'move3d',
+    signature: '(vec, point)',
+    args: ['vec: Vector3D|Line3D', 'point: Point3D'],
+    description: 'Move vector/line to new starting position (animated)',
+    altSignatures: ['move3d(vec, point)', 'move3d(vec, x, y, z)'],
+    category: '3D Geometry'
+  },
+  reverse3d: {
+    name: 'reverse3d',
+    signature: '(vec)',
+    args: ['vec: Vector3D|Line3D'],
+    description: 'Create reversed vector/line (opposite direction, animated)',
+    altSignatures: ['reverse3d(vec)'],
+    category: '3D Geometry'
+  },
+  pll3d: {
+    name: 'pll3d',
+    signature: '(vec, point, length?)',
+    args: ['vec: Vector3D|Line3D', 'point: Point3D', 'length?: number'],
+    description: 'Create parallel line/vector through point',
+    altSignatures: ['pll3d(vec, point)', 'pll3d(vec, point, length)'],
+    category: '3D Geometry'
+  },
+  perp3d: {
+    name: 'perp3d',
+    signature: '(vec, point, axis, length?)',
+    args: ['vec: Vector3D|Line3D', 'point: Point3D', 'axis: Vector3D', 'length?: number'],
+    description: 'Create perpendicular through point using axis for direction',
+    altSignatures: ['perp3d(vec, point, axis)', 'perp3d(vec, point, axis, length)', 'perp3d(vec, point, ax, ay, az)'],
+    category: '3D Geometry'
+  },
+  perpshift3d: {
+    name: 'perpshift3d',
+    signature: '(vec, distance, axis)',
+    args: ['vec: Vector3D|Line3D', 'distance: number', 'axis: Vector3D'],
+    description: 'Shift vector perpendicular using axis for direction (animated)',
+    altSignatures: ['perpshift3d(vec, distance, axis)', 'perpshift3d(vec, distance, ax, ay, az)'],
+    category: '3D Geometry'
+  },
+  placeat3d: {
+    name: 'placeat3d',
+    signature: '(vec, point)',
+    args: ['vec: Vector3D|Line3D', 'point: Point3D'],
+    description: 'Copy vector/line to new starting position',
+    altSignatures: ['placeat3d(vec, point)', 'placeat3d(vec, x, y, z)'],
+    category: '3D Geometry'
+  },
+  chain3d: {
+    name: 'chain3d',
+    signature: '(vecA, vecB)',
+    args: ['vecA: Vector3D|Line3D', 'vecB: Vector3D|Line3D'],
+    description: 'Position vecB tail at vecA tip (tail-to-tip, animated)',
+    altSignatures: ['chain3d(vecA, vecB)'],
+    category: '3D Geometry'
+  },
+  vecsum3d: {
+    name: 'vecsum3d',
+    signature: '(vecA, vecB, point?)',
+    args: ['vecA: Vector3D|Line3D', 'vecB: Vector3D|Line3D', 'point?: Point3D'],
+    description: 'Vector addition (A + B)',
+    altSignatures: ['vecsum3d(vecA, vecB)', 'vecsum3d(vecA, vecB, point)', 'vecsum3d(vecA, vecB, x, y, z)'],
+    category: '3D Geometry'
+  },
+  vecdiff3d: {
+    name: 'vecdiff3d',
+    signature: '(vecA, vecB, point?)',
+    args: ['vecA: Vector3D|Line3D', 'vecB: Vector3D|Line3D', 'point?: Point3D'],
+    description: 'Vector subtraction (A - B)',
+    altSignatures: ['vecdiff3d(vecA, vecB)', 'vecdiff3d(vecA, vecB, point)', 'vecdiff3d(vecA, vecB, x, y, z)'],
+    category: '3D Geometry'
+  },
+  vecproject3d: {
+    name: 'vecproject3d',
+    signature: '(vec, target, point?)',
+    args: ['vec: Vector3D|Line3D', 'target: Vector3D|Line3D', 'point?: Point3D'],
+    description: 'Project vector onto target vector',
+    altSignatures: ['vecproject3d(vec, target)', 'vecproject3d(vec, target, point)', 'vecproject3d(vec, target, x, y, z)'],
+    category: '3D Geometry'
+  },
+  decompose3d: {
+    name: 'decompose3d',
+    signature: '(vec, axis?)',
+    args: ['vec: Vector3D|Line3D', 'axis?: "x"|"y"|"z"|Vector3D'],
+    description: 'Decompose vector into axis component',
+    altSignatures: ['decompose3d(vec)', 'decompose3d(vec, "x")', 'decompose3d(vec, "y")', 'decompose3d(vec, "z")', 'decompose3d(vec, refVec)', 'decompose3d(vec, refVec, "perp")'],
+    category: '3D Geometry'
+  }
+};

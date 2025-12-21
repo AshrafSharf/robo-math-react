@@ -2,7 +2,7 @@
  * Function metadata index - exports all function categories
  */
 
-export { GEOMETRY_FUNCTIONS, GEOMETRY_3D_FUNCTIONS } from './geometryFunctions.js';
+export { GEOMETRY_FUNCTIONS, GEOMETRY_3D_FUNCTIONS, VECTOR_3D_FUNCTIONS } from './geometryFunctions.js';
 export { ANGLE_FUNCTIONS } from './angleFunctions.js';
 export { LINE_FUNCTIONS } from './lineFunctions.js';
 export { VECTOR_FUNCTIONS } from './vectorFunctions.js';
