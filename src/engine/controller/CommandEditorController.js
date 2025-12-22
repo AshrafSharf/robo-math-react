@@ -12,6 +12,7 @@ import { CommandContext } from '../context/CommandContext.js';
 import { CommandExecutor } from '../context/CommandExecutor.js';
 import { AutoPlayer } from './players/AutoPlayer.js';
 import { InteractivePlayer } from './players/InteractivePlayer.js';
+import { playbackMediator } from '../playback/PlaybackMediator.js';
 
 const LATEX_VARIABLES_KEY = 'robomath-latex-variables';
 
@@ -52,6 +53,9 @@ export class CommandEditorController {
                 this.onInteractiveStateChange(state);
             }
         };
+
+        // Register with global playback mediator
+        playbackMediator.setController(this);
     }
 
     // ============================================
@@ -241,16 +245,27 @@ export class CommandEditorController {
     }
 
     async playSingle(commandId) {
+        // Request permission from mediator
+        if (!playbackMediator.requestPlay({ type: 'playSingle', commandId })) {
+            console.warn('Playback blocked - already playing');
+            return;
+        }
+
         const commandIndex = this.commandExecutor.commands.findIndex(
             cmd => cmd.getExpressionId() === commandId
         );
 
         if (commandIndex === -1) {
             console.warn('Command not found:', commandId);
+            playbackMediator.notifyComplete();
             return;
         }
 
-        await this.commandExecutor.playSingle(commandIndex);
+        try {
+            await this.commandExecutor.playSingle(commandIndex);
+        } finally {
+            playbackMediator.notifyComplete();
+        }
     }
 
     // ============================================
@@ -258,21 +273,34 @@ export class CommandEditorController {
     // ============================================
 
     async playAll() {
+        // Request permission from mediator
+        if (!playbackMediator.requestPlay({ type: 'playAll' })) {
+            console.warn('Playback blocked - already playing');
+            return;
+        }
+
         if (!this.roboCanvas) {
             console.warn('Cannot play: roboCanvas not set');
+            playbackMediator.notifyComplete();
             return;
         }
 
         const success = await this.prepareCommands(this.commandModels);
-        if (!success) return;
+        if (!success) {
+            playbackMediator.notifyComplete();
+            return;
+        }
 
         this.isExecuting = true;
         this._notifyStateChange();
 
-        await this.commandExecutor.playAll();
-
-        this.isExecuting = false;
-        this._notifyStateChange();
+        try {
+            await this.commandExecutor.playAll();
+        } finally {
+            this.isExecuting = false;
+            this._notifyStateChange();
+            playbackMediator.notifyComplete();
+        }
     }
 
     async playUpTo(commandId) {
@@ -310,6 +338,8 @@ export class CommandEditorController {
     // ============================================
 
     stop() {
+        // Use mediator to stop - it will kill animations and draw final state
+        playbackMediator.stop();
         this.commandExecutor.stop();
         this.isExecuting = false;
         this._notifyStateChange();

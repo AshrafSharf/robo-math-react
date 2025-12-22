@@ -68,6 +68,49 @@ export const VISIBILITY_FUNCTIONS = {
 };
 
 /**
+ * Page/container manipulation functions
+ */
+export const PAGE_FUNCTIONS = {
+  copy: {
+    name: 'copy',
+    signature: '(page, indices...)',
+    args: ['page: string|number', 'indices: number|slice...'],
+    description: 'Copy expressions from another page',
+    altSignatures: [
+      'copy("Page 1", 1, 2, 3)',
+      'copy("Page 1", "1:6")',
+      'copy("Page 1", 3, "7:10", 5)',
+      'copy(1, "ALL")'
+    ],
+    category: 'Page'
+  },
+  pos: {
+    name: 'pos',
+    signature: '(containers..., dRow, dCol)',
+    args: ['containers: g2d|mathtext|g3d...', 'dRow: number', 'dCol: number'],
+    description: 'Shift containers by delta row/col in logical coordinates',
+    altSignatures: [
+      'pos(G, 2, 3)',
+      'pos(G, T, 2, 3)',
+      'pos(G, T, M, 1, -2)'
+    ],
+    category: 'Page'
+  },
+  size: {
+    name: 'size',
+    signature: '(containers..., widthRatio, heightRatio)',
+    args: ['containers: g2d|mathtext|g3d...', 'widthRatio: number', 'heightRatio: number'],
+    description: 'Scale containers by width/height ratio (0.5=half, 2=double)',
+    altSignatures: [
+      'size(G, 0.5, 0.5)',
+      'size(G, T, 2, 2)',
+      'size(G, 1.5, 0.75)'
+    ],
+    category: 'Page'
+  }
+};
+
+/**
  * Function definition metadata
  */
 export const FUNCTION_DEFINITION_FUNCTIONS = {

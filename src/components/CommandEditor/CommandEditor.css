@@ -121,6 +121,12 @@
     order: 2;
 }
 
+/* Play button disabled when collapsed */
+.robo-cmd-editor.collapsed .play-all.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
 /* Stop button when collapsed */
 .robo-cmd-editor.collapsed .stop-all {
     opacity: 1;
@@ -129,23 +135,34 @@
     order: 3;
 }
 
-/* Green play icon when collapsed */
+/* Play/Resume icon when collapsed - dark green */
 .robo-cmd-editor.collapsed .play-all .glyphicon-play,
 .robo-cmd-editor.collapsed .resume-all .glyphicon-play {
-    color: #28a745;
+    color: #16a34a;
     font-size: 22px;
 }
 
-/* Pause icon when collapsed */
+/* Pause icon when collapsed - blue */
 .robo-cmd-editor.collapsed .pause-all .glyphicon-pause {
-    color: #ffc107;
+    color: #2563eb;
     font-size: 22px;
 }
 
-/* Dark stop icon when collapsed */
+/* Stop icon when collapsed - gray when disabled */
 .robo-cmd-editor.collapsed .stop-all .glyphicon-stop {
-    color: #333;
+    color: #999;
     font-size: 20px;
+}
+
+/* Stop icon when collapsed - dark red when active */
+.robo-cmd-editor.collapsed .stop-all.active .glyphicon-stop {
+    color: #dc2626;
+}
+
+/* Stop button disabled when collapsed */
+.robo-cmd-editor.collapsed .stop-all.disabled {
+    opacity: 0.4;
+    pointer-events: none;
 }
 
 /* Expand chevron icon when collapsed */
@@ -154,6 +171,10 @@
     color: #333;
 }
 
+/* Hide collapsed command bar when interactive player is active */
+.robo-cmd-editor.collapsed.interactive-hidden {
+    display: none;
+}
 
 .robo-cmd-menu-bar {
     background-image: none;
@@ -515,12 +536,12 @@ font-size: 20px;
 
 }
 
-/* Play single button on left - green color */
+/* Single command play button - dark green */
 .cmd-play-single-left {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #28a745;
+    color: #16a34a;
     font-size: 14px;
     cursor: pointer;
     width: 28px;
@@ -532,7 +553,54 @@ font-size: 20px;
 
 .cmd-play-single-left:hover {
     color: #fff;
-    background: #28a745;
+    background: #16a34a;
+}
+
+/* Disabled state for play button when another playback is in progress */
+.cmd-play-single-left.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.cmd-play-single-left.disabled:hover {
+    color: #16a34a;
+    background: #f9f9f9;
+}
+
+/* Single command stop button - dark red */
+.cmd-play-single-left.cmd-stop {
+    color: #dc2626;
+    background: #f9f9f9;
+}
+
+.cmd-play-single-left.cmd-stop:hover {
+    color: #fff;
+    background: #dc2626;
+}
+
+/* Active state for stop button in menu bar */
+.stop-all.active {
+    background: #fef2f2;
+}
+
+.stop-all.active .glyphicon-stop {
+    color: #dc2626;
+}
+
+/* Disabled state for menu bar buttons */
+.robo-cmd-menu-bar .btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.robo-cmd-menu-bar .stop-all.disabled {
+    opacity: 0.4;
+}
+
+.robo-cmd-menu-bar .play-all.disabled {
+    opacity: 0.4;
 }
 
 /* Placeholder to maintain alignment when play button is hidden */
@@ -1034,9 +1102,32 @@ span.ui-spinner {
 }
 
 
-.play-all  .glyphicon-play{
+/* ===========================================
+   Playback Button Colors (consistent across app)
+   - Play/Resume: Dark Green (#16a34a)
+   - Pause: Blue (#2563eb)
+   - Stop active: Dark Red (#dc2626)
+   - Stop disabled: Gray
+   =========================================== */
 
-    color:#158F48;
+/* Play button - dark green */
+.play-all .glyphicon-play,
+.resume-all .glyphicon-play {
+    color: #16a34a;
+}
+
+/* Pause button - blue */
+.pause-all .glyphicon-pause {
+    color: #2563eb;
+}
+
+/* Stop button - dark red when active, gray when disabled */
+.stop-all .glyphicon-stop {
+    color: #999;
+}
+
+.stop-all.active .glyphicon-stop {
+    color: #dc2626;
 }
 
 .cmd-warning{
@@ -2402,21 +2493,28 @@ margin-top: 10px;
     display: none;
 }
 
-/* Play button styling in popup mode */
+/* Play button styling in popup mode - dark green */
 .robo-cmd-editor.popup-mode .play-all .glyphicon-play,
 .robo-cmd-editor.popup-mode .resume-all .glyphicon-play {
-    color: #28a745;
+    color: #16a34a;
     font-size: 20px;
 }
 
+/* Pause button in popup mode - blue */
 .robo-cmd-editor.popup-mode .pause-all .glyphicon-pause {
-    color: #ffc107;
+    color: #2563eb;
     font-size: 20px;
 }
 
+/* Stop button in popup mode - gray when disabled */
 .robo-cmd-editor.popup-mode .stop-all .glyphicon-stop {
-    color: #333;
+    color: #999;
     font-size: 18px;
+}
+
+/* Stop button in popup mode - dark red when active */
+.robo-cmd-editor.popup-mode .stop-all.active .glyphicon-stop {
+    color: #dc2626;
 }
 
 /* Popup button in collapsed state */

@@ -13,7 +13,7 @@ import { COORDINATE_FUNCTIONS } from './functions/coordinateFunctions.js';
 import { GRAPH_FUNCTIONS } from './functions/graphFunctions.js';
 import { MATH_FUNCTIONS } from './functions/mathFunctions.js';
 import { TRANSFORM_FUNCTIONS } from './functions/transformFunctions.js';
-import { UTILITY_FUNCTIONS, VISIBILITY_FUNCTIONS, FUNCTION_DEFINITION_FUNCTIONS } from './functions/utilityFunctions.js';
+import { UTILITY_FUNCTIONS, VISIBILITY_FUNCTIONS, PAGE_FUNCTIONS, FUNCTION_DEFINITION_FUNCTIONS } from './functions/utilityFunctions.js';
 
 /**
  * Combined function metadata from all categories
@@ -31,6 +31,7 @@ export const FUNCTION_METADATA = {
   ...TRANSFORM_FUNCTIONS,
   ...UTILITY_FUNCTIONS,
   ...VISIBILITY_FUNCTIONS,
+  ...PAGE_FUNCTIONS,
   ...FUNCTION_DEFINITION_FUNCTIONS
 };
 
@@ -70,6 +71,7 @@ export const CATEGORY_ORDER = [
   'Math',
   'Transforms',
   'Visibility',
+  'Page',
   'Utilities',
   'Functions'
 ];

@@ -9,6 +9,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { CommandEditorController } from '../engine/controller/CommandEditorController.js';
 import { FOCUS_EVENT, BLUR_EVENT } from '../engine/focus/index.js';
 import { LATEX_VARS_CHANGED_EVENT } from '../components/CommandEditor/CommandEditor.jsx';
+import { usePlaybackMediator } from './usePlaybackMediator.js';
 
 export function useCommandExecution(roboCanvas, options = {}) {
     const { debounceMs = 500 } = options;
@@ -16,9 +17,11 @@ export function useCommandExecution(roboCanvas, options = {}) {
     // Controller state (mirrored from controller for React re-renders)
     const [state, setState] = useState({
         errors: [],
-        canPlayInfos: [],
-        isExecuting: false
+        canPlayInfos: []
     });
+
+    // Global playback state from mediator (single source of truth)
+    const playback = usePlaybackMediator();
 
     // Track focused expression
     const focusedExpressionIdRef = useRef(null);
@@ -127,17 +130,18 @@ export function useCommandExecution(roboCanvas, options = {}) {
         controller.executeAllImmediate(commandModels);
     }, [controller]);
 
+    // Use mediator for stop/pause/resume
     const handleStop = useCallback(() => {
-        controller.stop();
-    }, [controller]);
+        playback.stop();
+    }, [playback]);
 
     const handlePause = useCallback(() => {
-        controller.pause();
-    }, [controller]);
+        playback.pause();
+    }, [playback]);
 
     const handleResume = useCallback(() => {
-        controller.resume();
-    }, [controller]);
+        playback.resume();
+    }, [playback]);
 
     const redrawSingle = useCallback((expressionId, styleOptions) => {
         return controller.redrawSingle(expressionId, styleOptions);
@@ -154,7 +158,7 @@ export function useCommandExecution(roboCanvas, options = {}) {
         // Controller reference
         controller,
 
-        // Handler wrappers for legacy API
+        // Handler wrappers
         handleExecute,
         handleExecuteAll,
         handlePlaySingle,
@@ -169,6 +173,9 @@ export function useCommandExecution(roboCanvas, options = {}) {
 
         // Focus handlers
         handleExpressionFocus,
-        handleExpressionBlur
+        handleExpressionBlur,
+
+        // Playback state (from mediator - single source of truth)
+        playback
     };
 }

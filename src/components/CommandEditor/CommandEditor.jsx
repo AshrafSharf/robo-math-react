@@ -32,7 +32,6 @@ const CommandEditor = ({
   onRestoreToSidebar,
   isSidebarCollapsed,
   isPopupMode,
-  isExecuting = false,
   errors = [],
   canPlayInfos = [],
   // Controlled mode props
@@ -44,15 +43,18 @@ const CommandEditor = ({
   onPopupInputBlur,
   // Expression focus handlers (for ExpressionFocusManager)
   onExpressionFocus,
-  onExpressionBlur
+  onExpressionBlur,
+  // Playback state (single source of truth from mediator)
+  playback = { isIdle: true, isPlaying: false, isPaused: false, isActive: false, isInteractiveActive: false, activeSource: null, stop: () => {} }
 }) => {
+  // Derive playback state for easier usage
+  const { isPlaying, isPaused, isActive, isInteractiveActive, activeSource, stop: stopPlayback } = playback;
   // Use external commands if provided (controlled mode), otherwise local state
   const [localCommands, setLocalCommands] = useState([createCommand(1)]);
   const commands = externalCommands ?? localCommands;
   const [selectedId, setSelectedId] = useState(1);
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
   const [latexModalOpen, setLatexModalOpen] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const containerRef = useRef(null);
   const selectedCommandRef = useRef(null);
@@ -140,8 +142,6 @@ const CommandEditor = ({
 
   // Play all commands with animation
   const handlePlayAll = useCallback(async () => {
-    setIsPaused(false);
-
     // Auto-collapse sidebar if expanded, then wait for animation
     if (!isSidebarCollapsed && onToggleSidebar) {
       onToggleSidebar();
@@ -152,21 +152,18 @@ const CommandEditor = ({
     if (onPlayAll) onPlayAll();
   }, [onPlayAll, isSidebarCollapsed, onToggleSidebar]);
 
-  // Stop execution
+  // Stop execution (mediator handles state)
   const handleStop = useCallback(() => {
-    setIsPaused(false);
     if (onStop) onStop();
   }, [onStop]);
 
-  // Pause execution
+  // Pause execution (mediator handles state)
   const handlePause = useCallback(() => {
-    setIsPaused(true);
     if (onPause) onPause();
   }, [onPause]);
 
-  // Resume execution
+  // Resume execution (mediator handles state)
   const handleResume = useCallback(() => {
-    setIsPaused(false);
     if (onResume) onResume();
   }, [onResume]);
 
@@ -207,9 +204,10 @@ const CommandEditor = ({
   }, []);
 
   // Determine CSS class based on mode
+  // Hide collapsed bar when interactive player is active
   const editorClass = isPopupMode
     ? 'robo-cmd-editor popup-mode'
-    : `robo-cmd-editor ${isSidebarCollapsed ? 'collapsed' : ''}`;
+    : `robo-cmd-editor ${isSidebarCollapsed ? 'collapsed' : ''} ${isInteractiveActive ? 'interactive-hidden' : ''}`;
 
   return (
     <CommandProvider value={{
@@ -219,7 +217,7 @@ const CommandEditor = ({
       addCommand,
       deleteCommand,
       updateCommand,
-      isExecuting
+      isExecuting: isActive
     }}>
       <div className={editorClass} ref={containerRef}>
         <div className="robo-cmdeditor-container robo-animate">
@@ -232,10 +230,12 @@ const CommandEditor = ({
             onOpenLatex={handleOpenLatex}
             onToggleSidebar={handleToggleSidebar}
             onPopupMode={onPopupMode}
-            isExecuting={isExecuting}
+            isActive={isActive}
             isPaused={isPaused}
             isSidebarCollapsed={isSidebarCollapsed}
             isPopupMode={isPopupMode}
+            isPlaying={isPlaying}
+            stopPlayback={stopPlayback}
           />
 
           <div className={`robo-cmd-panel ${isInputFocused ? 'input-focused' : ''}`} id="cmd-panel">
@@ -291,6 +291,9 @@ const CommandEditor = ({
                       errors={errors}
                       canPlayInfos={canPlayInfos}
                       isPopupMode={isPopupMode}
+                      isPlaying={isPlaying}
+                      activeSource={activeSource}
+                      onStop={stopPlayback}
                     />
                     <NewCommandButton onClick={() => addCommand()} />
                   </div>

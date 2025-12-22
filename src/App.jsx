@@ -53,7 +53,8 @@ function AppContent() {
     errors,
     canPlayInfos,
     clearAndRerender,
-    isExecuting
+    // Playback state (single source of truth)
+    playback
   } = useCommandExecution(roboCanvas, {
     debounceMs: 500
   });
@@ -198,9 +199,9 @@ function AppContent() {
           onExpressionBlur={handleExpressionBlur}
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isSidebarCollapsed}
-          isExecuting={isExecuting}
           errors={errors}
           canPlayInfos={canPlayInfos}
+          playback={playback}
         />
 
         {/* Canvas Area with Tab Bar */}
@@ -209,6 +210,7 @@ function AppContent() {
             isSidebarCollapsed={isSidebarCollapsed}
             controller={controller}
             onPlaybackStart={() => setIsSidebarCollapsed(true)}
+            isPlaybackActive={playback.isActive}
           />
           <div
             ref={containerRef}

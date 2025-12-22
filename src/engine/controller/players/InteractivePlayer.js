@@ -5,6 +5,7 @@
  * Internal strategy used by CommandController - not exposed directly.
  */
 import { TweenMax } from 'gsap';
+import { playbackMediator } from '../../playback/PlaybackMediator.js';
 
 export class InteractivePlayer {
     constructor(controller) {
@@ -12,6 +13,7 @@ export class InteractivePlayer {
         this.currentCommandIndex = 0;
         this.playState = 'idle';         // 'idle' | 'playing' - session state
         this.animatingState = 'none';    // 'none' | 'active' | 'paused'
+        this.isActive = false;           // Track if interactive session is active
         this.onStateChange = null;
     }
 
@@ -79,12 +81,22 @@ export class InteractivePlayer {
     }
 
     async start() {
+        // Request permission from mediator
+        if (!playbackMediator.requestPlay({ type: 'interactive' })) {
+            console.warn('Interactive playback blocked - already playing');
+            return false;
+        }
+
         const success = await this.controller.prepareCommands(this.controller.commandModels);
         if (success) {
             this.currentCommandIndex = 0;
             this.playState = 'idle';
             this.animatingState = 'none';
+            this.isActive = true;
             this._notifyStateChange();
+        } else {
+            // Failed to prepare, release mediator
+            playbackMediator.notifyComplete();
         }
         return success;
     }
@@ -93,7 +105,9 @@ export class InteractivePlayer {
         TweenMax.killAll();
         this.playState = 'idle';
         this.animatingState = 'none';
+        this.isActive = false;
         this.commandExecutor.stop();
+        playbackMediator.notifyComplete();
         this._notifyStateChange();
     }
 
@@ -104,6 +118,7 @@ export class InteractivePlayer {
         TweenMax.killAll();
         this.playState = 'idle';
         this.animatingState = 'none';
+        this.isActive = false;
 
         await this.controller.prepareCommands(this.controller.commandModels);
 
@@ -111,6 +126,7 @@ export class InteractivePlayer {
             await this.commandExecutor.drawTo(this.currentCommandIndex);
         }
 
+        playbackMediator.notifyComplete();
         this._notifyStateChange();
     }
 
@@ -263,6 +279,7 @@ export class InteractivePlayer {
             totalCommands: this._getPlayableCount(),
             playState: this.playState,           // 'idle' | 'playing'
             animatingState: this.animatingState, // 'none' | 'active' | 'paused'
+            isActive: this.isActive,             // true when interactive session is active
             canNext: this.canNext(),
             canPrevious: this.canPrevious()
         };

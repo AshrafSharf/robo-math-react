@@ -12,11 +12,20 @@ const CommandMenuBar = ({
   onOpenLatex,
   onToggleSidebar,
   onPopupMode,
-  isExecuting,
-  isPaused,
+  // Playback state (from mediator via props)
+  isActive = false,     // Any playback in progress
+  isPaused = false,     // Currently paused
+  isPlaying = false,    // Currently playing (not paused)
+  stopPlayback,
   isSidebarCollapsed,
   isPopupMode
 }) => {
+  // Combined stop handler - calls both mediator and local stop
+  const handleStop = () => {
+    if (stopPlayback) stopPlayback();
+    if (onStop) onStop();
+  };
+
   return (
     <div className="robo-cmd-menu-bar">
       <a
@@ -27,7 +36,8 @@ const CommandMenuBar = ({
         <i className="glyphicon glyphicon-trash" />
       </a>
 
-      {!isExecuting ? (
+      {/* Play All - show play when idle, pause/resume when active */}
+      {!isActive ? (
         <a
           className="btn btn-default play-all pull-left"
           onClick={onPlayAll}
@@ -36,31 +46,30 @@ const CommandMenuBar = ({
           <i className="glyphicon glyphicon-play" />
         </a>
       ) : (
-        <>
-          {!isPaused ? (
-            <a
-              className="btn btn-default pause-all pull-left"
-              onClick={onPause}
-              title="Pause"
-            >
-              <i className="glyphicon glyphicon-pause" />
-            </a>
-          ) : (
-            <a
-              className="btn btn-default resume-all pull-left"
-              onClick={onResume}
-              title="Resume"
-            >
-              <i className="glyphicon glyphicon-play" />
-            </a>
-          )}
-        </>
+        // Show pause/resume when any playback is active
+        !isPaused ? (
+          <a
+            className="btn btn-default pause-all pull-left"
+            onClick={onPause}
+            title="Pause"
+          >
+            <i className="glyphicon glyphicon-pause" />
+          </a>
+        ) : (
+          <a
+            className="btn btn-default resume-all pull-left"
+            onClick={onResume}
+            title="Resume"
+          >
+            <i className="glyphicon glyphicon-play" />
+          </a>
+        )
       )}
 
+      {/* Stop - active (red) when playing, disabled (black) when idle */}
       <a
-        className="btn btn-default stop-all pull-left"
-        onClick={onStop}
-        disabled={!isExecuting}
+        className={`btn btn-default stop-all pull-left ${isActive ? 'active' : 'disabled'}`}
+        onClick={isActive ? handleStop : undefined}
         title="Stop"
       >
         <i className="glyphicon glyphicon-stop" />

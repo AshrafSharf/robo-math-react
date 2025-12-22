@@ -2,9 +2,13 @@
  * CopyExpression - copies expressions from another page
  *
  * Syntax:
- *   copy("Page 1", 1, 2, 3)  - copy expressions at indices 1, 2, 3 from "Page 1"
- *   copy(1, ALL)             - copy all expressions from page 1
+ *   copy("Page 1", 1, 2, 3)       - copy expressions at indices 1, 2, 3 from "Page 1"
+ *   copy("Page 1", "1:6")         - copy expressions 1 through 6 (slice syntax)
+ *   copy("Page 1", 3, "7:10", 5)  - mixed: copies 3, 5, 7, 8, 9, 10 (unique, sorted)
+ *   copy(1, "ALL")                - copy all expressions from page 1
  *
+ * Indices are 1-based. Slices are inclusive on both ends.
+ * Duplicate indices are removed and results are sorted.
  * The copied expressions are executed (directPlay) but don't appear in the command editor UI.
  * Only previous pages can be copied from (to avoid circular dependencies).
  */
@@ -48,15 +52,7 @@ export class CopyExpression extends AbstractNonArithmeticExpression {
         if (this.indicesExpr === 'ALL') {
             this.resolvedIndices = 'ALL';
         } else {
-            this.resolvedIndices = [];
-            for (const indexExpr of this.indicesExpr) {
-                indexExpr.resolve(context);
-                if (indexExpr.getName() === 'number') {
-                    this.resolvedIndices.push(indexExpr.getNumericValue());
-                } else {
-                    this.dispatchError('Index must be a number');
-                }
-            }
+            this.resolvedIndices = this._parseIndices(this.indicesExpr, context);
         }
 
         // Validate context has pages
@@ -107,6 +103,70 @@ export class CopyExpression extends AbstractNonArithmeticExpression {
                 this.childCommands.push(result.command);
             }
         }
+    }
+
+    /**
+     * Parse indices from expressions - handles numbers and slice syntax (e.g., "1:6")
+     * Returns unique sorted array of indices
+     * @param {Expression[]} indicesExpr - Array of index expressions
+     * @param {Object} context - Expression context
+     * @returns {number[]} Unique sorted indices
+     */
+    _parseIndices(indicesExpr, context) {
+        const indices = [];
+
+        for (const indexExpr of indicesExpr) {
+            indexExpr.resolve(context);
+            const name = indexExpr.getName();
+
+            if (name === 'number') {
+                // Single number
+                indices.push(Math.floor(indexExpr.getNumericValue()));
+            } else if (name === 'quotedstring') {
+                // Could be a slice like "1:6"
+                const value = indexExpr.quotedComment || indexExpr.value;
+                if (value && value.includes(':')) {
+                    const expanded = this._expandSlice(value);
+                    indices.push(...expanded);
+                } else {
+                    this.dispatchError(`Invalid index: "${value}". Use a number or slice like "1:6"`);
+                }
+            } else {
+                this.dispatchError('Index must be a number or slice (e.g., "1:6")');
+            }
+        }
+
+        // Return unique sorted indices
+        return [...new Set(indices)].sort((a, b) => a - b);
+    }
+
+    /**
+     * Expand a slice string like "1:6" into array [1, 2, 3, 4, 5, 6]
+     * @param {string} sliceStr - Slice string in format "start:end"
+     * @returns {number[]} Expanded indices
+     */
+    _expandSlice(sliceStr) {
+        const parts = sliceStr.split(':');
+        if (parts.length !== 2) {
+            this.dispatchError(`Invalid slice format: "${sliceStr}". Use "start:end" format`);
+        }
+
+        const start = parseInt(parts[0].trim(), 10);
+        const end = parseInt(parts[1].trim(), 10);
+
+        if (isNaN(start) || isNaN(end)) {
+            this.dispatchError(`Invalid slice values: "${sliceStr}". Both start and end must be numbers`);
+        }
+
+        if (start > end) {
+            this.dispatchError(`Invalid slice range: "${sliceStr}". Start must be <= end`);
+        }
+
+        const result = [];
+        for (let i = start; i <= end; i++) {
+            result.push(i);
+        }
+        return result;
     }
 
     /**

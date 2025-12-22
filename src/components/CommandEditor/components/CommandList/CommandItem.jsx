@@ -23,7 +23,11 @@ const CommandItem = ({
   onInputBlur,
   error,
   canPlay = false,
-  isPopupMode = false
+  isPopupMode = false,
+  // Global playback state
+  isPlayingThis = false,
+  isAnyPlaying = false,
+  onStop
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const inputRef = useRef(null);
@@ -68,16 +72,30 @@ const CommandItem = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="robo-fade-container">
-        {/* Play single button - always visible on left if command can play */}
+        {/* Play/Stop button - show stop when this command is playing */}
         {canPlay && !error ? (
-          <i
-            className="glyphicon glyphicon-play cmd-play-single-left"
-            onClick={(e) => {
-              e.stopPropagation();
-              onPlaySingle(command.id);
-            }}
-            title="Play this only"
-          />
+          isPlayingThis ? (
+            // Show STOP when this command is playing
+            <i
+              className="glyphicon glyphicon-stop cmd-play-single-left cmd-stop"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onStop) onStop();
+              }}
+              title="Stop and show result"
+            />
+          ) : (
+            // Show PLAY (disabled if any playback is in progress)
+            <i
+              className={`glyphicon glyphicon-play cmd-play-single-left ${isAnyPlaying ? 'disabled' : ''}`}
+              onClick={(e) => {
+                if (isAnyPlaying) return;
+                e.stopPropagation();
+                onPlaySingle(command.id);
+              }}
+              title={isAnyPlaying ? "Wait for animation to finish" : "Play this only"}
+            />
+          )
         ) : (
           <span className="cmd-play-placeholder" />
         )}

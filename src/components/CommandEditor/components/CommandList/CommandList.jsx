@@ -18,7 +18,11 @@ const CommandList = ({
   onInputBlur,
   errors = [],
   canPlayInfos = [],
-  isPopupMode = false
+  isPopupMode = false,
+  // Global playback state
+  isPlaying = false,
+  activeSource = null,
+  onStop
 }) => {
   const inputRefs = useRef({});
 
@@ -43,6 +47,9 @@ const CommandList = ({
       {commands.map((command, index) => {
         const errorForCommand = errors.find(e => e.id === command.id);
         const canPlayInfo = canPlayInfos.find(c => c.id === command.id);
+        // Check if this specific command is playing
+        const isPlayingThis = activeSource?.type === 'playSingle' && activeSource?.commandId === command.id;
+
         return (
           <CommandItem
             key={command.id}
@@ -61,6 +68,9 @@ const CommandList = ({
             error={errorForCommand?.error}
             canPlay={canPlayInfo?.canPlay ?? false}
             isPopupMode={isPopupMode}
+            isPlayingThis={isPlayingThis}
+            isAnyPlaying={isPlaying}
+            onStop={onStop}
             ref={(el) => {
               if (el) {
                 inputRefs.current[command.id] = el;
