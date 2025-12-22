@@ -52,6 +52,8 @@ import { HideExpression } from '../expressions/visibility/HideExpression.js';
 import { ShowExpression } from '../expressions/visibility/ShowExpression.js';
 import { FadeInExpression } from '../expressions/visibility/FadeInExpression.js';
 import { FadeOutExpression } from '../expressions/visibility/FadeOutExpression.js';
+import { PosExpression } from '../expressions/PosExpression.js';
+import { SizeExpression } from '../expressions/SizeExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
 import { Polar2DExpression } from '../expressions/Polar2DExpression.js';
 import { Graph3DExpression } from '../expressions/Graph3DExpression.js';
@@ -298,6 +300,10 @@ export class IntrepreterFunctionTable {
         registerMultiArg('show', ShowExpression);     // show shapes instantly
         registerMultiArg('fadein', FadeInExpression); // fade in with animation
         registerMultiArg('fadeout', FadeOutExpression); // fade out with animation
+
+        // Reposition controls
+        registerMultiArg('pos', PosExpression);       // shift containers by dRow, dCol
+        registerMultiArg('size', SizeExpression);     // scale containers by width/height ratio
 
         // Intersection
         registerMultiArg('intersect', IntersectExpression);
