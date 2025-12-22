@@ -34,8 +34,6 @@ All vertices must be point3d expressions. Minimum 3 vertices required.
 
 ```
 g = g3d(0, 0, 20, 20)
-
-// Triangle (3 vertices)
 A = point3d(g, 0, 0, 0)
 B = point3d(g, 3, 0, 0)
 C = point3d(g, 1.5, 2, 1)

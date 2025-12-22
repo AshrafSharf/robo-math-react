@@ -1,9 +1,9 @@
 /**
- * Polygon3DCommand - Command for rendering a 3D polygon with pen animation
+ * Polygon3DCommand - Command for rendering a 3D polygon with fade-in animation
  */
 import { Base3DCommand } from './Base3DCommand.js';
-import { Math3DShapeEffect } from '../../../effects/shape-effects/math-3d-shape-effect.js';
 import { common_error_messages } from '../../expression-parser/core/ErrorMessages.js';
+import { fadeInPolygon } from '../../../3d/lhs/animator/lhs_polygon_animator.js';
 
 export class Polygon3DCommand extends Base3DCommand {
     /**
@@ -56,16 +56,17 @@ export class Polygon3DCommand extends Base3DCommand {
     }
 
     /**
-     * Replay animation on existing shape using pen effect
-     * @returns {Promise}
+     * Fade in animation for polygon3d
      */
     async playSingle() {
         if (!this.commandResult) return;
 
-        const pen = this.graphContainer.getPen();
-        const camera = this.graphContainer.getCamera();
-        const canvas = this.graphContainer.getCanvas();
-        const effect = new Math3DShapeEffect(this.commandResult, 'polygon', { pen, camera, canvas });
-        return effect.play();
+        return new Promise((resolve) => {
+            fadeInPolygon(this.commandResult, {
+                duration: this.styleOptions.duration || 2,
+                toOpacity: this.styleOptions.opacity || 0.7,
+                onComplete: resolve
+            });
+        });
     }
 }
