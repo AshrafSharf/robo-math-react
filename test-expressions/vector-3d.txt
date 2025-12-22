@@ -13,7 +13,7 @@ forward3d(V)
   backward3d(V)          // slide backward 1 unit
   backward3d(V, 0.5)     // slide backward 0.5 units
 
-  move3d(V, 1, 1, 1)     // move vector to start at (1,1,1)
-  move3d(V, point3d(g, 2, 2, 2))  // move to point3d
+  shiftTo3d(V, 1, 1, 1)     // shift vector to start at (1,1,1)
+  shiftTo3d(V, point3d(g, 2, 2, 2))  // shift to point3d
 
   reverse3d(V)           // create reversed vector at same tail

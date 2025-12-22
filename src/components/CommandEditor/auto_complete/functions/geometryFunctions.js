@@ -129,12 +129,12 @@ export const VECTOR_3D_FUNCTIONS = {
     altSignatures: ['backward3d(vec)', 'backward3d(vec, scalar)'],
     category: '3D Geometry'
   },
-  move3d: {
-    name: 'move3d',
+  shiftTo3d: {
+    name: 'shiftTo3d',
     signature: '(vec, point)',
     args: ['vec: Vector3D|Line3D', 'point: Point3D'],
-    description: 'Move vector/line to new starting position (animated)',
-    altSignatures: ['move3d(vec, point)', 'move3d(vec, x, y, z)'],
+    description: 'Shift vector/line to new position, preserving direction and magnitude (animated)',
+    altSignatures: ['shiftTo3d(vec, point)', 'shiftTo3d(vec, x, y, z)'],
     category: '3D Geometry'
   },
   reverse3d: {

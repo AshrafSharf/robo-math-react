@@ -61,9 +61,8 @@ export class PathAnimator {
         };
         
         // Create the tween
-        const tween = TweenMax.to(animationState, {
+        const tween = TweenMax.to(animationState, duration, {
             progress: endPosition,
-            duration: duration,
             ease: ease,
             repeat: repeat,
             yoyo: yoyo,
@@ -172,21 +171,19 @@ export class PathAnimator {
             }
             
             // Animate rotation along with position
-            TweenMax.to(object.rotation, {
+            TweenMax.to(object.rotation, duration * 0.3, {
                 x: tempObject.rotation.x,
                 y: tempObject.rotation.y,
                 z: tempObject.rotation.z,
-                duration: duration * 0.3,
                 ease: "power2.out"
             });
         }
-        
+
         // Create position tween
-        const tween = TweenMax.to(object.position, {
+        const tween = TweenMax.to(object.position, duration, {
             x: to.x,
             y: to.y,
             z: to.z,
-            duration: duration,
             ease: ease,
             repeat: repeat,
             yoyo: yoyo,

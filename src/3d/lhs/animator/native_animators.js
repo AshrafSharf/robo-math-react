@@ -31,9 +31,8 @@ export function fadeInMesh(mesh, options = {}) {
     }
     mesh.visible = true;
     
-    return TweenMax.to(mesh.material, {
+    return TweenMax.to(mesh.material, duration, {
         opacity: targetOpacity,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -56,11 +55,10 @@ export function growLine(lineMesh, options = {}) {
     lineMesh.scale.set(0.01, 0.01, 0.01);
     lineMesh.visible = true;
     
-    return TweenMax.to(lineMesh.scale, {
+    return TweenMax.to(lineMesh.scale, duration, {
         x: 1,
         y: 1,
         z: 1,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -92,15 +90,13 @@ export function traceTube(tubeMesh, options = {}) {
     tubeMesh.material.opacity = 0;
     
     // Fade in quickly
-    timeline.to(tubeMesh.material, {
+    timeline.to(tubeMesh.material, duration * 0.2, {
         opacity: 1,
-        duration: duration * 0.2,
         ease: "power2.in"
     })
     // Then scale along x-axis to create drawing effect
-    .to(tubeMesh.scale, {
+    .to(tubeMesh.scale, duration * 0.8, {
         x: 1,
-        duration: duration * 0.8,
         ease: ease
     }, "-=0.1");  // Slight overlap with fade
     

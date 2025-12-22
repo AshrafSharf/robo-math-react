@@ -54,9 +54,8 @@ export function animateBoxProduct(volumeGroup, options = {}) {
     // For scalar triple product, we animate from the B×C base
     collapseToBase(geometry, originalPositions, vectorA, vectorB, vectorC);
 
-    return TweenMax.to(animationState, {
+    return TweenMax.to(animationState, duration, {
         progress: 1,
-        duration: duration,
         ease: ease,
         onUpdate: () => {
             // Update vertex positions based on progress
@@ -198,12 +197,11 @@ export function fadeInBoxProduct(volumeGroup, options = {}) {
     });
 
     // Animate opacity
-    return TweenMax.to(meshes.map(m => m.material), {
+    return TweenMax.to(meshes.map(m => m.material), duration, {
         opacity: (index, target) => {
             // Restore original opacity or use default
             return target.userData?.originalOpacity || 0.6;
         },
-        duration: duration,
         ease: ease,
         onStart: () => {
             // Store original opacity

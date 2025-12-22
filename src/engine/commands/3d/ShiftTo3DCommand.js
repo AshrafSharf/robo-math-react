@@ -1,40 +1,51 @@
 /**
- * Move3DCommand - Command for creating and animating a 3D vector or line moving to a new position
+ * ShiftTo3DCommand - Command for shifting a 3D vector or line to a new position
  *
- * Creates a NEW vector/line at the target position.
+ * Creates a NEW vector/line at the target position, preserving direction and magnitude.
  * Animation: shows vector/line sliding from original to target position.
  * Pen follows the tail (start point) of the vector/line.
+ *
+ * @class ShiftTo3DCommand
+ * @extends Base3DCommand
  */
 import { Base3DCommand } from './Base3DCommand.js';
 import { animateVectorSlide } from '../../../3d/common/animator/vector_slide_animator.js';
 
-export class Move3DCommand extends Base3DCommand {
-    constructor(vectorExpression, originalShapeVarName, targetPosition, movedCoords, inputType = 'vector3d', options = {}) {
+export class ShiftTo3DCommand extends Base3DCommand {
+    /**
+     * @param {Object} vectorExpression - The original vector/line expression
+     * @param {string} originalShapeVarName - Variable name of the original shape
+     * @param {Object} targetPosition - Target position {x, y, z}
+     * @param {number[]} shiftedCoords - Shifted coordinates [x1, y1, z1, x2, y2, z2]
+     * @param {string} inputType - 'vector3d' or 'line3d'
+     * @param {Object} options - Styling and other options
+     */
+    constructor(vectorExpression, originalShapeVarName, targetPosition, shiftedCoords, inputType = 'vector3d', options = {}) {
         super();
         this.vectorExpression = vectorExpression;
         this.originalShapeVarName = originalShapeVarName;
         this.targetPosition = targetPosition;
-        this.movedCoords = movedCoords;
+        this.shiftedCoords = shiftedCoords;
         this.inputType = inputType; // 'vector3d' or 'line3d'
         this.options = options;
 
         this.graphContainer = null;
-        this.movedShape = null;
+        this.shiftedShape = null;
         this.originalStart = null;
         this.originalEnd = null;
-        this.movedStart = null;
-        this.movedEnd = null;
+        this.shiftedStart = null;
+        this.shiftedEnd = null;
     }
 
     async doInit() {
         const graphExpression = this.vectorExpression.graphExpression;
         if (!graphExpression || typeof graphExpression.getGrapher !== 'function') {
-            throw new Error('move3d() requires a vector3d or line3d with a valid g3d graph');
+            throw new Error('shiftTo3d() requires a vector3d or line3d with a valid g3d graph');
         }
 
         this.graphContainer = graphExpression.getGrapher();
         if (!this.graphContainer) {
-            throw new Error('move3d() graph not initialized');
+            throw new Error('shiftTo3d() graph not initialized');
         }
 
         // Get model values from expression [x1, y1, z1, x2, y2, z2]
@@ -42,16 +53,16 @@ export class Move3DCommand extends Base3DCommand {
         this.originalStart = { x: origCoords[0], y: origCoords[1], z: origCoords[2] };
         this.originalEnd = { x: origCoords[3], y: origCoords[4], z: origCoords[5] };
 
-        // Final moved position
-        this.movedStart = {
-            x: this.movedCoords[0],
-            y: this.movedCoords[1],
-            z: this.movedCoords[2]
+        // Final shifted position
+        this.shiftedStart = {
+            x: this.shiftedCoords[0],
+            y: this.shiftedCoords[1],
+            z: this.shiftedCoords[2]
         };
-        this.movedEnd = {
-            x: this.movedCoords[3],
-            y: this.movedCoords[4],
-            z: this.movedCoords[5]
+        this.shiftedEnd = {
+            x: this.shiftedCoords[3],
+            y: this.shiftedCoords[4],
+            z: this.shiftedCoords[5]
         };
     }
 
@@ -76,14 +87,14 @@ export class Move3DCommand extends Base3DCommand {
             animateVectorSlide(
                 this.originalStart,
                 this.originalEnd,
-                this.movedStart,
-                this.movedEnd,
+                this.shiftedStart,
+                this.shiftedEnd,
                 createShape,
                 scene,
                 {
                     duration: 2,
                     onComplete: (finalShape) => {
-                        this.movedShape = finalShape;
+                        this.shiftedShape = finalShape;
                         this.commandResult = finalShape;
                         resolve();
                     }
@@ -96,16 +107,16 @@ export class Move3DCommand extends Base3DCommand {
         const styleOptions = this.options.styleOptions || {};
 
         if (this.inputType === 'line3d') {
-            this.movedShape = this.graphContainer.diagram3d.lineByTwoPoints(
-                this.movedStart,
-                this.movedEnd,
+            this.shiftedShape = this.graphContainer.diagram3d.lineByTwoPoints(
+                this.shiftedStart,
+                this.shiftedEnd,
                 styleOptions.color,
                 { strokeWidth: styleOptions.strokeWidth }
             );
         } else {
-            this.movedShape = this.graphContainer.diagram3d.vector(
-                this.movedStart,
-                this.movedEnd,
+            this.shiftedShape = this.graphContainer.diagram3d.vector(
+                this.shiftedStart,
+                this.shiftedEnd,
                 '',
                 styleOptions.color,
                 {
@@ -115,14 +126,14 @@ export class Move3DCommand extends Base3DCommand {
                 }
             );
         }
-        this.commandResult = this.movedShape;
+        this.commandResult = this.shiftedShape;
     }
 
     async playSingle() {
         const scene = this.graphContainer.getScene();
 
-        if (this.movedShape) {
-            scene.remove(this.movedShape);
+        if (this.shiftedShape) {
+            scene.remove(this.shiftedShape);
         }
 
         return this.play();
@@ -130,9 +141,9 @@ export class Move3DCommand extends Base3DCommand {
 
     getLabelPosition() {
         return {
-            x: (this.movedCoords[0] + this.movedCoords[3]) / 2,
-            y: (this.movedCoords[1] + this.movedCoords[4]) / 2,
-            z: (this.movedCoords[2] + this.movedCoords[5]) / 2
+            x: (this.shiftedCoords[0] + this.shiftedCoords[3]) / 2,
+            y: (this.shiftedCoords[1] + this.shiftedCoords[4]) / 2,
+            z: (this.shiftedCoords[2] + this.shiftedCoords[5]) / 2
         };
     }
 }

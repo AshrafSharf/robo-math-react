@@ -108,14 +108,14 @@ export class BaseDiagram3D {
     }
 
     /**
-     * Move a vector to a new position
+     * Shift a vector to a new position, preserving its direction and magnitude
      * @param {Object} vector - Object with {start: {x,y,z}, end: {x,y,z}}
-     * @param {Object} newStart - New starting position {x, y, z}
+     * @param {Object} newStart - New starting position {x, y, z} for the vector's tail
      * @param {Object} options - Additional options for the vector
      * @returns {Object} The vector at the new position
      */
-    moveVector(vector, newStart, options = {}) {
-        throw new Error('moveVector() must be implemented by subclass');
+    shiftToVector(vector, newStart, options = {}) {
+        throw new Error('shiftToVector() must be implemented by subclass');
     }
 
     /**

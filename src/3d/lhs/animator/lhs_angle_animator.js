@@ -29,11 +29,10 @@ export function animateArcRadius(arcMesh, targetRadius = 1, options = {}) {
     arcMesh.scale.set(startScale, startScale, startScale);
     
     // Animate to target radius
-    return TweenMax.to(arcMesh.scale, {
+    return TweenMax.to(arcMesh.scale, duration, {
         x: originalScale,
         y: originalScale,
         z: originalScale,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -81,9 +80,8 @@ export function animateArcSweep(arcMesh, options = {}) {
     // Animate the sweep
     const animationProgress = { value: 0 };
     
-    return TweenMax.to(animationProgress, {
+    return TweenMax.to(animationProgress, duration, {
         value: 1,
-        duration: duration,
         ease: ease,
         onUpdate: function() {
             const progress = animationProgress.value;
@@ -141,9 +139,8 @@ export function animateArcThickness(arcMesh, options = {}) {
     // This scales the entire arc uniformly
     const scaleValue = { value: fromThickness };
     
-    return TweenMax.to(scaleValue, {
+    return TweenMax.to(scaleValue, duration, {
         value: toThickness,
-        duration: duration,
         ease: ease,
         onUpdate: function() {
             const scale = scaleValue.value;
@@ -172,9 +169,8 @@ export function fadeInArc(arcMesh, options = {}) {
     arcMesh.material.transparent = true;
     arcMesh.material.opacity = fromOpacity;
     
-    return TweenMax.to(arcMesh.material, {
+    return TweenMax.to(arcMesh.material, duration, {
         opacity: toOpacity,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });

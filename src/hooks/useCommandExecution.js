@@ -123,6 +123,10 @@ export function useCommandExecution(roboCanvas, options = {}) {
         controller.setCommandModels(commandModels);
     }, [controller]);
 
+    const handleChangeImmediate = useCallback((commandModels) => {
+        controller.executeAllImmediate(commandModels);
+    }, [controller]);
+
     const handleStop = useCallback(() => {
         controller.stop();
     }, [controller]);
@@ -156,6 +160,7 @@ export function useCommandExecution(roboCanvas, options = {}) {
         handlePlaySingle,
         handlePlayAll,
         handleChange,
+        handleChangeImmediate,
         handleStop,
         handlePause,
         handleResume,

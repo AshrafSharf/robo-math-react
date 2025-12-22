@@ -33,11 +33,10 @@ export function animateVectorMovement(vectorGroup, fromPos, toPos, options = {})
     );
 
     // Animate to target position
-    return TweenMax.to(vectorGroup.position, {
+    return TweenMax.to(vectorGroup.position, duration, {
         x: toPos.x || 0,
         y: toPos.y || 0,
         z: toPos.z || 0,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -73,11 +72,10 @@ export function animateReverseVectorCreation(reversedVector, options = {}) {
     // Start with scale at 0 and grow to show the flip animation
     reversedVector.scale.set(0, 0, 0);
 
-    return TweenMax.to(reversedVector.scale, {
+    return TweenMax.to(reversedVector.scale, duration, {
         x: 1,
         y: 1,
         z: 1,
-        duration: duration,
         ease: ease,
         onComplete: () => {
             // Show label after animation
@@ -141,21 +139,19 @@ export function animateVectorSlide(vectorGroup, start, end, scalar, options = {}
     const timeline = new TimelineMax({ onComplete });
 
     // Slide to target position
-    timeline.to(vectorGroup.position, {
+    timeline.to(vectorGroup.position, duration, {
         x: originalPosition.x + slideOffset.x,
         y: originalPosition.y + slideOffset.y,
         z: originalPosition.z + slideOffset.z,
-        duration: duration,
         ease: ease
     });
 
     // Optionally return to original position
     if (returnToOriginal) {
-        timeline.to(vectorGroup.position, {
+        timeline.to(vectorGroup.position, duration, {
             x: originalPosition.x,
             y: originalPosition.y,
             z: originalPosition.z,
-            duration: duration,
             ease: ease,
             delay: pauseDuration
         });

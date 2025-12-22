@@ -62,9 +62,8 @@ export function animateArcDraw(arcObject, options = {}) {
     // Animation progress object
     const animProgress = { value: 0 };
 
-    return TweenMax.to(animProgress, {
+    return TweenMax.to(animProgress, duration, {
         value: 1,
-        duration: duration,
         ease: ease,
         onUpdate: function() {
             const progress = animProgress.value;
@@ -142,9 +141,8 @@ export function fadeInArc(arcObject, options = {}) {
 
     meshes.forEach(mesh => {
         if (mesh.material) {
-            tl.to(mesh.material, {
+            tl.to(mesh.material, duration, {
                 opacity: toOpacity,
-                duration: duration,
                 ease: ease
             }, 0); // All at the same time
         }
@@ -177,11 +175,10 @@ export function animateArcScale(arcObject, options = {}) {
     arcObject.scale.set(fromScale, fromScale, fromScale);
 
     // Animate to final scale
-    return TweenMax.to(arcObject.scale, {
+    return TweenMax.to(arcObject.scale, duration, {
         x: toScale,
         y: toScale,
         z: toScale,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -227,11 +224,10 @@ export function animateArcRotation(arcObject, options = {}) {
             break;
     }
 
-    return TweenMax.to(arcObject.rotation, {
+    return TweenMax.to(arcObject.rotation, duration, {
         x: targetRotation.x,
         y: targetRotation.y,
         z: targetRotation.z,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });

@@ -30,11 +30,10 @@ export function animateLabelScale(labelSprite, options = {}) {
     // Set initial scale
     labelSprite.scale.multiplyScalar(fromScale);
     
-    return TweenMax.to(labelSprite.scale, {
+    return TweenMax.to(labelSprite.scale, duration, {
         x: originalScale.x * toScale,
         y: originalScale.y * toScale,
         z: originalScale.z * toScale,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -57,14 +56,13 @@ export function animateLabelTypewriter(labelSprite, fullText, options = {}) {
     
     const progress = { value: 0 };
     
-    return TweenMax.to(progress, {
+    return TweenMax.to(progress, duration, {
         value: 1,
-        duration: duration,
         ease: ease,
         onUpdate: function() {
             const currentLength = Math.floor(fullText.length * progress.value);
             const currentText = fullText.substring(0, currentLength);
-            
+
             // Update sprite texture (requires custom implementation)
             // This is a placeholder - actual implementation would need to
             // recreate the canvas texture with partial text
@@ -94,9 +92,8 @@ export function animateLabelFloat(labelSprite, options = {}) {
     
     const originalY = labelSprite.position.y;
     
-    return TweenMax.to(labelSprite.position, {
+    return TweenMax.to(labelSprite.position, duration, {
         y: originalY + floatHeight,
-        duration: duration,
         ease: ease,
         repeat: repeat,
         yoyo: yoyo,
@@ -142,11 +139,10 @@ export function animateLabelSlide(labelSprite, options = {}) {
             break;
     }
     
-    return TweenMax.to(labelSprite.position, {
+    return TweenMax.to(labelSprite.position, duration, {
         x: targetPosition.x,
         y: targetPosition.y,
         z: targetPosition.z,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -175,9 +171,8 @@ export function fadeInLabel(labelSprite, options = {}) {
         // For CSS2DObject, animate the element's opacity
         labelSprite.element.style.opacity = fromOpacity;
         
-        return TweenMax.to(labelSprite.element.style, {
+        return TweenMax.to(labelSprite.element.style, duration, {
             opacity: toOpacity,
-            duration: duration,
             ease: ease,
             onComplete: onComplete
         });
@@ -195,9 +190,8 @@ export function fadeInLabel(labelSprite, options = {}) {
         labelSprite.material.opacity = fromOpacity;
         labelSprite.material.needsUpdate = true;
         
-        return TweenMax.to(labelSprite.material, {
+        return TweenMax.to(labelSprite.material, duration, {
             opacity: labelSprite.userData.originalOpacity,
-            duration: duration,
             ease: ease,
             onComplete: onComplete
         });

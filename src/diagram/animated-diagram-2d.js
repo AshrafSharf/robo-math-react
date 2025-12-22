@@ -8,7 +8,7 @@ import { BaseDiagram2d } from './base-diagram-2d.js';
 import { TexToSVGShapeEffect } from '../effects/shape-effects/tex-to-svg-shape-effect.js';
 import { MathShapeEffect } from '../effects/shape-effects/math-shape-effect.js';
 import { ReverseVectorEffect } from '../effects/reverse-vector-effect.js';
-import { MoveVectorEffect } from '../effects/move-vector-effect.js';
+import { ShiftToVectorEffect } from '../effects/shift-to-vector-effect.js';
 import { ZoomEffect } from '../effects/zoom-effect.js';
 import { PanEffect } from '../effects/pan-effect.js';
 import { DEFAULT_SHAPE_COLORS } from './style_helper.js';
@@ -139,14 +139,15 @@ export class AnimatedDiagram2d extends BaseDiagram2d {
   }
   
   /**
-   * Create a vector at target position
+   * Shift a vector to a new position, preserving its direction and magnitude
+   * The vector's tail (start point) is repositioned to the target position.
    * @param {Object} graphContainer - The graph container to render on
    * @param {Object} originalVector - Original vector definition {start: {x,y}, end: {x,y}}
-   * @param {Object} targetPosition - Target position {x, y} or target vector {start: {x,y}, end: {x,y}}
+   * @param {Object} targetPosition - Target position {x, y} for the vector's tail
    * @param {Object} options - Options including color, strokeWidth, dashed, dashPattern
-   * @returns {Object} The vector shape
+   * @returns {Object} The vector shape at target position
    */
-  moveVector(graphContainer, originalVector, targetPosition, options = {}) {
+  shiftToVector(graphContainer, originalVector, targetPosition, options = {}) {
     const originalStart = originalVector.start;
     const originalEnd = originalVector.end;
     const targetStart = targetPosition.start || targetPosition;

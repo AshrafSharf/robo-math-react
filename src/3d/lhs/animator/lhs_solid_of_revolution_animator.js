@@ -50,9 +50,8 @@ export function animateRevolution(solidMesh, options = {}) {
     // Make mesh visible
     solidMesh.visible = true;
     
-    return TweenMax.to(animData, {
+    return TweenMax.to(animData, duration, {
         angle: toAngle,
-        duration: duration,
         ease: ease,
         onUpdate: function() {
             // Create LatheGeometry with current angle
@@ -113,9 +112,8 @@ export function fadeInSolid(solidMesh, options = {}) {
     solidMesh.material.opacity = fromOpacity;
     solidMesh.visible = true;
     
-    return TweenMax.to(solidMesh.material, {
+    return TweenMax.to(solidMesh.material, duration, {
         opacity: targetOpacity,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -141,11 +139,10 @@ export function scaleSolid(solidMesh, options = {}) {
     solidMesh.scale.set(fromScale, fromScale, fromScale);
     solidMesh.visible = true;
     
-    return TweenMax.to(solidMesh.scale, {
+    return TweenMax.to(solidMesh.scale, duration, {
         x: toScale,
         y: toScale,
         z: toScale,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -179,16 +176,14 @@ export function animateDiscs(discs, options = {}) {
         const timeline = new TimelineMax({ onComplete });
         
         // First fade in
-        timeline.to(discs.material, {
+        timeline.to(discs.material, duration * 0.3, {
             opacity: toOpacity,
-            duration: duration * 0.3,
             ease: "power2.in"
         })
         // Then scale up disc
-        .to(discs.scale, {
+        .to(discs.scale, duration * 0.7, {
             x: toScale,
             z: toScale,
-            duration: duration * 0.7,
             ease: ease
         }, "-=0.2");
         
@@ -209,16 +204,14 @@ export function animateDiscs(discs, options = {}) {
         const discStart = index * stagger;
         
         // First fade in
-        timeline.to(disc.material, {
+        timeline.to(disc.material, duration * 0.3, {
             opacity: toOpacity,
-            duration: duration * 0.3,
             ease: "power2.in"
         }, discStart)
         // Then scale up disc
-        .to(disc.scale, {
+        .to(disc.scale, duration * 0.7, {
             x: toScale,
             z: toScale,
-            duration: duration * 0.7,
             ease: ease
         }, discStart + 0.1);
     });
@@ -269,9 +262,8 @@ export function sweepSolid(solidMesh, options = {}) {
     material.clippingPlanes = [clippingPlane];
     
     // Animate the clipping plane position
-    return TweenMax.to(clippingPlane, {
+    return TweenMax.to(clippingPlane, duration, {
         constant: endPos,
-        duration: duration,
         ease: ease,
         onUpdate: () => {
             material.needsUpdate = true;

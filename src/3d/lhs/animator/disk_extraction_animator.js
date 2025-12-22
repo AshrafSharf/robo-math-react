@@ -37,9 +37,8 @@ export function animateDiskExtraction(extractedGroup, options = {}) {
     
     // Step 1: Make disk visible and slide out to the right
     extractedDisk.visible = true;
-    timeline.to(extractedDisk.position, {
+    timeline.to(extractedDisk.position, slideOutDuration, {
         x: 0,  // Slide to final position (was at -extractDistance)
-        duration: slideOutDuration,
         ease: ease
     });
     
@@ -51,24 +50,19 @@ export function animateDiskExtraction(extractedGroup, options = {}) {
         }, `+=${staggerDelay}`);
         
         // Animate radius line growing
-        timeline.fromTo(radiusLine.scale, {
-            x: 0.01,
-            y: 1,
-            z: 1
-        }, {
-            x: 1,
-            duration: radiusDuration,
-            ease: ease
-        });
+        timeline.fromTo(radiusLine.scale,
+            { x: 0.01, y: 1, z: 1 },
+            radiusDuration,
+            { x: 1, ease: ease }
+        );
         
         // Fade in radius label
-        timeline.fromTo(radiusLabel.material, {
-            opacity: 0
-        }, {
-            opacity: 1,
-            duration: radiusDuration * 0.5,
-            ease: 'power2.in'
-        }, `-=${radiusDuration * 0.5}`);
+        timeline.fromTo(radiusLabel.material,
+            { opacity: 0 },
+            radiusDuration * 0.5,
+            { opacity: 1, ease: 'power2.in' },
+            `-=${radiusDuration * 0.5}`
+        );
     }
     
     // Step 3: Show height/thickness line and label
@@ -79,24 +73,19 @@ export function animateDiskExtraction(extractedGroup, options = {}) {
         }, `+=${staggerDelay}`);
         
         // Animate height line growing
-        timeline.fromTo(heightLine.scale, {
-            x: 1,
-            y: 0.01,
-            z: 1
-        }, {
-            y: 1,
-            duration: heightDuration,
-            ease: ease
-        });
+        timeline.fromTo(heightLine.scale,
+            { x: 1, y: 0.01, z: 1 },
+            heightDuration,
+            { y: 1, ease: ease }
+        );
         
         // Fade in height label
-        timeline.fromTo(heightLabel.material, {
-            opacity: 0
-        }, {
-            opacity: 1,
-            duration: heightDuration * 0.5,
-            ease: 'power2.in'
-        }, `-=${heightDuration * 0.5}`);
+        timeline.fromTo(heightLabel.material,
+            { opacity: 0 },
+            heightDuration * 0.5,
+            { opacity: 1, ease: 'power2.in' },
+            `-=${heightDuration * 0.5}`
+        );
     }
     
     return timeline;
@@ -135,10 +124,9 @@ export function moveDiskOut(disk, options = {}) {
     const targetY = disk.userData.originalPosition.y + offsetY;
     
     // Animate to absolute position (not relative)
-    return TweenMax.to(disk.position, {
+    return TweenMax.to(disk.position, duration, {
         x: targetX,
         y: targetY,
-        duration: duration,
         ease: ease
     });
 }

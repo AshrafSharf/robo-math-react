@@ -50,9 +50,8 @@ export function fadeInPolygon(polygonMesh, options = {}) {
     const tl = new TimelineMax({ onComplete });
     
     meshes.forEach(mesh => {
-        tl.to(mesh.material, {
+        tl.to(mesh.material, duration, {
             opacity: mesh.userData.originalOpacity,
-            duration: duration,
             ease: ease
         }, 0); // All at the same time
     });
@@ -92,11 +91,10 @@ export function animatePolygonScale(polygonMesh, options = {}) {
     // Make visible
     polygonMesh.visible = true;
     
-    return TweenMax.to(polygonMesh.scale, {
+    return TweenMax.to(polygonMesh.scale, duration, {
         x: originalScale.x * toScale,
         y: originalScale.y * toScale,
         z: originalScale.z * toScale,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });

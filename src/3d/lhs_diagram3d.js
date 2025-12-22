@@ -854,13 +854,14 @@ export class LHS3DDiagram extends BaseDiagram3D {
     }
     
     /**
-     * Creates a dashed vector at a new position (non-animated version)
+     * Shift a vector to a new position, preserving its direction and magnitude
+     * Creates a dashed vector at the new position (non-animated version)
      * @param {Object} vector - Object with {start: {x,y,z}, end: {x,y,z}}
-     * @param {Object} newStart - New starting position {x, y, z}
+     * @param {Object} newStart - New starting position {x, y, z} for the vector's tail
      * @param {Object} options - Additional options for the vector
      * @returns {Object} The dashed vector at the new position
      */
-    moveVector(vector, newStart, options = {}) {
+    shiftToVector(vector, newStart, options = {}) {
         // Calculate displacement
         const displacement = {
             x: vector.end.x - vector.start.x,

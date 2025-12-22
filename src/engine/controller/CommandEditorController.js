@@ -34,6 +34,10 @@ export class CommandEditorController {
         this.debounceMs = options.debounceMs ?? 500;
         this._debounceTimer = null;
 
+        // Lesson pages for copy expression support
+        this.lessonPages = [];
+        this.currentPageIndex = 0;
+
         // Event callbacks - UI subscribes to these
         this.onStateChange = null;  // Called on any state change
         this.onInteractiveStateChange = null;  // Called on interactive player state change
@@ -76,6 +80,11 @@ export class CommandEditorController {
         this.roboCanvas = roboCanvas;
     }
 
+    setLessonPages(pages, currentPageIndex) {
+        this.lessonPages = pages || [];
+        this.currentPageIndex = currentPageIndex || 0;
+    }
+
     getDiagram() {
         return this.roboCanvas?.diagram || null;
     }
@@ -105,6 +114,13 @@ export class CommandEditorController {
             this._debounceTimer = null;
             this.executeAll(this.commandModels);
         }, this.debounceMs);
+    }
+
+    // Execute immediately without debouncing (for page switches)
+    executeAllImmediate(commandModels) {
+        this.cancelPendingExecution();
+        this.commandModels = commandModels;
+        this.executeAll(commandModels);
     }
 
     cancelPendingExecution() {
@@ -160,6 +176,11 @@ export class CommandEditorController {
         const allModels = [...latexVarModels, ...commandModels];
 
         const newContext = new ExpressionContext();
+        // Set up context for copy expression support
+        newContext.pages = this.lessonPages;
+        newContext.currentPageIndex = this.currentPageIndex;
+        newContext.pipelineService = this.pipelineService;
+
         const pipelineResult = this.pipelineService.processCommandList(allModels, newContext);
 
         this.errors = pipelineResult.errors;

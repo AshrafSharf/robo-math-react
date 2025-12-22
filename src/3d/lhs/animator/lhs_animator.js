@@ -101,10 +101,9 @@ export function animateLHSObject(meshObject, objectType, options = {}) {
             if (fallbackToFade && meshObject.material) {
                 meshObject.material.transparent = true;
                 meshObject.material.opacity = 0;
-                
-                return TweenMax.to(meshObject.material, {
+
+                return TweenMax.to(meshObject.material, animationOptions.duration || 0.5, {
                     opacity: animationOptions.toOpacity || 1,
-                    duration: animationOptions.duration || 0.5,
                     ease: animationOptions.ease || "power2.inOut",
                     onComplete: animationOptions.onComplete
                 });

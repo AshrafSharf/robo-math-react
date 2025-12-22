@@ -56,9 +56,8 @@ export function animateVectorGrowth(vectorGroup, options = {}) {
         cone.scale.set(0, 0, 0);
     }
     
-    return TweenMax.to(progress, {
+    return TweenMax.to(progress, duration, {
         value: 1,
-        duration: duration,
         ease: ease,
         onUpdate: function() {
             if (shaft) {
@@ -111,21 +110,19 @@ export function animateVectorComponents(vectorGroup, options = {}) {
         // Store and animate shaft scale
         const originalScale = shaft.scale.y;
         shaft.scale.y = 0.001;
-        timeline.to(shaft.scale, {
+        timeline.to(shaft.scale, duration * 0.7, {
             y: originalScale,
-            duration: duration * 0.7,
             ease: ease
         }, 0);
     }
-    
+
     if (cone) {
         // Animate cone scale with delay
         cone.scale.set(0, 0, 0);
-        timeline.to(cone.scale, {
+        timeline.to(cone.scale, duration * 0.3, {
             x: 1,
             y: 1,
             z: 1,
-            duration: duration * 0.3,
             ease: "back.out(1.7)"
         }, duration * 0.7);
     }
@@ -162,11 +159,10 @@ export function animateParallelTranslation(vectorGroup, fromPosition, toPosition
     vectorGroup.visible = true;
     
     // Animate sliding to the new position
-    return TweenMax.to(vectorGroup.position, {
+    return TweenMax.to(vectorGroup.position, duration, {
         x: toPosition.x || 0,
         y: toPosition.y || 0,
         z: toPosition.z || 0,
-        duration: duration,
         ease: ease,
         delay: delay,
         onStart: onStart,
@@ -220,21 +216,19 @@ export function animateSlideAlongDirection(vectorGroup, scalar, originalPosition
     const timeline = new TimelineMax({ onComplete });
     
     // Slide to target position
-    timeline.to(vectorGroup.position, {
+    timeline.to(vectorGroup.position, duration, {
         x: targetPosition.x,
         y: targetPosition.y,
         z: targetPosition.z,
-        duration: duration,
         ease: ease
     });
-    
+
     // Optionally return to original position
     if (returnToOriginal) {
-        timeline.to(vectorGroup.position, {
+        timeline.to(vectorGroup.position, duration, {
             x: originalPosition?.x || 0,
             y: originalPosition?.y || 0,
             z: originalPosition?.z || 0,
-            duration: duration,
             ease: ease,
             delay: pauseDuration
         });
@@ -264,10 +258,9 @@ export function fadeInVector(vectorGroup, options = {}) {
             const originalOpacity = child.material.opacity || 1;
             child.material.transparent = true;
             child.material.opacity = 0;
-            
-            timeline.to(child.material, {
+
+            timeline.to(child.material, duration, {
                 opacity: originalOpacity,
-                duration: duration,
                 ease: ease
             }, 0);
         }

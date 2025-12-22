@@ -62,7 +62,7 @@ function* renderDiagram(diagram) {
     
     // === STEP 4: Move -v to the tip of u ===
     // This shows the tip-to-tail arrangement for addition
-    const vectorNegVTranslated = diagram.moveVector(
+    const vectorNegVTranslated = diagram.shiftToVector(
         {start: origin, end: vectorNegV},  // -v goes from origin to vectorNegV
         vectorU,                            // Move it to the tip of u
         {
@@ -87,7 +87,7 @@ function* renderDiagram(diagram) {
     
     // === STEP 6: Move the result vector to show it from tip of v to tip of u ===
     // This shows the direct geometric interpretation: u - v points from v to u
-    const vectorDifferenceDirectMoved = diagram.moveVector(
+    const vectorDifferenceDirectMoved = diagram.shiftToVector(
         {start: origin, end: resultVector},  // The result vector u - v
         vectorV,                              // Move it to start at the tip of v
         {

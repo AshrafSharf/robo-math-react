@@ -230,7 +230,7 @@ function* renderDiagram(diagram) {
             start: origin,
             end: crossInitialEnd
         };
-        diagram.moveVector(
+        diagram.shiftToVector(
             crossVectorDef, 
             closestOnL1,
             {

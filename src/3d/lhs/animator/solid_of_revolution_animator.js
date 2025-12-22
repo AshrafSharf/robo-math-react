@@ -99,9 +99,8 @@ export function animateRevolution(solidMesh, options = {}) {
         console.log('Axis is not y, skipping geometry creation. Axis:', axis);
     }
     
-    return TweenMax.to(animData, {
+    return TweenMax.to(animData, duration, {
         angle: toAngle,
-        duration: duration,
         ease: ease,
         onUpdate: function() {
             if (axis === 'y') {
@@ -200,9 +199,8 @@ export function fadeInSolid(solidMesh, options = {}) {
     solidMesh.material.opacity = fromOpacity;
     solidMesh.visible = true;
     
-    return TweenMax.to(solidMesh.material, {
+    return TweenMax.to(solidMesh.material, duration, {
         opacity: targetOpacity,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -231,9 +229,8 @@ export function fadeOutSolid(solidMesh, options = {}) {
     // Ensure material is transparent
     solidMesh.material.transparent = true;
     
-    return TweenMax.to(solidMesh.material, {
+    return TweenMax.to(solidMesh.material, duration, {
         opacity: toOpacity,
-        duration: duration,
         ease: ease,
         onComplete: () => {
             if (hideOnComplete && toOpacity === 0) {
@@ -274,11 +271,10 @@ export function scaleRevolution(solidMesh, options = {}) {
         solidMesh.scale.set(0.01, 0.01, 1);
     }
     
-    return TweenMax.to(solidMesh.scale, {
+    return TweenMax.to(solidMesh.scale, duration, {
         x: 1,
         y: 1,
         z: 1,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -315,47 +311,43 @@ export function animateDiscs(discs, options = {}) {
         discs.visible = true;
         
         const timeline = new TimelineMax({ onComplete });
-        
+
         // First fade in
-        timeline.to(discs.material, {
+        timeline.to(discs.material, duration * 0.3, {
             opacity: toOpacity,
-            duration: duration * 0.3,
             ease: "power2.in"
         })
         // Then scale up disc
-        .to(discs.scale, {
+        .to(discs.scale, duration * 0.7, {
             x: toScale,
             z: toScale,
-            duration: duration * 0.7,
             ease: ease
         }, "-=0.2");
-        
+
         return timeline;
     }
-    
+
     // Handle multiple discs with stagger
     const timeline = new TimelineMax({ onComplete });
-    
+
     discs.forEach((disc, index) => {
         disc.scale.set(fromScale, 1, fromScale);
         disc.material.transparent = true;
         disc.material.opacity = fromOpacity;
         disc.visible = true;
-        
+
         const discStart = index * stagger;
-        
-        timeline.to(disc.material, {
+
+        timeline.to(disc.material, duration * 0.3, {
             opacity: toOpacity,
-            duration: duration * 0.3,
             ease: "power2.in"
         }, discStart)
-        .to(disc.scale, {
+        .to(disc.scale, duration * 0.7, {
             x: toScale,
             z: toScale,
-            duration: duration * 0.7,
             ease: ease
         }, discStart + 0.1);
     });
-    
+
     return timeline;
 }

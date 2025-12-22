@@ -31,7 +31,7 @@ This document outlines the design and implementation approach for adding 3D vers
 |-----------|-------------|-----------|---------------------|
 | `forward3d` | Slide forward | Yes (GSAP) | Vector only |
 | `backward3d` | Slide backward | Yes (GSAP) | Vector only |
-| `move3d` | Move to new position | Yes (GSAP) | Vector only |
+| `shiftTo3d` | Shift to new position | Yes (GSAP) | Vector only |
 | `reverse3d` | Reverse direction | No | Vector only |
 
 ---
@@ -58,7 +58,7 @@ This document outlines the design and implementation approach for adding 3D vers
 |-----------|-----------------|
 | `forward3d` | Add line3d support |
 | `backward3d` | Add line3d support |
-| `move3d` | Add line3d support |
+| `shiftTo3d` | Add line3d support |
 | `reverse3d` | Add line3d support |
 
 ---
@@ -339,7 +339,7 @@ const zComponent = { start: start, end: { x: start.x, y: start.y, z: start.z + v
 
 ### Adding line3d Support
 
-For `forward3d`, `backward3d`, `move3d`, and `reverse3d`:
+For `forward3d`, `backward3d`, `shiftTo3d`, and `reverse3d`:
 
 **Changes to Expression:**
 ```javascript
@@ -610,7 +610,7 @@ registerMultiArg('decompose3d', Decompose3DExpression);
 ### Phase 3: Update Existing Operations
 10. `forward3d` - add line3d support
 11. `backward3d` - add line3d support
-12. `move3d` - add line3d support
+12. `shiftTo3d` - add line3d support
 13. `reverse3d` - add line3d support
 
 ---

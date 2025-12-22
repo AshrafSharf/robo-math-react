@@ -43,6 +43,7 @@ function AppContent() {
     handlePlaySingle,
     handlePlayAll,
     handleChange,
+    handleChangeImmediate,
     handleStop,
     handlePause,
     handleResume,
@@ -71,6 +72,13 @@ function AppContent() {
     };
   }, []);
 
+  // Keep lesson pages updated for copy expression support
+  useEffect(() => {
+    if (!controller) return;
+    const currentPageIndex = lesson.pages.findIndex(p => p.id === activePage.id);
+    controller.setLessonPages(lesson.pages, currentPageIndex);
+  }, [lesson.pages, activePage.id, controller]);
+
   // Clear and re-execute when page changes
   useEffect(() => {
     if (!roboCanvas || prevPageIdRef.current === activePage.id) return;
@@ -80,9 +88,9 @@ function AppContent() {
     clearAndRerender();
 
     if (activePage.commands?.length > 0) {
-      handleChange(activePage.commands);
+      handleChangeImmediate(activePage.commands);
     }
-  }, [activePage.id, activePage.commands, roboCanvas, clearAndRerender, handleChange]);
+  }, [activePage.id, activePage.commands, roboCanvas, clearAndRerender, handleChangeImmediate]);
 
   const handleToggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);

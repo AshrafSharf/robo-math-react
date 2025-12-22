@@ -7,6 +7,11 @@ export class ExpressionContext {
         this.references = {};
         this.dependents = {};       // variableName → Set<expression>
         this.currentCaller = null;  // expression currently being resolved
+
+        // For copy expression support
+        this.pages = [];              // All lesson pages
+        this.currentPageIndex = 0;    // Index of current page
+        this.pipelineService = null;  // Pipeline service for reuse
     }
 
     // Dependency tracking: set/get current caller

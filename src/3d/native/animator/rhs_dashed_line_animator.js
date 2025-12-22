@@ -70,8 +70,7 @@ export function animateDashedLineSequential(dashedLineGroup, options = {}) {
 
         // Add the animation at the right time
         timeline.add(
-            TweenMax.to(dash.scale, {
-                duration: 0.5,  // Slower animation for each dash
+            TweenMax.to(dash.scale, 0.5, {  // GSAP 2 syntax: duration as second param
                 ease: ease,
                 x: origScale.x,
                 y: origScale.y,
@@ -118,11 +117,10 @@ export function animateDashedLinePulse(dashedLineGroup, options = {}) {
     // Create wave effect
     dashes.forEach((dash, index) => {
         const delay = (index / dashes.length) * 0.5;
-        timeline.to(dash.scale, {
+        timeline.to(dash.scale, duration * 0.5, {
             x: pulseScale,
             y: 1,
             z: pulseScale,
-            duration: duration * 0.5,
             ease: ease,
             yoyo: true,
             repeat: 1
@@ -163,9 +161,8 @@ export function fadeInDashedLine(dashedLineGroup, options = {}) {
     });
 
     // Animate opacity for all dashes together
-    return TweenMax.to(dashes.map(d => d.material), {
+    return TweenMax.to(dashes.map(d => d.material), duration, {
         opacity: toOpacity,
-        duration: duration,
         ease: ease,
         onUpdate: () => {
             dashes.forEach(dash => {

@@ -86,9 +86,8 @@ export function animatePlaneParametricSweep(planeMesh, options = {}) {
     // Create animation based on sweep direction
     const animationProgress = { value: 0 };
 
-    return TweenMax.to(animationProgress, {
+    return TweenMax.to(animationProgress, duration, {
         value: 1,
-        duration: duration,
         ease: ease,
         onUpdate: function() {
             const progress = animationProgress.value;
@@ -193,11 +192,10 @@ export function animatePlaneScale(planeMesh, options = {}) {
     planeMesh.scale.set(fromScale, fromScale, fromScale);
 
     // Animate to full scale
-    return TweenMax.to(planeMesh.scale, {
+    return TweenMax.to(planeMesh.scale, duration, {
         x: toScale,
         y: toScale,
         z: toScale,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -243,11 +241,10 @@ export function animatePlaneRotation(planeMesh, options = {}) {
             break;
     }
 
-    return TweenMax.to(planeMesh.rotation, {
+    return TweenMax.to(planeMesh.rotation, duration, {
         x: targetRotation.x,
         y: targetRotation.y,
         z: targetRotation.z,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });
@@ -284,9 +281,8 @@ export function animatePlaneMaterial(planeMesh, options = {}) {
         planeMesh.material.transparent = true;
         planeMesh.material.opacity = fromOpacity;
 
-        timeline.to(planeMesh.material, {
+        timeline.to(planeMesh.material, duration, {
             opacity: toOpacity || planeMesh.material.opacity,
-            duration: duration,
             ease: ease
         }, 0);
     }
@@ -298,11 +294,10 @@ export function animatePlaneMaterial(planeMesh, options = {}) {
 
         planeMesh.material.color.copy(startColor);
 
-        timeline.to(planeMesh.material.color, {
+        timeline.to(planeMesh.material.color, duration, {
             r: endColor.r,
             g: endColor.g,
             b: endColor.b,
-            duration: duration,
             ease: ease
         }, 0);
     }
@@ -334,9 +329,8 @@ export function fadeInPlane(planeMesh, options = {}) {
     planeMesh.material.transparent = true;
     planeMesh.material.opacity = fromOpacity;
 
-    return TweenMax.to(planeMesh.material, {
+    return TweenMax.to(planeMesh.material, duration, {
         opacity: toOpacity,
-        duration: duration,
         ease: ease,
         onComplete: onComplete
     });

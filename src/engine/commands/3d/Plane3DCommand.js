@@ -57,10 +57,10 @@ export class Plane3DCommand extends Base3DCommand {
     }
 
     /**
-     * Replay animation on existing shape using sweep effect
+     * Play animation - following Forward3D pattern
      * @returns {Promise}
      */
-    async playSingle() {
+    async play() {
         if (!this.commandResult) return;
 
         // Map short flags to full names for the animator
@@ -74,5 +74,13 @@ export class Plane3DCommand extends Base3DCommand {
                 onComplete: () => resolve()
             });
         });
+    }
+
+    /**
+     * Replay animation on existing shape
+     * @returns {Promise}
+     */
+    async playSingle() {
+        return this.play();
     }
 }

@@ -33,24 +33,23 @@ export function animateVectorMovement(vectorGroup, originalStart, targetStart, o
     // Use GSAP with progress callback for interpolation
     const animationState = { progress: 0 };
     
-    return TweenMax.to(animationState, {
+    return TweenMax.to(animationState, duration, {
         progress: 1,
-        duration: duration,
         ease: ease,
         onUpdate: () => {
             const t = animationState.progress;
             const dt = t - previousProgress;
-            
+
             // Calculate incremental translation based on progress delta
             const dx = threeTranslation.x * dt;
             const dy = threeTranslation.y * dt;
             const dz = threeTranslation.z * dt;
-            
+
             // Apply incremental translation in Three.js coordinates
             vectorGroup.translateX(dx);
             vectorGroup.translateY(dy);
             vectorGroup.translateZ(dz);
-            
+
             previousProgress = t;
         },
         onComplete: onComplete
@@ -84,11 +83,10 @@ export function animateReverseVectorCreation(reversedVector, options = {}) {
     // Start with scale at 0 and grow to show the flip animation
     reversedVector.scale.set(0, 0, 0);
     
-    return TweenMax.to(reversedVector.scale, {
+    return TweenMax.to(reversedVector.scale, duration, {
         x: 1,
         y: 1,
         z: 1,
-        duration: duration,
         ease: ease,
         onComplete: () => {
             // Show label after animation
@@ -96,7 +94,7 @@ export function animateReverseVectorCreation(reversedVector, options = {}) {
                 reversedVector.label.visible = true;
                 fadeInLabel(reversedVector.label, { duration: duration * 0.3 });
             }
-            
+
             if (onComplete) {
                 onComplete(reversedVector);
             }
@@ -150,21 +148,19 @@ export function animateVectorSlide(vectorGroup, vectorStart, vectorEnd, scalar, 
     const timeline = new TimelineMax({ onComplete });
     
     // Slide to target position
-    timeline.to(vectorGroup.position, {
+    timeline.to(vectorGroup.position, duration, {
         x: originalPosition.x + threeSlideOffset.x,
         y: originalPosition.y + threeSlideOffset.y,
         z: originalPosition.z + threeSlideOffset.z,
-        duration: duration,
         ease: ease
     });
-    
+
     // Optionally return to original position
     if (returnToOriginal) {
-        timeline.to(vectorGroup.position, {
+        timeline.to(vectorGroup.position, duration, {
             x: originalPosition.x,
             y: originalPosition.y,
             z: originalPosition.z,
-            duration: duration,
             ease: ease,
             delay: pauseDuration
         });

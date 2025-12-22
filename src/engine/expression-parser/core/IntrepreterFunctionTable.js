@@ -70,7 +70,7 @@ import { Plane3DExpression } from '../expressions/3d/Plane3DExpression.js';
 import { Polygon3DExpression } from '../expressions/3d/Polygon3DExpression.js';
 import { Forward3DExpression } from '../expressions/3d/Forward3DExpression.js';
 import { Backward3DExpression } from '../expressions/3d/Backward3DExpression.js';
-import { Move3DExpression } from '../expressions/3d/Move3DExpression.js';
+import { ShiftTo3DExpression } from '../expressions/3d/ShiftTo3DExpression.js';
 import { Reverse3DExpression } from '../expressions/3d/Reverse3DExpression.js';
 import { Rotate3DExpression } from '../expressions/3d/Rotate3DExpression.js';
 import { Translate3DExpression } from '../expressions/3d/Translate3DExpression.js';
@@ -116,6 +116,7 @@ import { RefExpression } from '../expressions/RefExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
 import { FromToExpression } from '../../fromTo/FromToExpression.js';
+import { CopyExpression } from '../expressions/CopyExpression.js';
 import { SubtractionExpression } from '../expressions/SubtractionExpression.js';
 import { MultiplicationExpression } from '../expressions/MultiplicationExpression.js';
 import { DivisionExpression } from '../expressions/DivisionExpression.js';
@@ -190,7 +191,7 @@ export class IntrepreterFunctionTable {
         // 3D vector operations
         registerMultiArg('forward3d', Forward3DExpression);     // animate vector/line sliding forward
         registerMultiArg('backward3d', Backward3DExpression);   // animate vector/line sliding backward
-        registerMultiArg('move3d', Move3DExpression);           // move vector/line to new position
+        registerMultiArg('shiftTo3d', ShiftTo3DExpression);     // shift vector/line to new position (preserves direction/magnitude)
         registerMultiArg('reverse3d', Reverse3DExpression);     // create reversed vector/line
         registerMultiArg('pll3d', PLL3DExpression);             // parallel line/vector through point
         registerMultiArg('perp3d', Perp3DExpression);           // perpendicular line/vector through point
@@ -312,6 +313,24 @@ export class IntrepreterFunctionTable {
 
         // Variable animation
         registerMultiArg('fromto', FromToExpression);     // animate variable from value to value
+
+        // Page copy - copy expressions from another page
+        // Syntax: copy("Page 1", 1, 2, 3) or copy(1, "ALL")
+        ExpressionInterpreter.expTable['copy'] = (e) => {
+            if (e.args.length < 2) {
+                throw new Error('copy requires at least 2 arguments: page reference and indices');
+            }
+            const pageRef = e.args[0];  // string or number expression
+            const indices = e.args.slice(1);  // remaining args
+
+            // Check if last arg is the string "ALL"
+            const lastArg = indices[indices.length - 1];
+            if (indices.length === 1 && lastArg.name === 'quotedstring' && lastArg.value === 'ALL') {
+                return new CopyExpression(pageRef, 'ALL');
+            }
+
+            return new CopyExpression(pageRef, indices);
+        };
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

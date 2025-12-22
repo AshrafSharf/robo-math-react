@@ -61,11 +61,10 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
             vectorGroup.visible = true;
             
             // Animate scale
-            TweenMax.to(vectorGroup.scale, {
+            TweenMax.to(vectorGroup.scale, options.duration || this.animationDuration, {
                 x: 1,
                 y: 1,
                 z: 1,
-                duration: options.duration || this.animationDuration,
                 ease: options.ease || "power2.out",
                 onComplete: () => {
                     if (options.onComplete) {
@@ -427,11 +426,10 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
             arcGroup.scale.set(0.01, 0.01, 0.01);
             
             // Animate to full scale with smooth easing
-            TweenMax.to(arcGroup.scale, {
+            TweenMax.to(arcGroup.scale, duration, {
                 x: 1,
                 y: 1,
                 z: 1,
-                duration: duration,
                 ease: "power2.out",  // Smooth deceleration, no bounce
                 onComplete: () => {
                     // Fade in label after arc
@@ -455,14 +453,14 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
      */
     animateMove(object, target, options = {}) {
         const duration = options.duration || this.animationDuration;
-        
-        return TweenMax.to(object.position, {
+        const { duration: _, ...restOptions } = options;
+
+        return TweenMax.to(object.position, duration, {
             x: target.x,
             y: target.y,
             z: target.z,
-            duration: duration,
             ease: options.ease || "power2.inOut",
-            ...options
+            ...restOptions
         });
     }
     
@@ -475,14 +473,14 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
      */
     animateRotate(object, rotation, options = {}) {
         const duration = options.duration || this.animationDuration;
-        
-        return TweenMax.to(object.rotation, {
+        const { duration: _, ...restOptions } = options;
+
+        return TweenMax.to(object.rotation, duration, {
             x: rotation.x,
             y: rotation.y,
             z: rotation.z,
-            duration: duration,
             ease: options.ease || "power2.inOut",
-            ...options
+            ...restOptions
         });
     }
     
@@ -495,16 +493,16 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
      */
     animateScale(object, scale, options = {}) {
         const duration = options.duration || this.animationDuration;
-        
-        const targetScale = typeof scale === 'number' 
+        const { duration: _, ...restOptions } = options;
+
+        const targetScale = typeof scale === 'number'
             ? { x: scale, y: scale, z: scale }
             : scale;
-        
-        return TweenMax.to(object.scale, {
+
+        return TweenMax.to(object.scale, duration, {
             ...targetScale,
-            duration: duration,
             ease: options.ease || "power2.inOut",
-            ...options
+            ...restOptions
         });
     }
     
@@ -527,11 +525,11 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
         object.visible = true;
         
         if (object.material) {
-            return TweenMax.to(object.material, {
+            const { duration: _, ...restOptions } = options;
+            return TweenMax.to(object.material, duration, {
                 opacity: options.targetOpacity || 1,
-                duration: duration,
                 ease: options.ease || "power2.in",
-                ...options
+                ...restOptions
             });
         }
     }
@@ -547,17 +545,17 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
         
         if (object.material) {
             object.material.transparent = true;
-            
-            return TweenMax.to(object.material, {
+            const { duration: _, ...restOptions } = options;
+
+            return TweenMax.to(object.material, duration, {
                 opacity: 0,
-                duration: duration,
                 ease: options.ease || "power2.out",
                 onComplete: () => {
                     if (options.hide !== false) {
                         object.visible = false;
                     }
                 },
-                ...options
+                ...restOptions
             });
         }
     }
@@ -571,16 +569,16 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
     pulse(object, options = {}) {
         const duration = options.duration || 0.5;
         const scale = options.scale || 1.2;
-        
-        return TweenMax.to(object.scale, {
+        const { duration: _, ...restOptions } = options;
+
+        return TweenMax.to(object.scale, duration, {
             x: scale,
             y: scale,
             z: scale,
-            duration: duration,
             ease: "power2.inOut",
             yoyo: true,
             repeat: options.repeat || 1,
-            ...options
+            ...restOptions
         });
     }
     
@@ -596,19 +594,19 @@ export class LHSAnimatedDiagram extends LHS3DDiagram {
         if (object.material && object.material.emissive !== undefined) {
             const originalEmissive = object.material.emissive.getHex();
             const highlightColor = options.color || 0xffff00;
-            
-            return TweenMax.to(object.material.emissive, {
+            const { duration: _, ...restOptions } = options;
+
+            return TweenMax.to(object.material.emissive, duration, {
                 r: ((highlightColor >> 16) & 255) / 255,
                 g: ((highlightColor >> 8) & 255) / 255,
                 b: (highlightColor & 255) / 255,
-                duration: duration,
                 ease: "power2.inOut",
                 yoyo: true,
                 repeat: 1,
                 onComplete: () => {
                     object.material.emissive.setHex(originalEmissive);
                 },
-                ...options
+                ...restOptions
             });
         }
     }
