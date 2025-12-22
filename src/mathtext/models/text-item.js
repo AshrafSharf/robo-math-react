@@ -123,6 +123,46 @@ export class TextItem {
     // ===== SVG METHODS =====
 
     /**
+     * Get a cloned SVG with only this TextItem's paths (others removed)
+     * Used for creating independent animated copies
+     * @returns {SVGSVGElement|null} Cloned SVG element or null if no paths
+     */
+    getClonedSVG() {
+        const paths = this.getSVGPaths();
+        if (!paths || paths.length === 0) {
+            return null;
+        }
+
+        const sourceSvg = this.mathComponent.getMathSVGRoot()[0];
+        if (!sourceSvg) {
+            return null;
+        }
+
+        // Clone the entire SVG structure
+        const clonedSvg = sourceSvg.cloneNode(true);
+
+        // Get nodepath attributes of paths to include
+        const includedNodePaths = new Set();
+        paths.forEach(path => {
+            const nodepath = path.getAttribute('nodepath');
+            if (nodepath) {
+                includedNodePaths.add(nodepath);
+            }
+        });
+
+        // Remove paths that are not included
+        const allPaths = clonedSvg.querySelectorAll('path[nodepath]');
+        allPaths.forEach(path => {
+            const nodepath = path.getAttribute('nodepath');
+            if (!includedNodePaths.has(nodepath)) {
+                path.remove();
+            }
+        });
+
+        return clonedSvg;
+    }
+
+    /**
      * Get a filtered SVG containing only this TextItem's paths
      * Used by MathTextComponent for cloning
      * @returns {SVGSVGElement|null} Filtered SVG element or null if no paths

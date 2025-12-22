@@ -892,6 +892,7 @@ export class MathTextComponent {
     const mathNodeBuilder = new MathNodeBuilder(svgString);
     mathNodeBuilder.process(this.componentState.componentId + "_math_node", this.getFontStroke());
     this.mathGraphNode = mathNodeBuilder.rootMathGrapNode;
+    $(this.containerDOM).html(mathNodeBuilder.outputSVG);
   }
 
   /**

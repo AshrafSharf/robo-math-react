@@ -64,7 +64,13 @@ export const GRAPH_FUNCTIONS = {
     signature: '(target)',
     args: ['target: MathText|TextItem|Collection'],
     description: 'Animate writing math text',
-    altSignatures: ['write(M)', 'write(row, col, "latex")', 'write(collection)', 'write(textItem)'],
+    altSignatures: [
+      'write(M)',
+      'write(row, col, "latex")',
+      'write(row, col, item(S, i))',
+      'write(collection)',
+      'write(item(S, i))'
+    ],
     category: 'Graph'
   },
   subonly: {

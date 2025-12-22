@@ -4,6 +4,7 @@
  * Syntax:
  *   write(M)                    - Animate existing MathTextComponent variable
  *   write(row, col, "latex")    - Create new MathTextComponent and animate it
+ *   write(row, col, item(i))    - Clone TextItem to position and animate it
  *   write(collection)           - Animate all items in a TextItemCollection sequentially
  *   write(textItem)             - Animate a single TextItem
  *
@@ -18,6 +19,7 @@ import { WriteCommand } from '../../commands/WriteCommand.js';
 import { WriteCollectionVarCommand } from '../../commands/WriteCollectionVarCommand.js';
 import { WriteTextItemVarCommand } from '../../commands/WriteTextItemVarCommand.js';
 import { WriteTextItemExprCommand } from '../../commands/WriteTextItemExprCommand.js';
+import { WriteTextItemCommand } from '../../commands/WriteTextItemCommand.js';
 
 export class WriteExpression extends AbstractNonArithmeticExpression {
     static NAME = 'write';
@@ -29,9 +31,9 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         this.mode = null;
         // For 'existing' mode
         this.targetVariableName = null;
-        // For 'create' mode
-        this.row = 0;
-        this.col = 0;
+        // For 'create' mode and 'textitem_expr' with position
+        this.row = null;
+        this.col = null;
         this.latexString = '';
         // For 'collection_var' mode
         this.collectionVariableName = null;
@@ -121,16 +123,26 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
             this.row = positionCoords[0];
             this.col = positionCoords[1];
 
-            // Next arg: latex string
+            // Next arg: latex string or item expression
             if (argIndex >= this.subExpressions.length) {
-                this.dispatchError('write() requires a latex string after position');
+                this.dispatchError('write() requires a latex string or item expression after position');
             }
-            const latexExpr = this.subExpressions[argIndex];
-            latexExpr.resolve(context);
-            const resolvedLatexExpr = this._getResolvedExpression(context, latexExpr);
+            const contentExpr = this.subExpressions[argIndex];
+            contentExpr.resolve(context);
+
+            // Check if it's an item expression (returns TextItem)
+            const contentName = contentExpr.getName && contentExpr.getName();
+            if (contentName === 'item') {
+                this.mode = 'textitem_expr';
+                this.textItemExpression = contentExpr;
+                return;
+            }
+
+            // Otherwise expect a latex string
+            const resolvedLatexExpr = this._getResolvedExpression(context, contentExpr);
 
             if (!resolvedLatexExpr || resolvedLatexExpr.getName() !== 'quotedstring') {
-                this.dispatchError('write() latex argument must be a quoted string');
+                this.dispatchError('write() content argument must be a quoted string or item expression');
             }
             this.latexString = resolvedLatexExpr.getStringValue();
         } else {
@@ -160,11 +172,22 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         } else if (this.mode === 'textitem_var') {
             return new WriteTextItemVarCommand(this.textItemVariableName);
         } else if (this.mode === 'textitem_expr') {
-            // Inline item expression: write(item(thetas, 0))
-            return new WriteTextItemExprCommand(
-                this.textItemExpression.collectionVariableName,
-                this.textItemExpression.index
-            );
+            // Check if position is provided
+            if (this.row !== null && this.col !== null) {
+                // write(row, col, item(thetas, 0)) - clone to position
+                return new WriteTextItemCommand(
+                    this.textItemExpression.collectionVariableName,
+                    this.textItemExpression.index,
+                    this.row,
+                    this.col
+                );
+            } else {
+                // write(item(thetas, 0)) - animate in place
+                return new WriteTextItemExprCommand(
+                    this.textItemExpression.collectionVariableName,
+                    this.textItemExpression.index
+                );
+            }
         } else if (this.mode === 'existing') {
             return new WriteCommand('existing', {
                 targetVariableName: this.targetVariableName
