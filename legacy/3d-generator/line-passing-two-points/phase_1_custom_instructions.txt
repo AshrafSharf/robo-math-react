@@ -1,0 +1,2 @@
+1. b-a subtraction should get a focus step
+2. Explicity label the b-a vector and then focus

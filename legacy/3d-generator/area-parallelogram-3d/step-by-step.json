@@ -1,0 +1,57 @@
+{
+    "problem_statement": "Show that the quadrilateral with vertices at the following points is a parallelogram, and find its area. Points: A = (5, 2, 0), B = (2, 6, 1), C = (2, 4, 7), D = (5, 0, 6).",
+    "steps": [
+      {
+        "step_index": 1,
+        "explanation": "Label the points of the quadrilateral and compute vectors representing adjacent sides AB and AD.",
+        "expressions": [
+          "$A = (5, 2, 0),\\ B = (2, 6, 1),\\ C = (2, 4, 7),\\ D = (5, 0, 6)$",
+          "$\\vec{AB} = \\vec{B} - \\vec{A} = (2 - 5,\\ 6 - 2,\\ 1 - 0) = \\langle -3, 4, 1 \\rangle$",
+          "$\\vec{AD} = \\vec{D} - \\vec{A} = (5 - 5,\\ 0 - 2,\\ 6 - 0) = \\langle 0, -2, 6 \\rangle$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Compute the remaining two vectors CD and CB to check parallelism with AB and AD.",
+        "expressions": [
+          "$\\vec{CD} = \\vec{D} - \\vec{C} = (5 - 2,\\ 0 - 4,\\ 6 - 7) = \\langle 3, -4, -1 \\rangle$",
+          "$\\vec{CB} = \\vec{B} - \\vec{C} = (2 - 2,\\ 6 - 4,\\ 1 - 7) = \\langle 0, 2, -6 \\rangle$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Show that opposite sides are negatives (i.e., parallel and equal in magnitude but opposite in direction), hence the quadrilateral is a parallelogram.",
+        "expressions": [
+          "$\\vec{CD} = -\\vec{AB}$",
+          "$\\vec{CB} = -\\vec{AD}$",
+          "$\\therefore$ The quadrilateral is a parallelogram with adjacent sides $\\vec{AB}$ and $\\vec{AD}$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Compute the cross product of vectors AB and AD to find the area of the parallelogram.",
+        "expressions": [
+          "$\\vec{AB} \\times \\vec{AD} = \\begin{vmatrix} \\mathbf{i} & \\mathbf{j} & \\mathbf{k} \\\\ -3 & 4 & 1 \\\\ 0 & -2 & 6 \\end{vmatrix}$",
+          "$= \\mathbf{i}(4 \\cdot 6 - 1 \\cdot (-2)) - \\mathbf{j}(-3 \\cdot 6 - 1 \\cdot 0) + \\mathbf{k}(-3 \\cdot (-2) - 4 \\cdot 0)$",
+          "$= \\mathbf{i}(24 + 2) - \\mathbf{j}(-18) + \\mathbf{k}(6)$",
+          "$= 26\\mathbf{i} + 18\\mathbf{j} + 6\\mathbf{k}$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Calculate the magnitude of the cross product vector to get the area of the parallelogram.",
+        "expressions": [
+          "$\\text{Area} = \\|\\vec{AB} \\times \\vec{AD}\\| = \\sqrt{26^2 + 18^2 + 6^2}$",
+          "$= \\sqrt{676 + 324 + 36} = \\sqrt{1036} \\approx 32.19$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "To check if the parallelogram is a rectangle, examine the angle between AB and AD (i.e., check if they are perpendicular).",
+        "expressions": [
+          "$\\text{Check if }\\vec{AB} \\cdot \\vec{AD} = 0$"
+        ]
+      }
+    ]
+  }
+  

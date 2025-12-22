@@ -43,7 +43,17 @@ const defaults = {
     plane3d: {
         styleOptions: {
             opacity: 0.5,
-            color: 0x00ffff
+            color: 0x00ffff,
+            size: 12,
+            sweepDirection: 'r'  // 'h', 'v', 'd', 'r'
+        }
+    },
+    polygon3d: {
+        styleOptions: {
+            opacity: 0.7,
+            color: 0x4444ff,
+            showEdges: false,
+            edgeColor: 0x000000
         }
     },
     sphere: {

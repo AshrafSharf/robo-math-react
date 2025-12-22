@@ -22,7 +22,8 @@ const CommandItem = ({
   onInputFocus,
   onInputBlur,
   error,
-  canPlay = false
+  canPlay = false,
+  isPopupMode = false
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const inputRef = useRef(null);
@@ -98,6 +99,7 @@ const CommandItem = ({
             commandId={command.id}
             commandIndex={commandIndex}
             allCommands={allCommands}
+            isPopupMode={isPopupMode}
           />
         </span>
 

@@ -1,0 +1,23 @@
+See the torque.png and draw the angle and perpedicular component in torque lessons.
+
+Read this as well
+1. Identify the **reference point** (about which torque is calculated).
+2. Do not assume it’s the origin unless stated.
+3. A force acts along a **line of action**, not at a single point.
+4. You may slide the force arrow anywhere along that line.
+5. By convention, draw its **tail** at a chosen point on the line.
+6. Keep the arrow pointing in the given direction (never flip).
+7. The **position vector $\vec{r}$** starts at the reference point.
+8. It ends at a point on the force’s line of action.
+9. That point is often chosen for convenience (e.g. origin).
+10. So $\vec{r} = \overrightarrow{AP}$ if torque is about $A$.
+11. Torque is defined as $\vec{\tau} = \vec{r} \times \vec{F}$.
+12. Its magnitude = $|\vec{r}|\,|\vec{F}| \sin\theta$.
+13. Its direction is **perpendicular** to the plane of $\vec{r}$ and $\vec{F}$.
+14. Use the **right-hand rule**: curl fingers r→F, thumb = torque.
+15. In diagrams, show torque as a normal at the reference point.
+16. Color-code: $\vec{r}$ (purple), $\vec{F}$ (green), $\vec{\tau}$ (red).
+17. In Three.js, use `ArrowHelper` with start point = correct anchor.
+18. Scale arrows for visibility; don’t let magnitude distort clarity.
+19. Add a plane helper to show the r–F plane if teaching.
+20. Remember: physics meaning (about point A) always comes before graphics convenience (origin).

@@ -1,0 +1,94 @@
+{
+    "problem_statement": "Demonstrate how to compute the signed projection (scalar) and the vector projection of a vector \\(\\vec{v}\\) onto a given unit vector \\(\\hat{u}\\) in 3D. The examples show projections with angles of 45°, 60°, and 70° between \\(\\vec{v}\\) and \\(\\hat{u}\\).",
+    "examples": [
+      {
+        "example_index": 1,
+        "title": "45° angle between vectors",
+        "step_details": [
+          {
+            "step_index": 1,
+            "explanation": "Define \\(\\vec{v}\\) and unit vector \\(\\hat{u}\\) with 45° angle between them.",
+            "expressions": [
+              "$\\vec{v}=(2,2,1)$",
+              "$\\hat{u}=(0.816,0.408,0.408)$"
+            ]
+          },
+          {
+            "step_index": 2,
+            "explanation": "Compute dot product; here it is simply the z-component.",
+            "expressions": [
+              "$\\vec{v}\\cdot\\hat{u}=1\\cdot0+1\\cdot0+(-3)\\cdot1=-3$",
+              "$\\text{Signed projection }=-3 \\quad \\color{blue}{\\text{(points opposite +z)}}$"
+            ]
+          },
+          {
+            "step_index": 3,
+            "explanation": "Form the vector projection and report unsigned distance.",
+            "expressions": [
+              "$\\operatorname{proj}_{\\hat{u}}\\!(\\vec{v})=(-3)(0,0,1)=(0,0,-3)$",
+              "$\\text{Unsigned distance }=|\\vec{v}\\cdot\\hat{u}|=3$"
+            ]
+          }
+        ]
+      },
+      {
+        "example_index": 2,
+        "title": "60° angle between vectors",
+        "step_details": [
+          {
+            "step_index": 1,
+            "explanation": "Define \\(\\vec{v}\\) and unit vector \\(\\hat{u}\\) with 60° angle between them.",
+            "expressions": [
+              "$\\vec{v}=(3,0,2)$",
+              "$\\hat{u}=\\text{normalized}(0.6,0.7,0.4)$"
+            ]
+          },
+          {
+            "step_index": 2,
+            "explanation": "Compute signed scalar projection.",
+            "expressions": [
+              "$\\vec{v}\\cdot\\hat{u}=4\\cdot\\tfrac{1}{3}+0\\cdot\\tfrac{2}{3}+1\\cdot\\tfrac{2}{3}=\\displaystyle\\tfrac{6}{3}=2$"
+            ]
+          },
+          {
+            "step_index": 3,
+            "explanation": "Compute vector projection and unsigned distance.",
+            "expressions": [
+              "$\\operatorname{proj}_{\\hat{u}}\\!(\\vec{v})=2\\left(\\tfrac{1}{3},\\tfrac{2}{3},\\tfrac{2}{3}\\right)=\\left(\\displaystyle\\tfrac{2}{3},\\displaystyle\\tfrac{4}{3},\\displaystyle\\tfrac{4}{3}\\right)$",
+              "$\\text{Unsigned distance }=|2|=2$"
+            ]
+          }
+        ]
+      },
+      {
+        "example_index": 3,
+        "title": "70° angle between vectors",
+        "step_details": [
+          {
+            "step_index": 1,
+            "explanation": "Define \\(\\vec{v}\\) and unit vector \\(\\hat{u}\\) with 70° angle between them.",
+            "expressions": [
+              "$\\vec{v}=(1,3,1)$",
+              "$\\hat{u}=\\text{normalized}(0.8,0.2,0.566)$"
+            ]
+          },
+          {
+            "step_index": 2,
+            "explanation": "Compute the signed scalar projection.",
+            "expressions": [
+              "$\\vec{v}\\cdot\\hat{u}=0\\cdot\\tfrac{1}{\\sqrt{3}}+2\\cdot\\tfrac{1}{\\sqrt{3}}+1\\cdot\\tfrac{1}{\\sqrt{3}}=\\displaystyle\\tfrac{3}{\\sqrt{3}}=\\sqrt{3}$"
+            ]
+          },
+          {
+            "step_index": 3,
+            "explanation": "Compute the vector projection and unsigned distance.",
+            "expressions": [
+              "$\\operatorname{proj}_{\\hat{u}}\\!(\\vec{v})=\\sqrt{3}\\left(\\tfrac{1}{\\sqrt{3}},\\tfrac{1}{\\sqrt{3}},\\tfrac{1}{\\sqrt{3}}\\right)=(1,1,1)$",
+              "$\\text{Unsigned distance }=\\left|\\sqrt{3}\\right|=\\sqrt{3}$"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  

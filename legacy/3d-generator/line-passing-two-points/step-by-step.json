@@ -1,0 +1,37 @@
+{
+    "problem_statement": "A straight line passes through the point $(2, -3, 4)$ and is parallel to the vector $3\\hat{i} + 2\\hat{j} + 2\\hat{k}$. Find (i) the vector equation in parametric form, (ii) the vector equation in non-parametric form, and (iii) the Cartesian equations of the line.",
+    "overview": "We use the point's position vector as anchor $\\vec{a}$ and the given parallel vector as direction $\\vec{b}$. The line equation is $\\vec{r} = \\vec{a} + t\\vec{b}$. The non-parametric form comes from the cross product condition $(\\vec{r}-\\vec{a}) \\times \\vec{b} = \\vec{0}$. The Cartesian form is obtained by comparing ratios of components.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Identify the point vector and the direction vector.",
+        "expressions": [
+          "$\\vec{a} = 2\\hat{i} - 3\\hat{j} + 4\\hat{k}$",
+          "$\\vec{b} = 3\\hat{i} + 2\\hat{j} + 2\\hat{k}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "(i) Vector equation in parametric form: $\\vec{r} = \\vec{a} + t\\vec{b}$.",
+        "expressions": [
+          "$\\vec{r} = (2\\hat{i} - 3\\hat{j} + 4\\hat{k}) + t(3\\hat{i} + 2\\hat{j} + 2\\hat{k}), \\; t \\in \\mathbb{R}$",
+          "$x = 2 + 3t, \\; y = -3 + 2t, \\; z = 4 + 2t$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "(ii) Non-parametric vector form: $(\\vec{r} - \\vec{a}) \\times \\vec{b} = \\vec{0}$.",
+        "expressions": [
+          "$(\\vec{r} - (2\\hat{i} - 3\\hat{j} + 4\\hat{k})) \\times (3\\hat{i} + 2\\hat{j} + 2\\hat{k}) = \\vec{0}$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "(iii) Cartesian equation: equating ratios of components.",
+        "expressions": [
+          "$\\displaystyle \\frac{x - 2}{3} = \\frac{y + 3}{2} = \\frac{z - 4}{2}$"
+        ]
+      }
+    ]
+  }
+  

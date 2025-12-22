@@ -1,0 +1,59 @@
+{
+    "problem_statement": "Understand the rectangular (Cartesian) coordinate system in 3D space. Given a point P with coordinates (x, y, z), visualize how these coordinates define the point's position relative to the origin through perpendicular projections onto the coordinate axes.",
+    "overview": "The rectangular coordinate system uses three mutually perpendicular axes (x, y, z) to uniquely identify any point in 3D space. Each coordinate represents the perpendicular distance from the corresponding coordinate plane, and together they form a rectangular box with the origin and the point at opposite vertices.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Establish the 3D coordinate system with mutually perpendicular axes.",
+        "expressions": [
+          "$\\text{Coordinate axes: } x\\text{-axis}, y\\text{-axis}, z\\text{-axis}$",
+          "$\\text{Origin: } O(0, 0, 0)$",
+          "$\\text{Axes are mutually perpendicular: } \\hat{i} \\perp \\hat{j} \\perp \\hat{k}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Place point P in 3D space with coordinates (4, 3, 5).",
+        "expressions": [
+          "$P(x, y, z) = P(4, 3, 5)$",
+          "$\\text{Position vector: } \\vec{OP} = 4\\hat{i} + 3\\hat{j} + 5\\hat{k}$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Show the diagonal from origin to point P, representing the position vector.",
+        "expressions": [
+          "$\\text{Diagonal length: } d = |\\vec{OP}| = \\sqrt{x^2 + y^2 + z^2}$",
+          "$d = \\sqrt{4^2 + 3^2 + 5^2} = \\sqrt{16 + 9 + 25} = \\sqrt{50} \\approx 7.07$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Draw projection lines parallel to each axis, showing how coordinates are measured.",
+        "expressions": [
+          "$\\text{Projection along } x\\text{-axis: from } (0, 3, 5) \\text{ to } P(4, 3, 5)$",
+          "$\\text{Projection along } y\\text{-axis: from } (4, 0, 5) \\text{ to } P(4, 3, 5)$",
+          "$\\text{Projection along } z\\text{-axis: from } (4, 3, 0) \\text{ to } P(4, 3, 5)$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Label the coordinate values on each axis where perpendiculars from P meet the axes.",
+        "expressions": [
+          "$x\\text{-coordinate: } x = 4 \\text{ (perpendicular distance from } yz\\text{-plane)}$",
+          "$y\\text{-coordinate: } y = 3 \\text{ (perpendicular distance from } xz\\text{-plane)}$",
+          "$z\\text{-coordinate: } z = 5 \\text{ (perpendicular distance from } xy\\text{-plane)}$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "Visualize the rectangular box (cuboid) formed by the origin and point P.",
+        "expressions": [
+          "$\\text{Box vertices: } O(0,0,0), (4,0,0), (0,3,0), (0,0,5),$",
+          "$(4,3,0), (4,0,5), (0,3,5), P(4,3,5)$",
+          "$\\text{Box edges are parallel to coordinate axes}$",
+          "$\\text{Box dimensions: } 4 \\times 3 \\times 5$"
+        ]
+      }
+    ]
+  }

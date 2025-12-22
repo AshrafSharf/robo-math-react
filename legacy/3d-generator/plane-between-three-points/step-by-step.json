@@ -1,0 +1,47 @@
+{
+    "problem_statement": "Derive the parametric vector equation of the plane passing through three given non-collinear points A, B, C whose position vectors with respect to the origin are \\(\\vec a, \\vec b, \\vec c\\). Express the position vector \\(\\vec r\\) of an arbitrary point P on this plane in terms of real parameters.",
+    "overview": "Use the fact that two non-parallel direction vectors lying in a plane span that plane. Vectors \\(\\vec{AB}=\\vec b-\\vec a\\) and \\(\\vec{AC}=\\vec c-\\vec a\\) are non-zero and non-collinear, so any vector from A to a point P on the plane can be written as a linear combination of these two.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Name the data and record the non-collinearity condition.",
+        "expressions": [
+          "$\\text{Given } A(\\vec a),\\ B(\\vec b),\\ C(\\vec c)\\ \\text{ are non-collinear.}$",
+          "$\\vec{AB}=\\vec b-\\vec a,\\quad \\vec{AC}=\\vec c-\\vec a,$",
+          "$\\Rightarrow\\ (\\vec b-\\vec a)\\times(\\vec c-\\vec a)\\neq\\vec 0 \\quad \\color{blue}{\\text{(directions not parallel)}}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Pick an arbitrary point P on the plane and relate its position vector to A.",
+        "expressions": [
+          "$P \\text{ lies on plane } \\Rightarrow \\vec{AP} \\text{ lies in the plane through } A,$",
+          "$\\vec r \\text{ is the position vector of } P \\Rightarrow \\vec{AP}=\\vec r-\\vec a.$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Because \\(\\vec{AB}\\) and \\(\\vec{AC}\\) span the plane, write \\(\\vec{AP}\\) as their linear combination.",
+        "expressions": [
+          "$\\therefore\\ \\exists\\ s,t\\in\\mathbb{R}\\ \\text{ such that }\\ \\vec{AP}=s\\,\\vec{AB}+t\\,\\vec{AC} \\quad \\color{blue}{\\text{(spanning property)}}$",
+          "$\\Rightarrow\\ \\vec r-\\vec a=s(\\vec b-\\vec a)+t(\\vec c-\\vec a).$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Rearrange to get \\(\\vec r\\) explicitly.",
+        "expressions": [
+          "$\\Rightarrow\\ \\vec r=\\vec a+s(\\vec b-\\vec a)+t(\\vec c-\\vec a).$",
+          "$\\text{Here } s,t\\in\\mathbb{R},\\ (\\vec b-\\vec a)\\times(\\vec c-\\vec a)\\neq\\vec 0 \\quad \\color{blue}{\\text{(two independent directions)}}$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "State the final parametric vector equation of the plane through A, B, C.",
+        "expressions": [
+          "$\\boxed{\\vec r=\\vec a+s(\\vec b-\\vec a)+t(\\vec c-\\vec a),\\quad s,t\\in\\mathbb{R}}\\quad \\color{blue}{\\text{(parametric form of the plane)}}$"
+        ]
+      }
+    ]
+  }
+  

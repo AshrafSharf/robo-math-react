@@ -1,0 +1,66 @@
+{
+    "problem_statement": "Find the shortest distance between two parallel lines L1: r = a + t b and L2: r = c + s b, and prove that δ = |(c - a) × b| / |b| using actual coordinate values.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Write the equations of the two given lines using the given position vectors and common direction vector.",
+        "expressions": [
+          "$L_1: \\vec{r} = (1,2,3) + t(2,-1,2)$",
+          "$L_2: \\vec{r} = (4,0,1) + s(2,-1,2)$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "The two lines are parallel because both have the same direction vector b = (2,-1,2). To find the shortest distance, drop a perpendicular from point A on L1 to L2.",
+        "expressions": [
+          "$\\vec{b} = (2,-1,2)$",
+          "$\\vec{AC} = (4,0,1) - (1,2,3) = (3,-2,-2)$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "The shortest distance between two parallel lines is the length of the perpendicular from A to L2. This perpendicular is perpendicular to b and lies in the plane containing A and C.",
+        "expressions": [
+          "$\\delta = |\\vec{AC}| \\sin \\theta$",
+          "$\\sin \\theta = \\frac{|\\vec{AC} \\times \\vec{b}|}{|\\vec{AC}| |\\vec{b}|}$",
+          "$\\Rightarrow \\delta = \\frac{|\\vec{AC} \\times \\vec{b}|}{|\\vec{b}|}$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Now compute the cross product AC × b.",
+        "expressions": [
+          "$\\vec{AC} = (3,-2,-2)$",
+          "$\\vec{b} = (2,-1,2)$",
+          "$\\vec{AC} \\times \\vec{b} = \\begin{vmatrix} \\hat{i} & \\hat{j} & \\hat{k} \\\\ 3 & -2 & -2 \\\\ 2 & -1 & 2 \\end{vmatrix}$",
+          "$= (-6+2)\\hat{i} - (6-(-4))\\hat{j} + (-3+4)\\hat{k}$",
+          "$= (-4)\\hat{i} - (10)\\hat{j} + (1)\\hat{k}$",
+          "$= (-4, -10, 1)$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Find the magnitude of AC × b and the magnitude of b.",
+        "expressions": [
+          "$|\\vec{AC} \\times \\vec{b}| = \\sqrt{(-4)^2 + (-10)^2 + (1)^2} = \\sqrt{16+100+1} = \\sqrt{117}$",
+          "$|\\vec{b}| = \\sqrt{2^2 + (-1)^2 + 2^2} = \\sqrt{4+1+4} = 3$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "Apply the formula δ = |(c - a) × b| / |b| to get the shortest distance.",
+        "expressions": [
+          "$\\delta = \\frac{|\\vec{AC} \\times \\vec{b}|}{|\\vec{b}|} = \\frac{\\sqrt{117}}{3}$",
+          "$\\delta = \\sqrt{13}$"
+        ]
+      },
+      {
+        "step_index": 7,
+        "explanation": "Thus, the shortest distance between the two given parallel lines is √13 units. This verifies the formula δ = |(c - a) × b| / |b|.",
+        "expressions": [
+          "$\\boxed{\\delta = \\sqrt{13}}$"
+        ]
+      }
+    ]
+  }
+  

@@ -1,0 +1,37 @@
+{
+  "problem_statement": "Find the parametric form of vector equation of a straight line passing through the point of intersection of the straight lines $\\overrightarrow{r}=(\\hat{i}+3 \\hat{j}-\\hat{k})+t(2 \\hat{i}+3 \\hat{j}+2 \\hat{k})$ and $\\displaystyle \\frac{x-2}{1}=\\displaystyle \\frac{y-4}{2}=\\displaystyle \\frac{z+3}{4}$, and perpendicular to both straight lines.",
+  "overview": "When given two lines and asked to find a line perpendicular to both, recognize that the cross product of their direction vectors will yield the required perpendicular vector.",
+  "step_details": [
+    {
+      "step_index": 1,
+      "explanation": "$\\htmlClass{light_blue_box_medium}{\\textbf{Convert lines to parametric form and find intersection point}}$",
+      "expressions": [
+        "$\\overrightarrow{r} = (\\hat{i} + 3\\hat{j} - \\hat{k}) + t(2\\hat{i} + 3\\hat{j} + 2\\hat{k}) \\quad \\color{blue}{\\text{(given parametric form of line 1)}}$",
+        "$\\displaystyle \\frac{x - 1}{2} = \\displaystyle \\frac{y - 3}{3} = \\displaystyle \\frac{z + 1}{2} = s \\quad \\color{blue}{\\text{(converted to symmetric form using direction vector } (2, 3, 2))}$",
+        "$(x, y, z) = (2s + 1, 3s + 3, 2s - 1) \\quad \\color{blue}{\\text{(parametric equations from symmetric form)}}$",
+        "$\\htmlClass{light_blue_box_bigger}{\\displaystyle \\frac{x - 2}{1} = \\displaystyle \\frac{y - 4}{2} = \\displaystyle \\frac{z + 3}{4} = t \\quad \\color{blue}{\\text{(given symmetric form of line 2)}}}$",
+        "$(x, y, z) = (t + 2, 2t + 4, 4t - 3) \\quad \\color{blue}{\\text{(parametric equations from symmetric form)}}$",
+        "$(2s + 1, 3s + 3, 2s - 1) = (t + 2, 2t + 4, 4t - 3) \\quad \\color{blue}{\\text{(setting equal for intersection)}}$",
+        "$2s - t = 1, 3s - 2t = 1, 2s - 4t = -2 \\quad \\color{blue}{\\text{(system of equations from coordinate equality)}}$",
+        "$s = 1, t = 1 \\quad \\color{blue}{\\text{(solving the system)}}$",
+        "$\\text{Intersection point: } (3, 6, 1) \\quad \\color{blue}{\\text{(substituting } s=1 \\text{ into parametric equations)}}$"
+      ]
+    },
+    {
+      "step_index": 2,
+      "explanation": "$\\htmlClass{light_green_box_medium}{\\textbf{Find direction vector perpendicular to both lines}}$",
+      "expressions": [
+        "$\\text{Direction vectors: } \\overrightarrow{b} = 2\\hat{i} + 3\\hat{j} + 2\\hat{k}, \\overrightarrow{d} = \\hat{i} + 2\\hat{j} + 4\\hat{k} \\quad \\color{blue}{\\text{(from given lines)}}$",
+        "$\\overrightarrow{b} \\times \\overrightarrow{d} = \\begin{vmatrix} \\hat{i} & \\hat{j} & \\hat{k} \\\\ 2 & 3 & 2 \\\\ 1 & 2 & 4 \\end{vmatrix} = 8\\hat{i} - 6\\hat{j} + \\hat{k} \\quad \\color{blue}{\\text{(cross product gives vector perpendicular to both)}}$"
+      ]
+    },
+    {
+      "step_index": 3,
+      "explanation": "$\\htmlClass{light_orange_box_medium}{\\textbf{Write equation of required line}}$",
+      "expressions": [
+        "$\\overrightarrow{r} = (3\\hat{i} + 6\\hat{j} + \\hat{k}) + m(8\\hat{i} - 6\\hat{j} + \\hat{k}), m \\in \\mathbb{R} \\quad \\color{blue}{\\text{(using intersection point from step 1 and perpendicular vector from step 2)}}$"
+      ]
+    }
+  ],
+  "short_cuts": "Cross product of two vectors gives a vector perpendicular to both. Use this to find the direction vector of the required line."
+}

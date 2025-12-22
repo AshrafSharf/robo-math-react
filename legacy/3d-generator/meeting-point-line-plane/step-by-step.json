@@ -1,0 +1,55 @@
+{
+    "problem_statement": "Find the coordinates of the point where the straight line \\( \\vec{r} = (2\\hat{i} - \\hat{j} + 2\\hat{k}) + t(3\\hat{i} + 4\\hat{j} + 2\\hat{k}) \\) intersects the plane \\( x - y + z - 5 = 0 \\).",
+    "overview": "We use the formula derived from Theorem 6.23. The position vector of the point of intersection of a line \\( \\vec{r} = \\vec{a} + t\\vec{b} \\) and a plane \\( \\vec{r} \\cdot \\vec{n} = p \\) is given by: \\[ \\vec{u} = \\vec{a} + \\frac{p - (\\vec{a} \\cdot \\vec{n})}{\\vec{b} \\cdot \\vec{n}} \\vec{b}, \\quad \\vec{b} \\cdot \\vec{n} \\neq 0. \\]",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Identify the line and the plane in vector form.",
+        "expressions": [
+          "$\\vec{a} = 2\\hat{i} - \\hat{j} + 2\\hat{k}$",
+          "$\\vec{b} = 3\\hat{i} + 4\\hat{j} + 2\\hat{k}$",
+          "Plane equation: $x - y + z - 5 = 0 \\; \\implies \\; \\vec{n} = \\hat{i} - \\hat{j} + \\hat{k}, \\; p = 5$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Check the condition that the line is not parallel to the plane. That requires $\\vec{b} \\cdot \\vec{n} \\neq 0$.",
+        "expressions": [
+          "$\\vec{b} \\cdot \\vec{n} = (3\\hat{i} + 4\\hat{j} + 2\\hat{k}) \\cdot (\\hat{i} - \\hat{j} + \\hat{k}) = 3 - 4 + 2 = 1 \\neq 0$",
+          "$\\therefore$ The line is not parallel to the plane."
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Apply the formula from Theorem 6.23 to find the point of intersection.",
+        "expressions": [
+          "$\\vec{u} = \\vec{a} + \\frac{p - (\\vec{a} \\cdot \\vec{n})}{\\vec{b} \\cdot \\vec{n}} \\vec{b}$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Compute $\\vec{a} \\cdot \\vec{n}$ and substitute values.",
+        "expressions": [
+          "$\\vec{a} \\cdot \\vec{n} = (2\\hat{i} - \\hat{j} + 2\\hat{k}) \\cdot (\\hat{i} - \\hat{j} + \\hat{k}) = 2 + 1 + 2 = 5$",
+          "$p - (\\vec{a} \\cdot \\vec{n}) = 5 - 5 = 0$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Substitute into the formula.",
+        "expressions": [
+          "$\\vec{u} = \\vec{a} + \\frac{0}{1} \\vec{b} = \\vec{a}$",
+          "$\\vec{u} = 2\\hat{i} - \\hat{j} + 2\\hat{k}$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "Interpret the position vector to get the intersection point.",
+        "expressions": [
+          "Coordinates: $(2, -1, 2)$"
+        ],
+        "htmlClass": "light_green_box_large"
+      }
+    ]
+  }
+  

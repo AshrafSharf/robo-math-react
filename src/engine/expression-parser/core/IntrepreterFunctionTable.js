@@ -66,6 +66,8 @@ import { Torus3DExpression } from '../expressions/3d/Torus3DExpression.js';
 import { Prism3DExpression } from '../expressions/3d/Prism3DExpression.js';
 import { Frustum3DExpression } from '../expressions/3d/Frustum3DExpression.js';
 import { Pyramid3DExpression } from '../expressions/3d/Pyramid3DExpression.js';
+import { Plane3DExpression } from '../expressions/3d/Plane3DExpression.js';
+import { Polygon3DExpression } from '../expressions/3d/Polygon3DExpression.js';
 import { Forward3DExpression } from '../expressions/3d/Forward3DExpression.js';
 import { Backward3DExpression } from '../expressions/3d/Backward3DExpression.js';
 import { Move3DExpression } from '../expressions/3d/Move3DExpression.js';
@@ -182,6 +184,8 @@ export class IntrepreterFunctionTable {
         registerMultiArg('prism', Prism3DExpression);
         registerMultiArg('frustum', Frustum3DExpression);
         registerMultiArg('pyramid', Pyramid3DExpression);
+        registerMultiArg('plane3d', Plane3DExpression);
+        registerMultiArg('polygon3d', Polygon3DExpression);
 
         // 3D vector operations
         registerMultiArg('forward3d', Forward3DExpression);     // animate vector/line sliding forward

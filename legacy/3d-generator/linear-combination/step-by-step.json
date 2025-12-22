@@ -1,0 +1,52 @@
+{
+    "problem_statement": "Show step-by-step why any vector v ∈ R^3 can be written as a linear combination of the standard unit vectors i, j, k.",
+    "overview": "Start from component (tuple) form, split the vector into coordinate contributions, factor out scalars, and then identify those basis directions with the standard unit vectors.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Define the standard unit vectors (basis of R^3).",
+        "expressions": [
+          "$\\mathbf i = \\langle 1, 0, 0 \\rangle, \\quad \\mathbf j = \\langle 0, 1, 0 \\rangle, \\quad \\mathbf k = \\langle 0, 0, 1 \\rangle \\quad \\color{blue}{\\text{(unit length, pairwise perpendicular)}}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Write an arbitrary vector in component form.",
+        "expressions": [
+          "$\\mathbf v = \\langle v_1, v_2, v_3 \\rangle \\quad \\color{blue}{\\text{($v_1, v_2, v_3$ are its coordinates)}}$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Split v into the sum of three coordinate contributions (one per axis).",
+        "expressions": [
+          "$\\Rightarrow\\; \\langle v_1, v_2, v_3 \\rangle = \\langle v_1, 0, 0 \\rangle + \\langle 0, v_2, 0 \\rangle + \\langle 0, 0, v_3 \\rangle \\quad \\color{blue}{\\text{(add coordinates componentwise)}}$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Factor out the scalar in each contribution.",
+        "expressions": [
+          "$\\Rightarrow\\; \\langle v_1, 0, 0 \\rangle = v_1\\langle 1, 0, 0 \\rangle,\\; \\langle 0, v_2, 0 \\rangle = v_2\\langle 0, 1, 0 \\rangle,\\; \\langle 0, 0, v_3 \\rangle = v_3\\langle 0, 0, 1 \\rangle$",
+          "$\\Rightarrow\\; \\mathbf v = v_1\\langle 1, 0, 0 \\rangle + v_2\\langle 0, 1, 0 \\rangle + v_3\\langle 0, 0, 1 \\rangle$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Replace the tuples by the corresponding unit vectors.",
+        "expressions": [
+          "$\\Rightarrow\\; \\mathbf v = v_1\\,\\mathbf i + v_2\\,\\mathbf j + v_3\\,\\mathbf k \\quad \\color{blue}{\\text{(linear combination of }\\mathbf i,\\mathbf j,\\mathbf k\\text{)}}$",
+          "$\\htmlClass{light_green_box_large}{\\mathbf v = v_1\\,\\mathbf i + v_2\\,\\mathbf j + v_3\\,\\mathbf k}\\quad \\color{blue}{\\text{(final form)}}$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "How to retrieve the coefficients (optional check).",
+        "expressions": [
+          "$\\Rightarrow\\; v_1 = \\mathbf v\\!\\cdot\\!\\mathbf i,\\; v_2 = \\mathbf v\\!\\cdot\\!\\mathbf j,\\; v_3 = \\mathbf v\\!\\cdot\\!\\mathbf k \\quad \\color{blue}{\\text{(because }\\mathbf i,\\mathbf j,\\mathbf k\\text{ are orthonormal)}}$",
+          "$\\htmlClass{light_green_box_large}{\\mathbf v = (\\mathbf v\\!\\cdot\\!\\mathbf i)\\,\\mathbf i + (\\mathbf v\\!\\cdot\\!\\mathbf j)\\,\\mathbf j + (\\mathbf v\\!\\cdot\\!\\mathbf k)\\,\\mathbf k}$"
+        ]
+      }
+    ]
+  }
+  

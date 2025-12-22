@@ -1,0 +1,44 @@
+{
+    "problem_statement": "Find the intercept form of the equation of a plane which cuts the x-, y-, and z-axes at 4, -6, and 8 respectively.",
+    "overview": "Use the intercept form equation of a plane: x/a + y/b + z/c = 1. Substitute the given intercepts a=4, b=-6, c=8.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Recall the general intercept form of the plane.",
+        "expressions": [
+          "$\\Rightarrow \\; \\frac{x}{a}+\\frac{y}{b}+\\frac{z}{c}=1 \\quad \\color{blue}{\\text{(general intercept form)}}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Substitute the given intercepts a=4, b=-6, c=8.",
+        "expressions": [
+          "$\\Rightarrow \\; \\frac{x}{4}+\\frac{y}{-6}+\\frac{z}{8}=1$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Clear denominators to get Cartesian form.",
+        "expressions": [
+          "$\\Rightarrow \\; 6x - 4y + 3z = 24$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Verify intercepts by setting two variables to zero at a time.",
+        "expressions": [
+          "$\\Rightarrow \\; (4,0,0) \\; \\color{blue}{\\text{(x-intercept)}}$",
+          "$\\Rightarrow \\; (0,-6,0) \\; \\color{blue}{\\text{(y-intercept)}}$",
+          "$\\Rightarrow \\; (0,0,8) \\; \\color{blue}{\\text{(z-intercept)}}$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Final result in intercept form.",
+        "expressions": [
+          "$\\htmlClass{light_green_box_large}{\\displaystyle \\frac{x}{4}+\\frac{y}{-6}+\\frac{z}{8}=1}$"
+        ]
+      }
+    ]
+  }
+  

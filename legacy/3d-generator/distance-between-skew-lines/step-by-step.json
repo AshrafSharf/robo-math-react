@@ -1,0 +1,43 @@
+{
+    "problem_statement": "Find the shortest distance between two skew lines $L_1: \\vec{r} = \\vec{a} + s\\vec{b}$ and $L_2: \\vec{r} = \\vec{c} + t\\vec{d}$, where $\\vec{b}$ and $\\vec{d}$ are direction vectors of $L_1$ and $L_2$ respectively.",
+    "overview": "The shortest distance between skew lines is the length of the perpendicular segment between them. This is obtained by projecting $\\overrightarrow{AC}$ (the vector joining a point $A$ on $L_1$ to a point $C$ on $L_2$) onto the normal vector $\\vec{b} \\times \\vec{d}$, which is perpendicular to both $\\vec{b}$ and $\\vec{d}$.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Direction of the common perpendicular is given by the cross product of the direction vectors.",
+        "expressions": [
+          "$\\vec{SD} \\parallel \\vec{b} \\times \\vec{d}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Normalize $\\vec{b} \\times \\vec{d}$ to get the unit vector along the common perpendicular.",
+        "expressions": [
+          "$\\text{Unit vector along } \\vec{SD} = \\dfrac{\\vec{b} \\times \\vec{d}}{|\\vec{b} \\times \\vec{d}|}$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Take $\\overrightarrow{AC} = (\\vec{c} - \\vec{a})$, where $A$ lies on $L_1$ and $C$ lies on $L_2$.",
+        "expressions": [
+          "$\\overrightarrow{AC} = \\vec{c} - \\vec{a}$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "The shortest distance is the absolute value of the projection of $\\overrightarrow{AC}$ on the common perpendicular $\\vec{SD}$.",
+        "expressions": [
+          "$\\delta = |\\overrightarrow{AC} \\cdot \\dfrac{\\vec{b} \\times \\vec{d}}{|\\vec{b} \\times \\vec{d}|}|$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Simplify the formula for shortest distance between two skew lines.",
+        "expressions": [
+          "$\\displaystyle \\delta = \\dfrac{|(\\vec{c} - \\vec{a}) \\cdot (\\vec{b} \\times \\vec{d})|}{|\\vec{b} \\times \\vec{d}|}$",
+          "$\\quad \\color{blue}{\\text{(valid when } \\vec{b} \\times \\vec{d} \\neq \\vec{0}\\text{)}}$"
+        ]
+      }
+    ]
+  }
+  

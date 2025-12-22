@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector-Subtraction</title>
+    <link rel="stylesheet" href="../common/css/common.css">
+    <link rel="stylesheet" href="../common/css/mobile.css">
+    <link rel="stylesheet" href="../../node_modules/katex/dist/katex.min.css">
+    
+    <style>
+        /* Fix for subscript cutoff in control panel labels */
+        .generic-controls-3d span {
+            line-height: 1.4 !important;
+            padding-bottom: 2px !important;
+        }
+        
+        /* Ensure stepper controls stay inline with their titles */
+        .generic-controls-3d {
+            margin: 0 !important;
+            padding: 0 !important;
+            flex: 1;
+        }
+        
+        /* Fix the inner container to stay horizontal */
+        .generic-controls-3d > div {
+            margin: 0 !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="boards-container"></div>
+
+    <script type="module">
+        import { initLesson3D } from '../common/js/lesson-init-3d.js';
+        import * as lessonModule from './vector-subtraction.js';
+        
+        initLesson3D('vector-subtraction', lessonModule);
+    </script>
+</body>
+</html>

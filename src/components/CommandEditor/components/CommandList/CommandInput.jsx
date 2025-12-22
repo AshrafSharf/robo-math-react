@@ -1,4 +1,4 @@
-import React, { useRef, forwardRef, useState, useCallback, useMemo } from 'react';
+import React, { useRef, forwardRef, useState, useCallback } from 'react';
 import useAutoResize from '../../hooks/useAutoResize';
 import CodeMirrorInput from './CodeMirrorInput';
 import { extractVariables } from '../../auto_complete';

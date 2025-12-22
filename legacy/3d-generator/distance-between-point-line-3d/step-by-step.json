@@ -1,0 +1,54 @@
+{
+    "problem_statement": "Find the distance between the point Q(3, -1, 4) and the line given by: x = -2 + 3t, y = -2t, z = 1 + 4t.",
+    "steps": [
+      {
+        "step_index": 1,
+        "explanation": "Identify the direction vector \\( \\vec{u} \\) of the line from its parametric equations.",
+        "expressions": [
+          "$\\vec{u} = \\langle 3, -2, 4 \\rangle \\quad \\color{blue}{\\text{(direction vector from coefficients of } t\\text{)}}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Find a point \\( P \\) on the line by setting \\( t = 0 \\).",
+        "expressions": [
+          "$P = (-2, 0, 1) \\quad \\color{blue}{\\text{(point on the line when } t = 0\\text{)}}$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Find the vector \\( \\vec{PQ} \\) from point \\( P \\) on the line to point \\( Q \\).",
+        "expressions": [
+          "$\\vec{PQ} = \\langle 3 - (-2), -1 - 0, 4 - 1 \\rangle = \\langle 5, -1, 3 \\rangle$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Compute the cross product \\( \\vec{PQ} \\times \\vec{u} \\).",
+        "expressions": [
+          "$\\vec{PQ} \\times \\vec{u} = \\begin{vmatrix} \\hat{i} & \\hat{j} & \\hat{k} \\\\ 5 & -1 & 3 \\\\ 3 & -2 & 4 \\end{vmatrix} = 2\\hat{i} - 11\\hat{j} - 7\\hat{k}$",
+          "$= \\langle 2, -11, -7 \\rangle$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Compute the magnitudes of the cross product and the direction vector.",
+        "expressions": [
+          "$\\| \\vec{PQ} \\times \\vec{u} \\| = \\sqrt{2^2 + (-11)^2 + (-7)^2} = \\sqrt{174}$",
+          "$\\| \\vec{u} \\| = \\sqrt{3^2 + (-2)^2 + 4^2} = \\sqrt{29}$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "Use the formula \\( D = \\frac{\\| \\vec{PQ} \\times \\vec{u} \\|}{\\|\\vec{u}\\|} \\) to find the distance.",
+        "expressions": [
+          "$D = \\frac{\\sqrt{174}}{\\sqrt{29}} = \\sqrt{6} \\approx 2.45$",
+          {
+            "htmlClass": "light_green_box_large",
+            "expression": "$\\text{Distance} = \\sqrt{6} \\approx 2.45$"
+          }
+        ]
+      }
+    ]
+  }
+  

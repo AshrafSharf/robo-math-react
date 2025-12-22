@@ -1,0 +1,56 @@
+{
+    "problem_statement": "Explain the concept of direction cosines for a vector in 3D space and derive the relationship between the direction angles and components of the vector.",
+    "steps": [
+      {
+        "step_index": 1,
+        "explanation": "Let vector \\( \\mathbf{v} \\) have components \\( \\langle v_1, v_2, v_3 \\rangle \\) in 3D. To describe the direction of \\( \\mathbf{v} \\), consider its angle with the unit vectors \\( \\mathbf{i}, \\mathbf{j}, \\mathbf{k} \\). The angle between \\( \\mathbf{v} \\) and \\( \\mathbf{i} \\) is denoted by \\( \\alpha \\), and the dot product definition gives:",
+        "expressions": [
+          "$\\mathbf{v} \\cdot \\mathbf{i} = \\|\\mathbf{v}\\| \\|\\mathbf{i}\\| \\cos \\alpha = \\|\\mathbf{v}\\| \\cos \\alpha$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Since \\( \\mathbf{v} = \\langle v_1, v_2, v_3 \\rangle \\) and \\( \\mathbf{i} = \\langle 1, 0, 0 \\rangle \\), their dot product is:",
+        "expressions": [
+          "$\\mathbf{v} \\cdot \\mathbf{i} = \\langle v_1, v_2, v_3 \\rangle \\cdot \\langle 1, 0, 0 \\rangle = v_1$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Equating both expressions for \\( \\mathbf{v} \\cdot \\mathbf{i} \\), we find the cosine of the angle \\( \\alpha \\):",
+        "expressions": [
+          "$\\cos \\alpha = \\dfrac{v_1}{\\|\\mathbf{v}\\|}$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Similarly, the cosine of angle \\( \\beta \\) between \\( \\mathbf{v} \\) and \\( \\mathbf{j} = \\langle 0, 1, 0 \\rangle \\) is:",
+        "expressions": [
+          "$\\cos \\beta = \\dfrac{v_2}{\\|\\mathbf{v}\\|}$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "And the cosine of angle \\( \\gamma \\) between \\( \\mathbf{v} \\) and \\( \\mathbf{k} = \\langle 0, 0, 1 \\rangle \\) is:",
+        "expressions": [
+          "$\\cos \\gamma = \\dfrac{v_3}{\\|\\mathbf{v}\\|}$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "Therefore, the unit vector in the direction of \\( \\mathbf{v} \\) can be expressed using direction cosines:",
+        "expressions": [
+          "$\\dfrac{\\mathbf{v}}{\\|\\mathbf{v}\\|} = \\dfrac{v_1}{\\|\\mathbf{v}\\|}\\mathbf{i} + \\dfrac{v_2}{\\|\\mathbf{v}\\|}\\mathbf{j} + \\dfrac{v_3}{\\|\\mathbf{v}\\|}\\mathbf{k}$",
+          "$= \\cos \\alpha\\, \\mathbf{i} + \\cos \\beta\\, \\mathbf{j} + \\cos \\gamma\\, \\mathbf{k}$"
+        ]
+      },
+      {
+        "step_index": 7,
+        "explanation": "Since this is a unit vector, the sum of the squares of the direction cosines must be 1:",
+        "expressions": [
+          "$\\cos^2 \\alpha + \\cos^2 \\beta + \\cos^2 \\gamma = 1$"
+        ]
+      }
+    ]
+  }
+  

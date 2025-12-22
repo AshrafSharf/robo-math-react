@@ -1,0 +1,50 @@
+{
+    "problem_statement": "Find the volume of a parallelepiped determined by three vectors \\( \\mathbf{u}, \\mathbf{v}, \\mathbf{w} \\) using the triple scalar product.",
+    "steps": [
+      {
+        "step_index": 1,
+        "explanation": "The triple scalar product \\( \\mathbf{u} \\cdot (\\mathbf{v} \\times \\mathbf{w}) \\) gives the volume of the parallelepiped formed by the vectors \\( \\mathbf{u}, \\mathbf{v}, \\mathbf{w} \\). It is computed using the determinant of a 3×3 matrix formed by these vectors as rows.",
+        "expressions": [
+          "$\\mathbf{u} \\cdot (\\mathbf{v} \\times \\mathbf{w}) = \\begin{vmatrix} u_1 & u_2 & u_3 \\\\ v_1 & v_2 & v_3 \\\\ w_1 & w_2 & w_3 \\end{vmatrix}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "The triple scalar product is invariant under cyclic permutation. That is, the expression remains the same up to sign when vectors are rotated in order.",
+        "expressions": [
+          "$\\mathbf{u} \\cdot (\\mathbf{v} \\times \\mathbf{w}) = \\mathbf{v} \\cdot (\\mathbf{w} \\times \\mathbf{u}) = \\mathbf{w} \\cdot (\\mathbf{u} \\times \\mathbf{v})$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "The volume of the parallelepiped is given by the absolute value of the triple scalar product.",
+        "expressions": [
+          "$V = |\\mathbf{u} \\cdot (\\mathbf{v} \\times \\mathbf{w})|$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "In the geometric proof, the magnitude of the cross product \\( \\|\\mathbf{v} \\times \\mathbf{w}\\| \\) represents the area of the base parallelogram.",
+        "expressions": [
+          "$\\|\\mathbf{v} \\times \\mathbf{w}\\| = \\text{area of base}$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "The height of the parallelepiped is the projection of \\( \\mathbf{u} \\) onto the normal vector \\( \\mathbf{v} \\times \\mathbf{w} \\).",
+        "expressions": [
+          "$\\left\\| \\mathrm{proj}_{\\mathbf{v} \\times \\mathbf{w}} \\mathbf{u} \\right\\| = \\text{height}$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "So the volume is height × base area, combining previous steps into a single expression.",
+        "expressions": [
+          "$V = \\left\\| \\mathrm{proj}_{\\mathbf{v} \\times \\mathbf{w}} \\mathbf{u} \\right\\| \\cdot \\left\\| \\mathbf{v} \\times \\mathbf{w} \\right\\|$",
+          "$= \\left| \\dfrac{\\mathbf{u} \\cdot (\\mathbf{v} \\times \\mathbf{w})}{\\|\\mathbf{v} \\times \\mathbf{w}\\|} \\right| \\cdot \\left\\| \\mathbf{v} \\times \\mathbf{w} \\right\\|$",
+          "$= |\\mathbf{u} \\cdot (\\mathbf{v} \\times \\mathbf{w})|$"
+        ]
+      }
+    ]
+  }
+  

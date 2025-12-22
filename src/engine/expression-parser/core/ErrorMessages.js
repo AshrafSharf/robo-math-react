@@ -256,6 +256,47 @@ export const pyramid3d_error_messages = {
     `pyramid3d() size must be a single number.`,
 };
 
+// ============= Plane3D Error Messages =============
+
+export const plane3d_error_messages = {
+  MISSING_ARGS: () =>
+    `plane3d() needs at least 2 arguments.\nUsage: plane3d(g, point, normal) or plane3d(g, p1, p2, p3) or plane3d(g, a, b, c, d) or plane3d(g, "equation")`,
+
+  GRAPH_REQUIRED: () =>
+    `plane3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_SYNTAX: () =>
+    `plane3d() unrecognized argument pattern.\nUse: point+normal, 3 points, 4 coefficients, 2 vectors+point, or equation string.`,
+
+  INVALID_EQUATION: (eq) =>
+    `Cannot parse plane equation: "${eq}".\nUse format "x + 2y - z = 5" or "1, 2, -1, 5"`,
+
+  COLLINEAR_POINTS: () =>
+    `Three points are collinear - cannot form a unique plane.`,
+
+  PARALLEL_VECTORS: () =>
+    `Two vectors are parallel - cannot form a unique plane.`,
+
+  ZERO_NORMAL: () =>
+    `Normal vector cannot be zero.`,
+};
+
+// ============= Polygon3D Error Messages =============
+
+export const polygon3d_error_messages = {
+  MISSING_ARGS: () =>
+    `polygon3d() needs at least 4 arguments.\nUsage: polygon3d(g, p1, p2, p3, ...)`,
+
+  GRAPH_REQUIRED: () =>
+    `polygon3d() needs a g3d graph.\nFirst argument must be g3d.`,
+
+  INVALID_VERTEX: (index) =>
+    `polygon3d() argument ${index + 1} must be a point3d.`,
+
+  MIN_VERTICES: () =>
+    `polygon3d() needs at least 3 vertices to form a polygon.`,
+};
+
 // ============= Circle Error Messages =============
 
 export const circle_error_messages = {
@@ -572,6 +613,8 @@ const messagesByType = {
   prism: prism3d_error_messages,
   frustum: frustum3d_error_messages,
   pyramid: pyramid3d_error_messages,
+  plane3d: plane3d_error_messages,
+  polygon3d: polygon3d_error_messages,
   circle: circle_error_messages,
   vector: vector_error_messages,
   polygon: polygon_error_messages,

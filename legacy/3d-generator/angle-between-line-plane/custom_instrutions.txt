@@ -1,0 +1,2 @@
+Should clearly demonstrate why it is 90-theta . Because the angle is between the line's direction vector and normal vector
+Since we are using normal vector from the vosualization one should be able to understand it is 90-theta

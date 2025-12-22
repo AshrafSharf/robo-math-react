@@ -1,0 +1,39 @@
+{
+  "layout": "diagram-panel",
+  "containerSize": "diagram-panel",
+  "threejs": {
+    "camera": {
+      "position": { "x": 6, "y": 4, "z": -8 },
+      "target": { "x": 0, "y": 0, "z": 0 },
+      "fov": 60,
+      "near": 0.1,
+      "far": 1000
+    },
+    "controls": {
+      "enableDamping": true,
+      "dampingFactor": 0.1,
+      "enableZoom": true,
+      "enablePan": true,
+      "enableRotate": true
+    },
+    "scene": {
+      "backgroundColor": "#ffffff"
+    }
+  },
+  "style": {
+    "text": {
+      "fontSize": 18
+    },
+    "axes": {
+      "color": "#333333",
+      "width": 2
+    },
+    "grid": {
+      "color": "#cccccc",
+      "width": 1
+    }
+  },
+  "initialValues": {
+    "m": 0
+  }
+}

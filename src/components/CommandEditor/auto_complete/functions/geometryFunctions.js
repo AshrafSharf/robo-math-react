@@ -80,6 +80,32 @@ export const GEOMETRY_3D_FUNCTIONS = {
     description: 'Create a 3D vector with arrowhead',
     altSignatures: ['vector3d(g, p1, p2)', 'vector3d(g, x1, y1, z1, x2, y2, z2)'],
     category: '3D Geometry'
+  },
+  plane3d: {
+    name: 'plane3d',
+    signature: '(g, point, normal)',
+    args: ['g: Graph3D', 'point: Point3D', 'normal: Vector3D'],
+    description: 'Create a 3D plane with sweep animation',
+    altSignatures: [
+      'plane3d(g, point, normal)',
+      'plane3d(g, p1, p2, p3)',
+      'plane3d(g, a, b, c, d)',
+      'plane3d(g, v1, v2, point)',
+      'plane3d(g, "x + 2y - z = 5")'
+    ],
+    category: '3D Geometry'
+  },
+  polygon3d: {
+    name: 'polygon3d',
+    signature: '(g, p1, p2, p3, ...)',
+    args: ['g: Graph3D', 'p1: Point3D', 'p2: Point3D', 'p3: Point3D', '...'],
+    description: 'Create a 3D polygon from 3+ vertices',
+    altSignatures: [
+      'polygon3d(g, p1, p2, p3)',
+      'polygon3d(g, p1, p2, p3, p4)',
+      'polygon3d(g, p1, p2, p3, p4, p5, ...)'
+    ],
+    category: '3D Geometry'
   }
 };
 

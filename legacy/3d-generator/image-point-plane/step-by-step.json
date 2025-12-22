@@ -1,0 +1,78 @@
+{
+    "problem_statement": "Find the image of the point whose position vector is i + 2j + 3k in the plane r·(i + 2j + 4k) = 38.",
+    "overview": "We use the formula for the image of a point in a plane. If u is the position vector of the point, n is the normal vector of the plane, and p is the scalar in the equation r·n = p, then the position vector of the image v is given by: v = u + [2(p − (u·n)) / |n|²] n.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Identify the vectors u, n, and the scalar p from the given problem.",
+        "expressions": [
+          "$\\vec{u} = i + 2j + 3k$",
+          "$\\vec{n} = i + 2j + 4k$",
+          "$p = 38$"
+        ],
+        "side_comment": "Here u is the given point’s position vector, n is the plane’s normal vector, and p comes from the plane equation."
+      },
+      {
+        "step_index": 2,
+        "explanation": "Write the formula for the image of a point in a plane.",
+        "expressions": [
+          "$\\vec{v} = \\vec{u} + \\dfrac{2[p - (\\vec{u}\\cdot\\vec{n})]}{|\\vec{n}|^2}\\,\\vec{n}$"
+        ],
+        "side_comment": "This formula is derived from the condition that the line joining the point and its image is perpendicular to the plane."
+      },
+      {
+        "step_index": 3,
+        "explanation": "Compute the dot product u·n.",
+        "expressions": [
+          "$\\vec{u}\\cdot\\vec{n} = (1)(1) + (2)(2) + (3)(4)$",
+          "$= 1 + 4 + 12 = 17$"
+        ],
+        "side_comment": "Dot product helps measure how much u aligns with the normal n."
+      },
+      {
+        "step_index": 4,
+        "explanation": "Compute |n|², the square of the magnitude of n.",
+        "expressions": [
+          "$|\\vec{n}|^2 = 1^2 + 2^2 + 4^2$",
+          "$= 1 + 4 + 16 = 21$"
+        ],
+        "side_comment": "This is required in the denominator of the formula."
+      },
+      {
+        "step_index": 5,
+        "explanation": "Substitute values of p, (u·n), and |n|² into the formula.",
+        "expressions": [
+          "$\\vec{v} = (i + 2j + 3k) + \\dfrac{2[38 - 17]}{21}(i + 2j + 4k)$",
+          "$= (i + 2j + 3k) + \\dfrac{42}{21}(i + 2j + 4k)$"
+        ],
+        "side_comment": "We simplified 2(38 − 17) = 42."
+      },
+      {
+        "step_index": 6,
+        "explanation": "Simplify the scalar multiple.",
+        "expressions": [
+          "$\\dfrac{42}{21} = 2$",
+          "$\\vec{v} = (i + 2j + 3k) + 2(i + 2j + 4k)$"
+        ],
+        "side_comment": "The scalar factor becomes 2."
+      },
+      {
+        "step_index": 7,
+        "explanation": "Expand and simplify the expression.",
+        "expressions": [
+          "$\\vec{v} = (i + 2j + 3k) + (2i + 4j + 8k)$",
+          "$= 3i + 6j + 11k$"
+        ],
+        "side_comment": "This is the final position vector of the image."
+      },
+      {
+        "step_index": 8,
+        "explanation": "State the final answer clearly.",
+        "expressions": [
+          "$\\therefore \\text{The image of the point } i + 2j + 3k \\text{ is } 3i + 6j + 11k$"
+        ],
+        "side_comment": "We have obtained the coordinates of the image using the derived formula."
+      }
+    ]
+  }
+  

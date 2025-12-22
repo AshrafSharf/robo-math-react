@@ -1,0 +1,3 @@
+I need to show the angle arc between  cross product normal and u. I would also like to show parallelogram and then 
+use extrude to show the volume. Use the boxProduct method in diagram.
+Please check the scalar-triple-product-legacy.js for how old code is done.

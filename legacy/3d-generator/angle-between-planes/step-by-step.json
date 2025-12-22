@@ -1,0 +1,51 @@
+{
+    "problem_statement": "Find the angle θ between the planes P1: x + 2y + 2z = 5 and P2: 2x – y + 2z = 7, using the formula involving their normal vectors.",
+    "steps": [
+      {
+        "step_index": 1,
+        "explanation": "Identify the normal vectors of the planes. For plane P1, the normal vector is taken from the coefficients of x, y, z.",
+        "expressions": [
+          "$\\vec{n_1} = (1, 2, 2)$",
+          "$\\vec{n_2} = (2, -1, 2)$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Recall the formula for the angle θ between two planes in terms of their normal vectors.",
+        "expressions": [
+          "$\\cos \\theta = \\dfrac{|\\vec{n_1} \\cdot \\vec{n_2}|}{\\|\\vec{n_1}\\| \\; \\|\\vec{n_2}\\|}$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Compute the dot product of the two normal vectors.",
+        "expressions": [
+          "$\\vec{n_1} \\cdot \\vec{n_2} = (1)(2) + (2)(-1) + (2)(2)$",
+          "$= 2 - 2 + 4 = 4$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Find the magnitudes of the normal vectors.",
+        "expressions": [
+          "$\\|\\vec{n_1}\\| = \\sqrt{1^2 + 2^2 + 2^2} = \\sqrt{9} = 3$",
+          "$\\|\\vec{n_2}\\| = \\sqrt{2^2 + (-1)^2 + 2^2} = \\sqrt{9} = 3$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Substitute the values into the formula for cos θ.",
+        "expressions": [
+          "$\\cos \\theta = \\dfrac{|4|}{3 \\times 3} = \\dfrac{4}{9}$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "Finally, compute θ from cos θ.",
+        "expressions": [
+          "$\\theta = \\cos^{-1}\\left(\\dfrac{4}{9}\\right)$"
+        ]
+      }
+    ]
+  }
+  

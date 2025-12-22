@@ -17,7 +17,8 @@ const CommandList = ({
   onInputFocus,
   onInputBlur,
   errors = [],
-  canPlayInfos = []
+  canPlayInfos = [],
+  isPopupMode = false
 }) => {
   const inputRefs = useRef({});
 
@@ -59,6 +60,7 @@ const CommandList = ({
             onInputBlur={onInputBlur}
             error={errorForCommand?.error}
             canPlay={canPlayInfo?.canPlay ?? false}
+            isPopupMode={isPopupMode}
             ref={(el) => {
               if (el) {
                 inputRefs.current[command.id] = el;

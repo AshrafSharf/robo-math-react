@@ -1,0 +1,2 @@
+The idea of treating the projected point as being part of plane as well as the end point of line (which is the normal to the plane) is the important educational insight. 
+Keep that in midn when showing focus, step descriptions and step details.

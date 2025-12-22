@@ -13,7 +13,7 @@ const PopupContainer = ({
   children,
   onRestoreToSidebar,
   initialPosition = { top: 100, left: null, right: 20 },
-  minWidth = 300,
+  minWidth = 350,
   minHeight = 400
 }) => {
   const containerRef = useRef(null);
@@ -86,13 +86,13 @@ const PopupContainer = ({
     if (!isResizing) return;
 
     const handleMouseMove = (e) => {
-      const deltaX = e.clientX - resizeStart.x;
       const deltaY = e.clientY - resizeStart.y;
 
-      setSize({
-        width: Math.max(minWidth, resizeStart.width + deltaX),
+      // Only vertical resize
+      setSize(prev => ({
+        ...prev,
         height: Math.max(minHeight, resizeStart.height + deltaY)
-      });
+      }));
     };
 
     const handleMouseUp = () => {
@@ -106,7 +106,7 @@ const PopupContainer = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isResizing, resizeStart, minWidth, minHeight]);
+  }, [isResizing, resizeStart, minHeight]);
 
   // Calculate position style
   const positionStyle = position.right !== null && position.left === null

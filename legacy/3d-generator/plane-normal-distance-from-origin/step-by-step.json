@@ -1,0 +1,66 @@
+{
+    "problem_statement": "Derive the vector and Cartesian equations of a plane that is at a perpendicular distance p from the origin and is perpendicular to a given unit normal vector d̂. Also state the special case when the plane passes through the origin and write the standard form when the given normal need not be a unit vector.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Name the key points and vectors from the diagram.",
+        "expressions": [
+          "$O \\text{ is the origin, } A \\text{ is the foot of the perpendicular from } O \\text{ to the plane.}$",
+          "$\\hat{d} \\text{ is a unit normal to the plane (i.e., } \\lVert \\hat{d} \\rVert = 1\\text{).}$",
+          "$\\overrightarrow{OA} = p\\,\\hat{d} \\quad \\color{blue}{\\text{(length }p\\text{ along the unit normal)}}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Pick an arbitrary point P on the plane and write vectors using position vectors.",
+        "expressions": [
+          "$\\vec{r} = \\overrightarrow{OP} \\quad \\color{blue}{\\text{(position vector of a general point }P\\text{ on the plane)}}$",
+          "$\\overrightarrow{AP} = \\overrightarrow{OP} - \\overrightarrow{OA} = \\vec{r} - p\\,\\hat{d}$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Use the right-angle condition between the perpendicular and the plane.",
+        "expressions": [
+          "$\\overrightarrow{AP} \\perp \\overrightarrow{OA} \\;\\Rightarrow\\; (\\vec{r} - p\\,\\hat{d}) \\cdot \\hat{d} = 0 \\quad \\color{blue}{\\text{(dot product zero for perpendicular vectors)}}$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Expand the dot product and use that d̂ is a unit vector.",
+        "expressions": [
+          "$\\vec{r}\\cdot\\hat{d} - p\\,(\\hat{d}\\cdot\\hat{d}) = 0$",
+          "$\\hat{d}\\cdot\\hat{d} = 1 \\;\\Rightarrow\\; \\vec{r}\\cdot\\hat{d} = p$",
+          "$\\boxed{\\vec{r}\\cdot\\hat{d} = p}$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Convert to Cartesian form using direction cosines.",
+        "expressions": [
+          "$\\hat{d} = l\\,\\hat{i} + m\\,\\hat{j} + n\\,\\hat{k} \\quad \\color{blue}{\\text{(}l,m,n\\text{ are direction cosines)}}$",
+          "$\\vec{r} = x\\,\\hat{i} + y\\,\\hat{j} + z\\,\\hat{k}$",
+          "$\\vec{r}\\cdot\\hat{d} = p \\;\\Rightarrow\\; lx + my + nz = p$",
+          "$\\boxed{lx + my + nz = p}$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "State the special case when the plane passes through the origin.",
+        "expressions": [
+          "$p = 0 \\;\\Rightarrow\\; \\vec{r}\\cdot\\hat{d} = 0 \\;\\Rightarrow\\; lx + my + nz = 0$"
+        ]
+      },
+      {
+        "step_index": 7,
+        "explanation": "Write the standard form when the given normal d is not a unit vector.",
+        "expressions": [
+          "$\\hat{d} = \\dfrac{\\vec{d}}{\\lVert \\vec{d} \\rVert}$",
+          "$\\vec{r}\\cdot\\hat{d} = p \\;\\Rightarrow\\; \\vec{r}\\cdot\\dfrac{\\vec{d}}{\\lVert \\vec{d} \\rVert} = p$",
+          "$\\Rightarrow\\; \\vec{r}\\cdot\\vec{d} = p\\,\\lVert \\vec{d} \\rVert = q$",
+          "$\\boxed{\\vec{r}\\cdot\\vec{d} = q}$"
+        ]
+      }
+    ]
+  }
+  

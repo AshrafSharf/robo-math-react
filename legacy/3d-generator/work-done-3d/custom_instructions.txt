@@ -1,0 +1,3 @@
+The work-done.png contains both the coceptual explanation and tell why it is better to show the cos angle and direction
+ (though we directly use the dot prodict without angle).
+ Make sure to get the concept for work done for step descriptions.

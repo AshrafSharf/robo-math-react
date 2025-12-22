@@ -1,0 +1,62 @@
+{
+    "problem_statement": "Find the angle between the straight line r = (2i + 3j + k) + t(i − j + k) and the plane 2x − y + z = 5.",
+    "overview": "The angle between a line and a plane is found using θ = sin⁻¹(|b·n| / |b||n|), where b is the direction vector of the line and n is the normal vector of the plane.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "Identify the direction vector of the line and the normal vector of the plane.",
+        "expressions": [
+          "$\\vec{b} = i - j + k$",
+          "$\\vec{n} = 2i - j + k$"
+        ],
+        "side_comment": "Here, $\\vec{b}$ is parallel to the line and $\\vec{n}$ is perpendicular to the plane."
+      },
+      {
+        "step_index": 2,
+        "explanation": "Recall that the angle between a line and a plane is the complement of the angle between the line and the plane’s normal. Thus, the formula is:",
+        "expressions": [
+          "$\\theta = \\sin^{-1}\\left( \\dfrac{|\\vec{b} \\cdot \\vec{n}|}{|\\vec{b}|\\,|\\vec{n}|} \\right)$"
+        ],
+        "side_comment": "This comes from the fact that if φ is the angle between $\\vec{b}$ and $\\vec{n}$, then $\\theta = 90^\\circ - φ$."
+      },
+      {
+        "step_index": 3,
+        "explanation": "Compute the dot product of $\\vec{b}$ and $\\vec{n}$.",
+        "expressions": [
+          "$\\vec{b} \\cdot \\vec{n} = (i - j + k) \\cdot (2i - j + k)$",
+          "$= (1)(2) + (-1)(-1) + (1)(1)$",
+          "$= 2 + 1 + 1 = 4$"
+        ],
+        "side_comment": "The dot product measures projection of one vector on another."
+      },
+      {
+        "step_index": 4,
+        "explanation": "Find the magnitudes of $\\vec{b}$ and $\\vec{n}$.",
+        "expressions": [
+          "$|\\vec{b}| = \\sqrt{1^2 + (-1)^2 + 1^2} = \\sqrt{3}$",
+          "$|\\vec{n}| = \\sqrt{2^2 + (-1)^2 + 1^2} = \\sqrt{6}$"
+        ],
+        "side_comment": "We use Euclidean length formula for vector magnitude."
+      },
+      {
+        "step_index": 5,
+        "explanation": "Substitute into the formula for θ.",
+        "expressions": [
+          "$\\theta = \\sin^{-1}\\left( \\dfrac{|4|}{\\sqrt{3} \\cdot \\sqrt{6}} \\right)$",
+          "$= \\sin^{-1}\\left( \\dfrac{4}{\\sqrt{18}} \\right)$",
+          "$= \\sin^{-1}\\left( \\dfrac{4}{3\\sqrt{2}} \\right)$",
+          "$= \\sin^{-1}\\left( \\dfrac{2\\sqrt{2}}{3} \\right)$"
+        ],
+        "side_comment": "This matches the final expression shown in the textbook solution."
+      },
+      {
+        "step_index": 6,
+        "explanation": "State the final answer for the angle between the line and the plane.",
+        "expressions": [
+          "$\\theta = \\sin^{-1}\\left( \\dfrac{2\\sqrt{2}}{3} \\right)$"
+        ],
+        "side_comment": "The result is an acute angle, as required by definition."
+      }
+    ]
+  }
+  

@@ -290,6 +290,7 @@ const CommandEditor = ({
                       }}
                       errors={errors}
                       canPlayInfos={canPlayInfos}
+                      isPopupMode={isPopupMode}
                     />
                     <NewCommandButton onClick={() => addCommand()} />
                   </div>

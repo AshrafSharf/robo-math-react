@@ -1,0 +1,53 @@
+{
+  "problem_statement": "Compute the vector subtraction \\( \\vec{u} - \\vec{v} \\) where \\( \\vec{u} = \\langle 4, 2, 3 \\rangle \\) and \\( \\vec{v} = \\langle 2, 4, 1 \\rangle \\).",
+  "steps": [
+    {
+      "step_index": 1,
+      "explanation": "Draw the first vector \\( \\vec{u} \\) from the origin.",
+      "expressions": [
+        "$\\vec{u} = \\langle 4, 2, 3 \\rangle \\quad \\color{blue}{\\text{(vector from origin to point (4, 2, 3))}}$"
+      ]
+    },
+    {
+      "step_index": 2,
+      "explanation": "Draw the second vector \\( \\vec{v} \\) from the origin.",
+      "expressions": [
+        "$\\vec{v} = \\langle 2, 4, 1 \\rangle \\quad \\color{green}{\\text{(vector from origin to point (2, 4, 1))}}$"
+      ]
+    },
+    {
+      "step_index": 3,
+      "explanation": "To subtract \\( \\vec{v} \\) from \\( \\vec{u} \\), we need to find \\( -\\vec{v} \\), which is the reverse of \\( \\vec{v} \\).",
+      "expressions": [
+        "$-\\vec{v} = \\langle -2, -4, -1 \\rangle \\quad \\color{red}{\\text{(reversed vector pointing opposite to } \\vec{v}\\text{)}}$"
+      ]
+    },
+    {
+      "step_index": 4,
+      "explanation": "Translate \\( -\\vec{v} \\) to the tip of \\( \\vec{u} \\) to perform the addition \\( \\vec{u} + (-\\vec{v}) \\).",
+      "expressions": [
+        "$\\text{Translate } -\\vec{v} \\text{ to point } (4, 2, 3)$",
+        "$\\color{red}{\\text{Translated } -\\vec{v} \\text{ starts at } (4, 2, 3) \\text{ and points to } (2, -2, 2)}$"
+      ]
+    },
+    {
+      "step_index": 5,
+      "explanation": "The result vector \\( \\vec{u} - \\vec{v} \\) goes from the origin to the tip of the translated \\( -\\vec{v} \\).",
+      "expressions": [
+        "$\\vec{u} - \\vec{v} = \\vec{u} + (-\\vec{v}) = \\langle 4 - 2, 2 - 4, 3 - 1 \\rangle$",
+        "$= \\langle 2, -2, 2 \\rangle \\quad \\color{purple}{\\text{(result vector)}}$"
+      ]
+    },
+    {
+      "step_index": 6,
+      "explanation": "Visualize the parallelogram formed by the vector subtraction to verify the geometric interpretation.",
+      "expressions": [
+        "$\\text{Parallelogram vertices: } (0,0,0), (4,2,3), (2,-2,2), (-2,-4,-1)$",
+        {
+          "htmlClass": "light_green_box_large",
+          "expression": "$\\vec{u} - \\vec{v} = \\langle 2, -2, 2 \\rangle$"
+        }
+      ]
+    }
+  ]
+}

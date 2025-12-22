@@ -1,0 +1,59 @@
+{
+    "problem_statement": "Find the distance of a point (2, 5, -3) from the plane r·(6i - 3j + 2k) = 5.",
+    "overview": "We use the perpendicular distance formula from a point with position vector ū to a plane r·n̄ = p, given by δ = |ū·n̄ - p| / |n̄|. By substituting the given point and plane values, we can compute the distance step by step.",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "First, identify the position vector of the given point and the normal vector of the plane.",
+        "expressions": [
+          "$\\vec{u} = 2\\hat{i} + 5\\hat{j} - 3\\hat{k}$",
+          "$\\vec{n} = 6\\hat{i} - 3\\hat{j} + 2\\hat{k}$",
+          "$p = 5$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "Recall the formula for the perpendicular distance δ of a point from a plane:",
+        "expressions": [
+          "$\\delta = \\dfrac{|\\vec{u}\\cdot\\vec{n} - p|}{|\\vec{n}|}$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "Compute the dot product of the position vector ū with the normal vector n̄.",
+        "expressions": [
+          "$\\vec{u}\\cdot\\vec{n} = (2)(6) + (5)(-3) + (-3)(2)$",
+          "$= 12 - 15 - 6$",
+          "$= -9$"
+        ]
+      },
+      {
+        "step_index": 4,
+        "explanation": "Substitute the dot product and the value of p into the numerator of the formula.",
+        "expressions": [
+          "$|\\vec{u}\\cdot\\vec{n} - p| = |-9 - 5|$",
+          "$= |-14|$",
+          "$= 14$"
+        ]
+      },
+      {
+        "step_index": 5,
+        "explanation": "Now compute the magnitude of the normal vector n̄.",
+        "expressions": [
+          "$|\\vec{n}| = \\sqrt{6^2 + (-3)^2 + 2^2}$",
+          "$= \\sqrt{36 + 9 + 4}$",
+          "$= \\sqrt{49}$",
+          "$= 7$"
+        ]
+      },
+      {
+        "step_index": 6,
+        "explanation": "Finally, substitute the values into the distance formula to get δ.",
+        "expressions": [
+          "$\\delta = \\dfrac{14}{7} = 2$",
+          "$\\therefore$ The distance is 2 units."
+        ]
+      }
+    ]
+  }
+  

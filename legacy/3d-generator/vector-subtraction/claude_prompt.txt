@@ -1,0 +1,128 @@
+I need you to generate a render method for a 3d lesson named "vector-subtraction".
+
+## CRITICAL INSTRUCTION FILES TO READ FIRST
+
+You MUST read ALL of these files in order before starting implementation:
+
+### Core Files (MANDATORY):
+1. Render method instructions: llm_generation/instructions/render-method-instructions.md
+2. Best practices: llm_generation/instructions/3d-vector-geometry-best-practices.md
+3. Problem specification: src/vector-subtraction/step-by-step.json
+
+### Critical Guidelines (MANDATORY - Read ALL that apply):
+5. Testing procedures and verification: llm_generation/instructions/testing-procedures.md
+6. Control panel design standards: llm_generation/instructions/control-panel-design.md
+7. Animation elements implementation: llm_generation/instructions/animate-elements-usage.md
+8. API reference documentation: llm_generation/instructions/api-reference.md
+9. Material application guidelines: llm_generation/instructions/material-application.md
+10. Right angle visualization patterns: llm_generation/instructions/right-angle-usage.md
+11. Sequence and order definitions: llm_generation/instructions/sequence-order-definition.md
+12. Step description design guidelines: llm_generation/instructions/step-description-design.md
+
+## COMPREHENSIVE IMPLEMENTATION CHECKLIST
+
+You MUST complete this checklist in order. DO NOT skip any step. Check off each item as you complete it:
+
+### Phase 1: Pre-Implementation Analysis
+- [ ] Read ALL instruction files listed above (every single one that applies)
+- [ ] Read and understand the problem specification completely
+- [ ] **CRITICAL: If custom_instructions.txt exists, read it and follow ALL custom requirements**
+- [ ] **CRITICAL: If visual.png exists, examine it carefully and note ALL visual elements**
+- [ ] Examine any reference images provided
+- [ ] Identify lesson type (2D, 3D, 3D-JSX, 2D+3D, 2D+2D, 2-col-3-row, or grid-2d) from meta.json
+- [ ] Note if animation is required from meta.json
+- [ ] Review reference implementation if provided
+- [ ] Identify all inputs that need to be adjustable
+- [ ] Identify the exact output requested in the problem
+- [ ] Check step-by-step.json for any intermediate calculations to display
+
+### Phase 2: Implementation Planning
+- [ ] Determine appropriate bounding box for the visualization
+- [ ] Plan control panel sections (inputs, calculations, result, instructions)
+- [ ] Identify which common utility functions to use
+- [ ] Plan any animations if required
+- [ ] Consider coordinate transformations if 3D
+- [ ] Plan color scheme using standard constants
+
+### Phase 3: Core Implementation
+- [ ] Create proper module structure with render() function
+- [ ] Import all required utilities from common modules
+- [ ] Store references for namespace isolation
+- [ ] Set appropriate bounding box
+- [ ] Create coordinate system with proper labels
+- [ ] Implement all mathematical objects from the problem
+- [ ] Add labels to ALL important elements (points, angles, vectors)
+- [ ] Ensure ALL labels use black color (#000000)
+
+### Phase 4: Control Panel Implementation
+- [ ] Create control panel sections in correct order
+- [ ] Add steppers/sliders for ALL adjustable parameters
+- [ ] Check step-by-step.json for intermediate calculations
+- [ ] Display ONLY calculations mentioned in step-by-step.json
+- [ ] Ensure one equation per row (NEVER multiple on same line)
+- [ ] Display the exact output requested in the problem
+- [ ] Add ONE clear, single-line instruction at bottom
+- [ ] Verify instruction is not cut off (test with Puppeteer)
+
+### Phase 5: Visual Requirements Verification
+- [ ] All text and labels are black (#000000)
+- [ ] No colored text in diagrams
+- [ ] Font sizes: 20-22px for labels, 16-18px for control panel
+- [ ] Proper spacing between elements (no overlapping)
+- [ ] Clean, professional appearance
+- [ ] Animation controls present if required by meta.json
+- [ ] For 3D: Use cylinders for lines (linewidth > 10)
+- [ ] For 3D: Use spheres for points
+- [ ] For 3D: Axis labels present (except solid_of_revolution)
+
+### Phase 6: Interactive Features
+- [ ] Implement update functions for dynamic content
+- [ ] Add event handlers for user interactions
+- [ ] Test dragging functionality
+- [ ] Test stepper controls
+- [ ] Test animation if present
+- [ ] Verify immediate visual feedback
+
+### Phase 7: Visual.png Verification (if visual.png exists)
+- [ ] Compare point positions with visual.png
+- [ ] Verify line directions match exactly
+- [ ] Check vector arrow directions and positions
+- [ ] Verify angle orientations match exactly (check quadrants and direction)
+- [ ] Confirm all labels match the reference
+- [ ] Check distance markers are positioned correctly
+- [ ] If axes shown in visual.png, ensure they're rendered
+- [ ] Verify overall figure orientation (not rotated/flipped)
+
+### Phase 8: Final Verification
+- [ ] Save the render method to src/vector-subtraction/vector-subtraction.js
+- [ ] Verify the code is syntactically correct
+- [ ] Ensure all imports are properly referenced
+- [ ] Check that all mathematical calculations match step-by-step.json
+- [ ] Verify all visual elements from visual.png are implemented in code
+- [ ] Confirm control panel layout follows guidelines
+- [ ] Check that all labels use black color (#000000)
+- [ ] Ensure proper error handling is in place
+
+### Phase 9: Code Completion
+- [ ] Report that the lesson implementation is complete
+
+### Phase 10: Final Verification
+- [ ] Lesson implements the exact mathematical concept
+- [ ] All inputs from problem are adjustable
+- [ ] Output matches what problem asks to find
+- [ ] Visual representation is clear and educational
+- [ ] Interactive elements provide immediate feedback
+- [ ] No JavaScript errors in console (dev or standalone)
+- [ ] Control panel fully visible without scrolling
+- [ ] Professional, polished appearance
+- [ ] All instruction guidelines have been followed
+
+## CRITICAL REMINDERS:
+1. **VISUAL.PNG IS TRUTH** - If visual.png exists, your implementation MUST match it exactly
+2. Testing is MANDATORY - use testing procedures as described
+3. Check step-by-step.json BEFORE adding any calculations
+4. For 3D lessons, ALWAYS transform coordinates properly
+5. One equation per row in calculations - NEVER side by side
+6. ALL text must be black (#000000) - no exceptions
+
+Only after ALL checkboxes above are checked can you report the lesson as complete and working.
