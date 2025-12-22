@@ -1,5 +1,5 @@
 /**
- * SubOnlyCommand - Extracts ONLY the specified parts of math text into a TextItemCollection
+ * SelectCommand - Extracts ONLY the specified parts of math text into a TextItemCollection
  *
  * This command doesn't play - it just extracts data during doInit.
  * The TextItemCollection is stored in commandResult for later use.
@@ -9,12 +9,12 @@ import { TextItem } from '../../mathtext/models/text-item.js';
 import { TextItemCollection } from '../../mathtext/models/text-item-collection.js';
 import { PatternSelector } from '../../mathtext/utils/pattern-selector.js';
 
-export class SubOnlyCommand extends BaseCommand {
+export class SelectCommand extends BaseCommand {
     /**
      * @param {Object} options
      * @param {string} options.targetVariableName - Variable name of the mathtext
      * @param {Array<string>} options.includePatterns - Patterns to extract
-     * @param {SubOnlyExpression} options.expression - Reference to expression for storing result
+     * @param {SelectExpression} options.expression - Reference to expression for storing result
      */
     constructor(options = {}) {
         super();
@@ -27,7 +27,7 @@ export class SubOnlyCommand extends BaseCommand {
         // Get the MathTextComponent from the registry
         this.mathComponent = this.commandContext.shapeRegistry[this.options.targetVariableName];
         if (!this.mathComponent) {
-            console.warn(`SubOnlyCommand: "${this.options.targetVariableName}" not found in registry`);
+            console.warn(`SelectCommand: "${this.options.targetVariableName}" not found in registry`);
             return;
         }
 

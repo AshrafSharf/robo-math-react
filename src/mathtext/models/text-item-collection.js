@@ -1,7 +1,7 @@
 /**
  * TextItemCollection - Container for multiple TextItem instances
  *
- * Created by subonly/subwithout expressions or MathTextComponent.getTextItems().
+ * Created by select/selectexcept expressions or MathTextComponent.getTextItems().
  * All items in a collection share the same parent MathTextComponent.
  *
  * Provides batch operations for cloning and managing cloned components.

@@ -4,8 +4,8 @@
  * Syntax:
  *   replace("latex", textItemVar)           - Replace using variable
  *   replace("latex", item(collection, i)) - Replace using inline item
- *   replace("latex", subonly(M, "pattern")) - Replace using inline subonly
- *   replace("latex", subwithout(M, "pat"))  - Replace using inline subwithout
+ *   replace("latex", select(M, "pattern"))     - Replace using inline select
+ *   replace("latex", selectexcept(M, "pat"))  - Replace using inline selectexcept
  *
  * Takes a raw LaTeX string and a TextItem (or TextItemCollection),
  * creates a new MathTextComponent at the TextItem's position with
@@ -25,12 +25,12 @@ export class ReplaceTextItemExpression extends AbstractNonArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.sourceString = null;
-        // Mode: 'variable', 'item_expr', or 'sub_expr' (subonly/subwithout)
+        // Mode: 'variable', 'item_expr', or 'sub_expr' (select/selectexcept)
         this.mode = null;
         this.targetVariableName = null;
         // For inline item
         this.textItemExpression = null;
-        // For inline subonly/subwithout
+        // For inline select/selectexcept
         this.subExpression = null;
     }
 
@@ -53,14 +53,14 @@ export class ReplaceTextItemExpression extends AbstractNonArithmeticExpression {
         if (targetName === 'item') {
             this.mode = 'item_expr';
             this.textItemExpression = targetExpr;
-        } else if (targetName === 'subonly' || targetName === 'subwithout') {
+        } else if (targetName === 'select' || targetName === 'selectexcept') {
             this.mode = 'sub_expr';
             this.subExpression = targetExpr;
         } else if (targetExpr.variableName) {
             this.mode = 'variable';
             this.targetVariableName = targetExpr.variableName;
         } else {
-            this.dispatchError('replace() second argument must be a TextItem variable, item(), subonly(), or subwithout() expression');
+            this.dispatchError('replace() second argument must be a TextItem variable, item(), select(), or selectexcept() expression');
         }
 
         this.isResolved = true;
@@ -89,7 +89,7 @@ export class ReplaceTextItemExpression extends AbstractNonArithmeticExpression {
             );
         }
         if (this.mode === 'sub_expr') {
-            // Pass inline subonly/subwithout expression to ReplaceTextItemCommand
+            // Pass inline select/selectexcept expression to ReplaceTextItemCommand
             return new ReplaceTextItemCommand(this.sourceString, null, this.subExpression);
         }
         return new ReplaceTextItemCommand(this.sourceString, this.targetVariableName);

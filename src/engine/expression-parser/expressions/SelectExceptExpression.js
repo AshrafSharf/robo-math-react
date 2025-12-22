@@ -1,30 +1,30 @@
 /**
- * SubOnlyExpression - Extracts ONLY the specified parts of math text into a TextItemCollection
+ * SelectExceptExpression - Extracts everything EXCEPT the specified parts of math text
  *
  * Syntax:
- *   subonly(M, "pattern")              - Extract matching parts
- *   subonly(M, "pattern1", "pattern2") - Extract multiple patterns
+ *   selectexcept(M, "pattern")              - Extract all except matching parts
+ *   selectexcept(M, "pattern1", "pattern2") - Exclude multiple patterns
  *
  * Returns a TextItemCollection that can be animated with write().
  * The extraction happens during command execution (doInit), not during resolve.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { SubOnlyCommand } from '../../commands/SubOnlyCommand.js';
+import { SelectExceptCommand } from '../../commands/SelectExceptCommand.js';
 
-export class SubOnlyExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'subonly';
+export class SelectExceptExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'selectexcept';
 
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
         this.targetVariableName = null;
-        this.includePatterns = [];
+        this.excludePatterns = [];
         this.collection = null;  // Set by command during doInit
     }
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError('subonly() requires at least 2 arguments: subonly(M, "pattern")');
+            this.dispatchError('selectexcept() requires at least 2 arguments: selectexcept(M, "pattern")');
         }
 
         // First arg: variable reference to mathtext
@@ -32,34 +32,34 @@ export class SubOnlyExpression extends AbstractNonArithmeticExpression {
         targetExpr.resolve(context);
 
         if (!targetExpr.variableName) {
-            this.dispatchError('subonly() first argument must be a mathtext variable');
+            this.dispatchError('selectexcept() first argument must be a mathtext variable');
         }
         this.targetVariableName = targetExpr.variableName;
 
         // Verify the referenced expression exists and is a MathTextExpression or WriteExpression
         const resolvedExpr = context.getReference(this.targetVariableName);
         if (!resolvedExpr) {
-            this.dispatchError(`subonly(): Variable "${this.targetVariableName}" not found`);
+            this.dispatchError(`selectexcept(): Variable "${this.targetVariableName}" not found`);
         }
         const validSources = ['mathtext', 'write'];
         if (resolvedExpr.getName && !validSources.includes(resolvedExpr.getName())) {
-            this.dispatchError(`subonly(): "${this.targetVariableName}" must be a mathtext or write expression`);
+            this.dispatchError(`selectexcept(): "${this.targetVariableName}" must be a mathtext or write expression`);
         }
 
-        // Remaining args: patterns to extract (strings)
+        // Remaining args: patterns to exclude (strings)
         for (let i = 1; i < this.subExpressions.length; i++) {
             const patternExpr = this.subExpressions[i];
             patternExpr.resolve(context);
             const resolvedPattern = this._getResolvedExpression(context, patternExpr);
             if (!resolvedPattern || resolvedPattern.getName() !== 'quotedstring') {
-                this.dispatchError(`subonly() argument ${i + 1} must be a quoted string (pattern)`);
+                this.dispatchError(`selectexcept() argument ${i + 1} must be a quoted string (pattern)`);
             }
-            this.includePatterns.push(resolvedPattern.getStringValue());
+            this.excludePatterns.push(resolvedPattern.getStringValue());
         }
     }
 
     getName() {
-        return SubOnlyExpression.NAME;
+        return SelectExceptExpression.NAME;
     }
 
     getVariableAtomicValues() {
@@ -67,7 +67,7 @@ export class SubOnlyExpression extends AbstractNonArithmeticExpression {
     }
 
     /**
-     * Set the collection (called by SubOnlyCommand during doInit)
+     * Set the collection (called by SelectExceptCommand during doInit)
      * @param {TextItemCollection} collection
      */
     setCollection(collection) {
@@ -83,9 +83,9 @@ export class SubOnlyExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new SubOnlyCommand({
+        return new SelectExceptCommand({
             targetVariableName: this.targetVariableName,
-            includePatterns: this.includePatterns,
+            excludePatterns: this.excludePatterns,
             expression: this
         });
     }

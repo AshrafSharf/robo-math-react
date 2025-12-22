@@ -1,6 +1,6 @@
 M=mathtext(5,12,"x^2+y^2=20")
 write(M)
-x_square=subonly(M, "x^2")
+x_square=select(M, "x^2")
 replace("a^2",x_square)
-val_20=subonly(M, "20")
+val_20=select(M, "20")
 replace("30",val_20)

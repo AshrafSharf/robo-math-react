@@ -6,7 +6,7 @@ Clone a TextItem from a collection to a new position and animate it.
 
 ```
 M = mathtext(3, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
-thetas = subonly(M, "\theta")
+thetas = select(M, "\theta")
 
 # Clone first theta to new position
 write(5, 2, item(thetas, 0))
@@ -24,11 +24,11 @@ write(5, 6, item(thetas, 2))
 M = mathtext(3, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
 
 # Extract sin occurrences
-sins = subonly(M, "\sin")
+sins = select(M, "\sin")
 write(6, 2, item(sins, 0))
 
 # Extract cos occurrences
-coses = subonly(M, "\cos")
+coses = select(M, "\cos")
 write(8, 2, item(coses, 0))
 ```
 
@@ -36,7 +36,7 @@ write(8, 2, item(coses, 0))
 
 ```
 M = mathtext(3, 2, "x^2 + y^2 = r^2")
-S = subonly(M, "x^2")
+S = select(M, "x^2")
 
 # Animate in place (original position)
 write(item(S, 0))

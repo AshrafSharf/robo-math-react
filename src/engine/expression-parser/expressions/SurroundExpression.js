@@ -2,7 +2,7 @@
  * SurroundExpression - Draws a rectangle around a TextItem
  *
  * Syntax: surround(T)
- * Where T is a TextItem variable from subonly() or subwithout()
+ * Where T is a TextItem variable from select() or selectexcept()
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { SurroundCommand } from '../../commands/SurroundCommand.js';

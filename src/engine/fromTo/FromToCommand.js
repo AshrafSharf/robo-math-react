@@ -98,7 +98,7 @@ export class FromToCommand extends BaseCommand {
                 }
 
                 await newCmd.init(this.commandContext);
-                newCmd.doDirectPlay();
+                await newCmd.directPlay();
                 this.currentCommands.push(newCmd);
             }
         }

@@ -3,7 +3,7 @@ import { Bounds2 } from '../../geom/Bounds2.js';
 /**
  * TextItem - Represents a single extracted part of a MathTextComponent
  *
- * Created by subonly/subwithout expressions to capture specific regions
+ * Created by select/selectexcept expressions to capture specific regions
  * of math text that can be animated later with write().
  *
  * This is a pure data class. For operations, use:

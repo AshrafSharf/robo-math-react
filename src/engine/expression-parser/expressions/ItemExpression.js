@@ -5,7 +5,7 @@
  *   item(collection, index)
  *
  * Works with:
- *   - TextItemCollection (from subonly, subwithout, writeonly, writewithout)
+ *   - TextItemCollection (from select, selectexcept, writeonly, writewithout)
  *   - ShapeCollection (from 2D multi-shape translate, rotate, scale)
  *   - Shape3DCollection (from 3D multi-shape translate3d, rotate3d, scale3d)
  *
@@ -13,7 +13,7 @@
  * For text collections: defers to ItemCommand at command time.
  *
  * Examples:
- *   S = subonly(M, "pattern")
+ *   S = select(M, "pattern")
  *   T = item(S, 0)             // Get first text item
  *   write(T)                   // Animate it
  *
@@ -29,7 +29,7 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     static NAME = 'item';
 
     // Valid collection source expression names
-    static TEXT_SOURCES = ['subonly', 'subwithout', 'writeonly', 'writewithout'];
+    static TEXT_SOURCES = ['select', 'selectexcept', 'writeonly', 'writewithout'];
     static SHAPE_2D_SOURCES = ['translate', 'rotate', 'scale'];
     static SHAPE_3D_SOURCES = ['translate3d', 'rotate3d', 'scale3d'];
 

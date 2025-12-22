@@ -85,3 +85,10 @@ P = paraplot(G, "3 * cos(t)", "3 * sin(n * t)", 0, 6.28)
 fromTo(n, 1, 5)
 ```
 Lissajous pattern morphs as frequency ratio changes.
+
+
+G=g2d(2,3,20,20)
+A=40
+P1=point(G,2,3)
+rotate(G,P1,A)
+fromTo(A,40,200)

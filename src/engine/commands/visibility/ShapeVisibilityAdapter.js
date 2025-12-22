@@ -378,7 +378,7 @@ class TextItemAdapter extends BaseAdapter {
 }
 
 /**
- * Adapter for TextItemCollection (collection of TextItems from subonly/subwithout)
+ * Adapter for TextItemCollection (collection of TextItems from select/selectexcept)
  * Applies visibility operations to all items in the collection
  */
 class TextItemCollectionAdapter extends BaseAdapter {

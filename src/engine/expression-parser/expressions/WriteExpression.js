@@ -9,10 +9,10 @@
  *   write(textItem)             - Animate a single TextItem
  *
  * TextItemCollection sources:
- *   - subonly(M, patterns...)   - Returns collection of matched patterns
- *   - subwithout(M, patterns...)- Returns collection of excluded patterns
- *   - writeonly(M, patterns...) - Returns collection of excluded (non-written) parts
- *   - writewithout(M, patterns...)- Returns collection of excluded (matched) parts
+ *   - select(M, patterns...)       - Returns collection of matched patterns
+ *   - selectexcept(M, patterns...) - Returns collection of excluded patterns
+ *   - writeonly(M, patterns...)    - Returns collection of excluded (non-written) parts
+ *   - writewithout(M, patterns...) - Returns collection of excluded (matched) parts
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { WriteCommand } from '../../commands/WriteCommand.js';
@@ -71,8 +71,8 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
 
                 const exprName = resolvedExpr.getName && resolvedExpr.getName();
 
-                // Check for TextItemCollection sources: subonly, subwithout, writeonly, writewithout
-                if (exprName === 'subonly' || exprName === 'subwithout' ||
+                // Check for TextItemCollection sources: select, selectexcept, writeonly, writewithout
+                if (exprName === 'select' || exprName === 'selectexcept' ||
                     exprName === 'writeonly' || exprName === 'writewithout') {
                     this.mode = 'collection_var';
                     this.collectionVariableName = targetExpr.variableName;
@@ -93,7 +93,7 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
                     return;
                 }
 
-                this.dispatchError(`write(): "${targetExpr.variableName}" must be a mathtext, subonly, subwithout, writeonly, writewithout, or item expression`);
+                this.dispatchError(`write(): "${targetExpr.variableName}" must be a mathtext, select, selectexcept, writeonly, writewithout, or item expression`);
             } else {
                 this.dispatchError('write() argument must be a variable reference');
             }

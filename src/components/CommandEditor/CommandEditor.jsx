@@ -28,6 +28,7 @@ const CommandEditor = ({
   onChange,
   onRedrawSingle,
   onToggleSidebar,
+  onClearCanvas,
   onPopupMode,
   onRestoreToSidebar,
   isSidebarCollapsed,
@@ -181,11 +182,12 @@ const CommandEditor = ({
     }, 0);
   }, []);
 
-  // Delete all commands
+  // Delete all commands and clear canvas
   const handleDeleteAll = useCallback(() => {
     updateCommands([createCommand(1)]);
     setSelectedId(1);
-  }, [updateCommands]);
+    if (onClearCanvas) onClearCanvas();
+  }, [updateCommands, onClearCanvas]);
 
   // Toggle sidebar visibility
   const handleToggleSidebar = useCallback(() => {

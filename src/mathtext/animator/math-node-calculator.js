@@ -73,7 +73,7 @@ export class MathNodeCalculator {
 
   /**
    * Remove matching nodes for selection only - NO side effects.
-   * Used by SubWithoutCommand for pure selection without hiding strokes.
+   * Used by SelectExceptCommand for pure selection without hiding strokes.
    */
   removeMatchingNodesForSelection(selectionUnit, tweenableNodes) {
     const remainingNodes = [].concat(tweenableNodes);
@@ -93,7 +93,7 @@ export class MathNodeCalculator {
 
   /**
    * Exclude tween nodes for selection only - NO side effects.
-   * Used by SubWithoutCommand for pure selection without hiding strokes.
+   * Used by SelectExceptCommand for pure selection without hiding strokes.
    */
   excludeTweenNodesForSelection(mathGraphNode, selectionUnits) {
     const tweenableNodes = [];

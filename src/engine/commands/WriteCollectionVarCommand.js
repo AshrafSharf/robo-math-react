@@ -20,7 +20,7 @@ export class WriteCollectionVarCommand extends BaseCommand {
     }
 
     async doInit() {
-        // Get the TextItemCollection from shapeRegistry (stored by SubOnlyCommand/SubWithoutCommand)
+        // Get the TextItemCollection from shapeRegistry (stored by SelectCommand/SelectExceptCommand)
         this.collection = this.commandContext.shapeRegistry[this.collectionVariableName];
         if (!this.collection) {
             console.warn(`WriteCollectionVarCommand: "${this.collectionVariableName}" not found in registry`);

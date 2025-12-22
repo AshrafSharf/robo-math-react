@@ -15,7 +15,7 @@ export class ReplaceTextItemCommand extends BaseCommand {
     /**
      * @param {string} sourceString - LaTeX string to render
      * @param {string} targetVariableName - Variable name of TextItem or TextItemCollection
-     * @param {Object} inlineExpression - Optional inline subonly/subwithout expression
+     * @param {Object} inlineExpression - Optional inline select/selectexcept expression
      */
     constructor(sourceString, targetVariableName, inlineExpression = null) {
         super();
@@ -29,7 +29,7 @@ export class ReplaceTextItemCommand extends BaseCommand {
     }
 
     async doInit() {
-        // If we have an inline expression (subonly/subwithout), run it first
+        // If we have an inline expression (select/selectexcept), run it first
         if (this.inlineExpression) {
             const subCommand = this.inlineExpression.toCommand();
             await subCommand.init(this.commandContext);

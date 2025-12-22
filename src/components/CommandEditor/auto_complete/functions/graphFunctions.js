@@ -73,20 +73,20 @@ export const GRAPH_FUNCTIONS = {
     ],
     category: 'Graph'
   },
-  subonly: {
-    name: 'subonly',
+  select: {
+    name: 'select',
     signature: '(M, "pattern")',
     args: ['M: MathText', 'pattern: string'],
     description: 'Get text items matching pattern',
-    altSignatures: ['subonly(M, "x")', 'subonly(M, "\\\\cos")'],
+    altSignatures: ['select(M, "x")', 'select(M, "\\\\cos")'],
     category: 'Graph'
   },
-  subwithout: {
-    name: 'subwithout',
+  selectexcept: {
+    name: 'selectexcept',
     signature: '(M, "pattern")',
     args: ['M: MathText', 'pattern: string'],
     description: 'Get text items excluding pattern',
-    altSignatures: ['subwithout(M, "x")', 'subwithout(M, "\\\\sin")'],
+    altSignatures: ['selectexcept(M, "x")', 'selectexcept(M, "\\\\sin")'],
     category: 'Graph'
   },
   replace: {
@@ -94,7 +94,7 @@ export const GRAPH_FUNCTIONS = {
     signature: '("latex", textItem)',
     args: ['latex: string', 'textItem: TextItem'],
     description: 'Replace text item with new latex',
-    altSignatures: ['replace("y", item(S, 0))', 'replace("latex", subonly(M, "x"))'],
+    altSignatures: ['replace("y", item(S, 0))', 'replace("latex", select(M, "x"))'],
     category: 'Graph'
   }
 };

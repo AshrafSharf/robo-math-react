@@ -453,7 +453,7 @@ export class MathTextComponent {
 
   /**
    * Exclude tween nodes for selection only - NO side effects.
-   * Used by SubWithoutCommand for pure selection without hiding strokes.
+   * Used by SelectExceptCommand for pure selection without hiding strokes.
    */
   excludeTweenNodesForSelection(selUnits) {
     const mathNodeCalculator = new MathNodeCalculator();

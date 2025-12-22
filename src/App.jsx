@@ -198,6 +198,7 @@ function AppContent() {
           onExpressionFocus={handleExpressionFocus}
           onExpressionBlur={handleExpressionBlur}
           onToggleSidebar={handleToggleSidebar}
+          onClearCanvas={clearAndRerender}
           isSidebarCollapsed={isSidebarCollapsed}
           errors={errors}
           canPlayInfos={canPlayInfos}

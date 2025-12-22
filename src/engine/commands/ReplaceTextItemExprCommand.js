@@ -14,7 +14,7 @@ export class ReplaceTextItemExprCommand extends ReplaceTextItemCommand {
      * @param {string} sourceString - LaTeX string to render
      * @param {string} collectionVariableName - Variable name of the TextItemCollection
      * @param {number} index - Index of the TextItem to replace
-     * @param {Object} collectionInlineExpression - Optional inline subonly/subwithout expression
+     * @param {Object} collectionInlineExpression - Optional inline select/selectexcept expression
      */
     constructor(sourceString, collectionVariableName, index, collectionInlineExpression = null) {
         super(sourceString, collectionVariableName);
@@ -23,7 +23,7 @@ export class ReplaceTextItemExprCommand extends ReplaceTextItemCommand {
     }
 
     async doInit() {
-        // If we have an inline expression (subonly/subwithout), run it first
+        // If we have an inline expression (select/selectexcept), run it first
         if (this.collectionInlineExpression) {
             const subCommand = this.collectionInlineExpression.toCommand();
             await subCommand.init(this.commandContext);

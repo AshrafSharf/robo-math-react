@@ -1,5 +1,5 @@
 /**
- * SubWithoutCommand - Extracts everything EXCEPT the specified parts of math text
+ * SelectExceptCommand - Extracts everything EXCEPT the specified parts of math text
  *
  * This command doesn't play - it just extracts data during doInit.
  * The TextItemCollection is stored in commandResult for later use.
@@ -10,12 +10,12 @@ import { TextItemCollection } from '../../mathtext/models/text-item-collection.j
 import { SelectionUnit } from '../../mathtext/models/selection-unit.js';
 import { PatternSelector } from '../../mathtext/utils/pattern-selector.js';
 
-export class SubWithoutCommand extends BaseCommand {
+export class SelectExceptCommand extends BaseCommand {
     /**
      * @param {Object} options
      * @param {string} options.targetVariableName - Variable name of the mathtext
      * @param {Array<string>} options.excludePatterns - Patterns to exclude
-     * @param {SubWithoutExpression} options.expression - Reference to expression for storing result
+     * @param {SelectExceptExpression} options.expression - Reference to expression for storing result
      */
     constructor(options = {}) {
         super();
@@ -28,7 +28,7 @@ export class SubWithoutCommand extends BaseCommand {
         // Get the MathTextComponent from the registry
         this.mathComponent = this.commandContext.shapeRegistry[this.options.targetVariableName];
         if (!this.mathComponent) {
-            console.warn(`SubWithoutCommand: "${this.options.targetVariableName}" not found in registry`);
+            console.warn(`SelectExceptCommand: "${this.options.targetVariableName}" not found in registry`);
             return;
         }
 
@@ -72,7 +72,7 @@ export class SubWithoutCommand extends BaseCommand {
             const textItem = new TextItem(
                 this.mathComponent,
                 remainingSelectionUnit,
-                null  // No single bounds for "without" selection
+                null  // No single bounds for "except" selection
             );
             collection.add(textItem);
         }

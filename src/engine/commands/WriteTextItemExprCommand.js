@@ -21,7 +21,7 @@ export class WriteTextItemExprCommand extends BaseCommand {
     }
 
     async doInit() {
-        // Get the TextItemCollection from shapeRegistry (stored by SubOnlyCommand/SubWithoutCommand)
+        // Get the TextItemCollection from shapeRegistry (stored by SelectCommand/SelectExceptCommand)
         const collection = this.commandContext.shapeRegistry[this.collectionVariableName];
         if (!collection) {
             console.warn(`WriteTextItemExprCommand: "${this.collectionVariableName}" not found in registry`);
