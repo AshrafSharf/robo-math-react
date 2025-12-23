@@ -243,7 +243,6 @@ class SVGShapeStrokeAdapter extends BaseStrokeAdapter {
 
 /**
  * Adapter for MathTextComponent (labels, math text)
- * For MathJax paths, stroke and fill should always be the same color
  */
 class MathTextStrokeAdapter extends BaseStrokeAdapter {
     captureOriginal() {
@@ -260,21 +259,16 @@ class MathTextStrokeAdapter extends BaseStrokeAdapter {
     setColor(color, opacity = 1) {
         const resolvedColor = COLOR_MAP[color?.toLowerCase()] || color;
         this.shape.strokeColor = resolvedColor;
-        this.shape.fillColor = resolvedColor;
 
         const container = this.shape.containerDOM;
         if (!container) return;
 
-        // Set both stroke AND fill to same color for MathJax paths
+        // Only set stroke for MathJax paths (not fill - causes smudging)
         $("path", container).each((i, path) => {
             path.setAttribute('stroke', resolvedColor);
-            path.setAttribute('fill', resolvedColor);
             path.style.stroke = resolvedColor;
-            path.style.fill = resolvedColor;
             path.setAttribute('stroke-opacity', opacity);
-            path.setAttribute('fill-opacity', opacity);
             path.style.strokeOpacity = opacity;
-            path.style.fillOpacity = opacity;
         });
     }
 
@@ -307,19 +301,14 @@ class MathTextStrokeAdapter extends BaseStrokeAdapter {
             ease: 'Power2.easeInOut',
             onUpdate: () => {
                 const hex = rgbToHex(colorData.r, colorData.g, colorData.b);
-                // Set both stroke AND fill for MathJax paths
+                // Only set stroke for MathJax paths (not fill)
                 paths.forEach(path => {
                     path.setAttribute('stroke', hex);
-                    path.setAttribute('fill', hex);
                     path.style.stroke = hex;
-                    path.style.fill = hex;
                     path.setAttribute('stroke-opacity', colorData.a);
-                    path.setAttribute('fill-opacity', colorData.a);
                     path.style.strokeOpacity = colorData.a;
-                    path.style.fillOpacity = colorData.a;
                 });
                 this.shape.strokeColor = hex;
-                this.shape.fillColor = hex;
             },
             onComplete: () => {
                 // Ensure final state is set to target color
@@ -485,7 +474,6 @@ class ThreeJSStrokeAdapter extends BaseStrokeAdapter {
 
 /**
  * Adapter for TextItem (extracted portions of MathTextComponent)
- * For MathJax paths, stroke and fill should always be the same color
  */
 class TextItemStrokeAdapter extends BaseStrokeAdapter {
     captureOriginal() {
@@ -509,16 +497,11 @@ class TextItemStrokeAdapter extends BaseStrokeAdapter {
         const resolvedColor = COLOR_MAP[color?.toLowerCase()] || color;
         const paths = this.shape.getSVGPaths();
 
-        // Set both stroke AND fill for MathJax paths
         paths.forEach(path => {
             path.setAttribute('stroke', resolvedColor);
-            path.setAttribute('fill', resolvedColor);
             path.style.stroke = resolvedColor;
-            path.style.fill = resolvedColor;
             path.setAttribute('stroke-opacity', opacity);
-            path.setAttribute('fill-opacity', opacity);
             path.style.strokeOpacity = opacity;
-            path.style.fillOpacity = opacity;
         });
     }
 
@@ -549,20 +532,14 @@ class TextItemStrokeAdapter extends BaseStrokeAdapter {
             ease: 'Power2.easeInOut',
             onUpdate: () => {
                 const hex = rgbToHex(colorData.r, colorData.g, colorData.b);
-                // Set both stroke AND fill for MathJax paths
                 paths.forEach(path => {
                     path.setAttribute('stroke', hex);
-                    path.setAttribute('fill', hex);
                     path.style.stroke = hex;
-                    path.style.fill = hex;
                     path.setAttribute('stroke-opacity', colorData.a);
-                    path.setAttribute('fill-opacity', colorData.a);
                     path.style.strokeOpacity = colorData.a;
-                    path.style.fillOpacity = colorData.a;
                 });
             },
             onComplete: () => {
-                // Ensure final state is set to target color
                 this.setColor(resolvedTargetColor, opacity);
                 if (onComplete) onComplete();
             }
@@ -572,7 +549,6 @@ class TextItemStrokeAdapter extends BaseStrokeAdapter {
 
 /**
  * Adapter for TextItemCollection (collection of TextItems from select/selectexcept)
- * For MathJax paths, stroke and fill should always be the same color
  */
 class TextItemCollectionStrokeAdapter extends BaseStrokeAdapter {
     /**
@@ -611,16 +587,11 @@ class TextItemCollectionStrokeAdapter extends BaseStrokeAdapter {
         const resolvedColor = COLOR_MAP[color?.toLowerCase()] || color;
         const paths = this._getAllPaths();
 
-        // Set both stroke AND fill for MathJax paths
         paths.forEach(path => {
             path.setAttribute('stroke', resolvedColor);
-            path.setAttribute('fill', resolvedColor);
             path.style.stroke = resolvedColor;
-            path.style.fill = resolvedColor;
             path.setAttribute('stroke-opacity', opacity);
-            path.setAttribute('fill-opacity', opacity);
             path.style.strokeOpacity = opacity;
-            path.style.fillOpacity = opacity;
         });
     }
 
@@ -651,16 +622,11 @@ class TextItemCollectionStrokeAdapter extends BaseStrokeAdapter {
             ease: 'Power2.easeInOut',
             onUpdate: () => {
                 const hex = rgbToHex(colorData.r, colorData.g, colorData.b);
-                // Set both stroke AND fill for MathJax paths
                 paths.forEach(path => {
                     path.setAttribute('stroke', hex);
-                    path.setAttribute('fill', hex);
                     path.style.stroke = hex;
-                    path.style.fill = hex;
                     path.setAttribute('stroke-opacity', colorData.a);
-                    path.setAttribute('fill-opacity', colorData.a);
                     path.style.strokeOpacity = colorData.a;
-                    path.style.fillOpacity = colorData.a;
                 });
             },
             onComplete: () => {

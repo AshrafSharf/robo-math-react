@@ -5,3 +5,10 @@ L = line(G, A, B)
 stroke(A, B, L,"green")
 
 
+
+M = mathtext(2, 5, "a + b = c")
+S = select(M,"a")
+first = item(S, 0)
+stroke(first, "red")
+
+
