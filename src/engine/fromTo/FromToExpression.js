@@ -129,6 +129,18 @@ export class FromToExpression extends AbstractNonArithmeticExpression {
             }
         }
 
+        // Detect cycles: if not all expressions were processed, a cycle exists
+        if (order.length < allExprs.size) {
+            const unprocessed = [...allExprs].filter(expr => !order.some(o => o.expr === expr));
+            const cycleLabels = unprocessed
+                .map(expr => exprToLabel.get(expr) || '(unlabeled)')
+                .join(', ');
+            throw new Error(
+                `Circular dependency detected when animating '${variableName}'. ` +
+                `Expressions involved: ${cycleLabels}`
+            );
+        }
+
         return order;
     }
 

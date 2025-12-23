@@ -87,11 +87,17 @@ import { Chain3DExpression } from '../expressions/3d/Chain3DExpression.js';
 import { VecSum3DExpression } from '../expressions/3d/VecSum3DExpression.js';
 import { VecDiff3DExpression } from '../expressions/3d/VecDiff3DExpression.js';
 import { VecProject3DExpression } from '../expressions/3d/VecProject3DExpression.js';
+import { Project3DExpression } from '../expressions/3d/Project3DExpression.js';
+import { Reflect3DExpression } from '../expressions/3d/Reflect3DExpression.js';
+import { Intersect3DExpression } from '../expressions/3d/Intersect3DExpression.js';
 import { Decompose3DExpression } from '../expressions/3d/Decompose3DExpression.js';
 import { Angle3DExpression } from '../expressions/3d/Angle3DExpression.js';
 import { Angle3D2Expression } from '../expressions/3d/Angle3D2Expression.js';
 import { RightAngle3DExpression } from '../expressions/3d/RightAngle3DExpression.js';
 import { Sector3DExpression } from '../expressions/3d/Sector3DExpression.js';
+import { Plot3DExpression } from '../expressions/3d/Plot3DExpression.js';
+import { Para3DExpression } from '../expressions/3d/Para3DExpression.js';
+import { Curve3DExpression } from '../expressions/3d/Curve3DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { ParametricPlotExpression } from '../expressions/ParametricPlotExpression.js';
 import { FunctionDefinitionExpression } from '../expressions/FunctionDefinitionExpression.js';
@@ -117,6 +123,7 @@ import { DistanceMarkerExpression } from '../expressions/DistanceMarkerExpressio
 import { SequenceExpression } from '../expressions/SequenceExpression.js';
 import { ParallelExpression } from '../expressions/ParallelExpression.js';
 import { RefExpression } from '../expressions/RefExpression.js';
+import { TableExpression } from '../expressions/TableExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
 import { ChangeExpression } from '../../change/ChangeExpression.js';
@@ -205,6 +212,9 @@ export class IntrepreterFunctionTable {
         registerMultiArg('vecsum3d', VecSum3DExpression);       // add two vectors
         registerMultiArg('vecdiff3d', VecDiff3DExpression);     // subtract two vectors
         registerMultiArg('vecproject3d', VecProject3DExpression); // project vector onto another
+        registerMultiArg('project3d', Project3DExpression);     // project point onto plane
+        registerMultiArg('reflect3d', Reflect3DExpression);     // reflect shape across plane
+        registerMultiArg('intersect3d', Intersect3DExpression); // intersect 3D shapes
         registerMultiArg('decompose3d', Decompose3DExpression); // decompose vector to components
 
         // 3D shape transformations
@@ -221,6 +231,11 @@ export class IntrepreterFunctionTable {
         registerMultiArg('angle3d2', Angle3D2Expression);         // reflex angle arc
         registerMultiArg('rightangle3d', RightAngle3DExpression); // right angle marker (90 degree square)
         registerMultiArg('sector3d', Sector3DExpression);         // filled pie-slice sector
+
+        // 3D plotting expressions
+        registerMultiArg('plot3d', Plot3DExpression);              // surface plot z = f(x, y)
+        registerMultiArg('para3d', Para3DExpression);              // parametric surface (u,v) → (x,y,z)
+        registerMultiArg('curve3d', Curve3DExpression);            // parametric curve t → (x,y,z)
 
         registerMultiArg('plot', PlotExpression);
         registerMultiArg('paraplot', ParametricPlotExpression);
@@ -243,6 +258,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('seq', SequenceExpression);
         registerMultiArg('para', ParallelExpression);
         registerMultiArg('ref', RefExpression);
+        registerMultiArg('table', TableExpression);
 
         // Function definition and calling
         registerMultiArg('def', FunctionDefinitionExpression);

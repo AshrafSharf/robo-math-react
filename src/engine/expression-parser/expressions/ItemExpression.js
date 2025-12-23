@@ -2,15 +2,19 @@
  * ItemExpression - Extract a single item from a collection by index
  *
  * Syntax:
- *   item(collection, index)
+ *   item(collection, index)           // For text/shape collections
+ *   item(table, rowIndex)             // Get table row
+ *   item(table, rowIndex, colIndex)   // Get table cell
  *
  * Works with:
  *   - TextItemCollection (from select, selectexcept, writeonly, writewithout)
  *   - ShapeCollection (from 2D multi-shape translate, rotate, scale)
  *   - Shape3DCollection (from 3D multi-shape translate3d, rotate3d, scale3d)
+ *   - TableItemCollection (from table) - supports row and cell access
  *
  * For shape collections: provides full shape accessor interface for chaining.
  * For text collections: defers to ItemCommand at command time.
+ * For table collections: returns TableRow (2 args) or TableCell (3 args).
  *
  * Examples:
  *   S = select(M, "pattern")
@@ -20,6 +24,10 @@
  *   S = translate(G, P1, P2, 5, 5)
  *   T = item(S, 0)             // Get first translated point
  *   U = translate(G, T, 10, 10) // Chain with another translate
+ *
+ *   A = table()
+ *   R = item(A, 0)             // Get row 0 (TableRow)
+ *   C = item(A, 0, 1)          // Get cell at row 0, col 1 (TableCell)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { ItemCommand } from '../../commands/ItemCommand.js';
@@ -32,6 +40,7 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     static TEXT_SOURCES = ['select', 'selectexcept', 'writeonly', 'writewithout'];
     static SHAPE_2D_SOURCES = ['translate', 'rotate', 'scale'];
     static SHAPE_3D_SOURCES = ['translate3d', 'rotate3d', 'scale3d'];
+    static TABLE_SOURCES = ['table'];
 
     constructor(subExpressions) {
         super();
@@ -56,6 +65,12 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
         this.handler = null;
         this.extractedPoints = [];
         this.coordinates = [];
+
+        // For table collections
+        this.isTableRowAccess = false;
+        this.isTableCellAccess = false;
+        this.rowIndex = 0;
+        this.colIndex = 0;
     }
 
     resolve(context) {
@@ -97,12 +112,16 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
             }
             this.collectionType = 'shape3d';
             this.graphExpression = this.sourceExpression.graphExpression;
+        } else if (ItemExpression.TABLE_SOURCES.includes(exprName)) {
+            this.collectionType = 'table';
+            // Table supports 2 args (row) or 3 args (cell)
+            // Will handle index extraction below
         } else {
-            const validSources = [...ItemExpression.TEXT_SOURCES, ...ItemExpression.SHAPE_2D_SOURCES, ...ItemExpression.SHAPE_3D_SOURCES];
+            const validSources = [...ItemExpression.TEXT_SOURCES, ...ItemExpression.SHAPE_2D_SOURCES, ...ItemExpression.SHAPE_3D_SOURCES, ...ItemExpression.TABLE_SOURCES];
             this.dispatchError(`item(): First argument must be a collection from ${validSources.join(', ')}`);
         }
 
-        // Second arg: index (numeric)
+        // Second arg: row index (for tables) or item index (for other collections)
         this.subExpressions[1].resolve(context);
         const indexExpr = this._getResolvedExpression(context, this.subExpressions[1]);
         const indexValues = indexExpr.getVariableAtomicValues();
@@ -110,6 +129,27 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('item() second argument must be a number (index)');
         }
         this.index = Math.floor(indexValues[0]);
+
+        // Handle table collections specially (2 args = row, 3 args = cell)
+        if (this.collectionType === 'table') {
+            this.rowIndex = this.index;
+
+            // Check for third argument (column index for cell access)
+            if (this.subExpressions.length >= 3) {
+                this.subExpressions[2].resolve(context);
+                const colExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+                const colValues = colExpr.getVariableAtomicValues();
+                if (colValues.length !== 1) {
+                    this.dispatchError('item() third argument must be a number (column index)');
+                }
+                this.colIndex = Math.floor(colValues[0]);
+                this.isTableCellAccess = true;
+            } else {
+                this.isTableRowAccess = true;
+            }
+            // Table validation happens at command time when collection is available
+            return;
+        }
 
         // Validate index and extract data for shape collections
         if (this.collectionType !== 'text') {
@@ -324,11 +364,55 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     }
 
     /**
-     * Get the resolved TextItem
-     * @returns {TextItem}
+     * Get the resolved value (TextItem, TableRow, or TableCell)
+     * @returns {TextItem|TableRow|TableCell}
      */
     getResolvedValue() {
+        if (this.isTableRowAccess) {
+            return this.getTableRow();
+        }
+        if (this.isTableCellAccess) {
+            return this.getTableCell();
+        }
         return this.textItem;
+    }
+
+    // ===== Table accessors =====
+
+    /**
+     * Get table row (for 2-arg table access)
+     * @returns {TableRow|null}
+     */
+    getTableRow() {
+        if (!this.isTableRowAccess) return null;
+        const collection = this.sourceExpression?.getTableCollection?.();
+        return collection?.getRow(this.rowIndex) || null;
+    }
+
+    /**
+     * Get table cell (for 3-arg table access)
+     * @returns {TableCell|null}
+     */
+    getTableCell() {
+        if (!this.isTableCellAccess) return null;
+        const collection = this.sourceExpression?.getTableCollection?.();
+        return collection?.getCell(this.rowIndex, this.colIndex) || null;
+    }
+
+    /**
+     * Check if this is a table row access
+     * @returns {boolean}
+     */
+    isRowAccess() {
+        return this.isTableRowAccess;
+    }
+
+    /**
+     * Check if this is a table cell access
+     * @returns {boolean}
+     */
+    isCellAccess() {
+        return this.isTableCellAccess;
     }
 
     // ===== Command generation =====
@@ -348,6 +432,12 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     }
 
     getFriendlyToStr() {
+        if (this.isTableCellAccess) {
+            return `item[${this.collectionVariableName}, ${this.rowIndex}, ${this.colIndex}]`;
+        }
+        if (this.isTableRowAccess) {
+            return `item[${this.collectionVariableName}, ${this.rowIndex}]`;
+        }
         return `item[${this.collectionVariableName}, ${this.index}]`;
     }
 }

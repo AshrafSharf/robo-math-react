@@ -8,6 +8,7 @@ import ExpressionOptionsTab from './tabs/ExpressionOptionsTab';
 import AnimationTab from './tabs/AnimationTab';
 import RefTab from './tabs/RefTab';
 import { detectExpressionType, hasOptionsPanel, hasRefTab, detectRefInnerType } from '../../utils/expressionTypeDetector';
+import { getAllowedTabs } from '../../utils/expressionOptionsSchema';
 import { ExpressionOptionsRegistry } from '../../../../engine/expression-parser/core/ExpressionOptionsRegistry';
 import { extractVariables } from '../../auto_complete';
 
@@ -21,7 +22,6 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
   const panelRef = useRef(null);
   const [position, setPosition] = useState(null); // null until calculated
   const [arrowPosition, setArrowPosition] = useState(50);
-  const [activeTab, setActiveTab] = useState('style');
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [wasDragged, setWasDragged] = useState(false); // Track if user dragged the panel
@@ -33,6 +33,13 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
     const { type } = detectExpressionType(command?.expression);
     return type;
   }, [command?.expression]);
+
+  // Check allowed tabs from schema (e.g., table only allows 'expression')
+  const allowedTabs = getAllowedTabs(expressionType);
+  const hasStyleTab = !allowedTabs || allowedTabs.includes('style');
+
+  // Default tab: first allowed tab
+  const [activeTab, setActiveTab] = useState(() => hasStyleTab ? 'style' : 'expression');
 
   // Check if this is a ref expression
   const isRefExpression = hasRefTab(expressionType);
@@ -271,10 +278,16 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
 
   // Switch to a valid tab if current tab becomes disabled
   useEffect(() => {
+    // If current tab is not allowed, switch to first allowed tab
+    if (allowedTabs && !allowedTabs.includes(activeTab)) {
+      setActiveTab(allowedTabs[0] || 'expression');
+      return;
+    }
+    // For other types: switch away from expression if no options panel
     if (activeTab === 'expression' && !hasOptionsPanel(effectiveStyleType)) {
       setActiveTab('style');
     }
-  }, [effectiveStyleType, activeTab]);
+  }, [effectiveStyleType, activeTab, allowedTabs]);
 
   // Drag handlers
   const handleMouseDown = (e) => {
@@ -377,6 +390,7 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
                 expressionType={effectiveStyleType}
                 options={currentExpressionOptions}
                 onChange={handleExpressionOptionChange}
+                onRedraw={onRedrawSingle}
               />
             )}
 

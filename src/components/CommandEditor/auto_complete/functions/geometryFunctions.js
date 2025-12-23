@@ -216,5 +216,70 @@ export const VECTOR_3D_FUNCTIONS = {
     description: 'Decompose vector into axis component',
     altSignatures: ['decompose3d(vec)', 'decompose3d(vec, "x")', 'decompose3d(vec, "y")', 'decompose3d(vec, "z")', 'decompose3d(vec, refVec)', 'decompose3d(vec, refVec, "perp")'],
     category: '3D Geometry'
+  },
+  project3d: {
+    name: 'project3d',
+    signature: '(plane, point)',
+    args: ['plane: Plane3D', 'point: Point3D'],
+    description: 'Project point onto plane (foot of perpendicular)',
+    altSignatures: ['project3d(plane, point)'],
+    category: '3D Geometry'
+  },
+  reflect3d: {
+    name: 'reflect3d',
+    signature: '(plane, shape)',
+    args: ['plane: Plane3D', 'shape: Point3D|Line3D|Vector3D|Polygon3D'],
+    description: 'Reflect shape across plane',
+    altSignatures: ['reflect3d(plane, point)', 'reflect3d(plane, line)', 'reflect3d(plane, vector)', 'reflect3d(plane, polygon)'],
+    category: '3D Geometry'
+  },
+  intersect3d: {
+    name: 'intersect3d',
+    signature: '(obj1, obj2)',
+    args: ['obj1: Line3D|Plane3D', 'obj2: Line3D|Plane3D'],
+    description: 'Find intersection of 3D objects',
+    altSignatures: ['intersect3d(line, line)', 'intersect3d(line, plane)', 'intersect3d(plane, plane)'],
+    category: '3D Geometry'
+  }
+};
+
+/**
+ * 3D Plotting function metadata
+ */
+export const PLOTTING_3D_FUNCTIONS = {
+  plot3d: {
+    name: 'plot3d',
+    signature: '(g, "equation")',
+    args: ['g: Graph3D', 'equation: string'],
+    description: 'Surface plot z = f(x, y) with mathjs variable binding',
+    altSignatures: [
+      'plot3d(g, "x^2 + y^2")',
+      'plot3d(g, "equation", xMin, xMax, yMin, yMax)',
+      'plot3d(g, funcDef)',
+      'plot3d(g, "sin(x) * cos(y)")'
+    ],
+    category: '3D Plotting'
+  },
+  para3d: {
+    name: 'para3d',
+    signature: '(g, "xExpr", "yExpr", "zExpr", uMin, uMax, vMin, vMax)',
+    args: ['g: Graph3D', 'xExpr: string', 'yExpr: string', 'zExpr: string', 'uMin: number', 'uMax: number', 'vMin: number', 'vMax: number'],
+    description: 'Parametric surface (u, v) → (x, y, z)',
+    altSignatures: [
+      'para3d(g, "cos(u)*sin(v)", "sin(u)*sin(v)", "cos(v)", 0, 2*pi, 0, pi)',
+      'para3d(g, xDef, yDef, zDef, uMin, uMax, vMin, vMax)'
+    ],
+    category: '3D Plotting'
+  },
+  curve3d: {
+    name: 'curve3d',
+    signature: '(g, "xExpr", "yExpr", "zExpr", tMin, tMax)',
+    args: ['g: Graph3D', 'xExpr: string', 'yExpr: string', 'zExpr: string', 'tMin: number', 'tMax: number'],
+    description: 'Parametric curve t → (x, y, z) in 3D space',
+    altSignatures: [
+      'curve3d(g, "cos(t)", "sin(t)", "t/5", 0, 4*pi)',
+      'curve3d(g, xDef, yDef, zDef, tMin, tMax)'
+    ],
+    category: '3D Plotting'
   }
 };

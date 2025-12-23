@@ -126,6 +126,8 @@ function normalizeTypeName(name) {
     'text': 'label',
     // Ref expression
     'ref': 'ref',
+    // Table expression
+    'table': 'table',
   };
 
   const normalizedName = name.toLowerCase();
@@ -166,6 +168,7 @@ export function getExpressionDisplayName(expressionType) {
     'plot': 'Plot',
     'paraplot': 'Parametric Plot',
     'ref': 'Reference',
+    'table': 'Table',
   };
   return displayNames[expressionType] || expressionType || 'Unknown';
 }

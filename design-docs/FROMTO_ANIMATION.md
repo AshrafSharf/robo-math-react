@@ -1,17 +1,56 @@
-# FromTo Animation System
+# Change Animation System
 
 ## Purpose
 
-`fromTo` enables reactive animations where changing a single variable automatically updates all dependent shapes. This creates smooth, coordinated animations without manually animating each shape.
+`change` enables reactive animations where changing a single variable automatically updates all dependent shapes. This creates smooth, coordinated animations without manually animating each shape.
+
+## Syntax
+
+```
+change(var, target)       // 2 args: animate from current value to target
+change(var, from, to)     // 3 args: animate from explicit value to target
+```
+
+- **var**: The variable to animate
+- **target/to**: The target value (scalar, point, line, or vector)
+- **from** (optional): Explicit starting value; if omitted, uses current value
 
 ## Usage Examples
 
-### Basic Variable Animation
+### Scalar
+```
+a = 1
+change(a, 5)      // 2 args: animates a from 1 to 5
+change(a, 0, 10)  // 3 args: animates a from 0 to 10
+```
+
+### Point
 ```
 G = g2d(0, 0, 20, 20)
-A = 3
-P = point(G, A, A)
-fromTo(A, 3, 8)  // Point smoothly moves from (3,3) to (8,8)
+P = point(G, 2, 2)
+change(P, point(G, 8, 8))                       // 2 args: (2,2) → (8,8)
+change(P, point(G, 0, 0), point(G, 10, 10))     // 3 args: (0,0) → (10,10)
+```
+
+### 3D Point
+```
+G = g3d(0, 0, 16, 20)
+P = point3d(G, 1, 1, 1)
+change(P, point3d(G, 4, 5, 6))  // Point moves to (4,5,6)
+```
+
+### Vector
+```
+G = g2d(0, 0, 20, 20)
+V = vector(G, 0, 0, 3, 2)
+change(V, vector(G, 0, 0, 6, 4))  // Vector grows
+```
+
+### Line
+```
+G = g2d(0, 0, 20, 20)
+L = line(G, 0, 0, 3, 3)
+change(L, line(G, 0, 0, 8, 8))  // Line extends
 ```
 
 ### Cascading Dependencies
@@ -22,28 +61,31 @@ P1 = point(G, -3, A)      // depends on A
 P2 = point(G, A, 2)       // depends on A
 L = line(G, P1, P2)       // depends on P1 AND P2
 C = circle(G, 1, ed(G,L)) // depends on L
-fromTo(A, 3, 8)           // ALL shapes update together
+change(A, 8)              // ALL shapes update together
 ```
 
-### Animation with Duration
-```
-fromTo(A, 0, 10, { duration: 2 })  // 2-second animation
-```
-
-### Animating Plot Parameters
+### Plot with Parameter
 ```
 G = g2d(0, 0, 20, 8, -10, 10, -5, 5, 1)
 a = 1
 P = plot(G, "a * sin(x)")
-fromTo(a, 1, 5)  // Sine wave amplitude animates from 1 to 5
+change(a, 5)  // Sine wave amplitude grows from 1 to 5
 ```
 
-### Animating Parametric Plots
+### Parametric Plot
 ```
 G = g2d(0, 0, 20, 20, -5, 5, -5, 5, 1)
 r = 1
 C = paraplot(G, "r * cos(t)", "r * sin(t)")
-fromTo(r, 1, 4)  // Circle expands from radius 1 to 4
+change(r, 4)  // Circle expands from radius 1 to 4
+```
+
+### 3D Parametric Surface
+```
+G = g3d(0, 0, 16, 20)
+r = 2
+para3d(G, "r*cos(u)*sin(v)", "r*sin(u)*sin(v)", "r*cos(v)", 0, 6.28, 0, 3.14)
+change(r, 4)  // Sphere grows from radius 2 to 4
 ```
 
 ### Function Definitions with fun()
@@ -53,10 +95,14 @@ a = 2
 f = def(x, "a * sin(x)")
 P = plot(G, f)
 Q = point(G, 3, fun(f, 3))   // Point ON the curve at x=3
-fromTo(a, 1, 5)              // Both plot AND point update together
+change(a, 5)                 // Both plot AND point update together
 ```
 
-## Design
+---
+
+## Internal Design
+
+> Note: `fromTo(var, from, to)` is the internal implementation. Users should use `change()`.
 
 ### Dependency Tracking
 
@@ -116,54 +162,6 @@ When used in `point(G, 3, fun(f, 3))`:
 
 This is generic - works for any expression using `fun()`: point, line, circle, vector, etc.
 
-**fun() Execution Flow with fromTo:**
-
-```
-Q = point(G, 3, fun(f, 3))   // f = def(x, "a * sin(x)")
-fromTo(a, 1, 5)
-
-Initial resolution:
-────────────────────
-PointExpression.resolve()
-       │
-       ├─► fun(f, 3).resolve()
-       │         │
-       │         ├─► Gets funcDef from context
-       │         ├─► Compiles with current scope {a: 1}
-       │         └─► Evaluates → returns value (e.g., 2.52)
-       │
-       ▼
-Point uses 2.52 as y-coordinate
-       │
-       ▼
-PointCommand created and rendered
-
-
-When fromTo updates 'a':
-────────────────────────
-fromTo changes a: 1 → 5
-       │
-       ▼
-Point is in 'a' dependents list (registered by fun's caller mode)
-       │
-       ▼
-Point.resolve(context) called again
-       │
-       ├─► fun(f, 3).resolve()
-       │         │
-       │         ├─► Gets funcDef from context
-       │         ├─► Compiles with NEW scope {a: 5}
-       │         └─► Evaluates → returns NEW value (e.g., -4.79)
-       │
-       ▼
-Point uses -4.79 as y-coordinate
-       │
-       ▼
-PointCommand.toCommand() → PointCommand.directPlay()
-```
-
-**Key insight:** `fun()` has no command. The parent expression (point) is re-resolved by fromTo, and during re-resolution `fun()` naturally re-executes with updated context.
-
 ### Topological Ordering (Kahn's Algorithm)
 
 Dependents must be processed in correct order. If L depends on both P1 and P2, L must be resolved AFTER both P1 and P2.
@@ -209,48 +207,18 @@ TweenMax animates value from → to
 4. Recreate and render shapes
 ```
 
-### Command Lifecycle
-
-```
-FromToExpression.resolve()
-    │
-    ├─► Get variable name, from/to values
-    ├─► Build ordered dependents list (topological sort)
-    └─► Store context reference
-            │
-            ▼
-FromToExpression.toCommand()
-    │
-    └─► Creates FromToCommand with:
-            - variableName
-            - fromValue, toValue
-            - orderedDependents
-            - expressionContext
-                    │
-                    ▼
-FromToCommand.doPlay() or directPlay()
-    │
-    └─► _updateDependentCommands():
-            for each dependent in order:
-                1. expr.resolve(context)  // get new values
-                2. expr.toCommand()       // create shape command
-                3. cmd.directPlay()       // render shape
-                4. track in currentCommands[]
-```
-
 ## Key Files
 
-- `src/engine/fromTo/FromToExpression.js` - Expression with dependency resolution
-- `src/engine/fromTo/FromToCommand.js` - Command with animation logic
+- `src/engine/change/ChangeExpression.js` - User-facing change() expression
+- `src/engine/change/ChangeCommand.js` - Animation command for change()
+- `src/engine/fromTo/FromToExpression.js` - Internal base class with dependency resolution
+- `src/engine/fromTo/FromToCommand.js` - Internal base command with animation logic
 - `src/engine/expression-parser/core/ExpressionContext.js` - Dependency tracking
 - `src/engine/expression-parser/utils/MathFunctionCompiler.js` - Parses mathjs strings, extracts variables, registers dependencies
-- `src/engine/expression-parser/expressions/PlotExpression.js` - Uses explicit mode
-- `src/engine/expression-parser/expressions/ParametricPlotExpression.js` - Uses explicit mode
-- `src/engine/expression-parser/expressions/FunctionCallExpression.js` - Uses caller mode
 
 ## Notes
 
-- FromToCommand manages its own temporary shapes in `currentCommands[]`
+- ChangeCommand manages its own temporary shapes in `currentCommands[]`
 - Original shapes (from initial render) remain untouched
 - Each animation frame clears previous frame's shapes before creating new ones
 - Topological ordering ensures expressions see updated values from their dependencies

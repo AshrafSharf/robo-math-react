@@ -1,23 +1,31 @@
 import React from 'react';
 import { getExpressionDisplayName, hasOptionsPanel, hasRefTab } from '../../utils/expressionTypeDetector';
+import { getAllowedTabs } from '../../utils/expressionOptionsSchema';
 
 /**
  * Tab navigation component for Settings dialog
  */
 const SettingsTabs = ({ activeTab, onTabChange, expressionType, innerExpressionType }) => {
-  const tabs = [
-    { id: 'style', label: 'Style' }
-  ];
+  // For ref expressions, use inner type for expression options panel
+  const effectiveType = innerExpressionType || expressionType;
 
-  // Add Ref tab if expression is ref() - before Animation
+  // Check if this expression type has restricted tabs via schema
+  const allowedTabs = getAllowedTabs(expressionType);
+
+  // Build tabs list
+  const tabs = [];
+
+  // Style tab (unless restricted)
+  if (!allowedTabs || allowedTabs.includes('style')) {
+    tabs.push({ id: 'style', label: 'Style' });
+  }
+
+  // Ref tab for ref() expressions
   if (hasRefTab(expressionType)) {
     tabs.push({ id: 'ref', label: 'Ref' });
   }
 
-  // For ref expressions, use inner type for expression options panel (g2d, p2d)
-  const effectiveType = innerExpressionType || expressionType;
-
-  // Only add expression options tab if this type has a dedicated panel (g2d, p2d)
+  // Expression options tab (g2d, p2d, table)
   if (hasOptionsPanel(effectiveType)) {
     tabs.push({
       id: 'expression',
@@ -25,8 +33,10 @@ const SettingsTabs = ({ activeTab, onTabChange, expressionType, innerExpressionT
     });
   }
 
-  // Animation tab always last
-  tabs.push({ id: 'animation', label: 'Animation' });
+  // Animation tab (unless restricted)
+  if (!allowedTabs || allowedTabs.includes('animation')) {
+    tabs.push({ id: 'animation', label: 'Animation' });
+  }
 
   return (
     <div className="settings-tabs">

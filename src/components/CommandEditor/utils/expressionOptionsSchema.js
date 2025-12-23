@@ -127,6 +127,17 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
     _style: null, // Dynamic - determined by inner expression type
     content: { type: 'text', default: '', label: 'Expression' },
   },
+
+  // Table - configurable table at logical coordinates
+  table: {
+    _style: null, // No standard style controls
+    _tabs: ['expression'], // Only show Table options tab (no Style or Animation)
+    rows: { type: 'number', default: 2, min: 1, max: 20, label: 'Rows' },
+    cols: { type: 'number', default: 2, min: 1, max: 10, label: 'Columns' },
+    cells: { type: 'grid', default: null, label: 'Cell Content' }, // 2D array of {content}
+    borderStyle: { type: 'select', options: ['all', 'none', 'horizontal', 'vertical', 'outer'], default: 'all', label: 'Border Style' },
+    cellPadding: { type: 'text', default: '8px 12px', label: 'Cell Padding' },
+  },
 };
 
 // Animation options (for Animation tab)
@@ -163,9 +174,9 @@ export function getExpressionSchema(expressionType) {
 
 /**
  * List of expression types that have dedicated options panels
- * Only graph containers (g2d, p2d) have dedicated panels - all other shapes use StyleTab
+ * Graph containers (g2d, p2d) and table have dedicated panels
  */
-export const EXPRESSION_TYPES_WITH_OPTIONS = ['g2d', 'p2d'];
+export const EXPRESSION_TYPES_WITH_OPTIONS = ['g2d', 'p2d', 'table'];
 
 /**
  * Get style type for expression
@@ -175,4 +186,14 @@ export const EXPRESSION_TYPES_WITH_OPTIONS = ['g2d', 'p2d'];
 export function getStyleType(expressionType) {
   const schema = EXPRESSION_OPTIONS_SCHEMA[expressionType];
   return schema?._style || null;
+}
+
+/**
+ * Get allowed tabs for expression type
+ * @param {string} expressionType - The expression type
+ * @returns {string[]|null} - Array of tab ids, or null for default tabs
+ */
+export function getAllowedTabs(expressionType) {
+  const schema = EXPRESSION_OPTIONS_SCHEMA[expressionType];
+  return schema?._tabs || null;
 }
