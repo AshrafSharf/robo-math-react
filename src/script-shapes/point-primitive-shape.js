@@ -88,4 +88,8 @@ export class PointPrimitiveShape extends GeomPrimitiveShape {
         // Points rotate about the origin
         return { x: 0, y: 0 };
     }
+
+    selectLayer(layers) {
+        return layers.points;
+    }
 }

@@ -1,19 +1,19 @@
 /**
- * HL (Horizontal Line) expression - creates a horizontal line at y coordinate
+ * VLine (Vertical Line) expression - creates a vertical line at x coordinate
  *
- * Syntax: hl(graph, y) or hl(graph, y, x1, x2)
+ * Syntax: vline(graph, x) or vline(graph, x, y1, y2)
  *
- * If only y is provided, line extends from xends().min to xends().max
- * If x1, x2 are provided, line extends from x1 to x2
+ * If only x is provided, line extends from yends().min to yends().max
+ * If y1, y2 are provided, line extends from y1 to y2
  *
- * Uses LineUtil.horizontal for calculation
+ * Uses LineUtil.vertical for calculation
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { LineCommand } from '../../commands/LineCommand.js';
 import { LineUtil } from '../../../geom/LineUtil.js';
 
-export class HLExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'hl';
+export class VLineExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'vline';
 
     constructor(subExpressions) {
         super();
@@ -24,7 +24,7 @@ export class HLExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError(`hl() needs 2+ arguments.\nUsage: hl(g, y) or hl(g, y, x1, x2)`);
+            this.dispatchError(`vline() needs 2+ arguments.\nUsage: vline(g, x) or vline(g, x, y1, y2)`);
         }
 
         // First arg is graph reference - resolve and store the actual expression
@@ -40,32 +40,32 @@ export class HLExpression extends AbstractNonArithmeticExpression {
         }
 
         if (values.length < 1) {
-            this.dispatchError(`hl() needs y coordinate.\nUsage: hl(g, y)`);
+            this.dispatchError(`vline() needs x coordinate.\nUsage: vline(g, x)`);
         }
 
-        const y = values[0];
-        let x1, x2;
+        const x = values[0];
+        let y1, y2;
 
         if (values.length >= 3) {
-            // Custom x range provided
-            x1 = values[1];
-            x2 = values[2];
+            // Custom y range provided
+            y1 = values[1];
+            y2 = values[2];
         } else {
-            // Use graph's xends
+            // Use graph's yends
             const grapher = this.getGrapher();
-            if (grapher && grapher.xends) {
-                const xends = grapher.xends();
-                x1 = xends.min;
-                x2 = xends.max;
+            if (grapher && grapher.yends) {
+                const yends = grapher.yends();
+                y1 = yends.min;
+                y2 = yends.max;
             } else {
                 // Fallback defaults
-                x1 = -10;
-                x2 = 10;
+                y1 = -10;
+                y2 = 10;
             }
         }
 
-        // Use LineUtil.horizontal to create the line
-        const line = LineUtil.horizontal(y, x1, x2);
+        // Use LineUtil.vertical to create the line
+        const line = LineUtil.vertical(x, y1, y2);
         this.coordinates = [line.start.x, line.start.y, line.end.x, line.end.y];
     }
 
@@ -73,7 +73,7 @@ export class HLExpression extends AbstractNonArithmeticExpression {
     // getGrapher() inherited from AbstractNonArithmeticExpression
 
     getName() {
-        return HLExpression.NAME;
+        return VLineExpression.NAME;
     }
 
     /**
@@ -112,7 +112,7 @@ export class HLExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getLinePoints();
-        return `HL[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `VLine[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {

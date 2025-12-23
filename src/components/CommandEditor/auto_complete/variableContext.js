@@ -91,8 +91,8 @@ function getTypeForFunction(funcName) {
     angleo: 'Angle',
 
     // Lines
-    vl: 'Line',
-    hl: 'Line',
+    vline: 'Line',
+    hline: 'Line',
     perpl: 'Line',
     pll: 'Line',
 

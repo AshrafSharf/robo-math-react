@@ -6,8 +6,8 @@ import { NumericExpression } from '../expressions/NumericExpression.js';
 import { PointExpression } from '../expressions/PointExpression.js';
 import { LineExpression } from '../expressions/LineExpression.js';
 import { VectorExpression } from '../expressions/VectorExpression.js';
-import { VLExpression } from '../expressions/VLExpression.js';
-import { HLExpression } from '../expressions/HLExpression.js';
+import { VLineExpression } from '../expressions/VLineExpression.js';
+import { HLineExpression } from '../expressions/HLineExpression.js';
 import { XLExpression } from '../expressions/XLExpression.js';
 import { RALExpression } from '../expressions/RALExpression.js';
 import { PLLExpression } from '../expressions/PLLExpression.js';
@@ -52,6 +52,7 @@ import { HideExpression } from '../expressions/visibility/HideExpression.js';
 import { ShowExpression } from '../expressions/visibility/ShowExpression.js';
 import { FadeInExpression } from '../expressions/visibility/FadeInExpression.js';
 import { FadeOutExpression } from '../expressions/visibility/FadeOutExpression.js';
+import { StrokeExpression } from '../expressions/StrokeExpression.js';
 import { PosExpression } from '../expressions/PosExpression.js';
 import { SizeExpression } from '../expressions/SizeExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
@@ -247,8 +248,8 @@ export class IntrepreterFunctionTable {
         registerMultiArg('fun', FunctionCallExpression);
 
         // Line utilities
-        registerMultiArg('vl', VLExpression);      // vertical line
-        registerMultiArg('hl', HLExpression);      // horizontal line
+        registerMultiArg('vline', VLineExpression);      // vertical line
+        registerMultiArg('hline', HLineExpression);      // horizontal line
         registerMultiArg('xl', XLExpression);      // extend line
         registerMultiArg('ral', RALExpression);    // line from radius and angle (polar)
         registerMultiArg('pll', PLLExpression);    // parallel (line or vector based on input)
@@ -300,6 +301,9 @@ export class IntrepreterFunctionTable {
         registerMultiArg('show', ShowExpression);     // show shapes instantly
         registerMultiArg('fadein', FadeInExpression); // fade in with animation
         registerMultiArg('fadeout', FadeOutExpression); // fade out with animation
+
+        // Style controls
+        registerMultiArg('stroke', StrokeExpression); // animate stroke color
 
         // Reposition controls
         registerMultiArg('pos', PosExpression);       // shift containers by dRow, dCol

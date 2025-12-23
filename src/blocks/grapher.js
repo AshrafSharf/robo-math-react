@@ -135,6 +135,7 @@ export class Grapher {
       width, height,
       this.gridOptions, this.xScaleBuilder, this.yScaleBuilder);
     this.scriptShapeSVGJSGroup = svgFunc.adopt(this.graphSheet2D.getScriptShapeLayerNode());
+    this.pointShapeSVGJSGroup = svgFunc.adopt(this.graphSheet2D.getPointsLayerNode());
     
     // Render grid if requested
     if (options.showGrid !== false) {
@@ -232,7 +233,11 @@ export class Grapher {
   // Removed resize handling as dimensions are fixed
   
   addMathShape(mathScriptShape) {
-    mathScriptShape.setRenderingContent(this.d3SvgRoot, this.scriptShapeSVGJSGroup, this.graphSheet2D);
+    const layers = {
+      shapes: this.scriptShapeSVGJSGroup,
+      points: this.pointShapeSVGJSGroup
+    };
+    mathScriptShape.setRenderingContent(this.d3SvgRoot, layers, this.graphSheet2D);
     mathScriptShape.create();
     this.mathScriptShapes.push(mathScriptShape);
   }

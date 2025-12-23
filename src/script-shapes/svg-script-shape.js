@@ -68,10 +68,14 @@ export class SVGScriptShape extends BaseStylableSubject {
     return "none";
   }
 
-  setRenderingContent(svgRootD3, layer, grid) {
+  setRenderingContent(svgRootD3, layers, grid) {
     this.svgRootD3Selection = svgRootD3;
-    this.layer = layer;
+    this.layer = this.selectLayer(layers);
     this.graphsheet2d = grid;
+  }
+
+  selectLayer(layers) {
+    return layers.shapes;
   }
 
   getStylableObjects() {

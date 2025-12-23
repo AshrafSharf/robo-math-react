@@ -97,8 +97,8 @@ function normalizeTypeName(name) {
     'plot': 'plot',
     'paraplot': 'paraplot',
     // Line utility expressions (short aliases)
-    'vl': 'line',
-    'hl': 'line',
+    'vline': 'line',
+    'hline': 'line',
     'xl': 'line',
     'ral': 'line',
     'perpl': 'line',

@@ -14,6 +14,7 @@ import { GRAPH_FUNCTIONS } from './functions/graphFunctions.js';
 import { MATH_FUNCTIONS } from './functions/mathFunctions.js';
 import { TRANSFORM_FUNCTIONS } from './functions/transformFunctions.js';
 import { UTILITY_FUNCTIONS, VISIBILITY_FUNCTIONS, PAGE_FUNCTIONS, FUNCTION_DEFINITION_FUNCTIONS } from './functions/utilityFunctions.js';
+import { STYLE_FUNCTIONS } from './functions/styleFunctions.js';
 
 /**
  * Combined function metadata from all categories
@@ -32,7 +33,8 @@ export const FUNCTION_METADATA = {
   ...UTILITY_FUNCTIONS,
   ...VISIBILITY_FUNCTIONS,
   ...PAGE_FUNCTIONS,
-  ...FUNCTION_DEFINITION_FUNCTIONS
+  ...FUNCTION_DEFINITION_FUNCTIONS,
+  ...STYLE_FUNCTIONS
 };
 
 /**
@@ -70,6 +72,7 @@ export const CATEGORY_ORDER = [
   'Graph',
   'Math',
   'Transforms',
+  'Style',
   'Visibility',
   'Page',
   'Utilities',

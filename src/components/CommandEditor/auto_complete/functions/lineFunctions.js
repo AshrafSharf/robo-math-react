@@ -3,20 +3,20 @@
  */
 
 export const LINE_FUNCTIONS = {
-  vl: {
-    name: 'vl',
+  vline: {
+    name: 'vline',
     signature: '(g, x)',
     args: ['g: Graph', 'x: number'],
     description: 'Vertical line at x',
-    altSignatures: ['vl(g: Graph, x: number)', 'vl(g: Graph, x: number, y1: number, y2: number)'],
+    altSignatures: ['vline(g: Graph, x: number)', 'vline(g: Graph, x: number, y1: number, y2: number)'],
     category: 'Lines'
   },
-  hl: {
-    name: 'hl',
+  hline: {
+    name: 'hline',
     signature: '(g, y)',
     args: ['g: Graph', 'y: number'],
     description: 'Horizontal line at y',
-    altSignatures: ['hl(g: Graph, y: number)', 'hl(g: Graph, y: number, x1: number, x2: number)'],
+    altSignatures: ['hline(g: Graph, y: number)', 'hline(g: Graph, y: number, x1: number, x2: number)'],
     category: 'Lines'
   },
   perp: {

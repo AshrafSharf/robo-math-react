@@ -22,7 +22,7 @@ import { intersect_error_messages } from '../core/ErrorMessages.js';
 
 // Geometry type constants - expressions implement getGeometryType() returning these
 export const GEOMETRY_TYPES = {
-    LINE: 'line',       // line, vec, vl, hl, perpl, pll, perpv, plv
+    LINE: 'line',       // line, vec, vline, hline, perpl, pll, perpv, plv
     CIRCLE: 'circle',   // circle, arc
     POLYGON: 'polygon', // polygon (and future triangle types)
     ANGLE: 'angle',     // angle, anglex, anglex2, angler, anglert, angleo

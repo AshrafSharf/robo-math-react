@@ -8,6 +8,7 @@ export class Graphsheet2d {
     this.backgroundImageGroup = svgElementD3.append("g").attr("class", "backgroundImageGroup");
     this.plotGroup = svgElementD3.append("g").attr("class", "graphsheetPlotGroup");
     this.shapesGroup = svgElementD3.append("g").attr("class", "graphsheetShapesGroup");
+    this.pointsGroup = svgElementD3.append("g").attr("class", "graphsheetPointsGroup");
     this.graphGrid = new CartesianGrid(gridId, this.gridLayerGroup, width, height, gridOption, xScaleBuilder, yScaleBuilder);
   }
 
@@ -43,6 +44,10 @@ export class Graphsheet2d {
     return this.shapesGroup.node();
   }
 
+  getPointsLayerNode() {
+    return this.pointsGroup.node();
+  }
+
   getUIWidth() {
     return this.graphGrid.getWidth();
   }
@@ -63,6 +68,7 @@ export class Graphsheet2d {
 
   clearShapes() {
     this.shapesGroup.selectAll("*").remove();
+    this.pointsGroup.selectAll("*").remove();
     this.backgroundImageGroup.selectAll("*").remove();
   }
 
