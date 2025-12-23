@@ -130,10 +130,6 @@ export class ExpressionPipelineService {
             ? ExpressionOptionsRegistry.getById(options.expressionId, normalizedType)
             : {};
 
-        if (normalizedType === 'g2d') {
-            console.log('🔍 G2D registryOptions:', JSON.stringify(registryOptions, null, 2));
-        }
-
         // Merge type-specific options for command creation
         const commandOptions = {
             // Point options

@@ -35,7 +35,6 @@ export class CartesianGrid extends BaseGrid {
     const xInterval = xSpan / xDivisions;
     const yInterval = ySpan / yDivisions;
 
-    console.log('📊 CartesianGrid createGridGroups - xDivisions:', xDivisions, 'yDivisions:', yDivisions, 'xInterval:', xInterval, 'yInterval:', yInterval);
     const xPiMultiplier = gridOption.xPiMultiplier || 'pi';
     const yPiMultiplier = gridOption.yPiMultiplier || 'pi';
     const xLogBase = gridOption.xLogBase || '10';

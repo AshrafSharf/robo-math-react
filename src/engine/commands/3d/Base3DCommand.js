@@ -14,4 +14,25 @@ export class Base3DCommand extends BaseCommand {
         // 3D objects are visible immediately when added to scene
         // No renderEndState/show needed
     }
+
+    /**
+     * Clear 3D object from scene
+     */
+    clear() {
+        if (this.commandResult && this.graphContainer) {
+            const scene = this.graphContainer.getScene();
+            if (scene) {
+                scene.remove(this.commandResult);
+            }
+            // Dispose geometry and material to prevent memory leaks
+            if (this.commandResult.geometry) {
+                this.commandResult.geometry.dispose();
+            }
+            if (this.commandResult.material) {
+                this.commandResult.material.dispose();
+            }
+            this.commandResult = null;
+        }
+        this.isInitialized = false;
+    }
 }

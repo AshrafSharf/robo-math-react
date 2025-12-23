@@ -53,6 +53,7 @@ import { ShowExpression } from '../expressions/visibility/ShowExpression.js';
 import { FadeInExpression } from '../expressions/visibility/FadeInExpression.js';
 import { FadeOutExpression } from '../expressions/visibility/FadeOutExpression.js';
 import { StrokeExpression } from '../expressions/StrokeExpression.js';
+import { FillExpression } from '../expressions/FillExpression.js';
 import { PosExpression } from '../expressions/PosExpression.js';
 import { SizeExpression } from '../expressions/SizeExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
@@ -118,7 +119,7 @@ import { ParallelExpression } from '../expressions/ParallelExpression.js';
 import { RefExpression } from '../expressions/RefExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
-import { FromToExpression } from '../../fromTo/FromToExpression.js';
+import { ChangeExpression } from '../../change/ChangeExpression.js';
 import { CopyExpression } from '../expressions/CopyExpression.js';
 import { SubtractionExpression } from '../expressions/SubtractionExpression.js';
 import { MultiplicationExpression } from '../expressions/MultiplicationExpression.js';
@@ -304,6 +305,7 @@ export class IntrepreterFunctionTable {
 
         // Style controls
         registerMultiArg('stroke', StrokeExpression); // animate stroke color
+        registerMultiArg('fill', FillExpression);     // animate fill color
 
         // Reposition controls
         registerMultiArg('pos', PosExpression);       // shift containers by dRow, dCol
@@ -321,8 +323,8 @@ export class IntrepreterFunctionTable {
         registerMultiArg('translate', TranslateExpression); // translate shape by dx, dy
         registerMultiArg('scale', ScaleExpression);       // scale shape around center
 
-        // Variable animation
-        registerMultiArg('fromto', FromToExpression);     // animate variable from value to value
+        // Animation - unified change for scalars, points, lines, vectors
+        registerMultiArg('change', ChangeExpression);
 
         // Page copy - copy expressions from another page
         // Syntax: copy("Page 1", 1, 2, 3) or copy(1, "ALL")

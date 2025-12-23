@@ -7,17 +7,9 @@ export class LinePrimitiveShape extends GeomPrimitiveShape {
   }
 
   generatePath() {
-    console.log('🔧 LinePrimitiveShape.generatePath()');
-    console.log('🔧 Model coordinates:', this.modelCoordinates);
-    console.log('🔧 graphsheet2d:', this.graphsheet2d);
-
     const coordinates = this.getViewCoordinates(this.modelCoordinates);
-    console.log('🔧 View coordinates:', coordinates);
-
     const polygonPathGenerator = new PolygonPathGenerator();
     const pathStr = polygonPathGenerator.generate(coordinates);
-    console.log('🔧 Generated path:', pathStr);
-
     this.primitiveShape.attr('d', pathStr);
   }
 

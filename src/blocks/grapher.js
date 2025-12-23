@@ -54,8 +54,6 @@ export class Grapher {
   init(containerElement, options = {}) {
     const id = IdUtil.getID();
 
-    console.log('🔧 Grapher.init() called with container:', containerElement.id || containerElement.className);
-
     // Create component state
     this.componentState = Object.assign(new ComponentState(), {
       componentId: `graph-item_${id}`,
@@ -69,8 +67,6 @@ export class Grapher {
       'class': 'graph-item'
     })[0];
     $(containerElement).append(this.containerDOM);
-    console.log('🔧 Created graph-item div with id:', this.componentState.componentId);
-    console.log('🔧 Appended to:', containerElement.id || containerElement.className);
 
     // Initialize the graph
     this.initGraph(options);
@@ -80,7 +76,6 @@ export class Grapher {
   }
   
   initGraph(options = {}) {
-    console.log('🔧 Grapher.initGraph options:', options);
     // Default scale is [-5, 5] for both axes
     const xRange = options.xRange || [-5, 5];
     const yRange = options.yRange || [-5, 5];
@@ -101,14 +96,6 @@ export class Grapher {
     this.gridOptions = new GridOptions();
 
     // Copy scale type options from input options
-    console.log('🎨 Grapher options:', JSON.stringify({
-      xScaleType: options.xScaleType,
-      yScaleType: options.yScaleType,
-      xDivisions: options.xDivisions,
-      yDivisions: options.yDivisions,
-      xLogBase: options.xLogBase,
-      yLogBase: options.yLogBase
-    }));
     if (options.xScaleType) this.gridOptions.xScaleType = options.xScaleType;
     if (options.yScaleType) this.gridOptions.yScaleType = options.yScaleType;
     if (options.xDivisions !== undefined) this.gridOptions.xDivisions = options.xDivisions;
@@ -180,8 +167,6 @@ export class Grapher {
   }
   
   destroy() {
-    console.log('Grapher: Starting destroy');
-    
     // Clean up all math shapes first
     if (this.mathScriptShapes) {
       this.mathScriptShapes.forEach(shape => {
@@ -226,8 +211,6 @@ export class Grapher {
     this.xScaleBuilder = null;
     this.yScaleBuilder = null;
     this.gridOptions = null;
-    
-    console.log('Grapher: Destroy completed');
   }
   
   // Removed resize handling as dimensions are fixed
@@ -443,7 +426,6 @@ export class Grapher {
   
   label(x, y, mathContent) {
     // For now, create a simple label - need to implement LabelScriptShape
-    console.log('Label not fully implemented yet:', mathContent, 'at', x, y);
     return null;
   }
   

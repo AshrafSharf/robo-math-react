@@ -17,7 +17,6 @@ export class Create2DGraphCommand extends BaseCommand {
      */
     constructor(row1, col1, row2, col2, options = {}, expression = null) {
         super();
-        console.log('🏗️ Create2DGraphCommand constructor - options:', JSON.stringify(options));
         this.row1 = row1;
         this.col1 = col1;
         this.row2 = row2;
@@ -83,7 +82,6 @@ export class Create2DGraphCommand extends BaseCommand {
         }
 
         // Create graph container using bounds-based API
-        console.log('🏗️ doInit graphOptions:', JSON.stringify(graphOptions));
         const grapher = this.diagram2d.graphContainer(this.row1, this.col1, this.row2, this.col2, graphOptions);
 
         // Store reference in expression for variable access

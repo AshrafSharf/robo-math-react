@@ -551,8 +551,6 @@ export class BaseDiagram2d {
     const width = (col2 - col1) * unitSize.col;
     const height = (row2 - row1) * unitSize.row;
 
-    console.log(`graphContainer: (${row1},${col1}) to (${row2},${col2}) -> pixel(${pixelCoords.x}, ${pixelCoords.y}), size(${width}x${height})`);
-
     // Create container div at position
     const containerDOM = document.createElement('div');
     containerDOM.id = `graph-container-${row1}-${col1}-${row2}-${col2}`;
@@ -563,7 +561,6 @@ export class BaseDiagram2d {
     containerDOM.style.height = height + 'px';
     containerDOM.style.border = '1px solid red'; // Debug border
     this.canvasSection.appendChild(containerDOM);
-    console.log(`graphContainer: appended to canvasSection, id=${this.canvasSection.id}`);
 
     // Create Grapher instance in this container
     const grapher = new Grapher(containerDOM, {
@@ -616,8 +613,6 @@ export class BaseDiagram2d {
     const width = (col2 - col1) * unitSize.col;
     const height = (row2 - row1) * unitSize.row;
 
-    console.log(`polarGraphContainer: (${row1},${col1}) to (${row2},${col2}) -> pixel(${pixelCoords.x}, ${pixelCoords.y}), size(${width}x${height})`);
-
     // Create container div at position
     const containerDOM = document.createElement('div');
     containerDOM.id = `polar-graph-container-${row1}-${col1}-${row2}-${col2}`;
@@ -628,7 +623,6 @@ export class BaseDiagram2d {
     containerDOM.style.height = height + 'px';
     containerDOM.style.border = '1px solid blue'; // Debug border (blue for polar)
     this.canvasSection.appendChild(containerDOM);
-    console.log(`polarGraphContainer: appended to canvasSection, id=${this.canvasSection.id}`);
 
     // Create PolarGrapher instance in this container
     const grapher = new PolarGrapher(containerDOM, {

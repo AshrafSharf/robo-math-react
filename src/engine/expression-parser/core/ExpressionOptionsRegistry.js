@@ -248,7 +248,6 @@ export const ExpressionOptionsRegistry = {
      */
     getById(itemId, expressionType = null) {
         const instance = instanceOptions[itemId] || {};
-        console.log('📦 getById - itemId:', itemId, 'type:', expressionType, 'instance:', JSON.stringify(instance));
 
         if (!expressionType) {
             return { ...instance };
@@ -261,7 +260,6 @@ export const ExpressionOptionsRegistry = {
 
         // Get expression-specific options from instance
         const expressionOpts = instance.expressionOptions?.[typeKey] || {};
-        console.log('📦 getById - expressionOpts:', JSON.stringify(expressionOpts));
 
         // Merge: type defaults < type overrides < instance base < instance expression-specific
         return {
@@ -288,7 +286,6 @@ export const ExpressionOptionsRegistry = {
      * @param {Object} options - Expression-specific options
      */
     setExpressionOptions(itemId, expressionType, options) {
-        console.log('📦 setExpressionOptions - itemId:', itemId, 'type:', expressionType, 'options:', options);
         if (!instanceOptions[itemId]) {
             instanceOptions[itemId] = {};
         }
@@ -300,7 +297,6 @@ export const ExpressionOptionsRegistry = {
             ...(instanceOptions[itemId].expressionOptions[typeKey] || {}),
             ...options
         };
-        console.log('📦 After set - instanceOptions[itemId]:', JSON.stringify(instanceOptions[itemId]));
     },
 
     /**
