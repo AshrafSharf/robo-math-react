@@ -1,13 +1,39 @@
 /**
  * TableExpression - Table expression that renders at logical coordinates
  *
- * Usage: A = table(row, col)
- * - row, col: Logical coordinates for table position (like mathtext)
- * - Table configuration (rows, cols, cells, borderStyle) comes from Settings panel
+ * @description Creates a configurable table at logical (row, col) position.
+ * Table content can be configured via Settings panel or inline in the expression.
  *
- * Provides collection interface for item() access:
- *   item(A, 0)       → TableRow (row 0)
- *   item(A, 0, 1)    → TableCell (row 0, col 1)
+ * @usage
+ * Basic syntax (configure via Settings panel):
+ *   T = table(row, col)
+ *   T = table(0, 0)
+ *
+ * Inline syntax (data in expression):
+ *   T = table(row, col, numRows, numCols, "cell1", "cell2", ...)
+ *   T = table(0, 0, 2, 3, "a", "b", "c", "d", "e", "f")  // 2 rows × 3 cols
+ *   T = table(4, 5, 2, 2, "\\frac{1}{2}", "\\sqrt{2}", "x^2", "\\pi")  // LaTeX content
+ *
+ * With ref() for dynamic content:
+ *   G = ref()  // Then in Ref tab: table(0, 0, 2, 2, "a", "b", "c", "d")
+ *
+ * @param {number} row - Logical row position (like mathtext)
+ * @param {number} col - Logical column position (like mathtext)
+ * @param {number} [numRows] - Number of table rows (for inline syntax)
+ * @param {number} [numCols] - Number of table columns (for inline syntax)
+ * @param {...string} [cellValues] - Cell values filling row by row (for inline syntax)
+ *
+ * @settings Table options configurable via Settings panel:
+ *   - Headers: Header row with background color
+ *   - Rows/Cols: Table dimensions
+ *   - Cells: Cell content (supports LaTeX)
+ *   - Border Style: all, none, horizontal, vertical, outer
+ *   - Header Background: Color picker for header row
+ *
+ * @collection Provides item() access for cell manipulation:
+ *   item(T, 0)       → TableRow (row 0)
+ *   item(T, 0, 1)    → TableCell (row 0, col 1)
+ *   item(T, r, c)    → Get specific cell
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { TableCommand } from '../../commands/TableCommand.js';
@@ -16,7 +42,7 @@ export class TableExpression extends AbstractNonArithmeticExpression {
     static NAME = 'table';
 
     /**
-     * @param {Array} subExpressions - Sub-expressions [row, col]
+     * @param {Array} subExpressions - Sub-expressions [row, col] or [row, col, rows, cols, ...values]
      */
     constructor(subExpressions) {
         super();
@@ -26,6 +52,11 @@ export class TableExpression extends AbstractNonArithmeticExpression {
         // Logical position (resolved from args)
         this.logicalRow = 0;
         this.logicalCol = 0;
+
+        // Inline table data (if provided)
+        this.inlineRows = null;
+        this.inlineCols = null;
+        this.inlineCells = null;
     }
 
     /**
@@ -33,10 +64,10 @@ export class TableExpression extends AbstractNonArithmeticExpression {
      */
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError('table() requires 2 arguments: table(row, col)');
+            this.dispatchError('table() requires at least 2 arguments: table(row, col)');
         }
 
-        // Resolve row
+        // Resolve row position
         this.subExpressions[0].resolve(context);
         const rowExpr = this._getResolvedExpression(context, this.subExpressions[0]);
         const rowValues = rowExpr.getVariableAtomicValues();
@@ -45,7 +76,7 @@ export class TableExpression extends AbstractNonArithmeticExpression {
         }
         this.logicalRow = rowValues[0];
 
-        // Resolve col
+        // Resolve col position
         this.subExpressions[1].resolve(context);
         const colExpr = this._getResolvedExpression(context, this.subExpressions[1]);
         const colValues = colExpr.getVariableAtomicValues();
@@ -53,6 +84,52 @@ export class TableExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('table() second argument must be a number (col)');
         }
         this.logicalCol = colValues[0];
+
+        // Check for inline syntax: table(row, col, rows, cols, "v1", "v2", ...)
+        if (this.subExpressions.length >= 4) {
+            // Resolve rows count
+            this.subExpressions[2].resolve(context);
+            const rowsExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+            const rowsValues = rowsExpr.getVariableAtomicValues();
+            if (rowsValues.length >= 1) {
+                this.inlineRows = Math.floor(rowsValues[0]);
+            }
+
+            // Resolve cols count
+            this.subExpressions[3].resolve(context);
+            const colsExpr = this._getResolvedExpression(context, this.subExpressions[3]);
+            const colsValues = colsExpr.getVariableAtomicValues();
+            if (colsValues.length >= 1) {
+                this.inlineCols = Math.floor(colsValues[0]);
+            }
+
+            // Extract cell values (remaining arguments)
+            if (this.inlineRows && this.inlineCols && this.subExpressions.length > 4) {
+                this.inlineCells = [];
+                for (let r = 0; r < this.inlineRows; r++) {
+                    const row = [];
+                    for (let c = 0; c < this.inlineCols; c++) {
+                        const idx = 4 + r * this.inlineCols + c;
+                        if (idx < this.subExpressions.length) {
+                            const cellExpr = this.subExpressions[idx];
+                            // Get string value from expression
+                            let content = '';
+                            if (cellExpr.value !== undefined) {
+                                content = String(cellExpr.value);
+                            } else if (cellExpr.getVariableAtomicValues) {
+                                cellExpr.resolve(context);
+                                const vals = cellExpr.getVariableAtomicValues();
+                                content = vals.length > 0 ? String(vals[0]) : '';
+                            }
+                            row.push({ content });
+                        } else {
+                            row.push({ content: '' });
+                        }
+                    }
+                    this.inlineCells.push(row);
+                }
+            }
+        }
     }
 
     /**
@@ -79,6 +156,13 @@ export class TableExpression extends AbstractNonArithmeticExpression {
     toCommand(options = {}) {
         // Table configuration comes from Settings panel options
         const tableOptions = options.table || {};
+
+        // If inline data was provided, use it instead of settings panel data
+        if (this.inlineRows && this.inlineCols && this.inlineCells) {
+            tableOptions.rows = this.inlineRows;
+            tableOptions.cols = this.inlineCols;
+            tableOptions.cells = this.inlineCells;
+        }
 
         // Merge with expression coordinates
         return new TableCommand(tableOptions, {
@@ -163,6 +247,17 @@ export class TableExpression extends AbstractNonArithmeticExpression {
      * @returns {string}
      */
     getFriendlyToStr() {
+        if (this.inlineRows && this.inlineCols) {
+            return `table(${this.logicalRow}, ${this.logicalCol}, ${this.inlineRows}, ${this.inlineCols}, ...)`;
+        }
         return `table(${this.logicalRow}, ${this.logicalCol})`;
+    }
+
+    /**
+     * Check if this table has inline data (not from settings panel)
+     * @returns {boolean}
+     */
+    hasInlineData() {
+        return !!(this.inlineRows && this.inlineCols && this.inlineCells);
     }
 }

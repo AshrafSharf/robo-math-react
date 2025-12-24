@@ -10,6 +10,7 @@ import { IntrepreterFunctionTable } from './engine/expression-parser/core/Intrep
 import { LessonProvider, useLesson, useLessonPersistence, PageTabBar, LessonHeader } from './lesson';
 import { ExpressionFocusManager } from './engine/focus/index.js';
 import { createCommand } from './components/CommandEditor/utils/commandModel';
+import { SettingsRecoveryService } from './components/CommandEditor/utils/SettingsRecoveryService';
 
 function AppContent() {
   const { lesson, activePage, updatePageCommands, setLesson } = useLesson();
@@ -104,16 +105,22 @@ function AppContent() {
 
   // Handle import from ImportModal
   const handleOpenImport = useCallback(() => {
+    SettingsRecoveryService.getInstance().storeSettings(activePage.commands);
     setImportModalOpen(true);
-  }, []);
+  }, [activePage.commands]);
 
   const handleImport = useCallback((lines) => {
-    // Create commands for each line
+    const recoveryService = SettingsRecoveryService.getInstance();
+
+    // Create commands for each line with recovered settings
     const newCommands = lines.map((expression, index) => {
       const cmd = createCommand(index + 1);
       cmd.expression = expression;
-      return cmd;
+      return recoveryService.recoverSettings(cmd);
     });
+
+    // Clear snapshot after recovery
+    recoveryService.clearSnapshot();
 
     // Replace all commands with imported ones
     updatePageCommands(activePage.id, newCommands);

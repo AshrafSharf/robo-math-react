@@ -8,11 +8,12 @@ import { LineExpression } from '../expressions/LineExpression.js';
 import { VectorExpression } from '../expressions/VectorExpression.js';
 import { VLineExpression } from '../expressions/VLineExpression.js';
 import { HLineExpression } from '../expressions/HLineExpression.js';
-import { XLExpression } from '../expressions/XLExpression.js';
-import { RALExpression } from '../expressions/RALExpression.js';
+import { ExtendlineExpression } from '../expressions/ExtendlineExpression.js';
+import { PolarlineExpression } from '../expressions/PolarlineExpression.js';
 import { PLLExpression } from '../expressions/PLLExpression.js';
 import { PerpExpression } from '../expressions/PerpExpression.js';
-import { PolarExpression } from '../expressions/PolarExpression.js';
+import { PolarvectorExpression } from '../expressions/PolarvectorExpression.js';
+import { PolarpointExpression } from '../expressions/PolarpointExpression.js';
 import { ForwardExpression } from '../expressions/ForwardExpression.js';
 import { BackwardExpression } from '../expressions/BackwardExpression.js';
 import { PerpShiftExpression } from '../expressions/PerpShiftExpression.js';
@@ -43,7 +44,7 @@ import { YPointExpression } from '../expressions/YPointExpression.js';
 import { StartPointExpression } from '../expressions/StartPointExpression.js';
 import { EndPointExpression } from '../expressions/EndPointExpression.js';
 import { MidExpression } from '../expressions/MidExpression.js';
-import { R2PExpression } from '../expressions/R2PExpression.js';
+import { PointAtRatioExpression } from '../expressions/PointAtRatioExpression.js';
 import { A2PExpression } from '../expressions/A2PExpression.js';
 import { MagExpression } from '../expressions/MagExpression.js';
 import { NormExpression } from '../expressions/NormExpression.js';
@@ -54,6 +55,7 @@ import { FadeInExpression } from '../expressions/visibility/FadeInExpression.js'
 import { FadeOutExpression } from '../expressions/visibility/FadeOutExpression.js';
 import { StrokeExpression } from '../expressions/StrokeExpression.js';
 import { FillExpression } from '../expressions/FillExpression.js';
+import { StrokeWidthExpression } from '../expressions/StrokeWidthExpression.js';
 import { PosExpression } from '../expressions/PosExpression.js';
 import { SizeExpression } from '../expressions/SizeExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
@@ -267,13 +269,14 @@ export class IntrepreterFunctionTable {
         // Line utilities
         registerMultiArg('vline', VLineExpression);      // vertical line
         registerMultiArg('hline', HLineExpression);      // horizontal line
-        registerMultiArg('xl', XLExpression);      // extend line
-        registerMultiArg('ral', RALExpression);    // line from radius and angle (polar)
+        registerMultiArg('extendline', ExtendlineExpression);      // extend line
+        registerMultiArg('polarline', PolarlineExpression);    // line from length and angle
         registerMultiArg('pll', PLLExpression);    // parallel (line or vector based on input)
         registerMultiArg('perp', PerpExpression);  // perpendicular (line or vector based on input)
 
         // Vector utilities
-        registerMultiArg('polar', PolarExpression);    // vector from radius and angle (polar)
+        registerMultiArg('polarvector', PolarvectorExpression);    // vector from length and angle
+        registerMultiArg('polarpoint', PolarpointExpression);      // point from radius and angle
         registerMultiArg('forward', ForwardExpression);    // shift vector forward
         registerMultiArg('backward', BackwardExpression);    // shift vector backward
         registerMultiArg('perpshift', PerpShiftExpression);    // shift vector perpendicular
@@ -305,7 +308,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('st', StartPointExpression);
         registerMultiArg('ed', EndPointExpression);
         registerMultiArg('mid', MidExpression);     // midpoint
-        registerMultiArg('r2p', R2PExpression);     // ratio to point (point at proportion along line)
+        registerMultiArg('pointatratio', PointAtRatioExpression);     // point at ratio along any shape
         registerMultiArg('a2p', A2PExpression);     // angle to point (point on circle at angle)
 
         // Measurement utilities
@@ -320,8 +323,9 @@ export class IntrepreterFunctionTable {
         registerMultiArg('fadeout', FadeOutExpression); // fade out with animation
 
         // Style controls
-        registerMultiArg('stroke', StrokeExpression); // animate stroke color
-        registerMultiArg('fill', FillExpression);     // animate fill color
+        registerMultiArg('stroke', StrokeExpression);           // animate stroke color
+        registerMultiArg('fill', FillExpression);               // animate fill color
+        registerMultiArg('strokewidth', StrokeWidthExpression); // animate stroke width
 
         // Reposition controls
         registerMultiArg('pos', PosExpression);       // shift containers by dRow, dCol

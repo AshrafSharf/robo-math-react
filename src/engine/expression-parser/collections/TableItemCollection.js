@@ -156,6 +156,9 @@ export class TableItemCollection {
  * Returned by item(A, row) for full mutation support.
  */
 export class TableRow {
+    /** Marker property for adapter detection */
+    isTableRow = true;
+
     /**
      * @param {TableItemCollection} collection - Parent collection
      * @param {number} rowIndex - Row index in collection
@@ -163,6 +166,61 @@ export class TableRow {
     constructor(collection, rowIndex) {
         this.collection = collection;
         this.rowIndex = rowIndex;
+    }
+
+    // ===== VISIBILITY =====
+
+    /**
+     * Show all cells in this row
+     */
+    show() {
+        for (let c = 0; c < this.getCellCount(); c++) {
+            const cell = this.getCell(c);
+            if (cell) cell.show();
+        }
+    }
+
+    /**
+     * Hide all cells in this row
+     */
+    hide() {
+        for (let c = 0; c < this.getCellCount(); c++) {
+            const cell = this.getCell(c);
+            if (cell) cell.hide();
+        }
+    }
+
+    // ===== SVG PATHS =====
+
+    /**
+     * Get all SVG paths from all cells in this row
+     * @returns {Element[]}
+     */
+    getSVGPaths() {
+        const allPaths = [];
+        for (let c = 0; c < this.getCellCount(); c++) {
+            const cell = this.getCell(c);
+            if (cell) {
+                const paths = cell.getSVGPaths();
+                allPaths.push(...paths);
+            }
+        }
+        return allPaths;
+    }
+
+    /**
+     * Get all cell DOM elements in this row
+     * @returns {HTMLElement[]}
+     */
+    getElements() {
+        const elements = [];
+        for (let c = 0; c < this.getCellCount(); c++) {
+            const cell = this.getCell(c);
+            if (cell && cell.element) {
+                elements.push(cell.element);
+            }
+        }
+        return elements;
     }
 
     // ===== CELL ACCESS =====
@@ -261,6 +319,9 @@ export class TableRow {
  * Returned by item(A, row, col) for direct cell access.
  */
 export class TableCell {
+    /** Marker property for adapter detection */
+    isTableCell = true;
+
     /**
      * @param {Object} data - Cell data { content, style, marks }
      * @param {number} rowIndex - Row index in collection
@@ -273,6 +334,7 @@ export class TableCell {
         this.rowIndex = rowIndex;
         this.colIndex = colIndex;
         this.element = null; // DOM reference set during render
+        this.cellAdapter = null; // CellAdapter reference set during render
     }
 
     // ===== CONTENT =====
@@ -392,5 +454,106 @@ export class TableCell {
      */
     getElement() {
         return this.element;
+    }
+
+    /**
+     * Set CellAdapter reference (called during render)
+     * @param {CellAdapter} adapter
+     */
+    setCellAdapter(adapter) {
+        this.cellAdapter = adapter;
+    }
+
+    /**
+     * Get CellAdapter reference
+     * @returns {CellAdapter|null}
+     */
+    getCellAdapter() {
+        return this.cellAdapter;
+    }
+
+    // ===== MATH DETECTION =====
+
+    /**
+     * Check if cell content is LaTeX math
+     * @returns {boolean}
+     */
+    isMath() {
+        return this.cellAdapter ? this.cellAdapter.isMath() : false;
+    }
+
+    /**
+     * Get the math container element (.table-cell-math div)
+     * @returns {HTMLElement|null}
+     */
+    getMathContainer() {
+        if (!this.element) return null;
+        return this.element.querySelector('.table-cell-math');
+    }
+
+    /**
+     * Get SVG paths from rendered LaTeX content
+     * @returns {Element[]}
+     */
+    getSVGPaths() {
+        const mathContainer = this.getMathContainer();
+        if (mathContainer) {
+            return Array.from(mathContainer.querySelectorAll('path'));
+        }
+        return [];
+    }
+
+    // ===== VISIBILITY =====
+
+    /**
+     * Show the cell
+     */
+    show() {
+        if (!this.element) return;
+        this.element.style.visibility = 'visible';
+        this.element.style.opacity = '1';
+        // Enable strokes if math content
+        const paths = this.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+        });
+    }
+
+    /**
+     * Hide the cell
+     */
+    hide() {
+        if (!this.element) return;
+        this.element.style.visibility = 'hidden';
+        this.element.style.opacity = '0';
+        // Disable strokes if math content
+        const paths = this.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,10000');
+            path.style.strokeDasharray = '0,10000';
+        });
+    }
+
+    /**
+     * Disable strokes on math content (for animation preparation)
+     */
+    disableStrokes() {
+        const paths = this.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,10000');
+            path.style.strokeDasharray = '0,10000';
+        });
+    }
+
+    /**
+     * Enable strokes on math content
+     */
+    enableStrokes() {
+        const paths = this.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+        });
     }
 }

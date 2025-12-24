@@ -111,6 +111,36 @@ export const PAGE_FUNCTIONS = {
 };
 
 /**
+ * Animation control metadata
+ */
+export const ANIMATION_CONTROL_FUNCTIONS = {
+  seq: {
+    name: 'seq',
+    signature: '(arg1, arg2, ...)',
+    args: ['args: Shape|Expression...'],
+    description: 'Execute commands sequentially (one after another)',
+    altSignatures: [
+      'seq(A, B, C)',
+      'seq(fadeout(A), fadein(B))',
+      'seq(l1, l2, circle(G, 3))'
+    ],
+    category: 'Animation'
+  },
+  para: {
+    name: 'para',
+    signature: '(arg1, arg2, ...)',
+    args: ['args: Shape|Expression...'],
+    description: 'Execute commands in parallel (simultaneously)',
+    altSignatures: [
+      'para(A, B, C)',
+      'para(l1, l2)',
+      'para(line(G, A, B), circle(G, C, 3))'
+    ],
+    category: 'Animation'
+  }
+};
+
+/**
  * Function definition metadata
  */
 export const FUNCTION_DEFINITION_FUNCTIONS = {

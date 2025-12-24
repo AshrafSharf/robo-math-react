@@ -8,15 +8,26 @@ export const GEOMETRY_FUNCTIONS = {
     signature: '(g, x, y)',
     args: ['g: Graph', 'x: number', 'y: number'],
     description: 'Create a 2D point',
-    altSignatures: ['point(g, x, y)', 'point(g, otherPoint)'],
+    altSignatures: [
+      'A = point(G, 3, 4)',
+      'B = point(G, -2, 1)',
+      'C = point(G, A)'
+    ],
     category: 'Geometry'
   },
   line: {
     name: 'line',
     signature: '(g, p1, p2)',
     args: ['g: Graph', 'p1: Point', 'p2: Point'],
-    description: 'Create a line segment',
-    altSignatures: ['line(g, p1, p2)', 'line(g, x1, y1, x2, y2)', 'line(g, p1, p2, ext)'],
+    description: 'Create a line segment between two points',
+    altSignatures: [
+      'L = line(G, A, B)',
+      'L = line(G, 0, 0, 4, 3)',
+      'L = line(G, point(G, 1, 2), point(G, 5, 6))',
+      'L = line(G, A, B, 1.5)',
+      'L = line(G, A, B, 2)',
+      'L = line(G, st(V), ed(V))'
+    ],
     category: 'Geometry'
   },
   vector: {
@@ -24,7 +35,11 @@ export const GEOMETRY_FUNCTIONS = {
     signature: '(g, p1, p2)',
     args: ['g: Graph', 'p1: Point', 'p2: Point'],
     description: 'Vector with arrowhead',
-    altSignatures: ['vector(g, p1, p2)', 'vector(g, x1, y1, x2, y2)'],
+    altSignatures: [
+      'V = vector(G, A, B)',
+      'V = vector(G, 0, 0, 3, 4)',
+      'V = vector(G, origin, point(G, 5, 0))'
+    ],
     category: 'Geometry'
   },
   circle: {
@@ -32,7 +47,11 @@ export const GEOMETRY_FUNCTIONS = {
     signature: '(g, r)',
     args: ['g: Graph', 'r: number'],
     description: 'Circle (radius first, center at origin by default)',
-    altSignatures: ['circle(g, r)', 'circle(g, r, x, y)', 'circle(g, r, center)'],
+    altSignatures: [
+      'C = circle(G, 3)',
+      'C = circle(G, 2, 1, 1)',
+      'C = circle(G, 4, A)'
+    ],
     category: 'Geometry'
   },
   arc: {
@@ -40,7 +59,11 @@ export const GEOMETRY_FUNCTIONS = {
     signature: '(g, cx, cy, r, start, sweep)',
     args: ['g: Graph', 'cx: number', 'cy: number', 'r: number', 'start°: number', 'sweep°: number'],
     description: 'Arc segment (angles in degrees)',
-    altSignatures: ['arc(g, cx, cy, r, start°, sweep°)'],
+    altSignatures: [
+      'arc(G, 0, 0, 3, 0, 90)',
+      'arc(G, 2, 2, 2, 45, 180)',
+      'arc(G, A, 3, 0, 270)'
+    ],
     category: 'Geometry'
   },
   polygon: {
@@ -48,7 +71,11 @@ export const GEOMETRY_FUNCTIONS = {
     signature: '(g, p1, p2, p3, ...)',
     args: ['g: Graph', 'p1: Point', 'p2: Point', 'p3: Point', '...'],
     description: 'Polygon from 3+ points',
-    altSignatures: ['polygon(g, p1, p2, p3, ...)'],
+    altSignatures: [
+      'P = polygon(G, A, B, C)',
+      'P = polygon(G, A, B, C, D)',
+      'P = polygon(G, A, B, C, D, E)'
+    ],
     category: 'Geometry'
   }
 };

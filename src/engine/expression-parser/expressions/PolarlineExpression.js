@@ -1,27 +1,27 @@
 /**
- * RALExpression - creates a line using polar coordinates (radius/length and angle)
+ * PolarlineExpression - creates a line using polar coordinates (length and angle)
  *
  * Syntax:
- *   ral(graph, length, angleDeg)              - line from origin
- *   ral(graph, length, angleDeg, fromX, fromY) - line from specified point
- *   ral(graph, length, angleDeg, fromPoint)   - line from point expression
+ *   polarline(graph, length, angleDeg)              - line from origin
+ *   polarline(graph, length, angleDeg, fromX, fromY) - line from specified point
+ *   polarline(graph, length, angleDeg, fromPoint)   - line from point expression
  *
  * Returns line coordinates [x1, y1, x2, y2]. When used standalone, renders as a line.
  * Angle is in degrees: 0=right, 90=up, 180=left, 270=down
  *
  * Examples:
- *   ral(g, 5, 0)                // horizontal line from (0,0) to (5,0)
- *   ral(g, 3, 90)               // vertical line from (0,0) to (0,3)
- *   ral(g, 4, 45)               // diagonal line at 45 degrees
- *   ral(g, 5, 30, 1, 2)         // line from (1,2) at 30 degrees
- *   ral(g, 5, 60, A)            // line from point A at 60 degrees
+ *   polarline(g, 5, 0)                // horizontal line from (0,0) to (5,0)
+ *   polarline(g, 3, 90)               // vertical line from (0,0) to (0,3)
+ *   polarline(g, 4, 45)               // diagonal line at 45 degrees
+ *   polarline(g, 5, 30, 1, 2)         // line from (1,2) at 30 degrees
+ *   polarline(g, 5, 60, A)            // line from point A at 60 degrees
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { LineCommand } from '../../commands/LineCommand.js';
 import { LineUtil } from '../../../geom/LineUtil.js';
 
-export class RALExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'ral';
+export class PolarlineExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'polarline';
 
     constructor(subExpressions) {
         super();
@@ -32,7 +32,7 @@ export class RALExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('ral() requires: ral(graph, length, angle) or ral(graph, length, angle, fromX, fromY)');
+            this.dispatchError('polarline() requires: polarline(graph, length, angle) or polarline(graph, length, angle, fromX, fromY)');
         }
 
         // Resolve all subexpressions first
@@ -44,7 +44,7 @@ export class RALExpression extends AbstractNonArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('ral() requires graph as first argument');
+            this.dispatchError('polarline() requires graph as first argument');
         }
 
         // Get length and angle
@@ -58,12 +58,12 @@ export class RALExpression extends AbstractNonArithmeticExpression {
         let origin = { x: 0, y: 0 };
 
         if (this.subExpressions.length === 4) {
-            // ral(graph, length, angle, fromPoint)
+            // polarline(graph, length, angle, fromPoint)
             const fromExpr = this._getResolvedExpression(context, this.subExpressions[3]);
             const fromValues = fromExpr.getVariableAtomicValues();
             origin = { x: fromValues[0], y: fromValues[1] };
         } else if (this.subExpressions.length >= 5) {
-            // ral(graph, length, angle, fromX, fromY)
+            // polarline(graph, length, angle, fromX, fromY)
             const fromXExpr = this._getResolvedExpression(context, this.subExpressions[3]);
             const fromYExpr = this._getResolvedExpression(context, this.subExpressions[4]);
             origin = {
@@ -77,7 +77,7 @@ export class RALExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return RALExpression.NAME;
+        return PolarlineExpression.NAME;
     }
 
     getGeometryType() {
@@ -112,7 +112,7 @@ export class RALExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getLinePoints();
-        return `ral[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `polarline[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {

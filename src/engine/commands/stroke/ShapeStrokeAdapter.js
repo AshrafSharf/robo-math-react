@@ -81,6 +81,16 @@ export class ShapeStrokeAdapter {
             return new NullStrokeAdapter();
         }
 
+        // Check for TableCell (has isTableCell marker)
+        if (shape.isTableCell) {
+            return new TableCellStrokeAdapter(shape);
+        }
+
+        // Check for TableRow (has isTableRow marker)
+        if (shape.isTableRow) {
+            return new TableRowStrokeAdapter(shape);
+        }
+
         // Check for MathTextComponent (has containerDOM)
         if (shape.containerDOM) {
             return new MathTextStrokeAdapter(shape);
@@ -631,6 +641,227 @@ class TextItemCollectionStrokeAdapter extends BaseStrokeAdapter {
             },
             onComplete: () => {
                 // Ensure final state is set to target color
+                this.setColor(resolvedTargetColor, opacity);
+                if (onComplete) onComplete();
+            }
+        });
+    }
+}
+
+/**
+ * Adapter for TableCell stroke (text/path color)
+ * For LaTeX: sets stroke on SVG paths
+ * For plain text: sets CSS color property
+ */
+class TableCellStrokeAdapter extends BaseStrokeAdapter {
+    captureOriginal() {
+        if (this.shape.isMath()) {
+            const paths = this.shape.getSVGPaths();
+            if (paths && paths.length > 0) {
+                this.originalColor = getComputedColor(paths[0], 'stroke');
+                this.originalOpacity = parseFloat(paths[0].getAttribute('stroke-opacity') || 1);
+            } else {
+                this.originalColor = '#000000';
+                this.originalOpacity = 1;
+            }
+        } else {
+            // Plain text - get computed color
+            const element = this.shape.element;
+            if (element) {
+                const computed = window.getComputedStyle(element);
+                this.originalColor = computed.color || '#000000';
+                this.originalOpacity = 1;
+            } else {
+                this.originalColor = '#000000';
+                this.originalOpacity = 1;
+            }
+        }
+    }
+
+    resetToOriginal() {
+        if (this.originalColor !== null) {
+            this.setColor(this.originalColor, this.originalOpacity);
+        }
+    }
+
+    setColor(color, opacity = 1) {
+        const resolvedColor = COLOR_MAP[color?.toLowerCase()] || color;
+
+        if (this.shape.isMath()) {
+            // Set stroke on SVG paths
+            const paths = this.shape.getSVGPaths();
+            paths.forEach(path => {
+                path.setAttribute('stroke', resolvedColor);
+                path.style.stroke = resolvedColor;
+                path.setAttribute('stroke-opacity', opacity);
+                path.style.strokeOpacity = opacity;
+            });
+        } else {
+            // Set CSS color on element
+            const element = this.shape.element;
+            if (element) {
+                element.style.color = resolvedColor;
+                element.style.opacity = opacity;
+            }
+        }
+    }
+
+    animateColor(color, opacity, duration, onComplete) {
+        const startColor = parseColor(this.originalColor || '#000000');
+        const endColor = parseColor(color);
+        const startOpacity = this.originalOpacity ?? 1;
+        const resolvedTargetColor = COLOR_MAP[color?.toLowerCase()] || color;
+
+        const colorData = {
+            r: startColor.r,
+            g: startColor.g,
+            b: startColor.b,
+            a: startOpacity
+        };
+
+        const isMath = this.shape.isMath();
+        const paths = isMath ? this.shape.getSVGPaths() : [];
+        const element = this.shape.element;
+
+        TweenMax.to(colorData, duration, {
+            r: endColor.r,
+            g: endColor.g,
+            b: endColor.b,
+            a: opacity,
+            ease: 'Power2.easeInOut',
+            onUpdate: () => {
+                const hex = rgbToHex(colorData.r, colorData.g, colorData.b);
+                if (isMath) {
+                    paths.forEach(path => {
+                        path.setAttribute('stroke', hex);
+                        path.style.stroke = hex;
+                        path.setAttribute('stroke-opacity', colorData.a);
+                        path.style.strokeOpacity = colorData.a;
+                    });
+                } else if (element) {
+                    element.style.color = hex;
+                    element.style.opacity = colorData.a;
+                }
+            },
+            onComplete: () => {
+                this.setColor(resolvedTargetColor, opacity);
+                if (onComplete) onComplete();
+            }
+        });
+    }
+}
+
+/**
+ * Adapter for TableRow stroke (applies to all cells in row)
+ */
+class TableRowStrokeAdapter extends BaseStrokeAdapter {
+    /**
+     * Get all cells in the row
+     * @returns {TableCell[]}
+     */
+    _getAllCells() {
+        return this.shape.getAllCells ? this.shape.getAllCells() : [];
+    }
+
+    captureOriginal() {
+        const cells = this._getAllCells();
+        if (cells.length > 0) {
+            // Capture from first cell
+            const firstCell = cells[0];
+            if (firstCell.isMath()) {
+                const paths = firstCell.getSVGPaths();
+                if (paths && paths.length > 0) {
+                    this.originalColor = getComputedColor(paths[0], 'stroke');
+                    this.originalOpacity = parseFloat(paths[0].getAttribute('stroke-opacity') || 1);
+                } else {
+                    this.originalColor = '#000000';
+                    this.originalOpacity = 1;
+                }
+            } else {
+                const element = firstCell.element;
+                if (element) {
+                    const computed = window.getComputedStyle(element);
+                    this.originalColor = computed.color || '#000000';
+                    this.originalOpacity = 1;
+                } else {
+                    this.originalColor = '#000000';
+                    this.originalOpacity = 1;
+                }
+            }
+        } else {
+            this.originalColor = '#000000';
+            this.originalOpacity = 1;
+        }
+    }
+
+    resetToOriginal() {
+        if (this.originalColor !== null) {
+            this.setColor(this.originalColor, this.originalOpacity);
+        }
+    }
+
+    setColor(color, opacity = 1) {
+        const resolvedColor = COLOR_MAP[color?.toLowerCase()] || color;
+        const cells = this._getAllCells();
+
+        cells.forEach(cell => {
+            if (cell.isMath()) {
+                const paths = cell.getSVGPaths();
+                paths.forEach(path => {
+                    path.setAttribute('stroke', resolvedColor);
+                    path.style.stroke = resolvedColor;
+                    path.setAttribute('stroke-opacity', opacity);
+                    path.style.strokeOpacity = opacity;
+                });
+            } else {
+                const element = cell.element;
+                if (element) {
+                    element.style.color = resolvedColor;
+                    element.style.opacity = opacity;
+                }
+            }
+        });
+    }
+
+    animateColor(color, opacity, duration, onComplete) {
+        const startColor = parseColor(this.originalColor || '#000000');
+        const endColor = parseColor(color);
+        const startOpacity = this.originalOpacity ?? 1;
+        const resolvedTargetColor = COLOR_MAP[color?.toLowerCase()] || color;
+
+        const colorData = {
+            r: startColor.r,
+            g: startColor.g,
+            b: startColor.b,
+            a: startOpacity
+        };
+
+        const cells = this._getAllCells();
+
+        TweenMax.to(colorData, duration, {
+            r: endColor.r,
+            g: endColor.g,
+            b: endColor.b,
+            a: opacity,
+            ease: 'Power2.easeInOut',
+            onUpdate: () => {
+                const hex = rgbToHex(colorData.r, colorData.g, colorData.b);
+                cells.forEach(cell => {
+                    if (cell.isMath()) {
+                        const paths = cell.getSVGPaths();
+                        paths.forEach(path => {
+                            path.setAttribute('stroke', hex);
+                            path.style.stroke = hex;
+                            path.setAttribute('stroke-opacity', colorData.a);
+                            path.style.strokeOpacity = colorData.a;
+                        });
+                    } else if (cell.element) {
+                        cell.element.style.color = hex;
+                        cell.element.style.opacity = colorData.a;
+                    }
+                });
+            },
+            onComplete: () => {
                 this.setColor(resolvedTargetColor, opacity);
                 if (onComplete) onComplete();
             }

@@ -79,6 +79,16 @@ export class ShapeFillAdapter {
             return new NullFillAdapter();
         }
 
+        // Check for TableCell (has isTableCell marker) - supports background fill
+        if (shape.isTableCell) {
+            return new TableCellFillAdapter(shape);
+        }
+
+        // Check for TableRow (has isTableRow marker) - supports background fill
+        if (shape.isTableRow) {
+            return new TableRowFillAdapter(shape);
+        }
+
         // MathText does not support fill - use null adapter
         if (shape.containerDOM) {
             return new NullFillAdapter();
@@ -385,6 +395,178 @@ class ThreeJSFillAdapter extends BaseFillAdapter {
             },
             onComplete: () => {
                 // Ensure final state is set to target color
+                this.setColor(resolvedTargetColor, opacity);
+                if (onComplete) onComplete();
+            }
+        });
+    }
+}
+
+/**
+ * Adapter for TableCell fill (background color)
+ */
+class TableCellFillAdapter extends BaseFillAdapter {
+    captureOriginal() {
+        const element = this.shape.element;
+        if (element) {
+            const computed = window.getComputedStyle(element);
+            this.originalColor = computed.backgroundColor || 'transparent';
+            // Parse opacity if rgba
+            const match = this.originalColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+                this.originalColor = rgbToHex(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+                this.originalOpacity = match[4] !== undefined ? parseFloat(match[4]) : 1;
+            } else {
+                this.originalOpacity = 1;
+            }
+        } else {
+            this.originalColor = 'transparent';
+            this.originalOpacity = 1;
+        }
+    }
+
+    resetToOriginal() {
+        if (this.originalColor !== null) {
+            this.setColor(this.originalColor, this.originalOpacity);
+        }
+    }
+
+    setColor(color, opacity = 1) {
+        const resolvedColor = COLOR_MAP[color?.toLowerCase()] || color;
+        const element = this.shape.element;
+        if (element) {
+            if (opacity < 1) {
+                // Use rgba for transparency
+                const parsed = parseColor(resolvedColor);
+                element.style.backgroundColor = `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, ${opacity})`;
+            } else {
+                element.style.backgroundColor = resolvedColor;
+            }
+        }
+    }
+
+    animateColor(color, opacity, duration, onComplete) {
+        const startColor = parseColor(this.originalColor || 'transparent');
+        const endColor = parseColor(color);
+        const startOpacity = this.originalOpacity ?? 1;
+        const resolvedTargetColor = COLOR_MAP[color?.toLowerCase()] || color;
+
+        const colorData = {
+            r: startColor.r,
+            g: startColor.g,
+            b: startColor.b,
+            a: startOpacity
+        };
+
+        const element = this.shape.element;
+        if (!element) {
+            if (onComplete) onComplete();
+            return;
+        }
+
+        TweenMax.to(colorData, duration, {
+            r: endColor.r,
+            g: endColor.g,
+            b: endColor.b,
+            a: opacity,
+            ease: 'Power2.easeInOut',
+            onUpdate: () => {
+                element.style.backgroundColor = `rgba(${Math.round(colorData.r)}, ${Math.round(colorData.g)}, ${Math.round(colorData.b)}, ${colorData.a})`;
+            },
+            onComplete: () => {
+                this.setColor(resolvedTargetColor, opacity);
+                if (onComplete) onComplete();
+            }
+        });
+    }
+}
+
+/**
+ * Adapter for TableRow fill (background color for all cells)
+ */
+class TableRowFillAdapter extends BaseFillAdapter {
+    /**
+     * Get all cells in the row
+     * @returns {TableCell[]}
+     */
+    _getAllCells() {
+        return this.shape.getAllCells ? this.shape.getAllCells() : [];
+    }
+
+    captureOriginal() {
+        const cells = this._getAllCells();
+        if (cells.length > 0 && cells[0].element) {
+            const computed = window.getComputedStyle(cells[0].element);
+            this.originalColor = computed.backgroundColor || 'transparent';
+            const match = this.originalColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+                this.originalColor = rgbToHex(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+                this.originalOpacity = match[4] !== undefined ? parseFloat(match[4]) : 1;
+            } else {
+                this.originalOpacity = 1;
+            }
+        } else {
+            this.originalColor = 'transparent';
+            this.originalOpacity = 1;
+        }
+    }
+
+    resetToOriginal() {
+        if (this.originalColor !== null) {
+            this.setColor(this.originalColor, this.originalOpacity);
+        }
+    }
+
+    setColor(color, opacity = 1) {
+        const resolvedColor = COLOR_MAP[color?.toLowerCase()] || color;
+        const cells = this._getAllCells();
+
+        cells.forEach(cell => {
+            const element = cell.element;
+            if (element) {
+                if (opacity < 1) {
+                    const parsed = parseColor(resolvedColor);
+                    element.style.backgroundColor = `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, ${opacity})`;
+                } else {
+                    element.style.backgroundColor = resolvedColor;
+                }
+            }
+        });
+    }
+
+    animateColor(color, opacity, duration, onComplete) {
+        const startColor = parseColor(this.originalColor || 'transparent');
+        const endColor = parseColor(color);
+        const startOpacity = this.originalOpacity ?? 1;
+        const resolvedTargetColor = COLOR_MAP[color?.toLowerCase()] || color;
+
+        const colorData = {
+            r: startColor.r,
+            g: startColor.g,
+            b: startColor.b,
+            a: startOpacity
+        };
+
+        const cells = this._getAllCells();
+        if (cells.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+
+        TweenMax.to(colorData, duration, {
+            r: endColor.r,
+            g: endColor.g,
+            b: endColor.b,
+            a: opacity,
+            ease: 'Power2.easeInOut',
+            onUpdate: () => {
+                cells.forEach(cell => {
+                    if (cell.element) {
+                        cell.element.style.backgroundColor = `rgba(${Math.round(colorData.r)}, ${Math.round(colorData.g)}, ${Math.round(colorData.b)}, ${colorData.a})`;
+                    }
+                });
+            },
+            onComplete: () => {
                 this.setColor(resolvedTargetColor, opacity);
                 if (onComplete) onComplete();
             }

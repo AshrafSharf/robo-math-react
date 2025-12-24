@@ -139,6 +139,58 @@ export class CellAdapter {
             this.cell.setContent(newContent);
         }
     }
+
+    // ===== SVG PATH ACCESS =====
+
+    /**
+     * Get SVG paths from rendered math content
+     * @returns {Element[]}
+     */
+    getSVGPaths() {
+        if (!this.renderedElement) return [];
+        if (this.isMathContent) {
+            return Array.from(this.renderedElement.querySelectorAll('path'));
+        }
+        return [];
+    }
+
+    // ===== STROKE CONTROL =====
+
+    /**
+     * Disable strokes (for animation preparation)
+     * Sets stroke-dasharray to hide paths
+     */
+    disableStrokes() {
+        const paths = this.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,10000');
+            path.style.strokeDasharray = '0,10000';
+        });
+    }
+
+    /**
+     * Enable strokes (show paths)
+     * Sets stroke-dasharray to show paths
+     */
+    enableStrokes() {
+        const paths = this.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+        });
+    }
+
+    /**
+     * Set stroke color on all paths
+     * @param {string} color - CSS color value
+     */
+    setStrokeColor(color) {
+        const paths = this.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke', color);
+            path.style.stroke = color;
+        });
+    }
 }
 
 /**

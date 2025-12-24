@@ -20,6 +20,7 @@ import { WriteCollectionVarCommand } from '../../commands/WriteCollectionVarComm
 import { WriteTextItemVarCommand } from '../../commands/WriteTextItemVarCommand.js';
 import { WriteTextItemExprCommand } from '../../commands/WriteTextItemExprCommand.js';
 import { WriteTextItemCommand } from '../../commands/WriteTextItemCommand.js';
+import { WriteCellCommand } from '../../commands/WriteCellCommand.js';
 
 export class WriteExpression extends AbstractNonArithmeticExpression {
     static NAME = 'write';
@@ -27,7 +28,7 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        // Mode: 'existing', 'create', 'collection_var', 'textitem_var', 'textitem_expr'
+        // Mode: 'existing', 'create', 'collection_var', 'textitem_var', 'textitem_expr', 'tablecell'
         this.mode = null;
         // For 'existing' mode
         this.targetVariableName = null;
@@ -41,6 +42,10 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         this.textItemVariableName = null;
         // For 'textitem_expr' mode (inline item)
         this.textItemExpression = null;
+        // For 'tablecell' mode
+        this.tableVariableName = null;
+        this.tableCellRowIndex = null;
+        this.tableCellColIndex = null;
         // Reference to created MathTextComponent (set by command after init)
         this.mathTextComponent = null;
     }
@@ -54,9 +59,18 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
             const targetExpr = this.subExpressions[0];
             targetExpr.resolve(context);
 
-            // Check if target is an item expression (returns TextItem)
+            // Check if target is an item expression
             const targetName = targetExpr.getName && targetExpr.getName();
             if (targetName === 'item') {
+                // Check if it's a table cell access
+                if (targetExpr.isTableCellAccess) {
+                    this.mode = 'tablecell';
+                    this.tableVariableName = targetExpr.collectionVariableName;
+                    this.tableCellRowIndex = targetExpr.rowIndex;
+                    this.tableCellColIndex = targetExpr.colIndex;
+                    return;
+                }
+                // Otherwise it's a TextItem
                 this.mode = 'textitem_expr';
                 this.textItemExpression = targetExpr;
                 return;
@@ -171,6 +185,13 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
             return new WriteCollectionVarCommand(this.collectionVariableName);
         } else if (this.mode === 'textitem_var') {
             return new WriteTextItemVarCommand(this.textItemVariableName);
+        } else if (this.mode === 'tablecell') {
+            // write(item(T, row, col)) - animate table cell
+            return new WriteCellCommand(
+                this.tableVariableName,
+                this.tableCellRowIndex,
+                this.tableCellColIndex
+            );
         } else if (this.mode === 'textitem_expr') {
             // Check if position is provided
             if (this.row !== null && this.col !== null) {

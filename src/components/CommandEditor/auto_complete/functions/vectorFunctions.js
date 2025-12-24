@@ -3,12 +3,30 @@
  */
 
 export const VECTOR_FUNCTIONS = {
-  polar: {
-    name: 'polar',
+  polarvector: {
+    name: 'polarvector',
     signature: '(g, length, angle)',
-    args: ['g: Graph', 'length: number', 'angle: number'],
-    description: 'Vector from polar (radius, angle in degrees)',
-    altSignatures: ['polar(g, length, angle)', 'polar(g, length, angle, fromX, fromY)', 'polar(g, length, angle, fromPoint)'],
+    args: ['g: Graph', 'length: number', 'angle°: number'],
+    description: 'Vector from length and angle (degrees)',
+    altSignatures: [
+      'V = polarvector(G, 5, 45)',
+      'V = polarvector(G, 3, 90)',
+      'V = polarvector(G, 4, 30, 2, 1)',
+      'V = polarvector(G, 5, 60, A)'
+    ],
+    category: 'Vectors'
+  },
+  polarpoint: {
+    name: 'polarpoint',
+    signature: '(g, radius, angle)',
+    args: ['g: Graph', 'radius: number', 'angle°: number'],
+    description: 'Point from polar coordinates (radius and angle)',
+    altSignatures: [
+      'P = polarpoint(G, 5, 45)',
+      'P = polarpoint(G, 3, 90)',
+      'P = polarpoint(G, 4, 30, 2, 1)',
+      'P = polarpoint(G, 5, 60, A)'
+    ],
     category: 'Vectors'
   },
   norm: {

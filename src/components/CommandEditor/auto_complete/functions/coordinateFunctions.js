@@ -43,12 +43,18 @@ export const COORDINATE_FUNCTIONS = {
     altSignatures: ['mid(g, line)', 'mid(g, circle)', 'mid(g, polygon)', 'mid(g, p1, p2)'],
     category: 'Coordinates'
   },
-  r2p: {
-    name: 'r2p',
-    signature: '(g, line, ratio)',
-    args: ['g: Graph', 'line: Line', 'ratio: number'],
-    description: 'Point at ratio along line (0=start, 1=end)',
-    altSignatures: ['r2p(g, line, ratio)', 'r2p(g, p1, p2, ratio)'],
+  pointatratio: {
+    name: 'pointatratio',
+    signature: '(g, shape, ratio)',
+    args: ['g: Graph', 'shape: Shape', 'ratio: number'],
+    description: 'Point at ratio along any shape (0=start, 1=end)',
+    altSignatures: [
+      'pointatratio(g, line, 0.5)',
+      'pointatratio(g, circle, 0.25)',
+      'pointatratio(g, arc, 0.5)',
+      'pointatratio(g, polygon, 0.75)',
+      'pointatratio(g, p1, p2, 0.3)'
+    ],
     category: 'Coordinates'
   },
   a2p: {

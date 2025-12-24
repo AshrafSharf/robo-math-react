@@ -5,7 +5,7 @@
  * Functions are organized by category in separate files under ./functions/
  */
 
-import { GEOMETRY_FUNCTIONS, GEOMETRY_3D_FUNCTIONS, VECTOR_3D_FUNCTIONS } from './functions/geometryFunctions.js';
+import { GEOMETRY_FUNCTIONS, GEOMETRY_3D_FUNCTIONS, VECTOR_3D_FUNCTIONS, PLOTTING_3D_FUNCTIONS } from './functions/geometryFunctions.js';
 import { ANGLE_FUNCTIONS } from './functions/angleFunctions.js';
 import { LINE_FUNCTIONS } from './functions/lineFunctions.js';
 import { VECTOR_FUNCTIONS } from './functions/vectorFunctions.js';
@@ -13,7 +13,7 @@ import { COORDINATE_FUNCTIONS } from './functions/coordinateFunctions.js';
 import { GRAPH_FUNCTIONS } from './functions/graphFunctions.js';
 import { MATH_FUNCTIONS } from './functions/mathFunctions.js';
 import { TRANSFORM_FUNCTIONS } from './functions/transformFunctions.js';
-import { UTILITY_FUNCTIONS, VISIBILITY_FUNCTIONS, PAGE_FUNCTIONS, FUNCTION_DEFINITION_FUNCTIONS } from './functions/utilityFunctions.js';
+import { UTILITY_FUNCTIONS, VISIBILITY_FUNCTIONS, PAGE_FUNCTIONS, ANIMATION_CONTROL_FUNCTIONS, FUNCTION_DEFINITION_FUNCTIONS } from './functions/utilityFunctions.js';
 import { STYLE_FUNCTIONS } from './functions/styleFunctions.js';
 
 /**
@@ -23,6 +23,7 @@ export const FUNCTION_METADATA = {
   ...GEOMETRY_FUNCTIONS,
   ...GEOMETRY_3D_FUNCTIONS,
   ...VECTOR_3D_FUNCTIONS,
+  ...PLOTTING_3D_FUNCTIONS,
   ...ANGLE_FUNCTIONS,
   ...LINE_FUNCTIONS,
   ...VECTOR_FUNCTIONS,
@@ -33,6 +34,7 @@ export const FUNCTION_METADATA = {
   ...UTILITY_FUNCTIONS,
   ...VISIBILITY_FUNCTIONS,
   ...PAGE_FUNCTIONS,
+  ...ANIMATION_CONTROL_FUNCTIONS,
   ...FUNCTION_DEFINITION_FUNCTIONS,
   ...STYLE_FUNCTIONS
 };
@@ -65,6 +67,7 @@ export function getCategories() {
 export const CATEGORY_ORDER = [
   'Geometry',
   '3D Geometry',
+  '3D Plotting',
   'Angles',
   'Lines',
   'Vectors',
@@ -74,6 +77,7 @@ export const CATEGORY_ORDER = [
   'Transforms',
   'Style',
   'Visibility',
+  'Animation',
   'Page',
   'Utilities',
   'Functions'

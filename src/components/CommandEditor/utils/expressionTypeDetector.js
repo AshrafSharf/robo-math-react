@@ -99,14 +99,15 @@ function normalizeTypeName(name) {
     // Line utility expressions (short aliases)
     'vline': 'line',
     'hline': 'line',
-    'xl': 'line',
-    'ral': 'line',
+    'extendline': 'line',
+    'polarline': 'line',
     'perpl': 'line',
     'pll': 'line',
     // Vector utility expressions (short aliases)
     'perpv': 'vector',
     'offset': 'vector',
-    'polar': 'vector',
+    'polarvector': 'vector',
+    'polarpoint': 'point',
     'forward': 'vector',
     'backward': 'vector',
     'perpshift': 'vector',

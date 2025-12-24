@@ -1,10 +1,30 @@
 /**
  * TableCommand - Command for creating a table at logical coordinates
  *
- * Creates a DOM table using coordinateMapper to convert logical (row, col)
+ * @description Creates a DOM table using coordinateMapper to convert logical (row, col)
  * to pixel coordinates. Uses CellAdapter to render cell content (math vs text).
- *
  * Like MathTextCommand, shows instantly on init.
+ *
+ * @features
+ * - Logical positioning (row, col) like mathtext
+ * - Header row with customizable background color
+ * - LaTeX support in cells (auto-detected)
+ * - Configurable border styles: all, none, horizontal, vertical, outer
+ * - Real-time updates from Settings panel
+ * - Collection interface for item() access
+ *
+ * @data Table data can come from:
+ * 1. Settings panel (for basic table() syntax)
+ * 2. Inline expression values (for table(row, col, rows, cols, "v1", ...) syntax)
+ *
+ * @options
+ * - rows: Number of rows
+ * - cols: Number of columns
+ * - headers: Array of header cell content
+ * - headerBgColor: Header background color
+ * - cells: 2D array of cell content
+ * - borderStyle: 'all' | 'none' | 'horizontal' | 'vertical' | 'outer'
+ * - cellPadding: CSS padding for cells
  */
 import { BaseCommand } from './BaseCommand.js';
 import { TableItemCollection } from '../expression-parser/collections/TableItemCollection.js';
@@ -34,6 +54,9 @@ export class TableCommand extends BaseCommand {
         this.borderStyle = tableData.borderStyle || 'all';
         this.cellPadding = tableData.cellPadding || '8px 12px';
 
+        // Flag: true if data came from inline expression (not settings panel)
+        this.hasInlineData = !!(tableData.rows && tableData.cols && tableData.cells?.length > 0);
+
         // Position (logical coordinates)
         this.row = options.row ?? 0;
         this.col = options.col ?? 0;
@@ -61,7 +84,8 @@ export class TableCommand extends BaseCommand {
      */
     async doInit() {
         // Read latest options from registry (for real-time updates from settings panel)
-        if (this.expressionId) {
+        // Skip if inline data was provided in the expression
+        if (this.expressionId && !this.hasInlineData) {
             const registryOptions = ExpressionOptionsRegistry.getRawById(this.expressionId);
             const tableOptions = registryOptions.expressionOptions?.table || {};
             if (tableOptions.rows !== undefined) this.rowCount = tableOptions.rows;
@@ -187,6 +211,9 @@ export class TableCommand extends BaseCommand {
                     // Create adapter and render content
                     const adapter = new CellAdapter(cell);
                     this.cellAdapters.push({ row: r, col: c, adapter });
+
+                    // Store adapter reference on cell for isMath() and getSVGPaths()
+                    cell.setCellAdapter(adapter);
 
                     await adapter.render(cellElement, {
                         fontSize: this.fontSize,

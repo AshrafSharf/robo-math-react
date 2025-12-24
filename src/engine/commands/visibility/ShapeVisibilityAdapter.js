@@ -18,6 +18,16 @@ export class ShapeVisibilityAdapter {
             return new NullAdapter();
         }
 
+        // Check for TableCell (has isTableCell marker)
+        if (shape.isTableCell) {
+            return new TableCellVisibilityAdapter(shape);
+        }
+
+        // Check for TableRow (has isTableRow marker)
+        if (shape.isTableRow) {
+            return new TableRowVisibilityAdapter(shape);
+        }
+
         // Check for MathTextComponent (has containerDOM)
         if (shape.containerDOM) {
             return new MathTextAdapter(shape);
@@ -472,6 +482,168 @@ class TextItemCollectionAdapter extends BaseAdapter {
 
     getElement() {
         return this._getAllPaths();
+    }
+}
+
+/**
+ * Adapter for TableCell (individual table cells)
+ */
+class TableCellVisibilityAdapter extends BaseAdapter {
+    show() {
+        if (this.shape.show) {
+            this.shape.show();
+        }
+    }
+
+    hide() {
+        if (this.shape.hide) {
+            this.shape.hide();
+        }
+    }
+
+    fadeIn(duration, onComplete) {
+        const element = this.shape.element;
+        if (!element) {
+            if (onComplete) onComplete();
+            return;
+        }
+        // Show element first
+        element.style.visibility = 'visible';
+        element.style.opacity = '0';
+        // Enable strokes if math content
+        const paths = this.shape.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+            path.style.opacity = '0';
+        });
+        // Animate element opacity
+        TweenMax.to(element, duration, {
+            opacity: 1,
+            onComplete: () => {
+                // Also fade in paths
+                paths.forEach(path => {
+                    path.style.opacity = '1';
+                });
+                if (onComplete) onComplete();
+            }
+        });
+        // Animate paths in parallel if they exist
+        if (paths.length > 0) {
+            paths.forEach(path => {
+                TweenMax.to(path, duration, { opacity: 1 });
+            });
+        }
+    }
+
+    fadeOut(duration, onComplete) {
+        const element = this.shape.element;
+        if (!element) {
+            if (onComplete) onComplete();
+            return;
+        }
+        TweenMax.to(element, duration, {
+            opacity: 0,
+            onComplete: () => {
+                element.style.visibility = 'hidden';
+                // Disable strokes if math content
+                const paths = this.shape.getSVGPaths();
+                paths.forEach(path => {
+                    path.setAttribute('stroke-dasharray', '0,10000');
+                    path.style.strokeDasharray = '0,10000';
+                });
+                if (onComplete) onComplete();
+            }
+        });
+    }
+
+    getElement() {
+        return this.shape.element;
+    }
+}
+
+/**
+ * Adapter for TableRow (applies operations to all cells in the row)
+ */
+class TableRowVisibilityAdapter extends BaseAdapter {
+    show() {
+        if (this.shape.show) {
+            this.shape.show();
+        }
+    }
+
+    hide() {
+        if (this.shape.hide) {
+            this.shape.hide();
+        }
+    }
+
+    fadeIn(duration, onComplete) {
+        const elements = this.shape.getElements();
+        if (!elements || elements.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        // Show all cells first
+        elements.forEach(el => {
+            el.style.visibility = 'visible';
+            el.style.opacity = '0';
+        });
+        // Enable all strokes
+        const paths = this.shape.getSVGPaths();
+        paths.forEach(path => {
+            path.setAttribute('stroke-dasharray', '0,0');
+            path.style.strokeDasharray = '0,0';
+            path.style.opacity = '0';
+        });
+        // Animate all elements
+        let completed = 0;
+        elements.forEach(el => {
+            TweenMax.to(el, duration, {
+                opacity: 1,
+                onComplete: () => {
+                    completed++;
+                    if (completed === elements.length && onComplete) {
+                        onComplete();
+                    }
+                }
+            });
+        });
+        // Animate paths in parallel
+        paths.forEach(path => {
+            TweenMax.to(path, duration, { opacity: 1 });
+        });
+    }
+
+    fadeOut(duration, onComplete) {
+        const elements = this.shape.getElements();
+        if (!elements || elements.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        let completed = 0;
+        elements.forEach(el => {
+            TweenMax.to(el, duration, {
+                opacity: 0,
+                onComplete: () => {
+                    el.style.visibility = 'hidden';
+                    completed++;
+                    if (completed === elements.length) {
+                        // Disable all strokes
+                        const paths = this.shape.getSVGPaths();
+                        paths.forEach(path => {
+                            path.setAttribute('stroke-dasharray', '0,10000');
+                            path.style.strokeDasharray = '0,10000';
+                        });
+                        if (onComplete) onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    getElement() {
+        return this.shape.getElements();
     }
 }
 

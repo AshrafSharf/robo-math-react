@@ -1,11 +1,11 @@
 /**
- * XLExpression - extends a line by a proportion or in both directions
+ * ExtendlineExpression - extends a line by a proportion or in both directions
  *
  * Syntax:
- *   xl(graph, line, proportion)                    - extend from end (1.5 = 50% longer)
- *   xl(graph, line, startProportion, endProportion) - extend both directions
- *   xl(graph, p1, p2, proportion)                  - extend line defined by two points
- *   xl(graph, p1, p2, startProp, endProp)          - extend both from two points
+ *   extendline(graph, line, proportion)                    - extend from end (1.5 = 50% longer)
+ *   extendline(graph, line, startProportion, endProportion) - extend both directions
+ *   extendline(graph, p1, p2, proportion)                  - extend line defined by two points
+ *   extendline(graph, p1, p2, startProp, endProp)          - extend both from two points
  *
  * Returns line coordinates [x1, y1, x2, y2]. When used standalone, renders as a line.
  *
@@ -17,17 +17,17 @@
  *
  * Examples:
  *   L = line(g, 0, 0, 4, 0)
- *   xl(g, L, 1.5)              // extends to (6, 0) - 50% longer
- *   xl(g, L, 2)                // extends to (8, 0) - double length
- *   xl(g, L, -0.5, 1.5)        // extends both: start to (-2, 0), end to (6, 0)
- *   xl(g, A, B, 1.25)          // line from A extended 25% past B
+ *   extendline(g, L, 1.5)              // extends to (6, 0) - 50% longer
+ *   extendline(g, L, 2)                // extends to (8, 0) - double length
+ *   extendline(g, L, -0.5, 1.5)        // extends both: start to (-2, 0), end to (6, 0)
+ *   extendline(g, A, B, 1.25)          // line from A extended 25% past B
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { LineCommand } from '../../commands/LineCommand.js';
 import { LineUtil } from '../../../geom/LineUtil.js';
 
-export class XLExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'xl';
+export class ExtendlineExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'extendline';
 
     constructor(subExpressions) {
         super();
@@ -38,7 +38,7 @@ export class XLExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('xl() requires: xl(graph, line, proportion) or xl(graph, p1, p2, proportion)');
+            this.dispatchError('extendline() requires: extendline(graph, line, proportion) or extendline(graph, p1, p2, proportion)');
         }
 
         // Resolve all subexpressions first
@@ -50,7 +50,7 @@ export class XLExpression extends AbstractNonArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('xl() requires graph as first argument');
+            this.dispatchError('extendline() requires graph as first argument');
         }
 
         // Determine argument pattern
@@ -116,7 +116,7 @@ export class XLExpression extends AbstractNonArithmeticExpression {
                 const result = LineUtil.extendBoth(start, end, startProp, endProp);
                 this.coordinates = [result.start.x, result.start.y, result.end.x, result.end.y];
             } else {
-                this.dispatchError('xl() with two points requires proportion: xl(graph, p1, p2, proportion)');
+                this.dispatchError('extendline() with two points requires proportion: extendline(graph, p1, p2, proportion)');
             }
         }
     }
@@ -157,7 +157,7 @@ export class XLExpression extends AbstractNonArithmeticExpression {
 
     getFriendlyToStr() {
         const pts = this.getLinePoints();
-        return `xl[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
+        return `extendline[(${pts[0].x}, ${pts[0].y}) -> (${pts[1].x}, ${pts[1].y})]`;
     }
 
     toCommand(options = {}) {
