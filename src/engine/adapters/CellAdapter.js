@@ -88,11 +88,11 @@ export class CellAdapter {
             mathContainer.style.verticalAlign = 'middle';
             mathContainer.innerHTML = svgString;
 
-            // Apply color to SVG paths
+            // Apply color to SVG paths (stroke only, no fill)
             const paths = mathContainer.querySelectorAll('path');
             paths.forEach(path => {
                 path.style.stroke = color;
-                path.style.fill = color;
+                path.style.fill = 'none';
             });
 
             // Clear cell and append math content

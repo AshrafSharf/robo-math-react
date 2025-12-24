@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getDefaultOptions } from '../../../utils/expressionOptionsSchema';
+import ColorPicker from '../ColorPicker';
 import './TableOptionsPanel.css';
 
 // LaTeX pattern for visual indication
@@ -55,6 +56,29 @@ function resizeCells(existingCells, newRows, newCols) {
 }
 
 /**
+ * Create empty headers array
+ * @param {number} cols
+ * @returns {Array}
+ */
+function createEmptyHeaders(cols) {
+    return Array(cols).fill('').map(() => ({ content: '' }));
+}
+
+/**
+ * Resize headers array to new column count
+ * @param {Array} existingHeaders
+ * @param {number} newCols
+ * @returns {Array}
+ */
+function resizeHeaders(existingHeaders, newCols) {
+    const headers = [];
+    for (let c = 0; c < newCols; c++) {
+        headers.push(existingHeaders?.[c] || { content: '' });
+    }
+    return headers;
+}
+
+/**
  * Table Options Panel
  * Provides UI for configuring table dimensions and cell content
  */
@@ -65,6 +89,17 @@ const TableOptionsPanel = ({ options, onChange, onRedraw }) => {
     const [rows, setRows] = useState(options.rows ?? defaults.rows ?? 2);
     const [cols, setCols] = useState(options.cols ?? defaults.cols ?? 2);
 
+    // Local state for headers (1D array for header row)
+    const [headers, setHeaders] = useState(() => {
+        if (options.headers && Array.isArray(options.headers)) {
+            return options.headers;
+        }
+        return createEmptyHeaders(cols);
+    });
+
+    // Header background color
+    const [headerBgColor, setHeaderBgColor] = useState(options.headerBgColor ?? defaults.headerBgColor ?? '#e8f0fe');
+
     // Local state for cells (2D array)
     const [cells, setCells] = useState(() => {
         if (options.cells && Array.isArray(options.cells)) {
@@ -73,14 +108,17 @@ const TableOptionsPanel = ({ options, onChange, onRedraw }) => {
         return createEmptyCells(rows, cols);
     });
 
-    // Update cells when dimensions change
+    // Update cells and headers when dimensions change
     useEffect(() => {
         const newCells = resizeCells(cells, rows, cols);
+        const newHeaders = resizeHeaders(headers, cols);
         setCells(newCells);
+        setHeaders(newHeaders);
         // Notify parent of all changes
         onChange('rows', rows);
         onChange('cols', cols);
         onChange('cells', newCells);
+        onChange('headers', newHeaders);
         onRedraw?.();
     }, [rows, cols]);
 
@@ -95,6 +133,23 @@ const TableOptionsPanel = ({ options, onChange, onRedraw }) => {
         const newCols = Math.max(1, Math.min(10, parseInt(e.target.value) || 1));
         setCols(newCols);
     }, []);
+
+    // Handle header content change
+    const handleHeaderChange = useCallback((colIdx, value) => {
+        const newHeaders = headers.map((header, c) =>
+            c === colIdx ? { ...header, content: value } : header
+        );
+        setHeaders(newHeaders);
+        onChange('headers', newHeaders);
+        onRedraw?.();
+    }, [headers, onChange, onRedraw]);
+
+    // Handle header background color change
+    const handleHeaderBgColorChange = useCallback((color) => {
+        setHeaderBgColor(color);
+        onChange('headerBgColor', color);
+        onRedraw?.();
+    }, [onChange, onRedraw]);
 
     // Handle cell content change
     const handleCellChange = useCallback((rowIdx, colIdx, value) => {
@@ -168,8 +223,30 @@ const TableOptionsPanel = ({ options, onChange, onRedraw }) => {
                 </div>
             </div>
 
+            {/* Header background color */}
+            <ColorPicker
+                selectedColor={headerBgColor}
+                onChange={handleHeaderBgColorChange}
+                label="Header Background:"
+            />
+
             {/* Editable table grid */}
             <div className="table-editor">
+                {/* Header row */}
+                <div className="table-header-row" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+                    {headers.map((header, colIdx) => (
+                        <input
+                            key={`header-${colIdx}`}
+                            type="text"
+                            value={header.content}
+                            onChange={(e) => handleHeaderChange(colIdx, e.target.value)}
+                            className={`header-input ${detectMath(header.content) ? 'math-cell' : 'text-cell'}`}
+                            placeholder={`Header ${colIdx + 1}`}
+                            style={{ backgroundColor: headerBgColor }}
+                        />
+                    ))}
+                </div>
+                {/* Data rows */}
                 <div className="table-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
                     {cells.map((row, rowIdx) =>
                         row.map((cell, colIdx) => (

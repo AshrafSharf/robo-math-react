@@ -9,6 +9,7 @@
 import { BaseCommand } from './BaseCommand.js';
 import { TableItemCollection } from '../expression-parser/collections/TableItemCollection.js';
 import { CellAdapter } from '../adapters/CellAdapter.js';
+import { ExpressionOptionsRegistry } from '../expression-parser/core/ExpressionOptionsRegistry.js';
 
 export class TableCommand extends BaseCommand {
     /**
@@ -27,6 +28,8 @@ export class TableCommand extends BaseCommand {
         // Table configuration
         this.rowCount = tableData.rows || 2;
         this.colCount = tableData.cols || 2;
+        this.headersData = tableData.headers || [];
+        this.headerBgColor = tableData.headerBgColor || '#e8f0fe';
         this.cellsData = tableData.cells || [];
         this.borderStyle = tableData.borderStyle || 'all';
         this.cellPadding = tableData.cellPadding || '8px 12px';
@@ -57,6 +60,19 @@ export class TableCommand extends BaseCommand {
      * @returns {Promise}
      */
     async doInit() {
+        // Read latest options from registry (for real-time updates from settings panel)
+        if (this.expressionId) {
+            const registryOptions = ExpressionOptionsRegistry.getRawById(this.expressionId);
+            const tableOptions = registryOptions.expressionOptions?.table || {};
+            if (tableOptions.rows !== undefined) this.rowCount = tableOptions.rows;
+            if (tableOptions.cols !== undefined) this.colCount = tableOptions.cols;
+            if (tableOptions.headers !== undefined) this.headersData = tableOptions.headers;
+            if (tableOptions.headerBgColor !== undefined) this.headerBgColor = tableOptions.headerBgColor;
+            if (tableOptions.cells !== undefined) this.cellsData = tableOptions.cells;
+            if (tableOptions.borderStyle !== undefined) this.borderStyle = tableOptions.borderStyle;
+            if (tableOptions.cellPadding !== undefined) this.cellPadding = tableOptions.cellPadding;
+        }
+
         // 1. Build TableItemCollection from table data
         this.tableCollection = TableItemCollection.fromOptions({
             rows: this.rowCount,
@@ -114,6 +130,45 @@ export class TableCommand extends BaseCommand {
      * @returns {Promise}
      */
     async _buildTableDOM() {
+        // Build header row if headers exist
+        const hasHeaders = this.headersData && this.headersData.some(h => h?.content);
+        if (hasHeaders) {
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+
+            for (let c = 0; c < this.colCount; c++) {
+                const th = document.createElement('th');
+                th.style.padding = this.cellPadding;
+                th.style.textAlign = 'center';
+                th.style.verticalAlign = 'middle';
+                th.style.fontWeight = '600';
+                th.style.fontSize = (this.fontSize * 1.1) + 'px';
+                th.style.background = this.headerBgColor;
+                th.style.color = '#1a365d';
+
+                const headerData = this.headersData[c];
+                if (headerData?.content) {
+                    // Create a pseudo-cell object for the adapter
+                    const pseudoCell = {
+                        getContent: () => headerData.content,
+                        content: headerData.content
+                    };
+                    const adapter = new CellAdapter(pseudoCell);
+                    await adapter.render(th, {
+                        fontSize: this.fontSize * 1.1,
+                        color: '#1a365d'
+                    });
+                }
+
+                headerRow.appendChild(th);
+            }
+
+            thead.appendChild(headerRow);
+            this.tableElement.appendChild(thead);
+        }
+
+        // Build body rows
+        const tbody = document.createElement('tbody');
         for (let r = 0; r < this.rowCount; r++) {
             const rowElement = document.createElement('tr');
 
@@ -142,8 +197,9 @@ export class TableCommand extends BaseCommand {
                 rowElement.appendChild(cellElement);
             }
 
-            this.tableElement.appendChild(rowElement);
+            tbody.appendChild(rowElement);
         }
+        this.tableElement.appendChild(tbody);
     }
 
     /**
@@ -155,7 +211,8 @@ export class TableCommand extends BaseCommand {
         const borderStyleType = 'solid';
         const border = `${borderWidth} ${borderStyleType} ${borderColor}`;
 
-        const cells = this.tableElement.querySelectorAll('td');
+        // Select both td and th cells
+        const cells = this.tableElement.querySelectorAll('td, th');
 
         // Reset all borders first
         cells.forEach(cell => {

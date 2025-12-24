@@ -134,6 +134,8 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
     _tabs: ['expression'], // Only show Table options tab (no Style or Animation)
     rows: { type: 'number', default: 2, min: 1, max: 20, label: 'Rows' },
     cols: { type: 'number', default: 2, min: 1, max: 10, label: 'Columns' },
+    headers: { type: 'array', default: null, label: 'Header Row' }, // 1D array of {content}
+    headerBgColor: { type: 'color', default: '#e8f0fe', label: 'Header Background' },
     cells: { type: 'grid', default: null, label: 'Cell Content' }, // 2D array of {content}
     borderStyle: { type: 'select', options: ['all', 'none', 'horizontal', 'vertical', 'outer'], default: 'all', label: 'Border Style' },
     cellPadding: { type: 'text', default: '8px 12px', label: 'Cell Padding' },

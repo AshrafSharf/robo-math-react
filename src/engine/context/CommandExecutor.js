@@ -350,7 +350,7 @@ export class CommandExecutor {
    * @param {Object} styleOptions - Style options {color, fill, strokeWidth}
    * @returns {Promise<boolean>} True if command was found and redrawn
    */
-  async redrawSingle(expressionId, styleOptions) {
+  async redrawSingle(expressionId, styleOptions = {}) {
     const command = this.commands.find(cmd => cmd.getExpressionId() === expressionId);
     if (!command) return false;
 

@@ -85,25 +85,58 @@
 /* Table editor */
 .table-editor {
     border: 1px solid var(--border-color, #ddd);
-    border-radius: 4px;
-    padding: 4px;
+    border-radius: 6px;
+    padding: 12px;
     background: var(--bg-secondary, #f9f9f9);
-    max-height: 200px;
+    max-height: 280px;
     overflow: auto;
+}
+
+/* Header row */
+.table-header-row {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-color, #4a90d9);
+}
+
+.header-input {
+    width: 100%;
+    min-width: 60px;
+    padding: 8px 10px;
+    border: 1px solid var(--accent-color, #4a90d9);
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a365d;
+    transition: all 0.15s ease;
+}
+
+.header-input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.header-input::placeholder {
+    color: #6b8ab8;
+    font-weight: 500;
+    font-size: 12px;
 }
 
 .table-grid {
     display: grid;
-    gap: 2px;
+    gap: 6px;
 }
 
 .cell-input {
     width: 100%;
-    min-width: 60px;
-    padding: 6px 8px;
-    border: 1px solid var(--border-color, #ddd);
-    border-radius: 3px;
-    font-size: 12px;
+    min-width: 80px;
+    padding: 10px 12px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
     background: white;
     transition: border-color 0.15s ease;
 }
@@ -114,13 +147,14 @@
 }
 
 .cell-input::placeholder {
-    color: var(--text-tertiary, #aaa);
-    font-size: 10px;
+    color: #999;
+    font-size: 12px;
+    font-weight: 400;
 }
 
 /* Math cell indicator */
 .cell-input.math-cell {
-    background: linear-gradient(135deg, #f0f7ff 0%, #fff 100%);
+    background: #f8faff;
     border-color: var(--accent-color, #4a90d9);
 }
 
