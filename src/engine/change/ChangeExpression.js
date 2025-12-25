@@ -2,13 +2,16 @@
  * ChangeExpression - Unified animation for scalars, points, lines, vectors
  *
  * Syntax:
- *   change(var, target)         // 2 args: animate from current value to target
- *   change(var, from, to)       // 3 args: animate from explicit value to target
+ *   change(var, target)              // 2 args: hides originals by default
+ *   change(var, target, false)       // keep original shapes visible
+ *   change(var, from, to)            // 3 args: hides originals by default
+ *   change(var, from, to, false)     // keep original shapes visible
  *
  * Examples:
  *   change(A, 10)                              // scalar: current → 10
  *   change(A, 5, 10)                           // scalar: 5 → 10
- *   change(P, point(G, 8, 8))                  // point: current → (8,8)
+ *   change(P, point(G, 8, 8))                  // point: current → (8,8), hides original
+ *   change(P, point(G, 8, 8), false)           // point: current → (8,8), keeps original visible
  *   change(P, point(G, 0, 0), point(G, 8, 8))  // point: (0,0) → (8,8)
  *   change(L, line(G, 0, 0, 5, 5))             // line: current → target
  *   change(V, vector(G, 1, 1, 3, 4))           // vector: current → target
@@ -27,6 +30,24 @@ export class ChangeExpression extends FromToExpression {
         this.subExpressions = subExpressions;
     }
 
+    /**
+     * Check if an expression is a boolean literal (variable named 'true' or 'false')
+     */
+    _isBooleanLiteral(expr) {
+        if (expr && expr.getName && expr.getName() === 'variable') {
+            const name = expr.getVariableName();
+            return name === 'true' || name === 'false';
+        }
+        return false;
+    }
+
+    /**
+     * Get boolean value from a variable reference expression
+     */
+    _getBooleanValue(expr) {
+        return expr.getVariableName() === 'true';
+    }
+
     resolve(context) {
         // Get source variable name and expression
         this.variableName = this.subExpressions[0].getVariableName();
@@ -41,9 +62,21 @@ export class ChangeExpression extends FromToExpression {
             throw new Error(`change(): variable '${this.variableName}' not found in context`);
         }
 
+        // Check if last argument is a boolean (true/false)
+        const lastArg = this.subExpressions[this.subExpressions.length - 1];
+        const hasBoolean = this._isBooleanLiteral(lastArg);
+
+        // Default is true (hide originals), unless explicitly set to false
+        this.hideOriginals = hasBoolean ? this._getBooleanValue(lastArg) : true;
+
+        // Determine effective arg count (excluding boolean if present)
+        const effectiveArgCount = hasBoolean
+            ? this.subExpressions.length - 1
+            : this.subExpressions.length;
+
         // Determine from/to based on argument count
         let fromExprResolved;
-        if (this.subExpressions.length >= 3) {
+        if (effectiveArgCount >= 3) {
             // 3 args: change(var, from, to)
             this.subExpressions[1].resolve(context);
             fromExprResolved = this.subExpressions[1];
@@ -84,6 +117,7 @@ export class ChangeExpression extends FromToExpression {
             this.strategy,
             this.orderedDependents,
             this.context,
+            this.hideOriginals,
             options
         );
     }

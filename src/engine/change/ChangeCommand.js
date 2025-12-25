@@ -7,18 +7,46 @@
 import { FromToCommand } from '../fromTo/FromToCommand.js';
 import { TweenMax } from 'gsap';
 import { ChangeResultCollection } from '../../geom/ChangeResultCollection.js';
+import { ShapeVisibilityAdapter } from '../commands/visibility/ShapeVisibilityAdapter.js';
 
 export class ChangeCommand extends FromToCommand {
     constructor(variableName, sourceExpr, fromValues, toValues, strategy,
-                orderedDependents, context, options = {}) {
+                orderedDependents, context, hideOriginals = true, options = {}) {
         super(variableName, null, null, orderedDependents, context, options);
         this.sourceExpr = sourceExpr;
         this.fromValues = fromValues;
         this.toValues = toValues;
         this.strategy = strategy;
+        this.hideOriginals = hideOriginals;
+    }
+
+    /**
+     * Hide original shapes (source and dependents) using ShapeVisibilityAdapter
+     */
+    _hideOriginalShapes() {
+        if (!this.hideOriginals) return;
+
+        // Hide source shape
+        const sourceShape = this.commandContext.shapeRegistry[this.variableName];
+        if (sourceShape) {
+            ShapeVisibilityAdapter.for(sourceShape).hide();
+        }
+
+        // Hide dependent shapes
+        for (const { label } of this.orderedDependents) {
+            if (label) {
+                const shape = this.commandContext.shapeRegistry[label];
+                if (shape) {
+                    ShapeVisibilityAdapter.for(shape).hide();
+                }
+            }
+        }
     }
 
     async doPlay() {
+        // Hide original shapes at start of animation
+        this._hideOriginalShapes();
+
         // Create animation object with indexed values
         const animData = {};
         this.fromValues.forEach((v, i) => animData[i] = v);
@@ -119,6 +147,9 @@ export class ChangeCommand extends FromToCommand {
     }
 
     async directPlay() {
+        // Hide original shapes
+        this._hideOriginalShapes();
+
         // Instant update to final values
         this.strategy.updateContext(
             this.expressionContext,
@@ -131,6 +162,8 @@ export class ChangeCommand extends FromToCommand {
     }
 
     async playSingle() {
+        // Hide originals on every replay (they may have been shown again)
+        this._hideOriginalShapes();
         return this.doPlay();
     }
 
