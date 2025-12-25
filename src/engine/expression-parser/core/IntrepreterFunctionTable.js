@@ -13,6 +13,7 @@ import { ExtendlineExpression } from '../expressions/ExtendlineExpression.js';
 import { PolarlineExpression } from '../expressions/PolarlineExpression.js';
 import { PLLExpression } from '../expressions/PLLExpression.js';
 import { PerpExpression } from '../expressions/PerpExpression.js';
+import { TangentExpression } from '../expressions/TangentExpression.js';
 import { PolarvectorExpression } from '../expressions/PolarvectorExpression.js';
 import { PolarpointExpression } from '../expressions/PolarpointExpression.js';
 import { ForwardExpression } from '../expressions/ForwardExpression.js';
@@ -302,6 +303,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('polarline', PolarlineExpression);    // line from length and angle
         registerMultiArg('pll', PLLExpression);    // parallel (line or vector based on input)
         registerMultiArg('perp', PerpExpression);  // perpendicular (line or vector based on input)
+        registerMultiArg('tangent', TangentExpression);  // tangent line to circle or plot
 
         // Vector utilities
         registerMultiArg('polarvector', PolarvectorExpression);    // vector from length and angle
