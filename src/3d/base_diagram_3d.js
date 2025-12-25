@@ -326,6 +326,19 @@ export class BaseDiagram3D {
     }
 
     /**
+     * Create a measurement indicator (dimension line) between two points
+     * @param {Object} start - Start position {x, y, z}
+     * @param {Object} end - End position {x, y, z}
+     * @param {string} label - Optional label for the measurement
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Group containing the measurement indicator
+     */
+    measurementIndicator3d(start, end, label = '', color = 0xff0000, options = {}) {
+        throw new Error('measurementIndicator3d() must be implemented by subclass');
+    }
+
+    /**
      * Add a label to the scene
      * @param {Object} position - Position {x, y, z}
      * @param {string} text - Label text

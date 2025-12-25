@@ -11,9 +11,9 @@ import { transformToThreeJS } from './lhs_transform.js';
 export function measurementIndicator(start, end, options = {}) {
     const {
         color = 0xff0000,
-        mainRadius = 0.03,
-        markerRadius = 0.02,
-        markerLength = 0.2,
+        mainRadius = 0.04,
+        markerRadius = 0.04,
+        markerLength = 0.5,
         label = null,
         labelPosition = 'middle', // 'middle', 'start', 'end', or {x, y, z}
         offset = null  // Offset vector to position the indicator parallel to the measurement

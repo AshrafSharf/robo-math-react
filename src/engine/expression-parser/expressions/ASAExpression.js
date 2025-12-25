@@ -12,7 +12,7 @@
  * - angleB: angle at vertex B (in degrees)
  *
  * The third angle C is computed as 180 - angleA - angleB.
- * Side length can be a numeric value or expression (e.g., mag(L) for line length).
+ * Side length can be a numeric value or expression (e.g., distance(L) for line length).
  *
  * Construction:
  * - Vertex A at origin (or basePoint)
@@ -22,7 +22,7 @@
  * Examples:
  *   asa(G, 60, 5, 60)                    // isoceles triangle (60-60-60 = equilateral)
  *   asa(G, 90, 5, 45)                    // 90-45-45 triangle
- *   asa(G, 30, mag(L), 60)               // triangle from line length
+ *   asa(G, 30, distance(L), 60)               // triangle from line length
  *   asa(G, 60, 5, 60, point(G, 2, 3))    // positioned at (2, 3)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';

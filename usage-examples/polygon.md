@@ -104,7 +104,7 @@ pt2 = end(edge)         // End point of edge
 l1 = pll(g1, item(poly1, 1), 2)
 
 // Get edge length
-len = mag(item(poly1, 0))
+len = distance(item(poly1, 0))
 ```
 
 ## Edge Indexing
@@ -149,4 +149,4 @@ Edge 3: (0,3) → (0,0)
 | `item(poly, index)` | Get edge at index |
 | `start(edge)` | Get start point of edge |
 | `end(edge)` | Get end point of edge |
-| `mag(edge)` | Get length of edge |
+| `distance(edge)` | Get length of edge |

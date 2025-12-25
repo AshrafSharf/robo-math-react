@@ -11,7 +11,7 @@
  * - angleA: angle at vertex A (in degrees)
  * - c: side from A to B (opposite vertex C)
  *
- * Side lengths can be numeric values or expressions (e.g., mag(L) for line length).
+ * Side lengths can be numeric values or expressions (e.g., distance(L) for line length).
  *
  * Construction:
  * - Vertex A at origin (or basePoint)
@@ -21,7 +21,7 @@
  * Examples:
  *   sas(G, 4, 90, 3)                    // right triangle with legs 3 and 4
  *   sas(G, 5, 60, 5)                    // isoceles triangle with 60° angle
- *   sas(G, mag(L1), 45, mag(L2))        // triangle from line lengths
+ *   sas(G, distance(L1), 45, distance(L2))        // triangle from line lengths
  *   sas(G, 4, 90, 3, point(G, 2, 3))    // positioned at (2, 3)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';

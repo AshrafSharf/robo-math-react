@@ -2,15 +2,17 @@
  * ItemCommand - Extracts a single item from a collection
  *
  * For text collections: extracts TextItem at command time from shapeRegistry
+ * For polygon collections: creates a NEW LineCommand from edge coordinates
  * For shape collections: the data is already extracted during resolve,
  *                        this command just ensures proper registry handling
  */
 import { BaseCommand } from './BaseCommand.js';
+import { LineCommand } from './LineCommand.js';
 
 export class ItemCommand extends BaseCommand {
     /**
      * @param {Object} options
-     * @param {string} options.collectionType - 'text', 'shape2d', or 'shape3d'
+     * @param {string} options.collectionType - 'text', 'shape2d', 'shape3d', 'polygon'
      * @param {string} options.collectionVariableName - Variable name of the collection
      * @param {number} options.index - Index of the item to get
      * @param {ItemExpression} options.expression - Reference to expression for storing result
@@ -19,6 +21,7 @@ export class ItemCommand extends BaseCommand {
         super();
         this.options = options;
         this.extractedItem = null;
+        this.lineCommand = null;  // For polygon edge access
     }
 
     async doInit() {
@@ -48,22 +51,51 @@ export class ItemCommand extends BaseCommand {
             }
 
             this.commandResult = this.extractedItem;
+        } else if (collectionType === 'polygon') {
+            // Polygon edge access: create a NEW line from edge coordinates
+            const edgeData = expression.extractedData;
+            if (!edgeData) {
+                console.warn(`ItemCommand: No edge data found for polygon item at index ${index}`);
+                return;
+            }
+
+            // Create a new LineCommand for this edge
+            this.lineCommand = new LineCommand(
+                expression.graphExpression,
+                edgeData.start,
+                edgeData.end,
+                {}
+            );
+            this.lineCommand.diagram2d = this.diagram2d;
+            await this.lineCommand.init(this.commandContext);
+            this.commandResult = this.lineCommand.commandResult;
         } else {
-            // Shape collections (translate, rotate, scale, polygon, change)
+            // Shape collections (translate, rotate, scale, change)
             const collection = this.commandContext.shapeRegistry[collectionVariableName];
-            this.commandResult = collection.get(index);
+            if (collection && typeof collection.get === 'function') {
+                this.commandResult = collection.get(index);
+            }
         }
     }
 
     async playSingle() {
+        if (this.lineCommand) {
+            return this.lineCommand.playSingle();
+        }
         return Promise.resolve();
     }
 
     doDirectPlay() {
-        // Nothing to do - shape already extracted in doInit
+        if (this.lineCommand) {
+            this.lineCommand.directPlay();
+        }
+        // For text/shape collections - item already extracted in doInit
     }
 
     getLabelPosition() {
+        if (this.lineCommand) {
+            return this.lineCommand.getLabelPosition();
+        }
         if (this.extractedItem) {
             // For TextItem
             const bounds = this.extractedItem.getBounds?.();
@@ -75,7 +107,11 @@ export class ItemCommand extends BaseCommand {
     }
 
     clear() {
+        if (this.lineCommand) {
+            this.lineCommand.clear();
+        }
         this.extractedItem = null;
+        this.lineCommand = null;
         this.commandResult = null;
         this.isInitialized = false;
     }

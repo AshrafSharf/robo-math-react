@@ -1,28 +1,28 @@
 /**
- * MagExpression - calculates magnitude/length or distance between points
+ * DistanceExpression - calculates distance/magnitude between points or length of shapes
  *
  * Syntax:
- *   mag(line)        - length of a line/vector/arc
- *   mag(p1, p2)      - distance between two points
- *   mag(x, y)        - magnitude of a vector (x, y)
+ *   distance(line)        - length of a line/vector/arc
+ *   distance(p1, p2)      - distance between two points
+ *   distance(x, y)        - magnitude of a vector (x, y)
  *
  * Returns a single numeric value. Cannot be played standalone.
  *
  * Examples:
  *   L = line(g, 0, 0, 3, 4)
- *   mag(L)                    // returns 5 (length of line)
+ *   distance(L)                    // returns 5 (length of line)
  *   V = vector(g, 0, 0, 3, 4)
- *   mag(V)                    // returns 5 (length of vector)
+ *   distance(V)                    // returns 5 (length of vector)
  *   A = point(g, 0, 0)
  *   B = point(g, 6, 8)
- *   mag(A, B)                 // returns 10 (distance)
- *   mag(3, 4)                 // returns 5 (vector magnitude)
+ *   distance(A, B)                 // returns 10 (distance)
+ *   distance(3, 4)                 // returns 5 (vector magnitude)
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { GeomUtil } from '../../../geom/GeomUtil.js';
 
-export class MagExpression extends AbstractArithmeticExpression {
-    static NAME = 'mag';
+export class DistanceExpression extends AbstractArithmeticExpression {
+    static NAME = 'distance';
 
     constructor(subExpressions) {
         super();
@@ -32,7 +32,7 @@ export class MagExpression extends AbstractArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 1) {
-            this.dispatchError('mag() requires at least one argument');
+            this.dispatchError('distance() requires at least one argument');
         }
 
         // Resolve all subexpressions first
@@ -41,7 +41,7 @@ export class MagExpression extends AbstractArithmeticExpression {
         }
 
         if (this.subExpressions.length === 1) {
-            // mag(line/vector) - get length of shape
+            // distance(line/vector) - get length of shape
             const sourceExpr = this._getResolvedExpression(context, this.subExpressions[0]);
             const values = sourceExpr.getVariableAtomicValues();
 
@@ -61,11 +61,11 @@ export class MagExpression extends AbstractArithmeticExpression {
                 // Just a number, return absolute value
                 this.value = Math.abs(values[0]);
             } else {
-                this.dispatchError('mag() requires an expression with coordinates');
+                this.dispatchError('distance() requires an expression with coordinates');
             }
 
         } else if (this.subExpressions.length >= 2) {
-            // mag(p1, p2) or mag(x, y)
+            // distance(p1, p2) or distance(x, y)
             const arg1 = this._getResolvedExpression(context, this.subExpressions[0]);
             const arg2 = this._getResolvedExpression(context, this.subExpressions[1]);
 
@@ -84,13 +84,13 @@ export class MagExpression extends AbstractArithmeticExpression {
                 const y = values2[0];
                 this.value = Math.sqrt(x * x + y * y);
             } else {
-                this.dispatchError('mag() arguments must be points or numbers');
+                this.dispatchError('distance() arguments must be points or numbers');
             }
         }
     }
 
     getName() {
-        return MagExpression.NAME;
+        return DistanceExpression.NAME;
     }
 
     getVariableAtomicValues() {
@@ -102,10 +102,10 @@ export class MagExpression extends AbstractArithmeticExpression {
     }
 
     getFriendlyToStr() {
-        return `mag(${this.value})`;
+        return `distance(${this.value})`;
     }
 
-    // mag() doesn't create a command - it's just a numeric value
+    // distance() doesn't create a command - it's just a numeric value
     toCommand() {
         return null;
     }

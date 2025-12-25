@@ -51,7 +51,7 @@ import { EndPointExpression } from '../expressions/EndPointExpression.js';
 import { MidExpression } from '../expressions/MidExpression.js';
 import { PointAtRatioExpression } from '../expressions/PointAtRatioExpression.js';
 import { A2PExpression } from '../expressions/A2PExpression.js';
-import { MagExpression } from '../expressions/MagExpression.js';
+import { DistanceExpression } from '../expressions/DistanceExpression.js';
 import { NormExpression } from '../expressions/NormExpression.js';
 import { DotExpression } from '../expressions/DotExpression.js';
 import { CrossExpression } from '../expressions/CrossExpression.js';
@@ -106,6 +106,7 @@ import { Angle3DExpression } from '../expressions/3d/Angle3DExpression.js';
 import { Angle3D2Expression } from '../expressions/3d/Angle3D2Expression.js';
 import { RightAngle3DExpression } from '../expressions/3d/RightAngle3DExpression.js';
 import { Sector3DExpression } from '../expressions/3d/Sector3DExpression.js';
+import { Measure3DExpression } from '../expressions/3d/Measure3DExpression.js';
 import { Plot3DExpression } from '../expressions/3d/Plot3DExpression.js';
 import { Para3DExpression } from '../expressions/3d/Para3DExpression.js';
 import { Curve3DExpression } from '../expressions/3d/Curve3DExpression.js';
@@ -256,6 +257,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('angle3d2', Angle3D2Expression);         // reflex angle arc
         registerMultiArg('rightangle3d', RightAngle3DExpression); // right angle marker (90 degree square)
         registerMultiArg('sector3d', Sector3DExpression);         // filled pie-slice sector
+        registerMultiArg('measure3d', Measure3DExpression);       // 3D measurement indicator with label
 
         // 3D plotting expressions
         registerMultiArg('plot3d', Plot3DExpression);              // surface plot z = f(x, y)
@@ -283,7 +285,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('mflow', MflowExpression);
         registerMultiArg('mcancel', McancelExpression);
         registerMultiArg('marrow', MarrowExpression);
-        registerMultiArg('dm', DistanceMarkerExpression);
+        registerMultiArg('measure', DistanceMarkerExpression);  // 2D measurement indicator (consistent with measure3d)
         registerMultiArg('seq', SequenceExpression);
         registerMultiArg('para', ParallelExpression);
         registerMultiArg('ref', RefExpression);
@@ -339,7 +341,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('a2p', A2PExpression);     // angle to point (point on circle at angle)
 
         // Measurement utilities
-        registerMultiArg('mag', MagExpression);     // magnitude/distance
+        registerMultiArg('distance', DistanceExpression);     // distance/magnitude
         registerMultiArg('norm', NormExpression);   // normalized direction
         registerMultiArg('dot', DotExpression);     // dot product (2D/3D)
         registerMultiArg('cross', CrossExpression); // cross product (2D returns scalar, 3D returns vector)

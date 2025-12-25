@@ -85,7 +85,7 @@ export const GEOMETRY_FUNCTIONS = {
     description: 'Triangle from 3 side lengths (Side-Side-Side)',
     altSignatures: [
       'T = sss(G, 3, 4, 5)',
-      'T = sss(G, mag(L1), mag(L2), mag(L3))',
+      'T = sss(G, distance(L1), distance(L2), distance(L3))',
       'T = sss(G, 3, 4, 5, basePoint)',
       'T = sss(G, 3, 4, 5, basePoint, rotation)'
     ],
@@ -99,7 +99,7 @@ export const GEOMETRY_FUNCTIONS = {
     altSignatures: [
       'T = sas(G, 4, 90, 3)',
       'T = sas(G, 5, 60, 5)',
-      'T = sas(G, mag(L1), 45, mag(L2))'
+      'T = sas(G, distance(L1), 45, distance(L2))'
     ],
     category: 'Geometry'
   },
@@ -111,7 +111,7 @@ export const GEOMETRY_FUNCTIONS = {
     altSignatures: [
       'T = asa(G, 60, 5, 60)',
       'T = asa(G, 90, 5, 45)',
-      'T = asa(G, 30, mag(L), 60)'
+      'T = asa(G, 30, distance(L), 60)'
     ],
     category: 'Geometry'
   },
@@ -123,7 +123,19 @@ export const GEOMETRY_FUNCTIONS = {
     altSignatures: [
       'T = aas(G, 30, 60, 5)',
       'T = aas(G, 45, 45, 5)',
-      'T = aas(G, 30, 60, mag(L))'
+      'T = aas(G, 30, 60, distance(L))'
+    ],
+    category: 'Geometry'
+  },
+  measure: {
+    name: 'measure',
+    signature: '(g, p1, p2, label)',
+    args: ['g: Graph', 'p1: Point', 'p2: Point', 'label: string'],
+    description: 'Distance marker with perpendicular ticks and label',
+    altSignatures: [
+      'measure(G, A, B, "5 units")',
+      'measure(G, 0, 0, 5, 0, "distance")',
+      'measure(G, A, B, "d", textOffset, markerOffset)'
     ],
     category: 'Geometry'
   }
@@ -180,6 +192,18 @@ export const GEOMETRY_3D_FUNCTIONS = {
       'polygon3d(g, p1, p2, p3)',
       'polygon3d(g, p1, p2, p3, p4)',
       'polygon3d(g, p1, p2, p3, p4, p5, ...)'
+    ],
+    category: '3D Geometry'
+  },
+  measure3d: {
+    name: 'measure3d',
+    signature: '(g, p1, p2, label)',
+    args: ['g: Graph3D', 'p1: Point3D', 'p2: Point3D', 'label: string'],
+    description: '3D distance marker with perpendicular ticks and label',
+    altSignatures: [
+      'measure3d(G, A, B, "5 units")',
+      'measure3d(G, 0, 0, 0, 5, 0, 0, "distance")',
+      'measure3d(G, point3d(G, 0, 0, 0), point3d(G, 1, 2, 3), "d")'
     ],
     category: '3D Geometry'
   }

@@ -61,6 +61,6 @@ export class StringUtil {
     return text
       .split('\n')
       .map(line => line.trim())
-      .filter(line => line.length > 0 && !line.startsWith('//'));
+      .filter(line => line.length > 0 && !line.startsWith('//') && !line.startsWith('#'));
   }
 }

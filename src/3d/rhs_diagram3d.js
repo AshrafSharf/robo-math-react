@@ -976,6 +976,39 @@ export class RHS3DDiagram extends BaseDiagram3D {
     }
 
     /**
+     * Create a measurement indicator (dimension line) between two points
+     * @param {Object} start - Start position {x, y, z}
+     * @param {Object} end - End position {x, y, z}
+     * @param {string} label - Optional label for the measurement
+     * @param {number|string} color - Color (hex or string)
+     * @param {Object} options - Additional options
+     * @returns {Object} Group containing the measurement indicator
+     */
+    measurementIndicator3d(start, end, label = '', color = 0xff0000, options = {}) {
+        const indicator = native.measurementIndicator(start, end, {
+            color: this.parseColor(color),
+            mainRadius: options.mainRadius || 0.03,
+            markerRadius: options.markerRadius || 0.02,
+            markerLength: options.markerLength || 0.2,
+            ...options
+        });
+
+        // Add to scene
+        this.scene.add(indicator);
+        this.objects.push(indicator);
+
+        // Add label if provided
+        if (label) {
+            const midpoint = this._midpoint(start, end);
+            this._addLabel(indicator, midpoint, label, {
+                labelOffset: options.labelOffset || { x: 0, y: 0.3, z: 0 }
+            });
+        }
+
+        return indicator;
+    }
+
+    /**
      * Internal label creation (doesn't add to objects array)
      * @private
      */

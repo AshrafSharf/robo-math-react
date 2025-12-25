@@ -68,9 +68,9 @@ tri6 = asa(g1, 90, 5, 45)            // 90-45-45 triangle
 tri7 = aas(g1, 30, 60, 5)            // 30-60-90 triangle
 tri8 = aas(g1, 45, 45, 5)            // isoceles right triangle
 
-// Using mag() for dynamic side lengths
+// Using distance() for dynamic side lengths
 l1 = line(g1, 0, 0, 4, 3)
-tri9 = sss(g1, mag(l1), 4, 5)        // side length from line
+tri9 = sss(g1, distance(l1), 4, 5)        // side length from line
 
 // Positioning triangles
 pt1 = point(g1, 5, 2)
@@ -87,7 +87,7 @@ tri11 = sss(g1, 3, 4, 5, pt1, 45)    // rotated 45 degrees
 | `sas(g1, 4, 90, 3)` | Right angle between sides 3 and 4 |
 | `asa(g1, 60, 5, 60)` | Two 60° angles make it equilateral |
 | `aas(g1, 30, 60, 5)` | 30-60-90 special triangle |
-| `mag(l1)` | Use line length as side |
+| `distance(l1)` | Use line length as side |
 | `sss(g1, 3, 4, 5, pt1)` | Position vertex A at point pt1 |
 | `sss(g1, 3, 4, 5, pt1, 45)` | Rotate triangle 45° around A |
 
@@ -202,7 +202,7 @@ l1 = pll(g1, item(tri1, 1), 2)
 | Function | Description |
 |----------|-------------|
 | `polygon(g, pt1, pt2, pt3)` | Triangle from 3 points |
-| `mag(shape)` | Get length of line/vector |
+| `distance(shape)` | Get length of line/vector |
 | `start(shape)` | Get start point of edge/shape |
 | `end(shape)` | Get end point of edge/shape |
 | `pointatratio(g, tri, r)` | Point along triangle perimeter |

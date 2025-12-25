@@ -3,7 +3,7 @@
  * Fade-in animation for 3D solid primitives (sphere, cylinder, cube, etc.)
  */
 
-import { TweenMax, TimelineMax } from 'gsap';
+import { TweenMax, TimelineMax, Power2, Back } from 'gsap';
 
 /**
  * Fade in a solid mesh from opacity 0 to target opacity
@@ -19,7 +19,7 @@ export function fadeInSolid(mesh, options = {}) {
     const {
         duration = 0.5,
         targetOpacity = 1,
-        ease = "power2.inOut",
+        ease = Power2.easeInOut,
         onComplete
     } = options;
 
@@ -58,9 +58,9 @@ export function fadeInSolid(mesh, options = {}) {
  */
 export function fadeInGroup(group, options = {}) {
     const {
-        duration = 0.5,
+        duration = 2,
         targetOpacity = 1,
-        ease = "power2.inOut",
+        ease = Power2.easeInOut,
         onComplete
     } = options;
 
@@ -108,7 +108,7 @@ export function fadeInGroup(group, options = {}) {
 export function scaleInSolid(mesh, options = {}) {
     const {
         duration = 0.5,
-        ease = "back.out(1.7)",
+        ease = Back.easeOut.config(1.7),
         onComplete
     } = options;
 

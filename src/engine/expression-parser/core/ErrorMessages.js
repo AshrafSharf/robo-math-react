@@ -568,6 +568,22 @@ export const dm_error_messages = {
     `dm() got ${count} coordinates.\nNeed exactly 4: x1, y1, x2, y2`,
 };
 
+// ============= Measure3D Error Messages =============
+
+export const measure3d_error_messages = {
+  MISSING_ARGS: () =>
+    `measure3d() needs graph, coords, text.\nUsage: measure3d(g, p1, p2, "text")`,
+
+  GRAPH_REQUIRED: () =>
+    `measure3d() needs a 3D graph.\nFirst argument must be g3d.`,
+
+  TEXT_REQUIRED: () =>
+    `measure3d() needs a text label.\nUse quoted string: "text"`,
+
+  WRONG_COORD_COUNT: (count) =>
+    `measure3d() got ${count} coordinates.\nNeed exactly 6: x1, y1, z1, x2, y2, z2`,
+};
+
 // ============= Assignment Error Messages =============
 
 export const assignment_error_messages = {
@@ -630,6 +646,7 @@ const messagesByType = {
   scale: scale_error_messages,
   label: label_error_messages,
   dm: dm_error_messages,
+  measure3d: measure3d_error_messages,
   assignment: assignment_error_messages,
 };
 

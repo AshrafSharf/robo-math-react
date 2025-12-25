@@ -3,12 +3,12 @@
  */
 
 export const UTILITY_FUNCTIONS = {
-  mag: {
-    name: 'mag',
+  distance: {
+    name: 'distance',
     signature: '(shape)',
     args: ['shape: Line|Vector|Point'],
-    description: 'Magnitude/length of shape or distance from origin',
-    altSignatures: ['mag(line)', 'mag(vector)', 'mag(point)', 'mag(p1, p2)'],
+    description: 'Distance/length of shape or distance between points',
+    altSignatures: ['distance(line)', 'distance(vector)', 'distance(point)', 'distance(p1, p2)'],
     category: 'Utilities'
   },
   map: {

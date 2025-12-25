@@ -6,7 +6,7 @@
  *   sss(graph, a, b, c, basePoint)         - triangle with first vertex at basePoint
  *   sss(graph, a, b, c, basePoint, angle)  - triangle rotated by angle (degrees)
  *
- * Side lengths can be numeric values or expressions (e.g., mag(L) for line length).
+ * Side lengths can be numeric values or expressions (e.g., distance(L) for line length).
  * Sides a, b, c are opposite to vertices A, B, C respectively.
  * - Side 'a' connects B to C (opposite vertex A)
  * - Side 'b' connects A to C (opposite vertex B)
@@ -19,7 +19,7 @@
  *
  * Examples:
  *   sss(G, 3, 4, 5)                    // 3-4-5 right triangle at origin
- *   sss(G, mag(L1), mag(L2), mag(L3))  // triangle from line lengths
+ *   sss(G, distance(L1), distance(L2), distance(L3))  // triangle from line lengths
  *   sss(G, 5, 5, 5)                    // equilateral triangle
  *   sss(G, 3, 4, 5, point(G, 2, 3))    // positioned at (2, 3)
  *   sss(G, 3, 4, 5, O, 45)             // rotated 45 degrees

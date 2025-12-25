@@ -12,7 +12,7 @@
  * - a: side opposite to angle A (from B to C)
  *
  * The third angle C is computed as 180 - angleA - angleB.
- * Side length can be a numeric value or expression (e.g., mag(L) for line length).
+ * Side length can be a numeric value or expression (e.g., distance(L) for line length).
  *
  * Construction:
  * - Vertex A at origin (or basePoint)
@@ -22,7 +22,7 @@
  * Examples:
  *   aas(G, 30, 60, 5)                    // 30-60-90 triangle with side a=5
  *   aas(G, 45, 45, 5)                    // isoceles right triangle
- *   aas(G, 30, 60, mag(L))               // triangle from line length
+ *   aas(G, 30, 60, distance(L))               // triangle from line length
  *   aas(G, 30, 60, 5, point(G, 2, 3))    // positioned at (2, 3)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';

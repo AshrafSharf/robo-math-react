@@ -29,16 +29,28 @@ export class ParallelExpression extends AbstractNonArithmeticExpression {
         this.commandNames = [];
         this.commandCreators = [];
 
+        // Command-creating expression types that should NOT be treated as variable references
+        // even though they may have variableName set (e.g., change sets variableName to target var)
+        const COMMAND_CREATOR_TYPES = ['change', 'translate', 'rotate', 'scale', 'line', 'circle',
+            'point', 'vector', 'polygon', 'plot', 'arc', 'angle', 'label', 'mtext'];
+
         for (const subExpr of this.subExpressions) {
             subExpr.resolve(context);
 
-            // Check if it's a variable reference
-            if (subExpr.variableName) {
+            const exprName = subExpr.getName?.();
+            const isCommandCreator = COMMAND_CREATOR_TYPES.includes(exprName);
+
+            // Command-creating expressions go to commandCreators
+            if (isCommandCreator && typeof subExpr.toCommand === 'function') {
+                this.commandCreators.push(subExpr);
+            }
+            // Variable references go to commandNames for replay
+            else if (subExpr.variableName) {
                 this.commandNames.push(subExpr.variableName);
-            } else if (subExpr.getVariableName) {
+            } else if (typeof subExpr.getVariableName === 'function') {
                 this.commandNames.push(subExpr.getVariableName());
             } else if (typeof subExpr.toCommand === 'function') {
-                // It's an expression that can create a command
+                // Fallback: any other expression with toCommand
                 this.commandCreators.push(subExpr);
             }
         }

@@ -33,12 +33,7 @@ pt3 = point(g3, -2, 2)
 l2 = line(g3, pt2, pt3)
 c1 = circle(g3, -3, 0, 1)
 tri1 = polygon(g3, -5, -2, -3, -2, -4, -1)
-para(
-  translate(g3, pt2, 6, 0),
-  translate(g3, l2, 6, 0),
-  translate(g3, c1, 6, 0),
-  translate(g3, tri1, 6, 0)
-)
+para(translate(g3, pt2, 6, 0),translate(g3, l2, 6, 0),translate(g3, c1, 6, 0), translate(g3, tri1,2,4))
 ```
 
 ## Comments
@@ -69,3 +64,12 @@ para(
 - `fadein` - Fade in animation
 - `rotate` - Rotation effect
 - `translate` - Translation effect
+
+
+
+g = g2d(0, 0, 35, 35)
+a = -2
+b = 3.14
+p = plot(g, "sin(x)")
+ar = areaunder(g, p, a, b, "blue", 0.3)
+para(change(b, 6.28), change(a, 4))
