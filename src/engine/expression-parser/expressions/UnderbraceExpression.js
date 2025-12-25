@@ -1,18 +1,18 @@
 /**
- * TopWriteExpression - Draws annotation text above a TextItem with overbrace
+ * UnderbraceExpression - Draws annotation text below a TextItem with underbrace
  *
  * Syntax:
- *   topw(T, "annotation")           - Draw annotation above textItem T
- *   topw(T, "annotation", buffer)   - With custom vertical buffer
+ *   underbrace(T, "annotation")           - Draw annotation below textItem T
+ *   underbrace(T, "annotation", buffer)   - With custom vertical buffer
  *
- * Creates a MathTextComponent with \overbrace{\phantom{\hspace{W}}}^{annotation}
+ * Creates a MathTextComponent with \underbrace{\phantom{\hspace{W}}}_{annotation}
  * positioned so the phantom aligns with the textItem.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { TopWriteCommand } from '../../commands/TopWriteCommand.js';
+import { UnderbraceCommand } from '../../commands/UnderbraceCommand.js';
 
-export class TopWriteExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'topw';
+export class UnderbraceExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'underbrace';
 
     constructor(subExpressions) {
         super();
@@ -25,7 +25,7 @@ export class TopWriteExpression extends AbstractNonArithmeticExpression {
     resolve(context) {
         // Arg 0: TextItem variable reference (required)
         if (this.subExpressions.length < 2) {
-            this.dispatchError('topw() requires at least 2 arguments: topw(T, "annotation")');
+            this.dispatchError('underbrace() requires at least 2 arguments: underbrace(T, "annotation")');
         }
 
         // First arg: textItem variable
@@ -33,7 +33,7 @@ export class TopWriteExpression extends AbstractNonArithmeticExpression {
         targetExpr.resolve(context);
 
         if (!targetExpr.variableName) {
-            this.dispatchError('topw() first argument must be a TextItem variable');
+            this.dispatchError('underbrace() first argument must be a TextItem variable');
         }
         this.textItemVariableName = targetExpr.variableName;
 
@@ -42,7 +42,7 @@ export class TopWriteExpression extends AbstractNonArithmeticExpression {
         annotationExpr.resolve(context);
         const resolvedAnnotation = this._getResolvedExpression(context, annotationExpr);
         if (!resolvedAnnotation || resolvedAnnotation.getName() !== 'quotedstring') {
-            this.dispatchError('topw() second argument must be a quoted string (annotation text)');
+            this.dispatchError('underbrace() second argument must be a quoted string (annotation text)');
         }
         this.annotationText = resolvedAnnotation.getStringValue();
 
@@ -58,7 +58,7 @@ export class TopWriteExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return TopWriteExpression.NAME;
+        return UnderbraceExpression.NAME;
     }
 
     getVariableAtomicValues() {
@@ -66,7 +66,7 @@ export class TopWriteExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new TopWriteCommand({
+        return new UnderbraceCommand({
             textItemVariableName: this.textItemVariableName,
             annotationText: this.annotationText,
             buffer: this.buffer

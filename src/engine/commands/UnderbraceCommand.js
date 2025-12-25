@@ -1,5 +1,5 @@
 /**
- * BottomWriteCommand - Draws annotation text below a TextItem with underbrace
+ * UnderbraceCommand - Draws annotation text below a TextItem with underbrace
  *
  * Creates a MathTextComponent with \underbrace{\phantom{\hspace{W}}}_{annotation}
  * positioned so the phantom aligns with the textItem.
@@ -14,7 +14,7 @@ import { MathTextComponent } from '../../mathtext/components/math-text-component
 import { WriteEffect } from '../../mathtext/effects/write-effect.js';
 import { MathTextPositionUtil } from '../../mathtext/utils/math-text-position-util.js';
 
-export class BottomWriteCommand extends BaseCommand {
+export class UnderbraceCommand extends BaseCommand {
     constructor(options = {}) {
         super();
         this.options = options;
@@ -25,21 +25,21 @@ export class BottomWriteCommand extends BaseCommand {
         // 1. Get textItem from registry
         const textItemOrCollection = this.commandContext.shapeRegistry[this.options.textItemVariableName];
         if (!textItemOrCollection) {
-            console.warn(`BottomWriteCommand: "${this.options.textItemVariableName}" not found in registry`);
+            console.warn(`UnderbraceCommand: "${this.options.textItemVariableName}" not found in registry`);
             return;
         }
 
         // Handle TextItemCollection (get first item) or single TextItem
         const textItem = textItemOrCollection.get ? textItemOrCollection.get(0) : textItemOrCollection;
         if (!textItem) {
-            console.warn('BottomWriteCommand: No TextItem found');
+            console.warn('UnderbraceCommand: No TextItem found');
             return;
         }
 
         // 2. Get target bounds
         const targetBounds = textItem.getCanvasBounds();
         if (!targetBounds) {
-            console.warn('BottomWriteCommand: Could not get TextItem bounds');
+            console.warn('UnderbraceCommand: Could not get TextItem bounds');
             return;
         }
 

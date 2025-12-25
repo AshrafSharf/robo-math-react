@@ -150,6 +150,30 @@ export const GRAPH_FUNCTIONS = {
     ],
     category: 'Graph'
   },
+  overbrace: {
+    name: 'overbrace',
+    signature: '(textItem, "annotation")',
+    args: ['textItem: TextItem', 'annotation: string'],
+    description: 'Add annotation with overbrace above text',
+    altSignatures: [
+      'overbrace(select(M, "x"), "variable")',
+      'overbrace(S, "numerator")',
+      'overbrace(S, "first term", 5)'
+    ],
+    category: 'Graph'
+  },
+  underbrace: {
+    name: 'underbrace',
+    signature: '(textItem, "annotation")',
+    args: ['textItem: TextItem', 'annotation: string'],
+    description: 'Add annotation with underbrace below text',
+    altSignatures: [
+      'underbrace(select(M, "x"), "variable")',
+      'underbrace(S, "denominator")',
+      'underbrace(S, "last term", 5)'
+    ],
+    category: 'Graph'
+  },
   table: {
     name: 'table',
     signature: '(row, col)',

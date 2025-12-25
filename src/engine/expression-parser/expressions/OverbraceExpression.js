@@ -1,18 +1,18 @@
 /**
- * BottomWriteExpression - Draws annotation text below a TextItem with underbrace
+ * OverbraceExpression - Draws annotation text above a TextItem with overbrace
  *
  * Syntax:
- *   bottomw(T, "annotation")           - Draw annotation below textItem T
- *   bottomw(T, "annotation", buffer)   - With custom vertical buffer
+ *   overbrace(T, "annotation")           - Draw annotation above textItem T
+ *   overbrace(T, "annotation", buffer)   - With custom vertical buffer
  *
- * Creates a MathTextComponent with \underbrace{\phantom{\hspace{W}}}_{annotation}
+ * Creates a MathTextComponent with \overbrace{\phantom{\hspace{W}}}^{annotation}
  * positioned so the phantom aligns with the textItem.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { BottomWriteCommand } from '../../commands/BottomWriteCommand.js';
+import { OverbraceCommand } from '../../commands/OverbraceCommand.js';
 
-export class BottomWriteExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'bottomw';
+export class OverbraceExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'overbrace';
 
     constructor(subExpressions) {
         super();
@@ -25,7 +25,7 @@ export class BottomWriteExpression extends AbstractNonArithmeticExpression {
     resolve(context) {
         // Arg 0: TextItem variable reference (required)
         if (this.subExpressions.length < 2) {
-            this.dispatchError('bottomw() requires at least 2 arguments: bottomw(T, "annotation")');
+            this.dispatchError('overbrace() requires at least 2 arguments: overbrace(T, "annotation")');
         }
 
         // First arg: textItem variable
@@ -33,7 +33,7 @@ export class BottomWriteExpression extends AbstractNonArithmeticExpression {
         targetExpr.resolve(context);
 
         if (!targetExpr.variableName) {
-            this.dispatchError('bottomw() first argument must be a TextItem variable');
+            this.dispatchError('overbrace() first argument must be a TextItem variable');
         }
         this.textItemVariableName = targetExpr.variableName;
 
@@ -42,7 +42,7 @@ export class BottomWriteExpression extends AbstractNonArithmeticExpression {
         annotationExpr.resolve(context);
         const resolvedAnnotation = this._getResolvedExpression(context, annotationExpr);
         if (!resolvedAnnotation || resolvedAnnotation.getName() !== 'quotedstring') {
-            this.dispatchError('bottomw() second argument must be a quoted string (annotation text)');
+            this.dispatchError('overbrace() second argument must be a quoted string (annotation text)');
         }
         this.annotationText = resolvedAnnotation.getStringValue();
 
@@ -58,7 +58,7 @@ export class BottomWriteExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return BottomWriteExpression.NAME;
+        return OverbraceExpression.NAME;
     }
 
     getVariableAtomicValues() {
@@ -66,7 +66,7 @@ export class BottomWriteExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new BottomWriteCommand({
+        return new OverbraceCommand({
             textItemVariableName: this.textItemVariableName,
             annotationText: this.annotationText,
             buffer: this.buffer

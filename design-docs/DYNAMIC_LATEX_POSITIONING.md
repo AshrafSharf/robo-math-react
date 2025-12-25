@@ -73,15 +73,15 @@ mathComponent.setCanvasPosition(position.x, position.y);
 
 ## Use Cases
 
-### TopWriteCommand / BottomWriteCommand
+### OverbraceCommand / UnderbraceCommand
 
 Adds overbrace/underbrace annotations to selected math text:
 
 ```
 M = write("\frac{a+b}{c}")
 T = subonly(M, "a+b")
-topw(T, "numerator")      // Draws overbrace with "numerator" above "a+b"
-bottomw(T, "denominator") // Draws underbrace with "denominator" below
+overbrace(T, "numerator")      // Draws overbrace with "numerator" above "a+b"
+underbrace(T, "denominator") // Draws underbrace with "denominator" below
 ```
 
 ### CancelCommand

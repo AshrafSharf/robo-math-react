@@ -95,8 +95,8 @@ sel1 = select(m1, "x^2")
 lbl1 = "squared"
 arrow(sel1, "bl", "S", 60, lbl1, 70, 5)
 
-# Or add topwrite annotation
-topw(sel1, "numerator")
+# Or add overbrace annotation
+overbrace(sel1, "numerator")
 
 # Or add cancel line
 cancel(sel1, "1", "u")

@@ -2,11 +2,11 @@
  * Plane3D expression - represents a 3D plane
  *
  * Syntax options:
- *   plane3d(g, point, normal)       - point on plane + normal vector
- *   plane3d(g, p1, p2, p3)          - three points on the plane
- *   plane3d(g, a, b, c, d)          - equation coefficients ax + by + cz + d = 0 (numbers or variables)
- *   plane3d(g, v1, v2, point)       - two spanning vectors + point on plane
- *   plane3d(g, "x + 2y - z = 5")    - equation string (mathjs parsed, supports variables)
+ *   plane3d(g, nx, ny, nz, ox, oy, oz)  - normal direction + origin point (6 numbers)
+ *   plane3d(g, normal, point)           - normal vector + point on plane
+ *   plane3d(g, p1, p2, p3)              - three points on the plane
+ *   plane3d(g, v1, v2, point)           - two spanning vectors + point on plane
+ *   plane3d(g, "x + 2y - z = 5")        - equation string (mathjs parsed, supports variables)
  */
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
 import { Plane3DCommand } from '../../../commands/3d/Plane3DCommand.js';
@@ -70,33 +70,34 @@ export class Plane3DExpression extends AbstractNonArithmeticExpression {
             return 'numeric';
         });
 
-        const numericArgs = args.filter(a => geomTypes[args.indexOf(a)] === 'numeric');
-
-        // Case: 4 numbers → equation coefficients (a, b, c, d)
-        if (args.length === 4 && geomTypes.every(t => t === 'numeric')) {
+        // Case: 6 numbers → normal direction (nx, ny, nz) + origin point (ox, oy, oz)
+        if (args.length === 6 && geomTypes.every(t => t === 'numeric')) {
             const values = [];
             for (const arg of args) {
                 const atomicVals = arg.getVariableAtomicValues();
                 values.push(...atomicVals);
             }
-            if (values.length === 4) {
-                this._fromEquation(values[0], values[1], values[2], values[3]);
+            if (values.length === 6) {
+                this._fromNormalAndOrigin(
+                    { x: values[0], y: values[1], z: values[2] },  // normal
+                    { x: values[3], y: values[4], z: values[5] }   // origin
+                );
                 return;
             }
         }
 
-        // Case: point3d + vector3d → point + normal
+        // Case: vector3d + point3d → normal + point (consistent with 6-number syntax)
         if (args.length === 2) {
             const t0 = geomTypes[0];
             const t1 = geomTypes[1];
 
-            if (t0 === 'point3d' && t1 === 'vector3d') {
-                this._fromPointAndNormal(args[0], args[1]);
+            if (t0 === 'vector3d' && t1 === 'point3d') {
+                this._fromNormalAndPoint(args[0], args[1]);
                 return;
             }
-            if (t0 === 'vector3d' && t1 === 'point3d') {
-                // normal, point (alternative order)
-                this._fromPointAndNormal(args[1], args[0]);
+            if (t0 === 'point3d' && t1 === 'vector3d') {
+                // Allow reverse order for convenience, but normal first is preferred
+                this._fromNormalAndPoint(args[1], args[0]);
                 return;
             }
         }
@@ -118,9 +119,6 @@ export class Plane3DExpression extends AbstractNonArithmeticExpression {
                 return;
             }
         }
-
-        // Case: 6 numbers → might be two points (x1,y1,z1, x2,y2,z2) - treat as line/plane?
-        // For now, not supported - fall through to error
 
         this.dispatchError(plane3d_error_messages.INVALID_SYNTAX());
     }
@@ -180,6 +178,16 @@ export class Plane3DExpression extends AbstractNonArithmeticExpression {
         return { a, b, c, d };
     }
 
+    _fromNormalAndOrigin(normal, origin) {
+        const normalLength = Math.sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+        if (normalLength < 0.0001) {
+            this.dispatchError(plane3d_error_messages.ZERO_NORMAL());
+        }
+
+        this.normal = { x: normal.x, y: normal.y, z: normal.z };
+        this.center = { x: origin.x, y: origin.y, z: origin.z };
+    }
+
     _fromEquation(a, b, c, d) {
         // Normal vector is (a, b, c)
         const normalLength = Math.sqrt(a * a + b * b + c * c);
@@ -199,19 +207,18 @@ export class Plane3DExpression extends AbstractNonArithmeticExpression {
         };
     }
 
-    _fromPointAndNormal(pointExpr, vectorExpr) {
-        // Get point coordinates
-        const pt = pointExpr.getPoint();
-        this.center = { x: pt.x, y: pt.y, z: pt.z };
-
+    _fromNormalAndPoint(vectorExpr, pointExpr) {
         // Get normal from vector direction
         const vec = vectorExpr.asVector();
         const mag = Math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
         if (mag < 0.0001) {
             this.dispatchError(plane3d_error_messages.ZERO_NORMAL());
         }
-
         this.normal = { x: vec.x, y: vec.y, z: vec.z };
+
+        // Get point coordinates
+        const pt = pointExpr.getPoint();
+        this.center = { x: pt.x, y: pt.y, z: pt.z };
     }
 
     _fromThreePoints(p1Expr, p2Expr, p3Expr) {

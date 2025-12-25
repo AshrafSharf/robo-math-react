@@ -1,5 +1,5 @@
 /**
- * TopWriteCommand - Draws annotation text above a TextItem with overbrace
+ * OverbraceCommand - Draws annotation text above a TextItem with overbrace
  *
  * Creates a MathTextComponent with \overbrace{\phantom{\hspace{W}}}^{annotation}
  * positioned so the phantom aligns with the textItem.
@@ -14,7 +14,7 @@ import { MathTextComponent } from '../../mathtext/components/math-text-component
 import { WriteEffect } from '../../mathtext/effects/write-effect.js';
 import { MathTextPositionUtil } from '../../mathtext/utils/math-text-position-util.js';
 
-export class TopWriteCommand extends BaseCommand {
+export class OverbraceCommand extends BaseCommand {
     constructor(options = {}) {
         super();
         this.options = options;
@@ -25,21 +25,21 @@ export class TopWriteCommand extends BaseCommand {
         // 1. Get textItem from registry
         const textItemOrCollection = this.commandContext.shapeRegistry[this.options.textItemVariableName];
         if (!textItemOrCollection) {
-            console.warn(`TopWriteCommand: "${this.options.textItemVariableName}" not found in registry`);
+            console.warn(`OverbraceCommand: "${this.options.textItemVariableName}" not found in registry`);
             return;
         }
 
         // Handle TextItemCollection (get first item) or single TextItem
         const textItem = textItemOrCollection.get ? textItemOrCollection.get(0) : textItemOrCollection;
         if (!textItem) {
-            console.warn('TopWriteCommand: No TextItem found');
+            console.warn('OverbraceCommand: No TextItem found');
             return;
         }
 
         // 2. Get target bounds
         const targetBounds = textItem.getCanvasBounds();
         if (!targetBounds) {
-            console.warn('TopWriteCommand: Could not get TextItem bounds');
+            console.warn('OverbraceCommand: Could not get TextItem bounds');
             return;
         }
 

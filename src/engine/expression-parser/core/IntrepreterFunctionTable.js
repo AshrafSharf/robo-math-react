@@ -53,6 +53,8 @@ import { PointAtRatioExpression } from '../expressions/PointAtRatioExpression.js
 import { A2PExpression } from '../expressions/A2PExpression.js';
 import { MagExpression } from '../expressions/MagExpression.js';
 import { NormExpression } from '../expressions/NormExpression.js';
+import { DotExpression } from '../expressions/DotExpression.js';
+import { CrossExpression } from '../expressions/CrossExpression.js';
 import { MapExpression } from '../expressions/MapExpression.js';
 import { HideExpression } from '../expressions/visibility/HideExpression.js';
 import { ShowExpression } from '../expressions/visibility/ShowExpression.js';
@@ -125,8 +127,8 @@ import { SurroundExpression } from '../expressions/SurroundExpression.js';
 import { MoveToExpression } from '../expressions/MoveToExpression.js';
 import { ItemExpression } from '../expressions/ItemExpression.js';
 import { ReplaceTextItemExpression } from '../expressions/ReplaceTextItemExpression.js';
-import { TopWriteExpression } from '../expressions/TopWriteExpression.js';
-import { BottomWriteExpression } from '../expressions/BottomWriteExpression.js';
+import { OverbraceExpression } from '../expressions/OverbraceExpression.js';
+import { UnderbraceExpression } from '../expressions/UnderbraceExpression.js';
 import { CancelExpression } from '../expressions/CancelExpression.js';
 import { ArrowExpression } from '../expressions/ArrowExpression.js';
 import { DistanceMarkerExpression } from '../expressions/DistanceMarkerExpression.js';
@@ -271,8 +273,8 @@ export class IntrepreterFunctionTable {
         registerMultiArg('moveto', MoveToExpression);
         registerMultiArg('item', ItemExpression);
         registerMultiArg('replace', ReplaceTextItemExpression);
-        registerMultiArg('topw', TopWriteExpression);
-        registerMultiArg('bottomw', BottomWriteExpression);
+        registerMultiArg('overbrace', OverbraceExpression);
+        registerMultiArg('underbrace', UnderbraceExpression);
         registerMultiArg('cancel', CancelExpression);
         registerMultiArg('arrow', ArrowExpression);
         registerMultiArg('dm', DistanceMarkerExpression);
@@ -333,6 +335,8 @@ export class IntrepreterFunctionTable {
         // Measurement utilities
         registerMultiArg('mag', MagExpression);     // magnitude/distance
         registerMultiArg('norm', NormExpression);   // normalized direction
+        registerMultiArg('dot', DotExpression);     // dot product (2D/3D)
+        registerMultiArg('cross', CrossExpression); // cross product (2D returns scalar, 3D returns vector)
         registerMultiArg('map', MapExpression);     // linear interpolation
 
         // Visibility controls
