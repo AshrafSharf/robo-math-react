@@ -8,8 +8,8 @@ Creates a perpendicular line or vector through a point, orthogonal to a referenc
                   ^
                   |  result (perpendicular)
                   |
-    *-------------*----------->  L (reference)
-    (0,0)         P (2,0)     (4,0)
+    *-------------*----------->  l1 (reference)
+    (0,0)         pt1 (2,0)     (4,0)
 ```
 
 Returns a line if input is a line, or a vector if input is a vector.
@@ -32,26 +32,26 @@ perp(g, reference, point, length)
 ## Code
 
 ```
-g = g2d(0, 0, 10, 10)
+g1 = g2d(0, 0, 10, 10)
 
-L = line(g, 0, 0, 4, 0)
-V = vector(g, 0, 0, 4, 0)
-P = point(g, 2, 0)
+l1 = line(g1, 0, 0, 4, 0)
+v1 = vector(g1, 0, 0, 4, 0)
+pt1 = point(g1, 2, 0)
 
-perpLine = perp(g, L, P)
-perpVec = perp(g, V, P)
-perpCustom = perp(g, L, P, 3)
+perpline = perp(g1, l1, pt1)
+perpvec = perp(g1, v1, pt1)
+perpcustom = perp(g1, l1, pt1, 3)
 ```
 
 ## Comments
 
 | Line | Explanation |
 |------|-------------|
-| `L = line(g, 0, 0, 4, 0)` | Horizontal reference line |
-| `V = vector(g, 0, 0, 4, 0)` | Horizontal reference vector |
-| `perpLine = perp(g, L, P)` | Perpendicular line through P |
-| `perpVec = perp(g, V, P)` | Perpendicular vector through P |
-| `perpCustom = perp(g, L, P, 3)` | Perpendicular with length 3 |
+| `l1 = line(g1, 0, 0, 4, 0)` | Horizontal reference line |
+| `v1 = vector(g1, 0, 0, 4, 0)` | Horizontal reference vector |
+| `perpline = perp(g1, l1, pt1)` | Perpendicular line through pt1 |
+| `perpvec = perp(g1, v1, pt1)` | Perpendicular vector through pt1 |
+| `perpcustom = perp(g1, l1, pt1, 3)` | Perpendicular with length 3 |
 
 ## Animation
 

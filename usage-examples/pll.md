@@ -5,7 +5,7 @@ Creates a parallel line or vector through a point, parallel to a reference.
 ## Visual
 
 ```
-    P *----------->  result (parallel)
+    pt1 *----------->  result (parallel)
 
 
     *------------->  reference
@@ -32,26 +32,26 @@ pll(g, reference, point, length)
 ## Code
 
 ```
-g = g2d(0, 0, 10, 10)
+g1 = g2d(0, 0, 10, 10)
 
-L = line(g, 0, 0, 4, 0)
-V = vector(g, 0, 0, 4, 0)
-P = point(g, 0, 2)
+l1 = line(g1, 0, 0, 4, 0)
+v1 = vector(g1, 0, 0, 4, 0)
+pt1 = point(g1, 0, 2)
 
-pllLine = pll(g, L, P)
-pllVec = pll(g, V, P)
-pllCustom = pll(g, L, P, 6)
+pllline = pll(g1, l1, pt1)
+pllvec = pll(g1, v1, pt1)
+pllcustom = pll(g1, l1, pt1, 6)
 ```
 
 ## Comments
 
 | Line | Explanation |
 |------|-------------|
-| `L = line(g, 0, 0, 4, 0)` | Horizontal reference line |
-| `V = vector(g, 0, 0, 4, 0)` | Horizontal reference vector |
-| `pllLine = pll(g, L, P)` | Parallel line through P |
-| `pllVec = pll(g, V, P)` | Parallel vector through P |
-| `pllCustom = pll(g, L, P, 6)` | Parallel with length 6 |
+| `l1 = line(g1, 0, 0, 4, 0)` | Horizontal reference line |
+| `v1 = vector(g1, 0, 0, 4, 0)` | Horizontal reference vector |
+| `pllline = pll(g1, l1, pt1)` | Parallel line through pt1 |
+| `pllvec = pll(g1, v1, pt1)` | Parallel vector through pt1 |
+| `pllcustom = pll(g1, l1, pt1, 6)` | Parallel with length 6 |
 
 ## Animation
 

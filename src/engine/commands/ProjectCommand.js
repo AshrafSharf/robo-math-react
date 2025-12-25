@@ -77,12 +77,36 @@ export class ProjectCommand extends BaseCommand {
     }
 
     /**
+     * Extract style options from original shape
+     * @returns {Object} Style options for delegate command
+     * @private
+     */
+    _getStyleOptionsFromOriginal() {
+        if (!this.originalShape || !this.originalShape.styleObj) {
+            return {};
+        }
+        const s = this.originalShape.styleObj;
+        const options = {
+            stroke: s.stroke,
+            strokeWidth: s['stroke-width'],
+            fill: s.fill,
+            fillOpacity: s['fill-opacity']
+        };
+        // Include radius for point shapes
+        if (this.originalShape.pointRadius !== undefined) {
+            options.radius = this.originalShape.pointRadius;
+        }
+        return options;
+    }
+
+    /**
      * Play animation - create point, then play projection effect
      * @returns {Promise}
      */
     async play() {
         // Create projected point via delegate command
-        this.delegateCommand = new PointCommand(this.graphExpression, this.projectedPoint);
+        const styleOptions = this._getStyleOptionsFromOriginal();
+        this.delegateCommand = new PointCommand(this.graphExpression, this.projectedPoint, styleOptions);
         this.delegateCommand.diagram2d = this.diagram2d;
         this.delegateCommand.setColor(this.color);
         if (this.labelName) {
@@ -108,7 +132,8 @@ export class ProjectCommand extends BaseCommand {
      */
     async directPlay() {
         // Create projected point via delegate command
-        this.delegateCommand = new PointCommand(this.graphExpression, this.projectedPoint);
+        const styleOptions = this._getStyleOptionsFromOriginal();
+        this.delegateCommand = new PointCommand(this.graphExpression, this.projectedPoint, styleOptions);
         this.delegateCommand.diagram2d = this.diagram2d;
         this.delegateCommand.setColor(this.color);
         if (this.labelName) {

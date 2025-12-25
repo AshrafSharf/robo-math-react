@@ -34,21 +34,25 @@ export class ParametricPlotShape extends SVGScriptShape {
   generateModelCoordinates() {
     const xFunction = this.xFunction;
     const yFunction = this.yFunction;
-    
+    const xEnds = this.graphsheet2d.xends();
+    const yEnds = this.graphsheet2d.yends();
+
     // Generate points along the parametric curve
     const numPoints = 1000; // High resolution for smooth curves
     const tStep = (this.tMax - this.tMin) / (numPoints - 1);
-    
+
     this.modelCoordinates = [];
-    
+
     for (let i = 0; i < numPoints; i++) {
       const t = this.tMin + i * tStep;
       try {
         const x = xFunction(t);
         const y = yFunction(t);
-        
-        // Only add point if both coordinates are finite
-        if (isFinite(x) && isFinite(y)) {
+
+        // Only add point if both coordinates are finite AND within bounds
+        if (isFinite(x) && isFinite(y) &&
+            x >= xEnds.min && x <= xEnds.max &&
+            y >= yEnds.min && y <= yEnds.max) {
           this.modelCoordinates.push(x, y);
         }
       } catch (e) {

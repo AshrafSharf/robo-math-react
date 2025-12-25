@@ -76,22 +76,47 @@ export class ReflectCommand extends BaseCommand {
     }
 
     /**
+     * Extract style options from original shape's styleObj
+     * @returns {Object} Style options for delegate commands
+     * @private
+     */
+    _getStyleOptionsFromOriginal() {
+        if (!this.originalShape || !this.originalShape.styleObj) {
+            return {};
+        }
+        const s = this.originalShape.styleObj;
+        const options = {
+            stroke: s.stroke,
+            strokeWidth: s['stroke-width'],
+            fill: s.fill,
+            fillOpacity: s['fill-opacity']
+        };
+        // Include radius for point shapes
+        if (this.originalShape.pointRadius !== undefined) {
+            options.radius = this.originalShape.pointRadius;
+        }
+        return options;
+    }
+
+    /**
      * Create delegate command based on shape type
      * @returns {BaseCommand}
      * @private
      */
     _createDelegateCommand() {
+        const styleOptions = this._getStyleOptionsFromOriginal();
+
         switch (this.originalShapeName) {
             case 'point':
-                return new PointCommand(this.graphExpression, this.reflectedData.point);
+                return new PointCommand(this.graphExpression, this.reflectedData.point, styleOptions);
             case 'line':
-                return new LineCommand(this.graphExpression, this.reflectedData.start, this.reflectedData.end);
+                return new LineCommand(this.graphExpression, this.reflectedData.start, this.reflectedData.end, styleOptions);
             case 'vector':
-                return new VectorCommand(this.graphExpression, this.reflectedData.start, this.reflectedData.end);
+                return new VectorCommand(this.graphExpression, this.reflectedData.start, this.reflectedData.end, styleOptions);
             case 'circle':
-                return new CircleCommand(this.graphExpression, this.reflectedData.center, this.reflectedData.radius);
+                return new CircleCommand(this.graphExpression, this.reflectedData.center, this.reflectedData.radius, styleOptions);
             case 'polygon':
-                return new PolygonCommand(this.graphExpression, this.reflectedData.vertices);
+                return new PolygonCommand(this.graphExpression, this.reflectedData.vertices, styleOptions);
             default:
                 throw new Error(`ReflectCommand: unsupported shape type '${this.originalShapeName}'`);
         }

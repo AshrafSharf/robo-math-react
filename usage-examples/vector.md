@@ -37,23 +37,23 @@ vector(g, point1, point2)
 ## Code
 
 ```
-g = g2d(0, 0, 10, 10)
+g1 = g2d(0, 0, 10, 10)
 
-A = vector(g, 0, 0, 3, 2)
-B = vector(g, 1, 1, 4, 3)
+v1 = vector(g1, 0, 0, 3, 2)
+v2 = vector(g1, 1, 1, 4, 3)
 
-P = point(g, 0, 0)
-Q = point(g, 5, 5)
-C = vector(g, P, Q)
+pt1 = point(g1, 0, 0)
+pt2 = point(g1, 5, 5)
+v3 = vector(g1, pt1, pt2)
 ```
 
 ## Comments
 
 | Line | Explanation |
 |------|-------------|
-| `A = vector(g, 0, 0, 3, 2)` | Vector from origin to (3,2) |
-| `B = vector(g, 1, 1, 4, 3)` | Vector from (1,1) to (4,3) |
-| `C = vector(g, P, Q)` | Vector between two point expressions |
+| `v1 = vector(g1, 0, 0, 3, 2)` | Vector from origin to (3,2) |
+| `v2 = vector(g1, 1, 1, 4, 3)` | Vector from (1,1) to (4,3) |
+| `v3 = vector(g1, pt1, pt2)` | Vector between two point expressions |
 
 ## Animation
 

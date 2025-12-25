@@ -10,6 +10,7 @@
  *   - line/vec + circle    → 0, 1, or 2 intersections
  *   - circle + circle      → 0, 1, or 2 intersections
  *   - line/vec + polygon   → 0 or more intersections
+ *   - plot + plot          → 0 or more intersections (numerical root finding)
  *
  * If no intersection exists or index is out of range, returns NaN coordinates
  * and toCommand() returns NoOpCommand.
@@ -122,6 +123,11 @@ export class IntersectExpression extends AbstractArithmeticExpression {
         }
         if (type1 === 'polygon' && type2 === 'line') {
             return this._intersectLinePolygon(expr2, expr1);
+        }
+
+        // Plot-Plot intersection
+        if (type1 === 'plot' && type2 === 'plot') {
+            return this._intersectPlotPlot(expr1, expr2);
         }
 
         // Unsupported combination
@@ -249,6 +255,134 @@ export class IntersectExpression extends AbstractArithmeticExpression {
             line.start, line.end,
             vertices
         );
+    }
+
+    /**
+     * Plot-Plot intersection using numerical root finding
+     * Finds where f(x) - g(x) = 0
+     */
+    _intersectPlotPlot(plotExpr1, plotExpr2) {
+        const f1 = plotExpr1.getCompiledFunction();
+        const f2 = plotExpr2.getCompiledFunction();
+
+        if (!f1 || !f2) {
+            return [];
+        }
+
+        // Determine search domain
+        const domain1 = plotExpr1.getDomain();
+        const domain2 = plotExpr2.getDomain();
+        const graphRange = this.graphExpression.xRange;
+
+        // Use intersection of all domains
+        let xMin = graphRange[0];
+        let xMax = graphRange[1];
+
+        if (domain1.min !== null) xMin = Math.max(xMin, domain1.min);
+        if (domain1.max !== null) xMax = Math.min(xMax, domain1.max);
+        if (domain2.min !== null) xMin = Math.max(xMin, domain2.min);
+        if (domain2.max !== null) xMax = Math.min(xMax, domain2.max);
+
+        // Difference function: where this is zero, plots intersect
+        const diff = (x) => {
+            try {
+                const y1 = f1(x);
+                const y2 = f2(x);
+                if (!isFinite(y1) || !isFinite(y2)) return NaN;
+                return y1 - y2;
+            } catch {
+                return NaN;
+            }
+        };
+
+        // Sample to find sign changes (potential roots)
+        const numSamples = 500;
+        const step = (xMax - xMin) / numSamples;
+        const roots = [];
+        const tolerance = 1e-10;
+
+        let prevX = xMin;
+        let prevY = diff(prevX);
+
+        for (let i = 1; i <= numSamples; i++) {
+            const x = xMin + i * step;
+            const y = diff(x);
+
+            // Check for sign change or exact zero
+            if (isFinite(prevY) && isFinite(y)) {
+                if (Math.abs(y) < tolerance) {
+                    // Exact hit
+                    roots.push(x);
+                } else if (prevY * y < 0) {
+                    // Sign change - use bisection to find root
+                    const root = this._bisectionRoot(diff, prevX, x, tolerance);
+                    if (root !== null) {
+                        roots.push(root);
+                    }
+                }
+            }
+
+            prevX = x;
+            prevY = y;
+        }
+
+        // Remove duplicates (within tolerance) and convert to points
+        const uniqueRoots = this._removeDuplicates(roots, step * 0.5);
+
+        // Convert x values to intersection points
+        return uniqueRoots.map(x => {
+            const y = f1(x);
+            return { x, y };
+        }).filter(pt => isFinite(pt.y));
+    }
+
+    /**
+     * Bisection method to find root in interval [a, b]
+     */
+    _bisectionRoot(f, a, b, tolerance, maxIter = 50) {
+        let fa = f(a);
+        let fb = f(b);
+
+        if (!isFinite(fa) || !isFinite(fb)) return null;
+        if (fa * fb > 0) return null;
+
+        for (let i = 0; i < maxIter; i++) {
+            const mid = (a + b) / 2;
+            const fmid = f(mid);
+
+            if (!isFinite(fmid)) return null;
+            if (Math.abs(fmid) < tolerance || (b - a) / 2 < tolerance) {
+                return mid;
+            }
+
+            if (fa * fmid < 0) {
+                b = mid;
+                fb = fmid;
+            } else {
+                a = mid;
+                fa = fmid;
+            }
+        }
+
+        return (a + b) / 2;
+    }
+
+    /**
+     * Remove duplicate roots within tolerance
+     */
+    _removeDuplicates(roots, tolerance) {
+        if (roots.length === 0) return [];
+
+        const sorted = [...roots].sort((a, b) => a - b);
+        const unique = [sorted[0]];
+
+        for (let i = 1; i < sorted.length; i++) {
+            if (sorted[i] - unique[unique.length - 1] > tolerance) {
+                unique.push(sorted[i]);
+            }
+        }
+
+        return unique;
     }
 
     getName() {

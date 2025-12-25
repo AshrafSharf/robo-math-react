@@ -18,26 +18,26 @@ polygon(g, x1, y1, x2, y2, x3, y3, ...)           // From coordinates
 ## Code
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
 // Triangle from coordinates
-P1 = polygon(G, 0, 0, 4, 0, 2, 3)
+poly1 = polygon(g1, 0, 0, 4, 0, 2, 3)
 
 // Quadrilateral from coordinates
-P2 = polygon(G, 0, 0, 4, 0, 4, 3, 0, 3)
+poly2 = polygon(g1, 0, 0, 4, 0, 4, 3, 0, 3)
 
 // Pentagon from points
-A = point(G, 0, 0)
-B = point(G, 3, 0)
-C = point(G, 4, 2)
-D = point(G, 1.5, 4)
-E = point(G, -1, 2)
-P3 = polygon(G, A, B, C, D, E)
+pt1 = point(g1, 0, 0)
+pt2 = point(g1, 3, 0)
+pt3 = point(g1, 4, 2)
+pt4 = point(g1, 1.5, 4)
+pt5 = point(g1, -1, 2)
+poly3 = polygon(g1, pt1, pt2, pt3, pt4, pt5)
 
 // Styling
-stroke(P1, "blue")
-fill(P2, "lightblue")
-strokewidth(P3, 2)
+stroke(poly1, "blue")
+fill(poly2, "lightblue")
+strokewidth(poly3, 2)
 ```
 
 ## Edge Access
@@ -47,64 +47,64 @@ Polygons support edge access via `item()`. Edges are 0-indexed.
 ### Accessing Individual Edges
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
 // Create a quadrilateral
-P = polygon(G, 0, 0, 4, 0, 4, 3, 0, 3)
+poly1 = polygon(g1, 0, 0, 4, 0, 4, 3, 0, 3)
 
 // Access edges (4 edges for a quadrilateral)
-edge0 = item(P, 0)    // Bottom edge (0,0) to (4,0)
-edge1 = item(P, 1)    // Right edge (4,0) to (4,3)
-edge2 = item(P, 2)    // Top edge (4,3) to (0,3)
-edge3 = item(P, 3)    // Left edge (0,3) to (0,0)
+edge0 = item(poly1, 0)    // Bottom edge (0,0) to (4,0)
+edge1 = item(poly1, 1)    // Right edge (4,0) to (4,3)
+edge2 = item(poly1, 2)    // Top edge (4,3) to (0,3)
+edge3 = item(poly1, 3)    // Left edge (0,3) to (0,0)
 ```
 
 ### Styling Individual Edges
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
-P = polygon(G, 0, 0, 4, 0, 4, 3, 0, 3)
+poly1 = polygon(g1, 0, 0, 4, 0, 4, 3, 0, 3)
 
 // Color specific edges
-stroke(item(P, 0), "red")
-stroke(item(P, 1), "green")
-stroke(item(P, 2), "blue")
-stroke(item(P, 3), "orange")
+stroke(item(poly1, 0), "red")
+stroke(item(poly1, 1), "green")
+stroke(item(poly1, 2), "blue")
+stroke(item(poly1, 3), "orange")
 
 // Change stroke width of an edge
-strokewidth(item(P, 0), 3)
+strokewidth(item(poly1, 0), 3)
 ```
 
 ### Hiding Edges
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
-P = polygon(G, 0, 0, 4, 0, 4, 3, 0, 3)
+poly1 = polygon(g1, 0, 0, 4, 0, 4, 3, 0, 3)
 
 // Hide specific edges to create an open shape appearance
-hide(item(P, 0))      // Hide bottom edge
-hide(item(P, 2))      // Hide top edge
+hide(item(poly1, 0))      // Hide bottom edge
+hide(item(poly1, 2))      // Hide top edge
 ```
 
 ### Using Edge Data
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
-P = polygon(G, 0, 0, 4, 0, 4, 3, 0, 3)
+poly1 = polygon(g1, 0, 0, 4, 0, 4, 3, 0, 3)
 
 // Get edge endpoints
-edge = item(P, 0)
-A = start(edge)       // Start point of edge
-B = end(edge)         // End point of edge
+edge = item(poly1, 0)
+pt1 = start(edge)       // Start point of edge
+pt2 = end(edge)         // End point of edge
 
 // Create parallel line from an edge
-L = pll(G, item(P, 1), 2)
+l1 = pll(g1, item(poly1, 1), 2)
 
 // Get edge length
-len = mag(item(P, 0))
+len = mag(item(poly1, 0))
 ```
 
 ## Edge Indexing
@@ -130,13 +130,13 @@ Edge 3: (0,3) → (0,0)
 
 | Expression | Explanation |
 |------------|-------------|
-| `polygon(G, 0, 0, 4, 0, 2, 3)` | Triangle with vertices at (0,0), (4,0), (2,3) |
-| `polygon(G, A, B, C, D)` | Quadrilateral from point references |
-| `item(P, 0)` | Get first edge as a line |
-| `hide(item(P, 2))` | Hide third edge |
-| `stroke(item(P, 0), "red")` | Color first edge red |
-| `start(item(P, 0))` | Get start point of first edge |
-| `end(item(P, 0))` | Get end point of first edge |
+| `polygon(g1, 0, 0, 4, 0, 2, 3)` | Triangle with vertices at (0,0), (4,0), (2,3) |
+| `polygon(g1, pt1, pt2, pt3, pt4)` | Quadrilateral from point references |
+| `item(poly1, 0)` | Get first edge as a line |
+| `hide(item(poly1, 2))` | Hide third edge |
+| `stroke(item(poly1, 0), "red")` | Color first edge red |
+| `start(item(poly1, 0))` | Get start point of first edge |
+| `end(item(poly1, 0))` | Get end point of first edge |
 
 ## Related Functions
 
@@ -146,7 +146,7 @@ Edge 3: (0,3) → (0,0)
 | `sas(g, b, A, c)` | Triangle from side-angle-side |
 | `asa(g, A, c, B)` | Triangle from angle-side-angle |
 | `aas(g, A, B, a)` | Triangle from angle-angle-side |
-| `item(P, index)` | Get edge at index |
+| `item(poly, index)` | Get edge at index |
 | `start(edge)` | Get start point of edge |
 | `end(edge)` | Get end point of edge |
 | `mag(edge)` | Get length of edge |

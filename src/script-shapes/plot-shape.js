@@ -32,18 +32,21 @@ export class PlotShape extends SVGScriptShape {
     const plotFunction = this.plotFunction;
     const [xModelMin, xModelMax] = this.getModelXEndPoints();
     const screenWidth = this.graphsheet2d.getUIWidth();
+    const yEnds = this.graphsheet2d.yends();
 
     const graphEvaluator = new GraphEvaluator();
     this.modelCoordinates = graphEvaluator.eval(
-      plotFunction, 
-      0, 
-      screenWidth + 1, 
-      1, 
-      xModelMin, 
-      xModelMax, 
+      plotFunction,
+      0,
+      screenWidth + 1,
+      1,
+      xModelMin,
+      xModelMax,
       (viewX) => {
         return this.graphsheet2d.toModelX(viewX);
-      }
+      },
+      yEnds.min,
+      yEnds.max
     );
   }
 

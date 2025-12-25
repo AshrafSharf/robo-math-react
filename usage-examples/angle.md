@@ -5,29 +5,29 @@ Creates 2D angle arcs and right-angle markers between rays or lines.
 ## Visual
 
 ```
-              P2
+              pt2
              /
             /  arc
            / __)
-          V--------P1
+          v--------pt1
 
-V = vertex (center point)
-P1, P2 = points defining the two rays
+v = vertex (center point)
+pt1, pt2 = points defining the two rays
 arc = angle arc between rays
 ```
 
 When two lines cross, four angles are formed:
 
 ```
-        P2
+        pt2
          \  angle2 (exterior-first)
           \ |
    angle5  \|  angle (interior)
-   --------V--------
+   --------v--------
    angle3  /|  angle4 (reflex)
           / |
          /
-        P1
+        pt1
 
 angle  = interior (smaller angle between rays)
 angle2 = exterior-first (supplement at first ray)
@@ -69,30 +69,6 @@ angle(g, line1, line2)
 angle(g, line1, line2, radius)
                           +-- arc radius (default: 0.8)
 
-// Exterior angle at first ray
-angle2(g, vertex, point1, point2)
-angle2(g, vertex, point1, point2, radius)
-angle2(g, line1, line2)
-angle2(g, line1, line2, radius)
-
-// Exterior angle at second ray
-angle3(g, vertex, point1, point2)
-angle3(g, vertex, point1, point2, radius)
-angle3(g, line1, line2)
-angle3(g, line1, line2, radius)
-
-// Reflex angle (>180 degrees)
-angle4(g, vertex, point1, point2)
-angle4(g, vertex, point1, point2, radius)
-angle4(g, line1, line2)
-angle4(g, line1, line2, radius)
-
-// Opposite/vertical angle
-angle5(g, vertex, point1, point2)
-angle5(g, vertex, point1, point2, radius)
-angle5(g, line1, line2)
-angle5(g, line1, line2, radius)
-
 // Right angle marker (90-degree square)
 rightangle(g, vertex, point1, point2)
            |    |       |       +-- point on second ray
@@ -107,64 +83,64 @@ rightangle(g, vertex, point1, point2, size)
 ## Code
 
 ```
-g = g2d(0, 0, 16, 8, -5, 5, -4, 4, 1)
+g1 = g2d(0, 0, 16, 8, -5, 5, -4, 4, 1)
 
 // Create three points forming an angle
-O = point(g, 0, 0)
-A = point(g, 3, 0)
-B = point(g, 2, 2)
+o1 = point(g1, 0, 0)
+pt1 = point(g1, 3, 0)
+pt2 = point(g1, 2, 2)
 
 // Interior angle arc (smaller angle)
-arc1 = angle(g, O, A, B)
+arc1 = angle(g1, o1, pt1, pt2)
 
 // Interior angle with custom radius
-arc2 = angle(g, O, A, B, 1.2)
+arc2 = angle(g1, o1, pt1, pt2, 1.2)
 
 // Exterior angle at first ray (supplement)
-C = point(g, 3, 1)
-D = point(g, 1, 3)
-ext1 = angle2(g, O, C, D)
+pt3 = point(g1, 3, 1)
+pt4 = point(g1, 1, 3)
+ext1 = angle2(g1, o1, pt3, pt4)
 
 // Exterior angle at second ray
-ext2 = angle3(g, O, C, D)
+ext2 = angle3(g1, o1, pt3, pt4)
 
 // Reflex angle (going the long way around)
-reflex = angle4(g, O, A, B)
+reflex = angle4(g1, o1, pt1, pt2)
 
 // Opposite/vertical angle (when lines cross)
-L1 = line(g, -3, -2, 3, 2)
-L2 = line(g, -3, 2, 3, -2)
-interior = angle(g, L1, L2)
-opposite = angle5(g, L1, L2)
+l1 = line(g1, -3, -2, 3, 2)
+l2 = line(g1, -3, 2, 3, -2)
+interior = angle(g1, l1, l2)
+opposite = angle5(g1, l1, l2)
 
 // Right angle marker (90-degree square)
-P = point(g, 0, 0)
-Q = point(g, 2, 0)
-R = point(g, 0, 2)
-right = rightangle(g, P, Q, R)
+p1 = point(g1, 0, 0)
+q1 = point(g1, 2, 0)
+r1 = point(g1, 0, 2)
+right1 = rightangle(g1, p1, q1, r1)
 
 // Right angle with custom size
-right2 = rightangle(g, P, Q, R, 0.6)
+right2 = rightangle(g1, p1, q1, r1, 0.6)
 
 // Right angle between perpendicular lines
-H = hline(g, 0)
-V = vline(g, 0)
-rightLn = rightangle(g, H, V, 0.4)
+h1 = hline(g1, 0)
+v1 = vline(g1, 0)
+rightln = rightangle(g1, h1, v1, 0.4)
 ```
 
 ## Comments
 
 | Line | Explanation |
 |------|-------------|
-| `angle(g, O, A, B)` | Interior angle arc at vertex O, between rays OA and OB |
-| `angle(g, O, A, B, 1.2)` | Same angle with radius 1.2 (default is 0.8) |
-| `angle2(g, O, C, D)` | Exterior angle at first ray OC |
-| `angle3(g, O, C, D)` | Exterior angle at second ray OD |
-| `angle4(g, O, A, B)` | Reflex angle (the larger angle, >180 degrees) |
-| `angle(g, L1, L2)` | Interior angle between two intersecting lines |
-| `angle5(g, L1, L2)` | Vertical/opposite angle (across from interior) |
-| `rightangle(g, P, Q, R)` | Right angle (90-degree) square marker |
-| `rightangle(g, H, V, 0.4)` | Right angle from two perpendicular lines |
+| `angle(g1, o1, pt1, pt2)` | Interior angle arc at vertex o1, between rays o1-pt1 and o1-pt2 |
+| `angle(g1, o1, pt1, pt2, 1.2)` | Same angle with radius 1.2 (default is 0.8) |
+| `angle2(g1, o1, pt3, pt4)` | Exterior angle at first ray o1-pt3 |
+| `angle3(g1, o1, pt3, pt4)` | Exterior angle at second ray o1-pt4 |
+| `angle4(g1, o1, pt1, pt2)` | Reflex angle (the larger angle, >180 degrees) |
+| `angle(g1, l1, l2)` | Interior angle between two intersecting lines |
+| `angle5(g1, l1, l2)` | Vertical/opposite angle (across from interior) |
+| `rightangle(g1, p1, q1, r1)` | Right angle (90-degree) square marker |
+| `rightangle(g1, h1, v1, 0.4)` | Right angle from two perpendicular lines |
 
 ## Animation
 
@@ -178,56 +154,56 @@ All angle expressions animate by growing the arc from zero radius to target radi
 Use `change()` to animate angle points dynamically. The angle arc updates automatically as points move.
 
 ```
-g = g2d(0, 0, 16, 8, -5, 5, -4, 4, 1)
+g1 = g2d(0, 0, 16, 8, -5, 5, -4, 4, 1)
 
 // Fixed vertex and first point
-O = point(g, 0, 0)
-A = point(g, 3, 0)
+o1 = point(g1, 0, 0)
+pt1 = point(g1, 3, 0)
 
-// Moving point - angle will grow as B rotates
-B = point(g, 3, 0)
-arc = angle(g, O, A, B)
+// Moving point - angle will grow as pt2 rotates
+pt2 = point(g1, 3, 0)
+arc1 = angle(g1, o1, pt1, pt2)
 
-// Animate B to create a growing angle
-change(B, point(g, 0, 3))
+// Animate pt2 to create a growing angle
+change(pt2, point(g1, 0, 3))
 ```
 
 ### Animating angle between rotating lines
 
 ```
-g = g2d(0, 0, 16, 8, -5, 5, -4, 4, 1)
+g1 = g2d(0, 0, 16, 8, -5, 5, -4, 4, 1)
 
 // Fixed horizontal line
-L1 = line(g, -3, 0, 3, 0)
+l1 = line(g1, -3, 0, 3, 0)
 
 // Rotating line endpoint
-endY = 0
-L2 = line(g, 0, 0, 3, endY)
+endy = 0
+l2 = line(g1, 0, 0, 3, endy)
 
 // Angle between the lines
-arc = angle(g, L1, L2)
+arc1 = angle(g1, l1, l2)
 
-// Rotate L2 upward - angle grows from 0 to ~53 degrees
-change(endY, 4)
+// Rotate l2 upward - angle grows from 0 to ~53 degrees
+change(endy, 4)
 ```
 
 ### Sweeping through all four angle types
 
 ```
-g = g2d(0, 0, 16, 8, -5, 5, -4, 4, 1)
+g1 = g2d(0, 0, 16, 8, -5, 5, -4, 4, 1)
 
-O = point(g, 0, 0)
-A = point(g, 3, 0)
-B = point(g, 2, 2)
+o1 = point(g1, 0, 0)
+pt1 = point(g1, 3, 0)
+pt2 = point(g1, 2, 2)
 
 // Show all four angles at intersection
-interior = angle(g, O, A, B)
-ext1 = angle2(g, O, A, B)
-ext2 = angle3(g, O, A, B)
-reflex = angle4(g, O, A, B)
+interior = angle(g1, o1, pt1, pt2)
+ext1 = angle2(g1, o1, pt1, pt2)
+ext2 = angle3(g1, o1, pt1, pt2)
+reflex = angle4(g1, o1, pt1, pt2)
 
-// Animate B around - all angles update together
-change(B, point(g, -2, 2))
+// Animate pt2 around - all angles update together
+change(pt2, point(g1, -2, 2))
 ```
 
 ## Defaults

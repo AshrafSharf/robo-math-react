@@ -32,40 +32,40 @@ scale(g, s1, s2, ..., factor, centerPoint)   // Scale multiple shapes around poi
 ## Code
 
 ```
-G = g2d(0, 0, 20, 20, -10, 10, -10, 10, 1)
+g1 = g2d(0, 0, 20, 20, -10, 10, -10, 10, 1)
 
 // Basic scaling around origin
-P = point(G, 2, 1)
-P2 = scale(G, P, 2)                // Point at (4, 2)
+pt1 = point(g1, 2, 1)
+pt2 = scale(g1, pt1, 2)                // Point at (4, 2)
 
 // Scale around a center point
-L = line(G, 1, 0, 3, 0)
-L2 = scale(G, L, 1.5, 2, 0)        // Scale around (2, 0)
+l1 = line(g1, 1, 0, 3, 0)
+l2 = scale(g1, l1, 1.5, 2, 0)          // Scale around (2, 0)
 
 // Scale a circle (both center and radius scale)
-C = circle(G, 2, 0, 1)
-C2 = scale(G, C, 2)                // Radius becomes 2
+c1 = circle(g1, 2, 0, 1)
+c2 = scale(g1, c1, 2)                  // Radius becomes 2
 
 // Scale around a point expression
-center = point(G, 0, 0)
-C3 = scale(G, C, 0.5, center)      // Shrink by half
+center = point(g1, 0, 0)
+c3 = scale(g1, c1, 0.5, center)        // Shrink by half
 
 // Scale a polygon
-P = polygon(G, 0, 0, 2, 0, 2, 1, 0, 1)
-P2 = scale(G, P, 2)                // Double size
+poly1 = polygon(g1, 0, 0, 2, 0, 2, 1, 0, 1)
+poly2 = scale(g1, poly1, 2)            // Double size
 
 // Scale triangles
-T1 = sss(G, 3, 4, 5)
-T2 = scale(G, T1, 1.5)             // Enlarge by 50%
+tri1 = sss(g1, 3, 4, 5)
+tri2 = scale(g1, tri1, 1.5)            // Enlarge by 50%
 
-T3 = sas(G, 3, 60, 3)
-T4 = scale(G, T3, 0.5, 1, 1)       // Shrink around (1, 1)
+tri3 = sas(g1, 3, 60, 3)
+tri4 = scale(g1, tri3, 0.5, 1, 1)      // Shrink around (1, 1)
 
 // Scale multiple shapes at once
-A = point(G, 1, 1)
-B = point(G, 2, 2)
-L = line(G, A, B)
-result = scale(G, A, B, L, 2, 0, 0)
+pt3 = point(g1, 1, 1)
+pt4 = point(g1, 2, 2)
+l3 = line(g1, pt3, pt4)
+result = scale(g1, pt3, pt4, l3, 2, 0, 0)
 
 // Access scaled shapes from collection
 first = item(result, 0)
@@ -76,11 +76,11 @@ second = item(result, 1)
 
 | Expression | Explanation |
 |------------|-------------|
-| `scale(G, P, 2)` | Double distance from origin |
-| `scale(G, L, 1.5, 2, 0)` | Scale line 1.5x around (2, 0) |
-| `scale(G, C, 0.5)` | Shrink circle to half size |
-| `scale(G, T, 2)` | Double triangle size |
-| `scale(G, P, -1)` | Mirror through origin |
+| `scale(g1, pt1, 2)` | Double distance from origin |
+| `scale(g1, l1, 1.5, 2, 0)` | Scale line 1.5x around (2, 0) |
+| `scale(g1, c1, 0.5)` | Shrink circle to half size |
+| `scale(g1, tri1, 2)` | Double triangle size |
+| `scale(g1, poly1, -1)` | Mirror through origin |
 | `item(result, 0)` | Get first scaled shape |
 
 ## Scale Factors
@@ -96,60 +96,60 @@ second = item(result, 1)
 ## Triangle Scaling Examples
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
 // Create and scale different triangle types
-T1 = sss(G, 3, 4, 5)
-S1 = scale(G, T1, 2)               // Double size
+tri1 = sss(g1, 3, 4, 5)
+s1 = scale(g1, tri1, 2)                // Double size
 
-T2 = sas(G, 4, 90, 3)
-S2 = scale(G, T2, 0.5)             // Half size
+tri2 = sas(g1, 4, 90, 3)
+s2 = scale(g1, tri2, 0.5)              // Half size
 
-T3 = asa(G, 60, 5, 60)
-S3 = scale(G, T3, 1.5, 2, 2)       // Scale around (2, 2)
+tri3 = asa(g1, 60, 5, 60)
+s3 = scale(g1, tri3, 1.5, 2, 2)        // Scale around (2, 2)
 
-T4 = aas(G, 30, 60, 4)
-centroid = point(G, 1, 1)
-S4 = scale(G, T4, 0.75, centroid)  // Scale around centroid
+tri4 = aas(g1, 30, 60, 4)
+centroid = point(g1, 1, 1)
+s4 = scale(g1, tri4, 0.75, centroid)   // Scale around centroid
 
 // Style the scaled triangle edges
-stroke(item(S1, 0), "red")
-stroke(item(S1, 1), "green")
-stroke(item(S1, 2), "blue")
+stroke(item(s1, 0), "red")
+stroke(item(s1, 1), "green")
+stroke(item(s1, 2), "blue")
 ```
 
 ## Creating Similar Triangles
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
 // Create nested similar triangles
-T = sss(G, 4, 4, 4)                // Equilateral triangle
-T2 = scale(G, T, 0.75)             // 75% size
-T3 = scale(G, T, 0.5)              // 50% size
-T4 = scale(G, T, 0.25)             // 25% size
+tri1 = sss(g1, 4, 4, 4)                // Equilateral triangle
+tri2 = scale(g1, tri1, 0.75)           // 75% size
+tri3 = scale(g1, tri1, 0.5)            // 50% size
+tri4 = scale(g1, tri1, 0.25)           // 25% size
 
 // Color each differently
-stroke(T, "blue")
-stroke(T2, "green")
-stroke(T3, "orange")
-stroke(T4, "red")
+stroke(tri1, "blue")
+stroke(tri2, "green")
+stroke(tri3, "orange")
+stroke(tri4, "red")
 ```
 
 ## Combining Transformations
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
 // Scale then translate
-T = sss(G, 2, 2, 2)
-T2 = scale(G, T, 2)
-T3 = translate(G, T2, 5, 0)
+tri1 = sss(g1, 2, 2, 2)
+tri2 = scale(g1, tri1, 2)
+tri3 = translate(g1, tri2, 5, 0)
 
 // Scale then rotate
-P = polygon(G, 0, 0, 2, 0, 2, 1, 0, 1)
-P2 = scale(G, P, 1.5)
-P3 = rotate(G, P2, 45)
+poly1 = polygon(g1, 0, 0, 2, 0, 2, 1, 0, 1)
+poly2 = scale(g1, poly1, 1.5)
+poly3 = rotate(g1, poly2, 45)
 ```
 
 ## Related Functions

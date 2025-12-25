@@ -1,12 +1,13 @@
-# write(row, col, item(S, i)) - Clone TextItem to Position
+# write(row, col, item(s, i)) - Clone TextItem to Position
 
 Clone a TextItem from a collection to a new position and animate it.
 
 ## Basic Usage
 
 ```
-M = mathtext(3, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
-thetas = select(M, "\theta")
+eq1 = "\\tan(\\theta) = \\frac{\\sin(\\theta)}{\\cos(\\theta)}"
+m1 = mathtext(3, 2, eq1)
+thetas = select(m1, "\\theta")
 
 # Clone first theta to new position
 write(5, 2, item(thetas, 0))
@@ -21,28 +22,30 @@ write(5, 6, item(thetas, 2))
 ## Extract and Clone Different Patterns
 
 ```
-M = mathtext(3, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+eq1 = "\\tan(\\theta) = \\frac{\\sin(\\theta)}{\\cos(\\theta)}"
+m1 = mathtext(3, 2, eq1)
 
 # Extract sin occurrences
-sins = select(M, "\sin")
-write(6, 2, item(sins, 0))
+sines = select(m1, "\\sin")
+write(6, 2, item(sines, 0))
 
 # Extract cos occurrences
-coses = select(M, "\cos")
-write(8, 2, item(coses, 0))
+cosines = select(m1, "\\cos")
+write(8, 2, item(cosines, 0))
 ```
 
 ## Comparison with In-Place Animation
 
 ```
-M = mathtext(3, 2, "x^2 + y^2 = r^2")
-S = select(M, "x^2")
+eq1 = "x^2 + y^2 = r^2"
+m1 = mathtext(3, 2, eq1)
+sel1 = select(m1, "x^2")
 
 # Animate in place (original position)
-write(item(S, 0))
+write(item(sel1, 0))
 
 # Clone to new position
-write(6, 2, item(S, 0))
+write(6, 2, item(sel1, 0))
 ```
 
 ## Notes

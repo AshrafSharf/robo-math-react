@@ -138,12 +138,17 @@ export class TranslateCommand extends BaseCommand {
             return {};
         }
         const s = this.originalShape.styleObj;
-        return {
+        const options = {
             stroke: s.stroke,
             strokeWidth: s['stroke-width'],
             fill: s.fill,
             fillOpacity: s['fill-opacity']
         };
+        // Include radius for point shapes
+        if (this.originalShape.pointRadius !== undefined) {
+            options.radius = this.originalShape.pointRadius;
+        }
+        return options;
     }
 
     /**

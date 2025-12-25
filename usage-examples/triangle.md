@@ -50,46 +50,46 @@ aas(g, angleA, angleB, a, basePoint, angle)
 ## Code
 
 ```
-G = g2d(0, 0, 20, 10, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 20, 10, -10, 10, -5, 5, 1)
 
 // SSS - Side-Side-Side
-T1 = sss(G, 3, 4, 5)              // 3-4-5 right triangle at origin
-T2 = sss(G, 5, 5, 5)              // equilateral triangle (all sides equal)
+tri1 = sss(g1, 3, 4, 5)              // 3-4-5 right triangle at origin
+tri2 = sss(g1, 5, 5, 5)              // equilateral triangle (all sides equal)
 
 // SAS - Side-Angle-Side
-T3 = sas(G, 4, 90, 3)             // right triangle with legs 3 and 4
-T4 = sas(G, 5, 60, 5)             // isoceles with 60° angle
+tri3 = sas(g1, 4, 90, 3)             // right triangle with legs 3 and 4
+tri4 = sas(g1, 5, 60, 5)             // isoceles with 60° angle
 
 // ASA - Angle-Side-Angle
-T5 = asa(G, 60, 5, 60)            // equilateral (60-60-60)
-T6 = asa(G, 90, 5, 45)            // 90-45-45 triangle
+tri5 = asa(g1, 60, 5, 60)            // equilateral (60-60-60)
+tri6 = asa(g1, 90, 5, 45)            // 90-45-45 triangle
 
 // AAS - Angle-Angle-Side
-T7 = aas(G, 30, 60, 5)            // 30-60-90 triangle
-T8 = aas(G, 45, 45, 5)            // isoceles right triangle
+tri7 = aas(g1, 30, 60, 5)            // 30-60-90 triangle
+tri8 = aas(g1, 45, 45, 5)            // isoceles right triangle
 
 // Using mag() for dynamic side lengths
-L = line(G, 0, 0, 4, 3)
-T9 = sss(G, mag(L), 4, 5)         // side length from line
+l1 = line(g1, 0, 0, 4, 3)
+tri9 = sss(g1, mag(l1), 4, 5)        // side length from line
 
 // Positioning triangles
-O = point(G, 5, 2)
-T10 = sss(G, 3, 4, 5, O)          // triangle at point O
-T11 = sss(G, 3, 4, 5, O, 45)      // rotated 45 degrees
+pt1 = point(g1, 5, 2)
+tri10 = sss(g1, 3, 4, 5, pt1)        // triangle at point pt1
+tri11 = sss(g1, 3, 4, 5, pt1, 45)    // rotated 45 degrees
 ```
 
 ## Comments
 
 | Line | Explanation |
 |------|-------------|
-| `sss(G, 3, 4, 5)` | Creates a 3-4-5 right triangle |
-| `sss(G, 5, 5, 5)` | Equilateral triangle with side 5 |
-| `sas(G, 4, 90, 3)` | Right angle between sides 3 and 4 |
-| `asa(G, 60, 5, 60)` | Two 60° angles make it equilateral |
-| `aas(G, 30, 60, 5)` | 30-60-90 special triangle |
-| `mag(L)` | Use line length as side |
-| `sss(G, 3, 4, 5, O)` | Position vertex A at point O |
-| `sss(G, 3, 4, 5, O, 45)` | Rotate triangle 45° around A |
+| `sss(g1, 3, 4, 5)` | Creates a 3-4-5 right triangle |
+| `sss(g1, 5, 5, 5)` | Equilateral triangle with side 5 |
+| `sas(g1, 4, 90, 3)` | Right angle between sides 3 and 4 |
+| `asa(g1, 60, 5, 60)` | Two 60° angles make it equilateral |
+| `aas(g1, 30, 60, 5)` | 30-60-90 special triangle |
+| `mag(l1)` | Use line length as side |
+| `sss(g1, 3, 4, 5, pt1)` | Position vertex A at point pt1 |
+| `sss(g1, 3, 4, 5, pt1, 45)` | Rotate triangle 45° around A |
 
 ## Vertex Layout
 
@@ -144,68 +144,68 @@ Edge 2: C → A
 ### Accessing Individual Edges
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
-T = sss(G, 3, 4, 5)
+tri1 = sss(g1, 3, 4, 5)
 
 // Get individual edges
-edge0 = item(T, 0)    // Edge from A to B
-edge1 = item(T, 1)    // Edge from B to C
-edge2 = item(T, 2)    // Edge from C to A
+edge0 = item(tri1, 0)    // Edge from A to B
+edge1 = item(tri1, 1)    // Edge from B to C
+edge2 = item(tri1, 2)    // Edge from C to A
 ```
 
 ### Styling Individual Edges
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
-T = sas(G, 4, 90, 3)
+tri1 = sas(g1, 4, 90, 3)
 
 // Color each edge differently
-stroke(item(T, 0), "red")
-stroke(item(T, 1), "green")
-stroke(item(T, 2), "blue")
+stroke(item(tri1, 0), "red")
+stroke(item(tri1, 1), "green")
+stroke(item(tri1, 2), "blue")
 ```
 
 ### Hiding Edges
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
-T = asa(G, 60, 5, 60)
+tri1 = asa(g1, 60, 5, 60)
 
 // Hide the base edge
-hide(item(T, 0))
+hide(item(tri1, 0))
 
 // Show only two sides
-hide(item(T, 2))
+hide(item(tri1, 2))
 ```
 
 ### Using Edge Data
 
 ```
-G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
+g1 = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)
 
-T = sss(G, 3, 4, 5)
+tri1 = sss(g1, 3, 4, 5)
 
 // Get edge endpoints
-edge = item(T, 0)
-A = start(edge)       // Start point of edge
-B = end(edge)         // End point of edge
+edge = item(tri1, 0)
+pt1 = start(edge)       // Start point of edge
+pt2 = end(edge)         // End point of edge
 
 // Create a parallel line from edge
-L = pll(G, item(T, 1), 2)
+l1 = pll(g1, item(tri1, 1), 2)
 ```
 
 ## Related Functions
 
 | Function | Description |
 |----------|-------------|
-| `polygon(g, A, B, C)` | Triangle from 3 points |
+| `polygon(g, pt1, pt2, pt3)` | Triangle from 3 points |
 | `mag(shape)` | Get length of line/vector |
 | `start(shape)` | Get start point of edge/shape |
 | `end(shape)` | Get end point of edge/shape |
-| `pointatratio(g, T, r)` | Point along triangle perimeter |
-| `item(T, index)` | Get edge at index (0, 1, or 2) |
-| `hide(item(T, n))` | Hide specific edge |
-| `stroke(item(T, n), color)` | Color specific edge |
+| `pointatratio(g, tri, r)` | Point along triangle perimeter |
+| `item(tri, index)` | Get edge at index (0, 1, or 2) |
+| `hide(item(tri, n))` | Hide specific edge |
+| `stroke(item(tri, n), color)` | Color specific edge |

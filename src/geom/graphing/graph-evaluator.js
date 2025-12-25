@@ -1,6 +1,6 @@
 export class GraphEvaluator {
 
-  eval(func, uiMin, uiMax, uiStep, xModelMin, xModelMax, uiToModelConverter) {
+  eval(func, uiMin, uiMax, uiStep, xModelMin, xModelMax, uiToModelConverter, yModelMin = -Infinity, yModelMax = Infinity) {
     // func is now a function callback instead of a string expression
     if (typeof func !== 'function') {
       throw new Error('GraphEvaluator.eval expects a function callback');
@@ -14,7 +14,10 @@ export class GraphEvaluator {
       let y2 = func(x2);
       if (isFinite(x1) && isFinite(y1) && isFinite(x2) && isFinite(y2)) {
         if (x1 >= xModelMin && x1 <= xModelMax && x2 >= xModelMin && x2 <= xModelMax) {
-          lineValues.push(x1, y1, x2, y2);
+          // Filter by Y bounds
+          if (y1 >= yModelMin && y1 <= yModelMax && y2 >= yModelMin && y2 <= yModelMax) {
+            lineValues.push(x1, y1, x2, y2);
+          }
         }
       }
     }

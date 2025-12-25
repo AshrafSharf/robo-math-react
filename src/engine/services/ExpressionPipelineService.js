@@ -43,6 +43,14 @@ const EXPRESSION_TYPE_MAP = {
     'writewithout': 'mathtext',
     // Ref expression
     'ref': 'ref',
+    // Point-producing expressions - map to 'point' for radius defaults
+    'intersect': 'point',
+    'mid': 'point',
+    'polarpoint': 'point',
+    'startpoint': 'point',
+    'pointatratio': 'point',
+    'a2p': 'point',
+    'project': 'point',
 };
 
 export class ExpressionPipelineService {
