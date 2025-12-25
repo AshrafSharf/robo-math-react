@@ -9,6 +9,7 @@ import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpress
 import { Vector3DCommand } from '../../../commands/3d/Vector3DCommand.js';
 import { vector3d_error_messages } from '../../core/ErrorMessages.js';
 import { ExpressionOptionsRegistry } from '../../core/ExpressionOptionsRegistry.js';
+import { NumericExpression } from '../NumericExpression.js';
 
 export class Vector3DExpression extends AbstractNonArithmeticExpression {
     static NAME = 'vector3d';
@@ -159,5 +160,169 @@ export class Vector3DExpression extends AbstractNonArithmeticExpression {
      */
     canPlay() {
         return true;
+    }
+
+    // ==================== Arithmetic Operations ====================
+
+    /**
+     * Add two 3D vectors (component-wise addition of direction vectors)
+     * Result starts at this vector's start point
+     * @param {Object} otherExpression - Another vector3d expression
+     * @returns {Vector3DExpression} New vector with summed directions
+     */
+    add(otherExpression) {
+        const otherAtomicValues = otherExpression.getVariableAtomicValues();
+
+        // Check if other is also a 3D vector (6 values)
+        if (otherAtomicValues.length !== 6) {
+            this.dispatchError('Cannot add: both operands must be 3D vectors');
+        }
+
+        // Get direction vectors
+        const thisDx = this.coordinates[3] - this.coordinates[0];
+        const thisDy = this.coordinates[4] - this.coordinates[1];
+        const thisDz = this.coordinates[5] - this.coordinates[2];
+        const otherDx = otherAtomicValues[3] - otherAtomicValues[0];
+        const otherDy = otherAtomicValues[4] - otherAtomicValues[1];
+        const otherDz = otherAtomicValues[5] - otherAtomicValues[2];
+
+        // Sum directions, keep start point
+        const newEndX = this.coordinates[0] + thisDx + otherDx;
+        const newEndY = this.coordinates[1] + thisDy + otherDy;
+        const newEndZ = this.coordinates[2] + thisDz + otherDz;
+
+        return this._createResolvedVector3D(
+            this.coordinates[0], this.coordinates[1], this.coordinates[2],
+            newEndX, newEndY, newEndZ
+        );
+    }
+
+    /**
+     * Subtract two 3D vectors (component-wise subtraction of direction vectors)
+     * Result starts at this vector's start point
+     * @param {Object} otherExpression - Another vector3d expression
+     * @returns {Vector3DExpression} New vector with subtracted directions
+     */
+    subtract(otherExpression) {
+        const otherAtomicValues = otherExpression.getVariableAtomicValues();
+
+        // Check if other is also a 3D vector (6 values)
+        if (otherAtomicValues.length !== 6) {
+            this.dispatchError('Cannot subtract: both operands must be 3D vectors');
+        }
+
+        // Get direction vectors
+        const thisDx = this.coordinates[3] - this.coordinates[0];
+        const thisDy = this.coordinates[4] - this.coordinates[1];
+        const thisDz = this.coordinates[5] - this.coordinates[2];
+        const otherDx = otherAtomicValues[3] - otherAtomicValues[0];
+        const otherDy = otherAtomicValues[4] - otherAtomicValues[1];
+        const otherDz = otherAtomicValues[5] - otherAtomicValues[2];
+
+        // Subtract directions, keep start point
+        const newEndX = this.coordinates[0] + thisDx - otherDx;
+        const newEndY = this.coordinates[1] + thisDy - otherDy;
+        const newEndZ = this.coordinates[2] + thisDz - otherDz;
+
+        return this._createResolvedVector3D(
+            this.coordinates[0], this.coordinates[1], this.coordinates[2],
+            newEndX, newEndY, newEndZ
+        );
+    }
+
+    /**
+     * Multiply 3D vector by scalar (scales the direction, keeps start point)
+     * @param {Object} otherExpression - Scalar expression
+     * @returns {Vector3DExpression} Scaled vector
+     */
+    multiply(otherExpression) {
+        const otherAtomicValues = otherExpression.getVariableAtomicValues();
+
+        // Must be scalar (1 value)
+        if (otherAtomicValues.length !== 1) {
+            this.dispatchError('Cannot multiply: 3D vector can only be multiplied by a scalar');
+        }
+
+        const scalar = otherAtomicValues[0];
+
+        // Special case: -1 means reverse
+        if (scalar === -1) {
+            return this.reverse();
+        }
+
+        // Scale direction vector
+        const dx = this.coordinates[3] - this.coordinates[0];
+        const dy = this.coordinates[4] - this.coordinates[1];
+        const dz = this.coordinates[5] - this.coordinates[2];
+        const newEndX = this.coordinates[0] + dx * scalar;
+        const newEndY = this.coordinates[1] + dy * scalar;
+        const newEndZ = this.coordinates[2] + dz * scalar;
+
+        return this._createResolvedVector3D(
+            this.coordinates[0], this.coordinates[1], this.coordinates[2],
+            newEndX, newEndY, newEndZ
+        );
+    }
+
+    /**
+     * Divide 3D vector by scalar (scales the direction, keeps start point)
+     * @param {Object} otherExpression - Scalar expression
+     * @returns {Vector3DExpression} Scaled vector
+     */
+    divide(otherExpression) {
+        const otherAtomicValues = otherExpression.getVariableAtomicValues();
+
+        // Must be scalar (1 value)
+        if (otherAtomicValues.length !== 1) {
+            this.dispatchError('Cannot divide: 3D vector can only be divided by a scalar');
+        }
+
+        const scalar = otherAtomicValues[0];
+
+        if (scalar === 0) {
+            this.dispatchError('Cannot divide by zero');
+        }
+
+        // Scale direction vector
+        const dx = this.coordinates[3] - this.coordinates[0];
+        const dy = this.coordinates[4] - this.coordinates[1];
+        const dz = this.coordinates[5] - this.coordinates[2];
+        const newEndX = this.coordinates[0] + dx / scalar;
+        const newEndY = this.coordinates[1] + dy / scalar;
+        const newEndZ = this.coordinates[2] + dz / scalar;
+
+        return this._createResolvedVector3D(
+            this.coordinates[0], this.coordinates[1], this.coordinates[2],
+            newEndX, newEndY, newEndZ
+        );
+    }
+
+    /**
+     * Reverse the 3D vector direction (swap start and end)
+     * @returns {Vector3DExpression} Reversed vector
+     */
+    reverse() {
+        return this._createResolvedVector3D(
+            this.coordinates[3], this.coordinates[4], this.coordinates[5],
+            this.coordinates[0], this.coordinates[1], this.coordinates[2]
+        );
+    }
+
+    /**
+     * Helper to create a resolved Vector3DExpression with coordinates
+     * @private
+     */
+    _createResolvedVector3D(x1, y1, z1, x2, y2, z2) {
+        const num1 = new NumericExpression(x1);
+        const num2 = new NumericExpression(y1);
+        const num3 = new NumericExpression(z1);
+        const num4 = new NumericExpression(x2);
+        const num5 = new NumericExpression(y2);
+        const num6 = new NumericExpression(z2);
+
+        const newVector = new Vector3DExpression([num1, num2, num3, num4, num5, num6]);
+        newVector.coordinates = [x1, y1, z1, x2, y2, z2];
+        newVector.graphExpression = this.graphExpression;
+        return newVector;
     }
 }

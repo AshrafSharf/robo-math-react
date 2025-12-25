@@ -39,7 +39,8 @@
       "WebFetch(domain:provility-lib.s3.amazonaws.com)",
       "Bash(npm ls:*)",
       "Bash(aws s3 sync:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

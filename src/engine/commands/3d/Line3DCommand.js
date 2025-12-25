@@ -3,9 +3,10 @@
  *
  * Uses grapher.diagram3d.segment3dByTwoPoints() - polymorphism handles LHS vs RHS automatically.
  * No conditional statements needed for coordinate system selection.
+ * Uses simple fade-in animation (no pen tracing).
  */
 import { Base3DCommand } from './Base3DCommand.js';
-import { Math3DShapeEffect } from '../../../effects/shape-effects/math-3d-shape-effect.js';
+import { fadeInLine } from '../../../3d/common/animator/line_animator.js';
 import { common_error_messages } from '../../expression-parser/core/ErrorMessages.js';
 
 export class Line3DCommand extends Base3DCommand {
@@ -101,16 +102,17 @@ export class Line3DCommand extends Base3DCommand {
     }
 
     /**
-     * Replay animation on existing shape
+     * Replay animation on existing shape (fade-in, no pen tracing)
      * @returns {Promise}
      */
     async playSingle() {
         if (!this.commandResult) return;
 
-        const pen = this.graphContainer.getPen();
-        const camera = this.graphContainer.getCamera();
-        const canvas = this.graphContainer.getCanvas();
-        const effect = new Math3DShapeEffect(this.commandResult, 'line', { pen, camera, canvas });
-        return effect.play();
+        return new Promise(resolve => {
+            fadeInLine(this.commandResult, {
+                duration: 0.5,
+                onComplete: resolve
+            });
+        });
     }
 }

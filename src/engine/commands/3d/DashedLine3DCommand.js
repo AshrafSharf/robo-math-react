@@ -1,21 +1,20 @@
 /**
- * Vector3DCommand - Command for rendering a 3D vector (arrow)
+ * DashedLine3DCommand - Command for rendering a 3D dashed line segment with fade-in animation
  *
- * Uses grapher.diagram3d.vector() - polymorphism handles LHS vs RHS automatically.
- * No conditional statements needed for coordinate system selection.
- * Uses simple fade-in animation (no pen tracing).
+ * Uses grapher.diagram3d.dashedLine3d() for dashed line creation.
+ * Uses fade-in animation instead of pen-tracing animation.
  */
 import { Base3DCommand } from './Base3DCommand.js';
-import { fadeInVector } from '../../../3d/common/animator/vector_animator.js';
 import { common_error_messages } from '../../expression-parser/core/ErrorMessages.js';
+import { TweenMax } from 'gsap';
 
-export class Vector3DCommand extends Base3DCommand {
+export class DashedLine3DCommand extends Base3DCommand {
     /**
-     * Create a vector3d command
+     * Create a dashed line3d command
      * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
      * @param {Object} startPoint - Start position {x, y, z}
      * @param {Object} endPoint - End position {x, y, z}
-     * @param {Object} options - { styleOptions: { strokeWidth, color, headLength, headRadius, ... } }
+     * @param {Object} options - { styleOptions: { strokeWidth, color, dashSize, gapSize, ... } }
      */
     constructor(graphExpression, startPoint, endPoint, options = {}) {
         super();
@@ -24,16 +23,17 @@ export class Vector3DCommand extends Base3DCommand {
         this.startPoint = startPoint;
         this.endPoint = endPoint;
         this.styleOptions = options.styleOptions || {};
+        this.fadeDuration = options.fadeDuration ?? 0.5; // Fade-in duration in seconds
     }
 
     /**
-     * Create vector shape via diagram3d
+     * Create dashed line shape via diagram3d
      * @returns {Promise}
      */
     async doInit() {
         // Resolve grapher from expression at init time (after g3d command has run)
         if (!this.graphExpression) {
-            const err = new Error(common_error_messages.GRAPH_REQUIRED('vector3d'));
+            const err = new Error(common_error_messages.GRAPH_REQUIRED('dashedline3d'));
             err.expressionId = this.expressionId;
             throw err;
         }
@@ -53,21 +53,23 @@ export class Vector3DCommand extends Base3DCommand {
             throw err;
         }
 
-        this.commandResult = this.graphContainer.diagram3d.vector(
+        // Create dashed line using diagram3d.dashedLine3d
+        this.commandResult = this.graphContainer.diagram3d.dashedLine3d(
             this.startPoint,
             this.endPoint,
-            '',
+            '', // label
             this.styleOptions.color,
-            {
-                shaftRadius: this.styleOptions.strokeWidth,
-                headLength: this.styleOptions.headLength,
-                headRadius: this.styleOptions.headRadius
-            }
+            { radius: this.styleOptions.strokeWidth }
         );
+
+        // Hide initially for fade-in animation
+        if (this.commandResult) {
+            this.commandResult.visible = false;
+        }
     }
 
     /**
-     * Get label position at midpoint of vector
+     * Get label position at midpoint of line
      * @returns {{x: number, y: number, z: number}}
      */
     getLabelPosition() {
@@ -95,22 +97,10 @@ export class Vector3DCommand extends Base3DCommand {
     }
 
     /**
-     * Get vector as direction (dx, dy, dz)
-     * @returns {{x: number, y: number, z: number}}
-     */
-    getDirection() {
-        return {
-            x: this.endPoint.x - this.startPoint.x,
-            y: this.endPoint.y - this.startPoint.y,
-            z: this.endPoint.z - this.startPoint.z
-        };
-    }
-
-    /**
-     * Get vector magnitude (length)
+     * Get line length
      * @returns {number}
      */
-    getMagnitude() {
+    getLength() {
         const dx = this.endPoint.x - this.startPoint.x;
         const dy = this.endPoint.y - this.startPoint.y;
         const dz = this.endPoint.z - this.startPoint.z;
@@ -118,17 +108,58 @@ export class Vector3DCommand extends Base3DCommand {
     }
 
     /**
-     * Replay animation on existing shape (fade-in, no pen tracing)
+     * Play animation - fade in the dashed line
      * @returns {Promise}
      */
     async playSingle() {
         if (!this.commandResult) return;
 
+        // Make visible first
+        this.commandResult.visible = true;
+
+        // Traverse all meshes and fade in their materials
         return new Promise(resolve => {
-            fadeInVector(this.commandResult, {
-                duration: 0.5,
-                onComplete: resolve
+            const materials = [];
+            this.commandResult.traverse(child => {
+                if (child.material) {
+                    child.material.transparent = true;
+                    child.material.opacity = 0;
+                    materials.push(child.material);
+                }
+            });
+
+            if (materials.length === 0) {
+                resolve();
+                return;
+            }
+
+            // Animate all materials
+            let completed = 0;
+            materials.forEach(material => {
+                TweenMax.to(material, this.fadeDuration, {
+                    opacity: 1,
+                    onComplete: () => {
+                        completed++;
+                        if (completed === materials.length) {
+                            resolve();
+                        }
+                    }
+                });
             });
         });
+    }
+
+    /**
+     * Direct play - show immediately without animation
+     */
+    doDirectPlay() {
+        if (this.commandResult) {
+            this.commandResult.visible = true;
+            this.commandResult.traverse(child => {
+                if (child.material) {
+                    child.material.opacity = 1;
+                }
+            });
+        }
     }
 }

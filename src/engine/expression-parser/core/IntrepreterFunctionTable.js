@@ -5,6 +5,7 @@ import { ExpressionInterpreter } from './ExpressionInterpreter.js';
 import { NumericExpression } from '../expressions/NumericExpression.js';
 import { PointExpression } from '../expressions/PointExpression.js';
 import { LineExpression } from '../expressions/LineExpression.js';
+import { DashedLineExpression } from '../expressions/DashedLineExpression.js';
 import { VectorExpression } from '../expressions/VectorExpression.js';
 import { VLineExpression } from '../expressions/VLineExpression.js';
 import { HLineExpression } from '../expressions/HLineExpression.js';
@@ -67,6 +68,7 @@ import { Polar2DExpression } from '../expressions/Polar2DExpression.js';
 import { Graph3DExpression } from '../expressions/Graph3DExpression.js';
 import { Point3DExpression } from '../expressions/3d/Point3DExpression.js';
 import { Line3DExpression } from '../expressions/3d/Line3DExpression.js';
+import { DashedLine3DExpression } from '../expressions/3d/DashedLine3DExpression.js';
 import { Vector3DExpression } from '../expressions/3d/Vector3DExpression.js';
 import { Sphere3DExpression } from '../expressions/3d/Sphere3DExpression.js';
 import { Cylinder3DExpression } from '../expressions/3d/Cylinder3DExpression.js';
@@ -186,6 +188,7 @@ export class IntrepreterFunctionTable {
         // Geometry expressions
         registerMultiArg('point', PointExpression);
         registerMultiArg('line', LineExpression);
+        registerMultiArg('dashedline', DashedLineExpression);
         registerMultiArg('vector', VectorExpression);
         registerMultiArg('arc', ArcExpression);
         registerMultiArg('circle', CircleExpression);
@@ -202,6 +205,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('g3d', Graph3DExpression);
         registerMultiArg('point3d', Point3DExpression);
         registerMultiArg('line3d', Line3DExpression);
+        registerMultiArg('dashedline3d', DashedLine3DExpression);
         registerMultiArg('vector3d', Vector3DExpression);
         registerMultiArg('sphere', Sphere3DExpression);
         registerMultiArg('cylinder', Cylinder3DExpression);

@@ -96,6 +96,11 @@ export class NumericExpression extends AbstractArithmeticExpression {
             ]);
         }
 
+        // For vectors (4 values) or 3D vectors (6 values), delegate to their multiply
+        if (otherValues.length === 4 || otherValues.length === 6) {
+            return otherExpression.multiply(this);
+        }
+
         throw new Error('Cannot perform multiplication with Non Numerical values');
     }
 

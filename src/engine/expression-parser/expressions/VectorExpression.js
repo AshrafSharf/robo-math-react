@@ -15,6 +15,7 @@
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { VectorCommand } from '../../commands/VectorCommand.js';
 import { vector_error_messages } from '../core/ErrorMessages.js';
+import { NumericExpression } from './NumericExpression.js';
 
 export class VectorExpression extends AbstractNonArithmeticExpression {
     static NAME = 'vector';
@@ -156,5 +157,157 @@ export class VectorExpression extends AbstractNonArithmeticExpression {
      */
     canPlay() {
         return true;
+    }
+
+    // ==================== Arithmetic Operations ====================
+
+    /**
+     * Add two vectors (component-wise addition of direction vectors)
+     * Result starts at this vector's start point
+     * @param {Object} otherExpression - Another vector expression
+     * @returns {VectorExpression} New vector with summed directions
+     */
+    add(otherExpression) {
+        const otherAtomicValues = otherExpression.getVariableAtomicValues();
+
+        // Check if other is also a vector (4 values)
+        if (otherAtomicValues.length !== 4) {
+            this.dispatchError('Cannot add: both operands must be vectors');
+        }
+
+        // Get direction vectors
+        const thisDx = this.coordinates[2] - this.coordinates[0];
+        const thisDy = this.coordinates[3] - this.coordinates[1];
+        const otherDx = otherAtomicValues[2] - otherAtomicValues[0];
+        const otherDy = otherAtomicValues[3] - otherAtomicValues[1];
+
+        // Sum directions, keep start point
+        const newEndX = this.coordinates[0] + thisDx + otherDx;
+        const newEndY = this.coordinates[1] + thisDy + otherDy;
+
+        return this._createResolvedVector(
+            this.coordinates[0], this.coordinates[1],
+            newEndX, newEndY
+        );
+    }
+
+    /**
+     * Subtract two vectors (component-wise subtraction of direction vectors)
+     * Result starts at this vector's start point
+     * @param {Object} otherExpression - Another vector expression
+     * @returns {VectorExpression} New vector with subtracted directions
+     */
+    subtract(otherExpression) {
+        const otherAtomicValues = otherExpression.getVariableAtomicValues();
+
+        // Check if other is also a vector (4 values)
+        if (otherAtomicValues.length !== 4) {
+            this.dispatchError('Cannot subtract: both operands must be vectors');
+        }
+
+        // Get direction vectors
+        const thisDx = this.coordinates[2] - this.coordinates[0];
+        const thisDy = this.coordinates[3] - this.coordinates[1];
+        const otherDx = otherAtomicValues[2] - otherAtomicValues[0];
+        const otherDy = otherAtomicValues[3] - otherAtomicValues[1];
+
+        // Subtract directions, keep start point
+        const newEndX = this.coordinates[0] + thisDx - otherDx;
+        const newEndY = this.coordinates[1] + thisDy - otherDy;
+
+        return this._createResolvedVector(
+            this.coordinates[0], this.coordinates[1],
+            newEndX, newEndY
+        );
+    }
+
+    /**
+     * Multiply vector by scalar (scales the direction, keeps start point)
+     * @param {Object} otherExpression - Scalar expression
+     * @returns {VectorExpression} Scaled vector
+     */
+    multiply(otherExpression) {
+        const otherAtomicValues = otherExpression.getVariableAtomicValues();
+
+        // Must be scalar (1 value)
+        if (otherAtomicValues.length !== 1) {
+            this.dispatchError('Cannot multiply: vector can only be multiplied by a scalar');
+        }
+
+        const scalar = otherAtomicValues[0];
+
+        // Special case: -1 means reverse
+        if (scalar === -1) {
+            return this.reverse();
+        }
+
+        // Scale direction vector
+        const dx = this.coordinates[2] - this.coordinates[0];
+        const dy = this.coordinates[3] - this.coordinates[1];
+        const newEndX = this.coordinates[0] + dx * scalar;
+        const newEndY = this.coordinates[1] + dy * scalar;
+
+        return this._createResolvedVector(
+            this.coordinates[0], this.coordinates[1],
+            newEndX, newEndY
+        );
+    }
+
+    /**
+     * Divide vector by scalar (scales the direction, keeps start point)
+     * @param {Object} otherExpression - Scalar expression
+     * @returns {VectorExpression} Scaled vector
+     */
+    divide(otherExpression) {
+        const otherAtomicValues = otherExpression.getVariableAtomicValues();
+
+        // Must be scalar (1 value)
+        if (otherAtomicValues.length !== 1) {
+            this.dispatchError('Cannot divide: vector can only be divided by a scalar');
+        }
+
+        const scalar = otherAtomicValues[0];
+
+        if (scalar === 0) {
+            this.dispatchError('Cannot divide by zero');
+        }
+
+        // Scale direction vector
+        const dx = this.coordinates[2] - this.coordinates[0];
+        const dy = this.coordinates[3] - this.coordinates[1];
+        const newEndX = this.coordinates[0] + dx / scalar;
+        const newEndY = this.coordinates[1] + dy / scalar;
+
+        return this._createResolvedVector(
+            this.coordinates[0], this.coordinates[1],
+            newEndX, newEndY
+        );
+    }
+
+    /**
+     * Reverse the vector direction (swap start and end)
+     * @returns {VectorExpression} Reversed vector
+     */
+    reverse() {
+        return this._createResolvedVector(
+            this.coordinates[2], this.coordinates[3],
+            this.coordinates[0], this.coordinates[1]
+        );
+    }
+
+    /**
+     * Helper to create a resolved VectorExpression with coordinates
+     * @private
+     */
+    _createResolvedVector(x1, y1, x2, y2) {
+        const num1 = new NumericExpression(x1);
+        const num2 = new NumericExpression(y1);
+        const num3 = new NumericExpression(x2);
+        const num4 = new NumericExpression(y2);
+
+        const newVector = new VectorExpression([num1, num2, num3, num4]);
+        newVector.coordinates = [x1, y1, x2, y2];
+        newVector.graphExpression = this.graphExpression;
+        return newVector;
     }
 }

@@ -85,6 +85,7 @@ export class ChangeCommand extends FromToCommand {
                     );
                     await this._updateSourceAndDependents();
                     this._buildResultCollection();
+                    this._updateShapeRegistry();
                     resolve();
                 }
             });
@@ -102,6 +103,7 @@ export class ChangeCommand extends FromToCommand {
             }
         }
         this.currentCommands = [];
+        this.commandsByLabel = new Map(); // Track commands by variable name
 
         // Get the updated source expression from context (without registering dependency)
         const savedCaller = this.expressionContext.getCaller();
@@ -118,6 +120,7 @@ export class ChangeCommand extends FromToCommand {
             await newCmd.init(this.commandContext);
             await newCmd.directPlay();
             this.currentCommands.push(newCmd);
+            this.commandsByLabel.set(this.variableName, newCmd);
         }
 
         // Create and render dependent commands
@@ -142,6 +145,9 @@ export class ChangeCommand extends FromToCommand {
                 await newCmd.init(this.commandContext);
                 await newCmd.directPlay();
                 this.currentCommands.push(newCmd);
+                if (label) {
+                    this.commandsByLabel.set(label, newCmd);
+                }
             }
         }
     }
@@ -159,12 +165,14 @@ export class ChangeCommand extends FromToCommand {
         );
         await this._updateSourceAndDependents();
         this._buildResultCollection();
+        this._updateShapeRegistry();
     }
 
     async playSingle() {
         // Hide originals on every replay (they may have been shown again)
         this._hideOriginalShapes();
-        return this.doPlay();
+        await this.doPlay();
+        this._updateShapeRegistry();
     }
 
     /**
@@ -183,6 +191,18 @@ export class ChangeCommand extends FromToCommand {
         // Register in shapeRegistry (postInit already ran before commandResult was set)
         if (this.labelName) {
             this.commandContext.shapeRegistry[this.labelName] = this.commandResult;
+        }
+    }
+
+    /**
+     * Update shapeRegistry with new shapes under original labels
+     * Called at end of doPlay, directPlay, playSingle
+     */
+    _updateShapeRegistry() {
+        for (const [label, cmd] of this.commandsByLabel) {
+            if (cmd && cmd.commandResult) {
+                this.commandContext.shapeRegistry[label] = cmd.commandResult;
+            }
         }
     }
 }
