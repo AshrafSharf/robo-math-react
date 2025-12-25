@@ -6,7 +6,7 @@ Extract specific parts of a MathTextComponent that match a pattern. Returns a Te
 
 ```
 eq1 = "x^2 + y^2 = r^2"
-m1 = mathtext(3, 2, eq1)
+m1 = mtext(3, 2, eq1)
 sel1 = select(m1, "x^2")
 
 # Animate just the x^2 portion
@@ -17,7 +17,7 @@ write(sel1)
 
 ```
 eq1 = "\\tan(\\theta) = \\frac{\\sin(\\theta)}{\\cos(\\theta)}"
-m1 = mathtext(3, 2, eq1)
+m1 = mtext(3, 2, eq1)
 
 # Extract all theta occurrences
 thetas = select(m1, "\\theta")
@@ -31,7 +31,7 @@ cosines = select(m1, "\\cos")
 
 ```
 eq1 = "\\tan(\\theta) = \\frac{\\sin(\\theta)}{\\cos(\\theta)}"
-m1 = mathtext(3, 2, eq1)
+m1 = mtext(3, 2, eq1)
 hide(m1)
 
 # Extract and write all thetas sequentially
@@ -47,7 +47,7 @@ write(item(thetas, 1))
 
 ```
 eq1 = "\\tan(\\theta) = \\frac{\\sin(\\theta)}{\\cos(\\theta)}"
-m1 = mathtext(3, 2, eq1)
+m1 = mtext(3, 2, eq1)
 thetas = select(m1, "\\theta")
 
 # Clone first theta to new position
@@ -61,7 +61,7 @@ write(5, 4, item(thetas, 1))
 
 ```
 eq1 = "x^2 + y^2 = 20"
-m1 = mathtext(5, 12, eq1)
+m1 = mtext(5, 12, eq1)
 write(m1)
 
 # Select and replace x^2 with a^2
@@ -77,7 +77,7 @@ replace("30", sel2)
 
 ```
 eq1 = "x^2 + y^2 = 20"
-m1 = mathtext(5, 12, eq1)
+m1 = mtext(5, 12, eq1)
 write(m1)
 
 sel1 = select(m1, "x^2")
@@ -93,20 +93,20 @@ sel1 = select(m1, "x^2")
 
 # Add arrow annotation pointing to x^2
 lbl1 = "squared"
-arrow(sel1, "bl", "S", 60, lbl1, 70, 5)
+marrow(sel1, "bl", "S", 60, lbl1, 70, 5)
 
 # Or add overbrace annotation
 overbrace(sel1, "numerator")
 
 # Or add cancel line
-cancel(sel1, "1", "u")
+mcancel(sel1, "1", "u")
 ```
 
 ## Visibility Control
 
 ```
 eq1 = "a + b + c"
-m1 = mathtext(3, 2, eq1)
+m1 = mtext(3, 2, eq1)
 sel1 = select(m1, "b")
 
 # Hide the selected part
@@ -125,5 +125,5 @@ fadein(sel1)
 - Returns a TextItemCollection containing all matches
 - Each pattern match becomes a TextItem in the collection
 - Use `item(collection, index)` to access specific items
-- Works with mathtext and write expressions
+- Works with mtext and write expressions
 - Patterns match LaTeX content (use `\\` for LaTeX commands like `\\sin`, `\\frac`)

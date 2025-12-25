@@ -1,5 +1,5 @@
  So the full breakdown:
-  arrow(T, "rm", "E", 50, "squared", 20, 5)
+  marrow(T, "rm", "E", 50, "squared", 20, 5)
          │    │     │   │      │      │   └── offset (5px from edge)
          │    │     │   │      │      └────── curvature (20px bend)
          │    │     │   │      └───────────── text label

@@ -4,7 +4,7 @@
  * No coordinate transformation - works directly with Three.js objects
  */
 
-import { TweenMax, TimelineMax } from 'gsap';
+import { TweenMax, TimelineMax, Back } from 'gsap';
 import * as THREE from 'three';
 
 /**
@@ -130,7 +130,7 @@ export function animateVectorComponents(vectorGroup, options = {}) {
             x: 1,
             y: 1,
             z: 1,
-            ease: "back.out(1.7)"
+            ease: Back.easeOut.config(1.7)
         }, duration * 0.7);
     }
 

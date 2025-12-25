@@ -84,16 +84,16 @@ overbrace(T, "numerator")      // Draws overbrace with "numerator" above "a+b"
 underbrace(T, "denominator") // Draws underbrace with "denominator" below
 ```
 
-### CancelCommand
+### McancelCommand
 
 Draws diagonal strikethrough lines over selected math text:
 
 ```
 M = write("\frac{a+b}{c}")
 T = subonly(M, "a")
-cancel(T, "0", "u")   // Diagonal strike with arrow pointing to "0"
-cancel(T, "", "d")    // Down diagonal (no text)
-cancel(T, "", "x")    // X pattern (cross)
+mcancel(T, "0", "u")   // Diagonal strike with arrow pointing to "0"
+mcancel(T, "", "d")    // Down diagonal (no text)
+mcancel(T, "", "x")    // X pattern (cross)
 ```
 
 **2D Phantom (Width × Height):**
@@ -135,9 +135,9 @@ mathComponent.setCanvasPosition(x, y);
 
 ## Implementation Files
 
-- `src/engine/commands/TopWriteCommand.js`
-- `src/engine/commands/BottomWriteCommand.js`
-- `src/engine/commands/CancelCommand.js`
+- `src/engine/commands/OverbraceCommand.js`
+- `src/engine/commands/UnderbraceCommand.js`
+- `src/engine/commands/McancelCommand.js`
 - `src/mathtext/utils/math-text-position-util.js`
 - `src/mathtext/processor/svg-converters/cancel-arrow-converter.js`
 

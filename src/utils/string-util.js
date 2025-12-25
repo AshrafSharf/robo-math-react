@@ -49,4 +49,18 @@ export class StringUtil {
     }
     return (this.PAUSABLE_CHARACTER_SET.indexOf(ch) >= 0);
   }
+
+  /**
+   * Parse multi-line expression text, filtering out empty lines and comments
+   * @param {string} text - Raw text with expressions, comments, and empty lines
+   * @returns {string[]} - Array of expression strings
+   */
+  static parseExpressionLines(text) {
+    if (!text || !text.trim()) return [];
+
+    return text
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0 && !line.startsWith('//'));
+  }
 }

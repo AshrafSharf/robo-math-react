@@ -7,6 +7,7 @@ import { defaultKeymap, insertNewline } from '@codemirror/commands';
 import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
 import { completionStatus, acceptCompletion } from '@codemirror/autocomplete';
 import { roboCanvasAutocomplete } from '../../auto_complete';
+import { StringUtil } from '../../../../utils/string-util';
 import './ImportModal.css';
 
 /**
@@ -140,14 +141,7 @@ const ImportModal = ({ isOpen, onClose, onImport, initialExpressions = [] }) => 
   }, [isOpen, initialExpressions]);
 
   const handleImport = () => {
-    if (!value.trim()) return;
-
-    // Split by newlines and filter empty lines
-    const lines = value
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0);
-
+    const lines = StringUtil.parseExpressionLines(value);
     if (lines.length > 0) {
       onImport(lines);
       onClose();

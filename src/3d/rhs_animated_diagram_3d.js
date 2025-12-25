@@ -5,7 +5,7 @@
  */
 
 import { RHS3DDiagram } from './rhs_diagram3d.js';
-import { TweenMax, TimelineMax } from 'gsap';
+import { TweenMax, TimelineMax, Power2 } from 'gsap';
 import { createEffectsManager } from './effects_manager3d.js';
 
 // Import animators
@@ -99,7 +99,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
         // Animate line drawing from start to end with pen tracking
         animateLine(segmentMesh, {
             duration: duration,
-            ease: "power2.out",
+            ease: Power2.easeOut,
             ...this._getPenOptions(),
             onComplete: () => {
                 // Fade in label after segment
@@ -136,7 +136,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
         // Animate vector growing from start to end
         animateVectorGrowth(vectorGroup, {
             duration: duration,
-            ease: "power2.out",
+            ease: Power2.easeOut,
             onComplete: () => {
                 // Fade in label after vector
                 if (vectorGroup.label) {
@@ -220,7 +220,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
         // Animate dashed line with sequential ray effect
         animateDashedLineSequential(dashedLineGroup, {
             duration: duration * 2,  // Longer duration for visibility
-            ease: "power2.inOut",
+            ease: Power2.easeInOut,
             stagger: 0.12,  // Stagger for dramatic effect
             direction: 'forward',
             onComplete: () => {
@@ -262,7 +262,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
         tl.to(lineGroup.scale, {
             z: 1,
             duration: duration,
-            ease: "power2.inOut",
+            ease: Power2.easeInOut,
             onComplete: () => {
                 // Show label after line animation
                 if (lineGroup.label) {
@@ -272,7 +272,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
                         y: 0,
                         z: 0,
                         duration: duration * 0.3,
-                        ease: "power2.out"
+                        ease: Power2.easeOut
                     });
                 }
             }
@@ -306,7 +306,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
         animatePlaneParametricSweep(planeMesh, {
             duration: duration,
             sweepDirection: sweepDirection,
-            ease: "power2.inOut",
+            ease: Power2.easeInOut,
             onComplete: () => {
                 // Show label after plane animation
                 if (planeMesh.label) {
@@ -442,7 +442,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
                 x: 1,
                 y: 1,
                 z: 1,
-                ease: "power2.out",  // Smooth deceleration, no bounce
+                ease: Power2.easeOut,  // Smooth deceleration, no bounce
                 onComplete: () => {
                     // Fade in label after arc
                     if (arcGroup.label) {
@@ -482,7 +482,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
             duration: duration * 0.8,
             fromOpacity: 0,
             toOpacity: 1,  // Full opacity for the outline
-            ease: "power2.out",
+            ease: Power2.easeOut,
             onComplete: () => {
                 // Fade in label after marker
                 if (markerGroup.label) {
@@ -519,7 +519,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
         // Animate vector growing
         animateVectorGrowth(indicatorGroup, {
             duration: duration,
-            ease: "power2.out",
+            ease: Power2.easeOut,
             onComplete: () => {
                 // Fade in label after vector animation
                 if (indicatorGroup.label) {
@@ -568,7 +568,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
                             if (indicator.label && options.animateLabel !== false) {
                                 fadeInLabel(indicator.label, {
                                     duration: 0.3,
-                                    ease: "power2.out"
+                                    ease: Power2.easeOut
                                 });
                             }
 
@@ -714,7 +714,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
             x: scale,
             y: scale,
             z: scale,
-            ease: "power2.inOut",
+            ease: Power2.easeInOut,
             yoyo: true,
             repeat: options.repeat || 1,
             ...restOptions
@@ -739,7 +739,7 @@ export class RHSAnimatedDiagram extends RHS3DDiagram {
                 r: ((highlightColor >> 16) & 255) / 255,
                 g: ((highlightColor >> 8) & 255) / 255,
                 b: (highlightColor & 255) / 255,
-                ease: "power2.inOut",
+                ease: Power2.easeInOut,
                 yoyo: true,
                 repeat: 1,
                 onComplete: () => {

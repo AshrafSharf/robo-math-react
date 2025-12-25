@@ -6,7 +6,7 @@ Replace parts of a math expression with new content using the `replace()` functi
 
 ```
 eq1 = "x^2+y^2=20"
-m1 = mathtext(5, 12, eq1)
+m1 = mtext(5, 12, eq1)
 write(m1)
 
 sel1 = select(m1, "x^2")
@@ -20,7 +20,7 @@ replace("30", sel2)
 
 ```
 eq1 = "x^2 + y^2 = 20"
-m1 = mathtext(5, 12, eq1)
+m1 = mtext(5, 12, eq1)
 write(m1)
 
 sel1 = select(m1, "x^2")
@@ -37,6 +37,6 @@ seq(fadeout(sel1), replace("a^2", sel1))
 
 ## Related
 
-- `select` - Extract patterns from mathtext
+- `select` - Extract patterns from mtext
 - `seq` - Run effects sequentially
 - `fadeout` - Fade out animation

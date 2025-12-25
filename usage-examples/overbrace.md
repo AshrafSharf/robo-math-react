@@ -57,4 +57,4 @@ overbrace(sel4, "equals")
 
 - The annotation appears centered above the selected text
 - Use `select()` to get the text item to annotate
-- For more control over position and styling, use `arrow()` instead
+- For more control over position and styling, use `marrow()` instead

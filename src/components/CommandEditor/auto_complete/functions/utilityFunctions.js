@@ -87,7 +87,7 @@ export const PAGE_FUNCTIONS = {
   pos: {
     name: 'pos',
     signature: '(containers..., dRow, dCol)',
-    args: ['containers: g2d|mathtext|g3d...', 'dRow: number', 'dCol: number'],
+    args: ['containers: g2d|mtext|g3d...', 'dRow: number', 'dCol: number'],
     description: 'Shift containers by delta row/col in logical coordinates',
     altSignatures: [
       'pos(G, 2, 3)',
@@ -99,7 +99,7 @@ export const PAGE_FUNCTIONS = {
   size: {
     name: 'size',
     signature: '(containers..., widthRatio, heightRatio)',
-    args: ['containers: g2d|mathtext|g3d...', 'widthRatio: number', 'heightRatio: number'],
+    args: ['containers: g2d|mtext|g3d...', 'widthRatio: number', 'heightRatio: number'],
     description: 'Scale containers by width/height ratio (0.5=half, 2=double)',
     altSignatures: [
       'size(G, 0.5, 0.5)',

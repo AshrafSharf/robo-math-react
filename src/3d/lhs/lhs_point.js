@@ -17,7 +17,7 @@ import { transformToThreeJS } from './lhs_transform.js';
 export function point(position, options = {}) {
     const {
         color = 0xff0000,        // Red by default
-        radius = 0.1,             // Small sphere
+        radius = 0.15,            // Visible sphere
         segments = 16,            // Smooth enough sphere
         emissive = 0x000000,      // No emission
         emissiveIntensity = 0,    

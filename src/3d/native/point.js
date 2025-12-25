@@ -13,7 +13,7 @@ import * as THREE from 'three';
  */
 export function point(position, options = {}) {
     const {
-        radius = 0.1,
+        radius = 0.15,
         color = 0xff0000,
         opacity = 1.0,
         segments = 16

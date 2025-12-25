@@ -1,11 +1,11 @@
 /**
- * CancelExpression - Applies cancel strikethrough to TextItem(s)
+ * McancelExpression - Applies cancel strikethrough to TextItem(s)
  *
  * Syntax:
- *   cancel(T, "text", "u")           - Cancel with text, up diagonal (default)
- *   cancel(T, "text", "d")           - Cancel with down diagonal (bcancel)
- *   cancel(T, "text", "x")           - Cancel with X (xcancel)
- *   cancel(T, "text", "u", "red")    - With custom color
+ *   mcancel(T, "text", "u")           - Cancel with text, up diagonal (default)
+ *   mcancel(T, "text", "d")           - Cancel with down diagonal (bcancel)
+ *   mcancel(T, "text", "x")           - Cancel with X (xcancel)
+ *   mcancel(T, "text", "u", "red")    - With custom color
  *
  * Direction codes:
  *   "u" - up diagonal (\cancel, \cancelto)
@@ -16,10 +16,10 @@
  * Text is wrapped in \text{} if plain, used as LaTeX if contains special chars.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { CancelCommand } from '../../commands/CancelCommand.js';
+import { McancelCommand } from '../../commands/McancelCommand.js';
 
-export class CancelExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'cancel';
+export class McancelExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'mcancel';
 
     constructor(subExpressions) {
         super();
@@ -32,7 +32,7 @@ export class CancelExpression extends AbstractNonArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 3) {
-            this.dispatchError('cancel() requires at least 3 arguments: cancel(T, "text", "direction")');
+            this.dispatchError('mcancel() requires at least 3 arguments: mcancel(T, "text", "direction")');
         }
 
         // Arg 0: TextItem variable reference
@@ -40,7 +40,7 @@ export class CancelExpression extends AbstractNonArithmeticExpression {
         targetExpr.resolve(context);
 
         if (!targetExpr.variableName) {
-            this.dispatchError('cancel() first argument must be a TextItem variable');
+            this.dispatchError('mcancel() first argument must be a TextItem variable');
         }
         this.textItemVariableName = targetExpr.variableName;
 
@@ -49,7 +49,7 @@ export class CancelExpression extends AbstractNonArithmeticExpression {
         textExpr.resolve(context);
         const resolvedText = this._getResolvedExpression(context, textExpr);
         if (!resolvedText || resolvedText.getName() !== 'quotedstring') {
-            this.dispatchError('cancel() second argument must be a quoted string (cancel text)');
+            this.dispatchError('mcancel() second argument must be a quoted string (cancel text)');
         }
         this.cancelText = resolvedText.getStringValue();
 
@@ -58,11 +58,11 @@ export class CancelExpression extends AbstractNonArithmeticExpression {
         dirExpr.resolve(context);
         const resolvedDir = this._getResolvedExpression(context, dirExpr);
         if (!resolvedDir || resolvedDir.getName() !== 'quotedstring') {
-            this.dispatchError('cancel() third argument must be a quoted string (direction: "u", "d", or "x")');
+            this.dispatchError('mcancel() third argument must be a quoted string (direction: "u", "d", or "x")');
         }
         const dir = resolvedDir.getStringValue().toLowerCase();
         if (!['u', 'd', 'x'].includes(dir)) {
-            this.dispatchError('cancel() direction must be "u", "d", or "x"');
+            this.dispatchError('mcancel() direction must be "u", "d", or "x"');
         }
         this.direction = dir;
 
@@ -78,7 +78,7 @@ export class CancelExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return CancelExpression.NAME;
+        return McancelExpression.NAME;
     }
 
     getVariableAtomicValues() {
@@ -86,7 +86,7 @@ export class CancelExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new CancelCommand({
+        return new McancelCommand({
             textItemVariableName: this.textItemVariableName,
             cancelText: this.cancelText,
             direction: this.direction,

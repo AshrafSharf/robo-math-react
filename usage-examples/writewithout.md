@@ -21,7 +21,7 @@ writewithout(row, col, eq, pattern1, pattern2, ...)
 ```
 # Skip theta, animate everything else
 eq1 = "\\tan(\\theta) = \\frac{\\sin(\\theta)}{\\cos(\\theta)}"
-m1 = mathtext(5, 2, eq1)
+m1 = mtext(5, 2, eq1)
 writewithout(m1, "\\theta")
 
 # Direct write skipping pattern

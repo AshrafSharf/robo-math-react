@@ -17,7 +17,7 @@ item(table, rowIndex, colIndex)   # Get table cell
 ### Access Items from select()
 
 ```
-M = mathtext(3, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
+M = mtext(3, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
 thetas = select(M, "\theta")
 
 # Get first theta
@@ -32,7 +32,7 @@ write(item(thetas, 2))
 ### Clone to New Position
 
 ```
-M = mathtext(3, 2, "x^2 + y^2 = r^2")
+M = mtext(3, 2, "x^2 + y^2 = r^2")
 S = select(M, "x^2")
 
 # Clone to new position with animation

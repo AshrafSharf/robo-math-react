@@ -1,5 +1,5 @@
 /**
- * ArrowCommand - Draws a circle around TextItem, curved arrow, and annotation text
+ * MarrowCommand - Draws a circle around TextItem, curved arrow, and annotation text
  *
  * Creates:
  * - AnnotationCircleShape around TextItem
@@ -16,7 +16,7 @@ import { AnnotationTextComponent } from '../../mathtext/components/annotation-te
 import { WriteEffect } from '../../mathtext/effects/write-effect.js';
 import { RoboEventManager } from '../../events/robo-event-manager.js';
 
-export class ArrowCommand extends BaseCommand {
+export class MarrowCommand extends BaseCommand {
     constructor(options = {}) {
         super();
         this.options = options;
@@ -30,7 +30,7 @@ export class ArrowCommand extends BaseCommand {
         const textItemOrCollection = this.commandContext.shapeRegistry[this.options.textItemVariableName];
 
         if (!textItemOrCollection) {
-            console.warn(`ArrowCommand: "${this.options.textItemVariableName}" not found in registry`);
+            console.warn(`MarrowCommand: "${this.options.textItemVariableName}" not found in registry`);
             return;
         }
 
@@ -38,7 +38,7 @@ export class ArrowCommand extends BaseCommand {
         const textItem = textItemOrCollection.get ? textItemOrCollection.get(0) : textItemOrCollection;
 
         if (!textItem) {
-            console.warn('ArrowCommand: No TextItem found');
+            console.warn('MarrowCommand: No TextItem found');
             return;
         }
 
@@ -46,14 +46,14 @@ export class ArrowCommand extends BaseCommand {
         const annotationLayer = this.commandContext.annotationLayer;
 
         if (!annotationLayer) {
-            console.warn('ArrowCommand: No annotation layer available');
+            console.warn('MarrowCommand: No annotation layer available');
             return;
         }
 
         // Get canvas bounds for positioning
         const bounds = textItem.getCanvasBounds();
         if (!bounds) {
-            console.warn('ArrowCommand: Could not get TextItem bounds');
+            console.warn('MarrowCommand: Could not get TextItem bounds');
             return;
         }
 

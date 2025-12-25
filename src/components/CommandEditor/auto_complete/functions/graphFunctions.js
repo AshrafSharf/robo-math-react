@@ -87,15 +87,15 @@ export const GRAPH_FUNCTIONS = {
     ],
     category: 'Graph'
   },
-  mathtext: {
-    name: 'mathtext',
+  mtext: {
+    name: 'mtext',
     signature: '(row, col, "latex")',
     args: ['row: number', 'col: number', 'latex: string'],
     description: 'Create math text at logical position',
     altSignatures: [
-      'M = mathtext(0, 0, "x^2 + y^2")',
-      'M = mathtext(2, 3, "\\\\frac{a}{b}")',
-      'M = mathtext(0, 0, "\\\\int_0^1 x^2 dx")'
+      'M = mtext(0, 0, "x^2 + y^2")',
+      'M = mtext(2, 3, "\\\\frac{a}{b}")',
+      'M = mtext(0, 0, "\\\\int_0^1 x^2 dx")'
     ],
     category: 'Graph'
   },
@@ -171,6 +171,55 @@ export const GRAPH_FUNCTIONS = {
       'underbrace(select(M, "x"), "variable")',
       'underbrace(S, "denominator")',
       'underbrace(S, "last term", 5)'
+    ],
+    category: 'Graph'
+  },
+  mstep: {
+    name: 'mstep',
+    signature: '(above, below, result)',
+    args: ['above: string', 'below: string', 'result: string'],
+    description: 'Define a step for mflow (above arrow, below arrow, result)',
+    altSignatures: [
+      'mstep("f(x)", "step 1", "y")',
+      'mstep("\\\\times 2", "double", "2x")',
+      'mstep("g", "apply g", "g(x)")'
+    ],
+    category: 'Graph'
+  },
+  mflow: {
+    name: 'mflow',
+    signature: '(row, col, start, mstep(...), ...)',
+    args: ['row: number', 'col: number', 'start: string', 'steps: mstep...'],
+    description: 'Create math flow with annotated arrows between expressions',
+    altSignatures: [
+      'mflow(4, 4, "x", mstep("f(x)", "step 1", "y"))',
+      'mflow(4, 4, "x", mstep("f", "step 1", "y"), mstep("g", "step 2", "z"))',
+      'mflow(0, 0, "a", mstep("+b", "add", "a+b"), mstep("\\\\times 2", "double", "2(a+b)"))'
+    ],
+    category: 'Graph'
+  },
+  mcancel: {
+    name: 'mcancel',
+    signature: '(textItem, "text", "direction")',
+    args: ['textItem: TextItem', 'text: string', 'direction: string'],
+    description: 'Cancel (strikethrough) selected math text',
+    altSignatures: [
+      'mcancel(S, "0", "u")',
+      'mcancel(S, "", "d")',
+      'mcancel(S, "", "x")',
+      'mcancel(select(M, "x"), "1", "u", "red")'
+    ],
+    category: 'Graph'
+  },
+  marrow: {
+    name: 'marrow',
+    signature: '(textItem, "anchor", "dir", length, "text")',
+    args: ['textItem: TextItem', 'anchor: string', 'direction: string', 'length: number', 'text: string'],
+    description: 'Draw curved arrow annotation pointing to math text',
+    altSignatures: [
+      'marrow(S, "rm", "E", 60, "note")',
+      'marrow(S, "bl", "S", 50, "label", 70)',
+      'marrow(select(M, "x"), "tm", "N", 40, "variable", 50, 5)'
     ],
     category: 'Graph'
   },

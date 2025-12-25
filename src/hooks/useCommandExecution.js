@@ -68,19 +68,23 @@ export function useCommandExecution(roboCanvas, options = {}) {
 
     // Focus handling
     const setActiveShape = useCallback((expressionId) => {
-        if (expressionId === null) return;
+        if (expressionId === null || !roboCanvas) return;
 
         const command = controller.commandExecutor.commands.find(
             c => c.getExpressionId() === expressionId
         );
+        if (!command) return;
+
+        const shape = command.getCommandResult();
+        const scene3d = command.graphContainer ? command.graphContainer.getScene() : null;
 
         document.dispatchEvent(new CustomEvent(FOCUS_EVENT, {
             detail: {
                 expressionId,
-                shape: command?.getCommandResult() || null,
-                canvasSection: roboCanvas?.canvasSection,
-                annotationLayer: roboCanvas?.getAnnotationLayer(),
-                scene3d: null
+                shape,
+                canvasSection: roboCanvas.canvasSection,
+                annotationLayer: roboCanvas.getAnnotationLayer(),
+                scene3d
             }
         }));
     }, [controller, roboCanvas]);

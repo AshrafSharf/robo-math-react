@@ -6,7 +6,6 @@
  * Animation: arc grows from zero radius to target radius.
  */
 import { Base3DCommand } from './Base3DCommand.js';
-import { TweenMax } from 'gsap';
 import { common_error_messages } from '../../expression-parser/core/ErrorMessages.js';
 
 export class Angle3DCommand extends Base3DCommand {
@@ -60,7 +59,7 @@ export class Angle3DCommand extends Base3DCommand {
     }
 
     /**
-     * Create arc and animate it growing from zero radius
+     * Create arc - animated diagram handles the animation
      * @returns {Promise}
      */
     async play() {
@@ -79,7 +78,7 @@ export class Angle3DCommand extends Base3DCommand {
             p2 = this.point1;
         }
 
-        // Create the arc
+        // Create the arc - animated diagram handles animation internally
         this.commandResult = this.graphContainer.diagram3d.arcByThreePoints(
             p1,
             this.vertex,
@@ -89,24 +88,10 @@ export class Angle3DCommand extends Base3DCommand {
             options
         );
 
-        // Animate: grow from zero scale to full scale
+        // Wait for the diagram's animation to complete
+        const animationDuration = this.graphContainer.diagram3d.animationDuration || 1;
         return new Promise((resolve) => {
-            if (!this.commandResult) {
-                resolve();
-                return;
-            }
-
-            // Start at zero scale
-            this.commandResult.scale.set(0, 0, 0);
-
-            TweenMax.to(this.commandResult.scale, {
-                x: 1,
-                y: 1,
-                z: 1,
-                duration: 1.5,
-                ease: "power2.out",
-                onComplete: resolve
-            });
+            setTimeout(resolve, animationDuration * 1000);
         });
     }
 

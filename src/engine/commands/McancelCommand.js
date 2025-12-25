@@ -1,5 +1,5 @@
 /**
- * CancelCommand - Draws cancel strikethrough over TextItem(s)
+ * McancelCommand - Draws cancel strikethrough over TextItem(s)
  *
  * Uses the phantom spacer approach:
  *   \cancelto{text}{\phantom{\hspace{W}}} - for direction 'r'/'ur'
@@ -13,7 +13,7 @@ import { MathTextComponent } from '../../mathtext/components/math-text-component
 import { WriteEffect } from '../../mathtext/effects/write-effect.js';
 import { MathTextPositionUtil } from '../../mathtext/utils/math-text-position-util.js';
 
-export class CancelCommand extends BaseCommand {
+export class McancelCommand extends BaseCommand {
     constructor(options = {}) {
         super();
         this.options = options;
@@ -23,14 +23,14 @@ export class CancelCommand extends BaseCommand {
     async doInit() {
         const textItemOrCollection = this.commandContext.shapeRegistry[this.options.textItemVariableName];
         if (!textItemOrCollection) {
-            console.warn(`CancelCommand: "${this.options.textItemVariableName}" not found in registry`);
+            console.warn(`McancelCommand: "${this.options.textItemVariableName}" not found in registry`);
             return;
         }
 
         // Handle TextItemCollection or single TextItem
         const items = this._getItemsArray(textItemOrCollection);
         if (items.length === 0) {
-            console.warn('CancelCommand: No TextItems found');
+            console.warn('McancelCommand: No TextItems found');
             return;
         }
 
@@ -67,7 +67,7 @@ export class CancelCommand extends BaseCommand {
     _createCancelComponent(textItem) {
         const targetBounds = textItem.getCanvasBounds();
         if (!targetBounds) {
-            console.warn('CancelCommand: Could not get TextItem bounds');
+            console.warn('McancelCommand: Could not get TextItem bounds');
             return null;
         }
 

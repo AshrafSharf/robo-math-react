@@ -101,4 +101,4 @@ write(6, 14, eq13)
 - Enclosures are pure LaTeX and render as part of the math expression
 - Use `\text{}` inside annotations for non-math text
 - Colors can be applied to the enclosure, content, or both
-- These are different from `cancel()` which adds interactive annotations
+- These are different from `mcancel()` which adds interactive annotations

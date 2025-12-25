@@ -21,7 +21,7 @@ writeonly(row, col, eq, pattern1, pattern2, ...)
 ```
 # Animate only theta symbols
 eq1 = "\\tan(\\theta) = \\frac{\\sin(\\theta)}{\\cos(\\theta)}"
-m1 = mathtext(5, 2, eq1)
+m1 = mtext(5, 2, eq1)
 writeonly(m1, "\\theta")
 
 # Direct write with pattern

@@ -1,6 +1,6 @@
 # angle3d
 
-Creates 3D angle arcs, sectors, and right-angle markers.
+Creates 3D angle arcs, sectors, and right-angle markers. Also calculates angles between planes and lines.
 
 ## Visual
 
@@ -36,12 +36,24 @@ angle3d(g, vertex, point1, point2)
         +----------------------- 3D graph
 
 angle3d(g, vertex, point1, point2, radius)
-                                     +-- arc radius (default: 0.8)
+                                     +-- arc radius (default: auto)
 
 angle3d(g, vector1, vector2)
         |    |        +-- second vector3d
         |    +----------- first vector3d (shared start = vertex)
         +---------------- 3D graph
+
+// NEW: Angle between two planes (returns degrees)
+angle3d(g, plane1, plane2)
+        |    |       +-- second plane3d
+        |    +---------- first plane3d
+        +--------------- 3D graph
+
+// NEW: Angle between line and plane (returns degrees)
+angle3d(g, line, plane)
+        |    |     +-- plane3d
+        |    +-------- line3d or vector3d
+        +------------- 3D graph
 
 // Reflex angle arc (larger angle, >180 degrees)
 angle3d2(g, vertex, point1, point2)
@@ -68,6 +80,10 @@ rightangle3d(g, vertex, point1, point2)
 rightangle3d(g, vertex, point1, point2, size)
                                           +-- marker size (default: 0.4)
 ```
+
+## Auto Right-Angle Detection
+
+When using `angle3d`, if the angle is exactly or nearly 90 degrees (within 0.5 degree tolerance), it automatically renders as a right-angle square marker instead of an arc.
 
 ## Code
 
@@ -111,6 +127,89 @@ right2 = rightangle3d(g, P, Q, R, 0.6)
 V1 = vector3d(g, 0, 0, 0, 3, 0, 0)
 V2 = vector3d(g, 0, 0, 0, 0, 3, 0)
 arcFromVectors = angle3d(g, V1, V2)
+
+// NEW: Angle between two planes
+Plane1 = plane3d(g, 1, 0, 0, 0)  // YZ plane (normal along X)
+Plane2 = plane3d(g, 0, 1, 0, 0)  // XZ plane (normal along Y)
+planeAngle = angle3d(g, Plane1, Plane2)  // Returns 90 degrees
+
+// NEW: Angle between line and plane
+Line = line3d(g, 0, 0, 0, 1, 1, 1)  // Diagonal line
+Plane = plane3d(g, 0, 0, 1, 0)      // XY plane (z = 0)
+linePlaneAngle = angle3d(g, Line, Plane)  // Returns ~35.26 degrees
+```
+
+## Dynamic Examples with Change
+
+### Auto Right-Angle Detection with Animation
+```
+G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+
+// Fixed vertex at origin
+V = point3d(G, 0, 0, 0)
+
+// Fixed point along X axis
+P1 = point3d(G, 3, 0, 0)
+
+// Movable point - starts at 45 degrees
+P2 = point3d(G, 2, 2, 0)
+
+// Draw the angle - will show arc (45 degrees)
+A = angle3d(G, V, P1, P2)
+
+// Animate P2 to create 90 degree angle
+// Angle will automatically switch to square marker
+change(P2, point3d(G, 0, 3, 0))
+
+// Animate P2 to 60 degrees - switches back to arc
+change(P2, point3d(G, 1.5, 2.6, 0))
+
+// Animate back to exactly 90 degrees - square marker again
+change(P2, point3d(G, 0, 3, 0))
+```
+
+### Using Vectors with Animation
+```
+G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+
+// Two vectors from origin
+V1 = vector3d(G, 0, 0, 0, 3, 0, 0)  // Along X axis
+V2 = vector3d(G, 0, 0, 0, 2, 2, 0)  // 45 degrees in XY plane
+
+// Angle between vectors - shows arc
+A = angle3d(G, V1, V2)
+
+// Change V2 to be along Y axis (90 degrees)
+// Automatically shows square marker
+change(V2, vector3d(G, 0, 0, 0, 0, 3, 0))
+
+// Change V2 to 30 degrees - shows arc
+change(V2, vector3d(G, 0, 0, 0, 2.6, 1.5, 0))
+
+// Change to 90 degrees along Z axis - square marker
+change(V2, vector3d(G, 0, 0, 0, 0, 0, 3))
+```
+
+### Angle Between Planes with Animation
+```
+G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+
+// Fixed plane (XY plane, normal along Z)
+Plane1 = plane3d(G, 0, 0, 1, 0)
+
+// Rotating plane (starts perpendicular)
+Plane2 = plane3d(G, 1, 0, 0, 0)
+
+// Calculate angle between planes
+theta = angle3d(G, Plane1, Plane2)  // 90 degrees
+
+// Display the angle value
+label(G, theta, 0, 1)
+
+// Rotate the second plane
+change(Plane2, plane3d(G, 1, 1, 0, 0))  // 45 degree normal
+theta2 = angle3d(G, Plane1, Plane2)     // ~54.7 degrees
+label(G, theta2, 0, 2)
 ```
 
 ## Comments
@@ -118,13 +217,30 @@ arcFromVectors = angle3d(g, V1, V2)
 | Line | Explanation |
 |------|-------------|
 | `angle3d(g, O, A, B)` | Interior angle arc at vertex O, between rays OA and OB |
-| `angle3d(g, O, A, B, 1.2)` | Same angle with radius 1.2 (default is 0.8) |
+| `angle3d(g, O, A, B, 1.2)` | Same angle with radius 1.2 (default is auto-computed) |
 | `angle3d2(g, O, C, D)` | Reflex angle (the larger angle, >180 degrees) |
 | `sector3d(g, O, E, F)` | Filled pie-slice sector at O between OE and OF |
 | `sector3d(g, O, E, F, 2.0)` | Sector with radius 2.0 (default is 1.0) |
 | `rightangle3d(g, P, Q, R)` | Right angle (90-degree) square marker |
 | `rightangle3d(g, P, Q, R, 0.6)` | Right angle with size 0.6 (default is 0.4) |
 | `angle3d(g, V1, V2)` | Angle between two vectors sharing origin |
+| `angle3d(g, Plane1, Plane2)` | Angle between two planes (returns degrees, no visual) |
+| `angle3d(g, Line, Plane)` | Angle between line and plane (returns degrees, no visual) |
+
+## Formulas
+
+| Type | Formula |
+|------|---------|
+| Between vectors | `theta = arccos(v1 . v2 / (||v1|| * ||v2||))` |
+| Between planes | `theta = arccos(|n1 . n2| / (||n1|| * ||n2||))` |
+| Line to plane | `theta = arcsin(|b . n| / (||b|| * ||n||))` |
+
+## Notes
+
+- Angle values are returned in **degrees**
+- When angle is within 0.5 degrees of 90, automatically renders as square marker
+- For plane-plane and line-plane, no visual arc is created (value only)
+- The `change` expression works with all angle inputs for dynamic animations
 
 ## Animation
 

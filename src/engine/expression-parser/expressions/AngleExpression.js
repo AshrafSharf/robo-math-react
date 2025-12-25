@@ -16,6 +16,7 @@ import { AngleUtil } from '../../../geom/AngleUtil.js';
 export class AngleExpression extends AbstractNonArithmeticExpression {
     static NAME = 'angle';
     static ANGLE_TYPE = 'interior';
+    static RIGHT_ANGLE_TOLERANCE = 0.5; // degrees tolerance for detecting right angles
 
     constructor(subExpressions) {
         super();
@@ -23,6 +24,7 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
         this.coordinates = []; // [vx, vy, p1x, p1y, p2x, p2y]
         this.radius = 0.8;
         this.graphExpression = null;
+        this.angleValue = null; // Calculated angle in degrees
     }
 
     resolve(context) {
@@ -90,6 +92,44 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
         } else {
             this.dispatchError(angle_error_messages.WRONG_COORD_COUNT(AngleExpression.NAME, allCoords.length));
         }
+
+        // Calculate angle value
+        this._calculateAngleValue();
+    }
+
+    /**
+     * Calculate angle value from vertex, point1, point2
+     */
+    _calculateAngleValue() {
+        const vertex = this.getVertex();
+        const point1 = this.getPoint1();
+        const point2 = this.getPoint2();
+
+        // Vectors from vertex to points
+        const v1 = { x: point1.x - vertex.x, y: point1.y - vertex.y };
+        const v2 = { x: point2.x - vertex.x, y: point2.y - vertex.y };
+
+        const dot = v1.x * v2.x + v1.y * v2.y;
+        const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+        const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+
+        if (mag1 < 0.000001 || mag2 < 0.000001) {
+            this.angleValue = 0;
+            return;
+        }
+
+        let cosTheta = dot / (mag1 * mag2);
+        cosTheta = Math.max(-1, Math.min(1, cosTheta));
+        this.angleValue = Math.acos(cosTheta) * (180 / Math.PI);
+    }
+
+    /**
+     * Check if this angle is a right angle (90°)
+     * @returns {boolean}
+     */
+    isRightAngle() {
+        if (this.angleValue === null) return false;
+        return Math.abs(this.angleValue - 90) < AngleExpression.RIGHT_ANGLE_TOLERANCE;
     }
 
     // getGrapher() inherited from AbstractNonArithmeticExpression
@@ -138,12 +178,15 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        // Automatically use 'right' angle type if angle is ~90°
+        const angleType = this.isRightAngle() ? 'right' : this.getAngleType();
+
         return new AngleCommand(
             this.graphExpression,
             this.getVertex(),
             this.getPoint1(),
             this.getPoint2(),
-            this.getAngleType(),
+            angleType,
             { ...options, radius: this.radius }
         );
     }

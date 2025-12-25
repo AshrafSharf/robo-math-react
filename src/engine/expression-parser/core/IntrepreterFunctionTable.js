@@ -101,6 +101,7 @@ import { Project3DExpression } from '../expressions/3d/Project3DExpression.js';
 import { Reflect3DExpression } from '../expressions/3d/Reflect3DExpression.js';
 import { Intersect3DExpression } from '../expressions/3d/Intersect3DExpression.js';
 import { Decompose3DExpression } from '../expressions/3d/Decompose3DExpression.js';
+import { Distance3DExpression } from '../expressions/3d/Distance3DExpression.js';
 import { Angle3DExpression } from '../expressions/3d/Angle3DExpression.js';
 import { Angle3D2Expression } from '../expressions/3d/Angle3D2Expression.js';
 import { RightAngle3DExpression } from '../expressions/3d/RightAngle3DExpression.js';
@@ -129,8 +130,10 @@ import { ItemExpression } from '../expressions/ItemExpression.js';
 import { ReplaceTextItemExpression } from '../expressions/ReplaceTextItemExpression.js';
 import { OverbraceExpression } from '../expressions/OverbraceExpression.js';
 import { UnderbraceExpression } from '../expressions/UnderbraceExpression.js';
-import { CancelExpression } from '../expressions/CancelExpression.js';
-import { ArrowExpression } from '../expressions/ArrowExpression.js';
+import { MstepExpression } from '../expressions/MstepExpression.js';
+import { MflowExpression } from '../expressions/MflowExpression.js';
+import { McancelExpression } from '../expressions/McancelExpression.js';
+import { MarrowExpression } from '../expressions/MarrowExpression.js';
 import { DistanceMarkerExpression } from '../expressions/DistanceMarkerExpression.js';
 import { SequenceExpression } from '../expressions/SequenceExpression.js';
 import { ParallelExpression } from '../expressions/ParallelExpression.js';
@@ -237,6 +240,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('reflect3d', Reflect3DExpression);     // reflect shape across plane
         registerMultiArg('intersect3d', Intersect3DExpression); // intersect 3D shapes
         registerMultiArg('decompose3d', Decompose3DExpression); // decompose vector to components
+        registerMultiArg('distance3d', Distance3DExpression);   // distance between 3D objects
 
         // 3D shape transformations
         registerMultiArg('rotate3d', Rotate3DExpression);       // rotate shape around axis
@@ -263,7 +267,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('areaunder', AreaUnderExpression);
         registerMultiArg('areabetween', AreaBetweenExpression);
         registerMultiArg('label', LabelExpression);
-        registerMultiArg('mathtext', MathTextExpression);
+        registerMultiArg('mtext', MathTextExpression);
         registerMultiArg('write', WriteExpression);
         registerMultiArg('writeonly', WriteOnlyExpression);
         registerMultiArg('writewithout', WriteWithoutExpression);
@@ -275,8 +279,10 @@ export class IntrepreterFunctionTable {
         registerMultiArg('replace', ReplaceTextItemExpression);
         registerMultiArg('overbrace', OverbraceExpression);
         registerMultiArg('underbrace', UnderbraceExpression);
-        registerMultiArg('cancel', CancelExpression);
-        registerMultiArg('arrow', ArrowExpression);
+        registerMultiArg('mstep', MstepExpression);
+        registerMultiArg('mflow', MflowExpression);
+        registerMultiArg('mcancel', McancelExpression);
+        registerMultiArg('marrow', MarrowExpression);
         registerMultiArg('dm', DistanceMarkerExpression);
         registerMultiArg('seq', SequenceExpression);
         registerMultiArg('para', ParallelExpression);

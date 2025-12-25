@@ -31,7 +31,7 @@ seq(
 
 ```
 eq1 = "x^2 + y^2 = 20"
-m1 = mathtext(5, 12, eq1)
+m1 = mtext(5, 12, eq1)
 write(m1)
 
 // Fade out then replace

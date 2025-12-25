@@ -13,10 +13,10 @@ import * as THREE from 'three';
 export function calculateLabelScaling(viewSize = 15) {
     const scaleFactor = Math.sqrt(viewSize / 15);
     return {
-        axisLabelFontSize: Math.round(36 * scaleFactor),
-        axisLabelScale: 0.04 * scaleFactor,
-        tickLabelFontSize: Math.round(20 * scaleFactor),
-        tickLabelScale: 0.025 * scaleFactor
+        axisLabelFontSize: Math.round(48 * scaleFactor),
+        axisLabelScale: 0.05 * scaleFactor,
+        tickLabelFontSize: Math.round(28 * scaleFactor),
+        tickLabelScale: 0.035 * scaleFactor
     };
 }
 

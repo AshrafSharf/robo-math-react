@@ -1,10 +1,10 @@
 /**
- * ArrowExpression - Draws a curved arrow from a TextItem with annotation
+ * MarrowExpression - Draws a curved arrow from a TextItem with annotation
  *
  * Syntax:
- *   arrow(T, "anchor", direction, length, "text")
- *   arrow(T, "anchor", direction, length, "text", curvature)
- *   arrow(T, "anchor", direction, length, "text", curvature, offset)
+ *   marrow(T, "anchor", direction, length, "text")
+ *   marrow(T, "anchor", direction, length, "text", curvature)
+ *   marrow(T, "anchor", direction, length, "text", curvature, offset)
  *
  * Parameters:
  *   T          - TextItem variable reference
@@ -16,10 +16,10 @@
  *   offset     - Offset from TextItem edge (optional, default 5)
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { ArrowCommand } from '../../commands/ArrowCommand.js';
+import { MarrowCommand } from '../../commands/MarrowCommand.js';
 
-export class ArrowExpression extends AbstractNonArithmeticExpression {
-    static NAME = 'arrow';
+export class MarrowExpression extends AbstractNonArithmeticExpression {
+    static NAME = 'marrow';
 
     constructor(subExpressions) {
         super();
@@ -36,7 +36,7 @@ export class ArrowExpression extends AbstractNonArithmeticExpression {
     resolve(context) {
         // Minimum 5 arguments required
         if (this.subExpressions.length < 5) {
-            this.dispatchError('arrow() requires at least 5 arguments: arrow(T, "anchor", direction, length, "text")');
+            this.dispatchError('marrow() requires at least 5 arguments: marrow(T, "anchor", direction, length, "text")');
         }
 
         // Arg 0: TextItem variable reference
@@ -44,7 +44,7 @@ export class ArrowExpression extends AbstractNonArithmeticExpression {
         targetExpr.resolve(context);
 
         if (!targetExpr.variableName) {
-            this.dispatchError('arrow() first argument must be a TextItem variable');
+            this.dispatchError('marrow() first argument must be a TextItem variable');
         }
         this.textItemVariableName = targetExpr.variableName;
 
@@ -55,13 +55,13 @@ export class ArrowExpression extends AbstractNonArithmeticExpression {
         if (resolvedAnchor && resolvedAnchor.getName() === 'quotedstring') {
             this.anchor = resolvedAnchor.getStringValue().toLowerCase();
         } else {
-            this.dispatchError('arrow() anchor must be a quoted string ("tl", "tm", "tr", "lm", "rm", "bl", "bm", "br")');
+            this.dispatchError('marrow() anchor must be a quoted string ("tl", "tm", "tr", "lm", "rm", "bl", "bm", "br")');
         }
 
         // Validate anchor
         const validAnchors = ['tl', 'tm', 'tr', 'lm', 'rm', 'bl', 'bm', 'br'];
         if (!validAnchors.includes(this.anchor)) {
-            this.dispatchError(`arrow() invalid anchor "${this.anchor}". Must be one of: ${validAnchors.join(', ')}`);
+            this.dispatchError(`marrow() invalid anchor "${this.anchor}". Must be one of: ${validAnchors.join(', ')}`);
         }
 
         // Arg 2: direction ("N", "E", "S", "W")
@@ -71,12 +71,12 @@ export class ArrowExpression extends AbstractNonArithmeticExpression {
         if (resolvedDirection && resolvedDirection.getName() === 'quotedstring') {
             this.direction = resolvedDirection.getStringValue().toUpperCase();
         } else {
-            this.dispatchError('arrow() direction must be a quoted string ("N", "E", "S", or "W")');
+            this.dispatchError('marrow() direction must be a quoted string ("N", "E", "S", or "W")');
         }
 
         // Validate direction
         if (!['N', 'E', 'S', 'W'].includes(this.direction)) {
-            this.dispatchError(`arrow() invalid direction "${this.direction}". Must be "N", "E", "S", or "W"`);
+            this.dispatchError(`marrow() invalid direction "${this.direction}". Must be "N", "E", "S", or "W"`);
         }
 
         // Arg 3: length
@@ -86,7 +86,7 @@ export class ArrowExpression extends AbstractNonArithmeticExpression {
         if (lengthValues.length > 0) {
             this.length = lengthValues[0];
         } else {
-            this.dispatchError('arrow() length must be a number');
+            this.dispatchError('marrow() length must be a number');
         }
 
         // Arg 4: text (quoted string)
@@ -96,7 +96,7 @@ export class ArrowExpression extends AbstractNonArithmeticExpression {
         if (resolvedText && resolvedText.getName() === 'quotedstring') {
             this.text = resolvedText.getStringValue();
         } else {
-            this.dispatchError('arrow() text must be a quoted string');
+            this.dispatchError('marrow() text must be a quoted string');
         }
 
         // Arg 5 (optional): curvature
@@ -121,7 +121,7 @@ export class ArrowExpression extends AbstractNonArithmeticExpression {
     }
 
     getName() {
-        return ArrowExpression.NAME;
+        return MarrowExpression.NAME;
     }
 
     getVariableAtomicValues() {
@@ -129,7 +129,7 @@ export class ArrowExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new ArrowCommand({
+        return new MarrowCommand({
             textItemVariableName: this.textItemVariableName,
             anchor: this.anchor,
             direction: this.direction,

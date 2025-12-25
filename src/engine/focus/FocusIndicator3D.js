@@ -12,11 +12,12 @@ export class FocusIndicator3D {
     this.scene = null;
 
     // Arrow styling
-    this.color = 0xff6b6b;
-    this.arrowHeadSize = 0.15;
-    this.shaftLength = 0.08;
-    this.shaftRadius = 0.02;
-    this.offset = 0.3; // Distance above target
+    this.headColor = 0xff6b6b;
+    this.shaftColor = 0xcc3333;
+    this.arrowHeadSize = 0.4;
+    this.shaftLength = 0.25;
+    this.shaftRadius = 0.06;
+    this.offset = 0.8; // Distance above target
   }
 
   /**
@@ -34,20 +35,30 @@ export class FocusIndicator3D {
 
     // Create arrowhead (cone pointing down)
     const coneGeometry = new THREE.ConeGeometry(this.arrowHeadSize, this.arrowHeadSize * 1.5, 16);
-    const material = new THREE.MeshBasicMaterial({
-      color: this.color,
-      transparent: true,
-      opacity: 0.9,
+    const headMaterial = new THREE.MeshStandardMaterial({
+      color: this.headColor,
+      metalness: 0.3,
+      roughness: 0.4,
+      emissive: this.headColor,
+      emissiveIntensity: 0.3,
       depthTest: false
     });
 
-    const arrowHead = new THREE.Mesh(coneGeometry, material);
+    const arrowHead = new THREE.Mesh(coneGeometry, headMaterial);
     arrowHead.rotation.x = Math.PI; // Point downward
     arrowHead.position.y = 0; // Tip at origin of group
 
     // Create shaft (cylinder)
     const shaftGeometry = new THREE.CylinderGeometry(this.shaftRadius, this.shaftRadius, this.shaftLength, 8);
-    const shaft = new THREE.Mesh(shaftGeometry, material.clone());
+    const shaftMaterial = new THREE.MeshStandardMaterial({
+      color: this.shaftColor,
+      metalness: 0.5,
+      roughness: 0.3,
+      emissive: this.shaftColor,
+      emissiveIntensity: 0.2,
+      depthTest: false
+    });
+    const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
     shaft.position.y = this.arrowHeadSize * 0.75 + this.shaftLength / 2; // Above arrowhead
 
     this.group.add(arrowHead);
@@ -77,19 +88,16 @@ export class FocusIndicator3D {
   /**
    * Set arrow styling
    * @param {Object} style - Style options
-   * @param {number} [style.color] - Hex color (e.g., 0xff6b6b)
+   * @param {number} [style.headColor] - Head hex color
+   * @param {number} [style.shaftColor] - Shaft hex color
    * @param {number} [style.offset] - Distance above target
    */
-  setStyle({ color, offset }) {
-    if (color !== undefined) {
-      this.color = color;
-      if (this.group) {
-        this.group.children.forEach(child => {
-          if (child.material) {
-            child.material.color.setHex(color);
-          }
-        });
-      }
+  setStyle({ headColor, shaftColor, offset }) {
+    if (headColor !== undefined) {
+      this.headColor = headColor;
+    }
+    if (shaftColor !== undefined) {
+      this.shaftColor = shaftColor;
     }
     if (offset !== undefined) {
       this.offset = offset;

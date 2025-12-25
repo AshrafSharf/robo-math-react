@@ -89,8 +89,8 @@ export class Grapher3D {
             showGrid: this.options.showGrid !== false,
             showAxes: true,
             enableInteraction: true,
-            viewSize: axesRange * 2,
-            cameraPosition: { x: -axesRange * 1.5, y: axesRange * 1.2, z: -axesRange * 1.5 }
+            viewSize: 12,
+            cameraPosition: { x: -15, y: 12, z: -15 }
         });
 
         // Store camera and controls references
