@@ -23,7 +23,7 @@ point(g, x, y)
       └──────── graph
 
 point(g, expr)
-      │    └── expression returning 2 values (e.g., st(L), ed(L), mid(L))
+      │    └── expression returning 2 values (e.g., start(G, L), end(G, L), mid(L))
       └─────── graph
 ```
 
@@ -39,8 +39,8 @@ O = point(G, 0, 0)
 
 // Point from line endpoints
 L = line(G, 1, 1, 5, 4)
-S = point(G, st(L))      // start point of line
-E = point(G, ed(L))      // end point of line
+S = start(G, L)          // start point of line
+E = end(G, L)            // end point of line
 M = point(G, mid(L))     // midpoint of line
 
 // Point arithmetic
@@ -55,8 +55,8 @@ F = A / 2                // (1.5, 2)
 | Line | Explanation |
 |------|-------------|
 | `A = point(G, 3, 4)` | Point at coordinates (3, 4) |
-| `point(G, st(L))` | Point at start of line L |
-| `point(G, ed(L))` | Point at end of line L |
+| `start(G, L)` | Point at start of line L |
+| `end(G, L)` | Point at end of line L |
 | `point(G, mid(L))` | Point at midpoint of line L |
 | `A + B` | Vector addition of points |
 | `A * 2` | Scale point coordinates |

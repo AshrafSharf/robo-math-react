@@ -16,6 +16,11 @@ export class HideCommand extends BaseCommand {
     }
 
     async doInit() {
+        // Defer lookup and hide to play time
+        // This handles cases where shapes are created by previous commands during play
+    }
+
+    _lookupAndHide() {
         // Look up shapes from registry
         this.shapes = this.shapeNames
             .map(name => this.commandContext.shapeRegistry[name])
@@ -24,18 +29,17 @@ export class HideCommand extends BaseCommand {
         // Create adapters for each shape
         this.adapters = this.shapes.map(shape => ShapeVisibilityAdapter.for(shape));
 
-        // Hide immediately - this is an instant operation
+        // Hide
         this.adapters.forEach(adapter => adapter.hide());
     }
 
     async play() {
-        // Hide all shapes instantly
-        this.adapters.forEach(adapter => adapter.hide());
+        this._lookupAndHide();
         return Promise.resolve();
     }
 
     doDirectPlay() {
-        this.adapters.forEach(adapter => adapter.hide());
+        this._lookupAndHide();
     }
 
     async playSingle() {

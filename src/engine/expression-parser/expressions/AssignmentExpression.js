@@ -18,14 +18,16 @@ export class AssignmentExpression extends AbstractNonArithmeticExpression {
             throw new Error('Left side of the variable must be a name');
         }
 
-        // Don't call the lhs resolve, it is simply a string
-        this.rhsExpression.resolve(context);
-
-        const resRhs = this.rhsExpression;
         const variableExp = this.lhsExpression;
         const variableName = variableExp.getVariableName();
 
-        context.addReference(variableName, resRhs);
+        // Set label on RHS before resolving (for dependency traversal)
+        if (typeof this.rhsExpression.setLabel === 'function') {
+            this.rhsExpression.setLabel(variableName);
+        }
+
+        this.rhsExpression.resolve(context);
+        context.addReference(variableName, this.rhsExpression);
     }
 
     alwaysExecute() {

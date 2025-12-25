@@ -3,12 +3,12 @@
  *
  * Syntax options:
  *   point(graph, x, y)     - using graph with separate x and y values
- *   point(graph, expr)     - using an expression that returns 2 values (e.g., st(line), ed(line))
+ *   point(graph, expr)     - using an expression that returns 2 values (e.g., start(g, line), end(g, line))
  *
  * Examples:
  *   point(g, 3, 5)         // point at (3, 5)
- *   point(g, st(L))        // point at start of line L
- *   point(g, ed(L))        // point at end of line L
+ *   point(g, start(g, L))  // point at start of line L
+ *   point(g, end(g, L))    // point at end of line L
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { NumericExpression } from './NumericExpression.js';
@@ -40,7 +40,7 @@ export class PointExpression extends AbstractArithmeticExpression {
 
         // Collect coordinates from remaining args
         // - point(g, x, y) - separate numeric values
-        // - point(g, expr) - expression returning 2 values (e.g., st(line), ed(line))
+        // - point(g, expr) - expression returning 2 values (e.g., start(g, line), end(g, line))
         const coordinates = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);

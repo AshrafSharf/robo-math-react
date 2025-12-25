@@ -108,8 +108,8 @@ E = xl(G, L, -0.5, 1.5)      // extend both directions
 ## Extracting Points
 
 ```
-S = st(L)                    // start point of line
-E = ed(L)                    // end point of line
+S = start(G, L)              // start point of line
+E = end(G, L)                // end point of line
 M = mid(L)                   // midpoint of line
 ```
 

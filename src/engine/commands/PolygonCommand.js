@@ -1,10 +1,15 @@
 /**
- * PolygonCommand - Command for rendering a polygon
+ * PolygonCommand - Command for rendering a polygon as a collection of edge lines
  *
- * Creates a polygon shape via diagram.polygon()
+ * Creates individual LineCommand instances for each edge, enabling:
+ * - item(polygon, index) to access individual edges
+ * - hide/show/stroke on specific edges
+ * - Full edge manipulation via ShapeCollection
  */
 import { BaseCommand } from './BaseCommand.js';
-import { MathShapeEffect } from '../../effects/shape-effects/math-shape-effect.js';
+import { LineCommand } from './LineCommand.js';
+import { ShapeCollection } from '../../geom/ShapeCollection.js';
+import { RoboEventManager } from '../../events/robo-event-manager.js';
 import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 
 export class PolygonCommand extends BaseCommand {
@@ -22,10 +27,35 @@ export class PolygonCommand extends BaseCommand {
         this.strokeWidth = options.strokeWidth ?? 2;
         this.fill = options.fill || null;
         this.fillOpacity = options.fillOpacity !== undefined ? options.fillOpacity : null;
+
+        // Multi-shape support for edge access
+        this.isMultiShape = true;
+        this.shapeDataArray = [];
+        this.childCommands = [];
+
+        // Compute edge data from vertices
+        this._computeEdges();
     }
 
     /**
-     * Create polygon shape via diagram
+     * Compute edge segments from vertices
+     */
+    _computeEdges() {
+        this.shapeDataArray = [];
+        // vertices includes closing point, so we have (n-1) edges
+        for (let i = 0; i < this.vertices.length - 1; i++) {
+            this.shapeDataArray.push({
+                startPoint: this.vertices[i],
+                endPoint: this.vertices[i + 1],
+                edgeIndex: i,
+                originalShapeType: 'line',
+                originalShapeName: 'line'
+            });
+        }
+    }
+
+    /**
+     * Validate graph expression and resolve grapher
      * @returns {Promise}
      */
     async doInit() {
@@ -51,23 +81,31 @@ export class PolygonCommand extends BaseCommand {
             throw err;
         }
 
-        const options = {
-            label: this.labelName
-        };
+        // Create child LineCommands for each edge
+        this.childCommands = this.shapeDataArray.map(edgeData => {
+            const options = {
+                strokeWidth: this.strokeWidth
+            };
+            // Note: fill doesn't apply to lines, but stroke color does
+            const cmd = new LineCommand(
+                this.graphExpression,
+                edgeData.startPoint,
+                edgeData.endPoint,
+                options
+            );
+            cmd.color = this.color;
+            cmd.diagram2d = this.diagram2d;
+            return cmd;
+        });
 
-        options.strokeWidth = this.strokeWidth;
-        if (this.fill) {
-            options.fill = this.fill;
-        }
-        if (this.fillOpacity !== null) {
-            options.fillOpacity = this.fillOpacity;
-        }
+        // Initialize all child commands
+        await Promise.all(this.childCommands.map(cmd =>
+            cmd.init(this.commandContext)
+        ));
 
-        this.commandResult = this.diagram2d.polygon(
-            this.graphContainer,
-            this.vertices,
-            this.color,
-            options
+        // Collect results as ShapeCollection
+        this.commandResult = new ShapeCollection(
+            this.childCommands.map(cmd => cmd.commandResult)
         );
     }
 
@@ -121,14 +159,84 @@ export class PolygonCommand extends BaseCommand {
     }
 
     /**
-     * Replay animation on existing shape
+     * Replay animation on existing shapes (all edges in parallel)
      * @returns {Promise}
      */
     async playSingle() {
-        if (!this.commandResult) return;
+        if (!this.childCommands || this.childCommands.length === 0) return;
 
-        this.commandResult.hide();
-        const effect = new MathShapeEffect(this.commandResult);
-        return effect.play();
+        // Disable pen during parallel animation
+        const wasPenActive = RoboEventManager.isPenActive();
+        RoboEventManager.setPenActive(false);
+
+        try {
+            await Promise.all(this.childCommands.map(cmd => cmd.playSingle()));
+        } finally {
+            RoboEventManager.setPenActive(wasPenActive);
+        }
+    }
+
+    /**
+     * Direct play for static diagrams (no animation)
+     * @returns {Promise}
+     */
+    async directPlay() {
+        // Child commands are already initialized and rendered in doInit
+        // For static mode, we just need to ensure they're visible
+        if (this.commandResult) {
+            const shapes = this.commandResult.getAll();
+            for (const shape of shapes) {
+                if (shape && typeof shape.show === 'function') {
+                    shape.show();
+                }
+            }
+        }
+    }
+
+    // ===== Collection Accessor Methods =====
+
+    /**
+     * Get edge at index
+     * @param {number} index
+     * @returns {Object} The line shape at that index
+     */
+    getEdge(index) {
+        if (this.commandResult && typeof this.commandResult.get === 'function') {
+            return this.commandResult.get(index);
+        }
+        return null;
+    }
+
+    /**
+     * Get number of edges
+     * @returns {number}
+     */
+    getEdgeCount() {
+        return this.shapeDataArray.length;
+    }
+
+    /**
+     * Get collection size (for item() compatibility)
+     * @returns {number}
+     */
+    getCollectionSize() {
+        return this.shapeDataArray.length;
+    }
+
+    /**
+     * Get shape data at index (for item() compatibility)
+     * @param {number} index
+     * @returns {Object}
+     */
+    getShapeDataAt(index) {
+        return this.shapeDataArray[index];
+    }
+
+    /**
+     * Check if this is a collection
+     * @returns {boolean}
+     */
+    isCollection() {
+        return true;
     }
 }

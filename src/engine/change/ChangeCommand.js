@@ -6,6 +6,7 @@
  */
 import { FromToCommand } from '../fromTo/FromToCommand.js';
 import { TweenMax } from 'gsap';
+import { ChangeResultCollection } from '../../geom/ChangeResultCollection.js';
 
 export class ChangeCommand extends FromToCommand {
     constructor(variableName, sourceExpr, fromValues, toValues, strategy,
@@ -55,6 +56,7 @@ export class ChangeCommand extends FromToCommand {
                         this.sourceExpr
                     );
                     await this._updateSourceAndDependents();
+                    this._buildResultCollection();
                     resolve();
                 }
             });
@@ -102,9 +104,8 @@ export class ChangeCommand extends FromToCommand {
                 const newCmd = cmdExpr.toCommand(mergedOptions);
                 newCmd.diagram2d = this.diagram2d;
                 newCmd.setCommandContext(this.commandContext);
-                if (label) {
-                    newCmd.setLabelName(label);
-                }
+                // Don't set labelName on temporary animation commands
+                // This prevents them from inheriting hide/show state
 
                 if (originalCmd && originalCmd.color) {
                     newCmd.setColor(originalCmd.color);
@@ -126,9 +127,29 @@ export class ChangeCommand extends FromToCommand {
             this.sourceExpr
         );
         await this._updateSourceAndDependents();
+        this._buildResultCollection();
     }
 
     async playSingle() {
         return this.doPlay();
+    }
+
+    /**
+     * Build the result collection from final state commands
+     */
+    _buildResultCollection() {
+        const collection = new ChangeResultCollection();
+
+        // Add each command's result to collection
+        for (const cmd of this.currentCommands) {
+            collection.add(null, cmd.commandResult, '');
+        }
+
+        this.commandResult = collection;
+
+        // Register in shapeRegistry (postInit already ran before commandResult was set)
+        if (this.labelName) {
+            this.commandContext.shapeRegistry[this.labelName] = this.commandResult;
+        }
     }
 }

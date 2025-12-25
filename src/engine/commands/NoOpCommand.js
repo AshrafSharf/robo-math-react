@@ -1,7 +1,7 @@
 /**
  * NoOpCommand - A null object command that does nothing
  *
- * Used by expressions that don't render anything (e.g., x(), y(), st(), ed())
+ * Used by expressions that don't render anything (e.g., x(), y(), start(), end())
  * This avoids null checks throughout the pipeline - every expression can
  * return a command, but NoOpCommand simply does nothing.
  */

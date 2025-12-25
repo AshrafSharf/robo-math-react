@@ -1,21 +1,26 @@
 /**
- * StartPointExpression - extracts the start point from a line/arc/polygon expression
+ * StartPointExpression - extracts the start point from a shape expression
  *
  * Syntax:
- *   st(graph, lineOrArcOrPolygon) - graph with source expression
+ *   start(graph, shape) - graph with source expression
+ *
+ * Supported shapes: line, vector, circle, arc, polygon (via PointAtRatioAdapter)
  *
  * Returns two coordinate values (x, y). When used standalone, renders as a point.
+ * Uses PointAtRatioAdapter with ratio=0 for consistent behavior across all shapes.
  *
  * Examples:
  *   L = line(g, 0, 0, 5, 5)
- *   st(g, L)              // renders a point at (0, 0)
- *   line(g, st(g, L1), ed(g, L2))  // st() provides coordinates
+ *   start(g, L)              // renders a point at (0, 0)
+ *   start(g, circle(g, 3, 0, 0))  // rightmost point of circle (ratio 0)
+ *   line(g, start(g, L1), end(g, L2))  // start() provides coordinates
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
 import { PointCommand } from '../../commands/PointCommand.js';
+import { PointAtRatioAdapter } from '../../adapters/PointAtRatioAdapter.js';
 
 export class StartPointExpression extends AbstractArithmeticExpression {
-    static NAME = 'st';
+    static NAME = 'start';
 
     constructor(subExpressions) {
         super();
@@ -27,7 +32,7 @@ export class StartPointExpression extends AbstractArithmeticExpression {
 
     resolve(context) {
         if (this.subExpressions.length < 2) {
-            this.dispatchError('st() requires graph and source expression: st(graph, line/arc/polygon)');
+            this.dispatchError('start() requires graph and source expression: start(graph, shape)');
         }
 
         // Resolve all subexpressions first
@@ -39,32 +44,28 @@ export class StartPointExpression extends AbstractArithmeticExpression {
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
-            this.dispatchError('st() requires graph as first argument');
+            this.dispatchError('start() requires graph as first argument');
         }
 
         // Second arg is the source expression
         this.sourceExpression = this._getResolvedExpression(context, this.subExpressions[1]);
 
-        // Get start value from the expression
-        const startValue = this.getPointValues(this.sourceExpression);
-
-        if (startValue.length < 2) {
-            this.dispatchError('st() requires an expression with at least 2 coordinate values (line, arc, or polygon)');
+        // Use PointAtRatioAdapter with ratio for consistent behavior
+        try {
+            const adapter = PointAtRatioAdapter.for(this.sourceExpression);
+            const point = adapter.getPointAtRatio(this.getRatio());
+            this.coordinates = [point.x, point.y];
+        } catch (error) {
+            this.dispatchError(`start() error: ${error.message}`);
         }
-
-        this.coordinates = [startValue[0], startValue[1]];
     }
 
     /**
-     * Get the point values from the expression
-     * Override in EndPointExpression to get end values
+     * Get the ratio for this expression (0 for start, 1 for end)
+     * Override in EndPointExpression to return 1
      */
-    getPointValues(resultExpression) {
-        if (typeof resultExpression.getStartValue === 'function') {
-            return resultExpression.getStartValue();
-        }
-        // Fallback to first two atomic values
-        return resultExpression.getVariableAtomicValues().slice(0, 2);
+    getRatio() {
+        return 0;
     }
 
     getName() {
@@ -95,20 +96,20 @@ export class StartPointExpression extends AbstractArithmeticExpression {
      * Get friendly string representation
      */
     getFriendlyToStr() {
-        return `st(${this.coordinates[0]}, ${this.coordinates[1]})`;
+        return `start(${this.coordinates[0]}, ${this.coordinates[1]})`;
     }
 
     // getGrapher() inherited from AbstractArithmeticExpression
 
     /**
-     * Create a PointCommand - st() renders as a point when used standalone
+     * Create a PointCommand - start() renders as a point when used standalone
      */
     toCommand(options = {}) {
         return new PointCommand(this.graphExpression, this.getPoint(), options);
     }
 
     /**
-     * st() can be played (animated) when used standalone
+     * start() can be played (animated) when used standalone
      */
     canPlay() {
         return true;

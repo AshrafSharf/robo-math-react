@@ -20,7 +20,7 @@ A = 3
 P1 = point(G, -3, A)
 P2 = point(G, A, 2)
 L = line(G, P1, P2)
-C = circle(G, 1, ed(G, L))
+C = circle(G, 1, end(G, L))
 change(A, 8)
 ```
 All shapes update together as A changes.

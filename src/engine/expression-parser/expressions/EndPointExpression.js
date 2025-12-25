@@ -1,38 +1,34 @@
 /**
- * EndPointExpression - extracts the end point from a line/arc/polygon expression
+ * EndPointExpression - extracts the end point from a shape expression
  *
- * Syntax options:
- *   ed(lineOrArcOrPolygon)       - uses grapher from the source expression
- *   ed(graph, lineOrArcOrPolygon) - uses explicit grapher
+ * Syntax:
+ *   end(graph, shape) - graph with source expression
+ *
+ * Supported shapes: line, vector, circle, arc, polygon (via PointAtRatioAdapter)
  *
  * Returns two coordinate values (x, y). When used standalone, renders as a point.
+ * Uses PointAtRatioAdapter with ratio=1 for consistent behavior across all shapes.
  *
  * Examples:
  *   L = line(g, 0, 0, 5, 5)
- *   ed(L)              // renders a point at (5, 5), uses g from L
- *   ed(g2, L)          // renders a point at (5, 5) on graph g2
- *   line(g, st(L1), ed(L2))  // ed() provides coordinates, doesn't render
+ *   end(g, L)              // renders a point at (5, 5)
+ *   end(g, arc(g, ...))    // end point of arc (ratio 1)
+ *   line(g, start(g, L1), end(g, L2))  // end() provides coordinates
  */
 import { StartPointExpression } from './StartPointExpression.js';
 
 export class EndPointExpression extends StartPointExpression {
-    static NAME = 'ed';
+    static NAME = 'end';
 
     constructor(subExpressions) {
         super(subExpressions);
     }
 
     /**
-     * Override to get end values instead of start values
+     * Override to return ratio 1 (end point)
      */
-    getPointValues(resultExpression) {
-        if (typeof resultExpression.getEndValue === 'function') {
-            return resultExpression.getEndValue();
-        }
-        // Fallback to last two atomic values
-        const atomicValues = resultExpression.getVariableAtomicValues();
-        const len = atomicValues.length;
-        return [atomicValues[len - 2], atomicValues[len - 1]];
+    getRatio() {
+        return 1;
     }
 
     getName() {
@@ -43,6 +39,6 @@ export class EndPointExpression extends StartPointExpression {
      * Get friendly string representation
      */
     getFriendlyToStr() {
-        return `ed(${this.coordinates[0]}, ${this.coordinates[1]})`;
+        return `end(${this.coordinates[0]}, ${this.coordinates[1]})`;
     }
 }

@@ -9,6 +9,7 @@ export class AbstractNonArithmeticExpression {
     constructor() {
         this.expressionId = -1;
         this.commandText = '';
+        this.label = '';  // Assigned variable name (for dependency traversal)
     }
 
     getExpressionId() {
@@ -109,8 +110,12 @@ export class AbstractNonArithmeticExpression {
         return this;
     }
 
+    setLabel(label) {
+        this.label = label;
+    }
+
     getLabel() {
-        return '';
+        return this.label;
     }
 
     reverse() {

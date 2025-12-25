@@ -194,7 +194,7 @@ export class CommandExecutor {
         }
       } catch (err) {
         this.handleError(err, command, i);
-        return; // Stop on error
+        // Continue to next command instead of stopping
       }
     }
 
@@ -252,7 +252,7 @@ export class CommandExecutor {
         command.directPlay();
       } catch (err) {
         this.handleError(err, command, i);
-        return;
+        // Continue to next command instead of stopping
       }
     }
 

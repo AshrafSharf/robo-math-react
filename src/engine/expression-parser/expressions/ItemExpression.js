@@ -41,6 +41,8 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     static SHAPE_2D_SOURCES = ['translate', 'rotate', 'scale'];
     static SHAPE_3D_SOURCES = ['translate3d', 'rotate3d', 'scale3d'];
     static TABLE_SOURCES = ['table'];
+    static POLYGON_SOURCES = ['polygon', 'sss', 'sas', 'asa', 'aas'];
+    static CHANGE_SOURCES = ['change'];
 
     constructor(subExpressions) {
         super();
@@ -65,6 +67,10 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
         this.handler = null;
         this.extractedPoints = [];
         this.coordinates = [];
+
+        // For change collections (delegates to underlying expression)
+        this.delegateExpression = null;
+        this.commandResult = null;  // Extracted from collection for direct use
 
         // For table collections
         this.isTableRowAccess = false;
@@ -116,8 +122,15 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
             this.collectionType = 'table';
             // Table supports 2 args (row) or 3 args (cell)
             // Will handle index extraction below
+        } else if (ItemExpression.POLYGON_SOURCES.includes(exprName)) {
+            // Polygon/triangle expressions are always collections (edges)
+            this.collectionType = 'polygon';
+            this.graphExpression = this.sourceExpression.graphExpression;
+        } else if (ItemExpression.CHANGE_SOURCES.includes(exprName)) {
+            // Change collections delegate to the underlying expression
+            this.collectionType = 'change';
         } else {
-            const validSources = [...ItemExpression.TEXT_SOURCES, ...ItemExpression.SHAPE_2D_SOURCES, ...ItemExpression.SHAPE_3D_SOURCES, ...ItemExpression.TABLE_SOURCES];
+            const validSources = [...ItemExpression.TEXT_SOURCES, ...ItemExpression.SHAPE_2D_SOURCES, ...ItemExpression.SHAPE_3D_SOURCES, ...ItemExpression.TABLE_SOURCES, ...ItemExpression.POLYGON_SOURCES, ...ItemExpression.CHANGE_SOURCES];
             this.dispatchError(`item(): First argument must be a collection from ${validSources.join(', ')}`);
         }
 
@@ -152,7 +165,8 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
         }
 
         // Validate index and extract data for shape collections
-        if (this.collectionType !== 'text') {
+        // Skip for 'text' and 'change' - handled at command time via shapeRegistry lookup
+        if (this.collectionType !== 'text' && this.collectionType !== 'change') {
             this._validateAndExtractShapeData();
         }
     }
@@ -179,7 +193,24 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
             this._extractShape2DData(shapeData);
         } else if (this.collectionType === 'shape3d') {
             this._extractShape3DData(shapeData);
+        } else if (this.collectionType === 'polygon') {
+            this._extractPolygonEdgeData(shapeData);
         }
+    }
+
+    /**
+     * Extract edge data from polygon collection
+     */
+    _extractPolygonEdgeData(shapeData) {
+        // Polygon edges are lines
+        this.extractedShapeType = 'line';
+        this.extractedShapeName = 'line';
+
+        // Edge data has startPoint and endPoint directly
+        this.extractedData = {
+            start: shapeData.startPoint,
+            end: shapeData.endPoint
+        };
     }
 
     /**
@@ -218,7 +249,7 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     // ===== Shape Accessor Interface (for chaining) =====
 
     getGeometryType() {
-        if (this.collectionType === 'shape2d') {
+        if (this.collectionType === 'shape2d' || this.collectionType === 'polygon') {
             return this.extractedShapeType;
         }
         if (this.collectionType === 'shape3d' && this.handler) {
@@ -239,8 +270,8 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     }
 
     getLinePoints() {
-        if (this.collectionType === 'shape2d' &&
-            this.extractedShapeType === GEOMETRY_TYPES.LINE) {
+        if ((this.collectionType === 'shape2d' || this.collectionType === 'polygon') &&
+            this.extractedShapeType === 'line') {
             return [this.extractedData.start, this.extractedData.end];
         }
         if (this.collectionType === 'shape3d' && this.extractedPoints.length >= 2) {
@@ -296,6 +327,13 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
                     return this.extractedData.vertices.flatMap(v => [v.x, v.y]);
             }
         }
+        if (this.collectionType === 'polygon') {
+            // Polygon edge is a line
+            return [
+                this.extractedData.start.x, this.extractedData.start.y,
+                this.extractedData.end.x, this.extractedData.end.y
+            ];
+        }
         if (this.collectionType === 'shape3d') {
             return this.coordinates.slice();
         }
@@ -324,6 +362,9 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
                     return [v.x, v.y];
             }
         }
+        if (this.collectionType === 'polygon') {
+            return [this.extractedData.start.x, this.extractedData.start.y];
+        }
         if (this.collectionType === 'shape3d' && this.extractedPoints.length > 0) {
             const p = this.extractedPoints[0];
             return [p.x, p.y, p.z];
@@ -345,6 +386,9 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
                     const last = verts[verts.length - 1];
                     return [last.x, last.y];
             }
+        }
+        if (this.collectionType === 'polygon') {
+            return [this.extractedData.end.x, this.extractedData.end.y];
         }
         if (this.collectionType === 'shape3d' && this.extractedPoints.length > 1) {
             const p = this.extractedPoints[this.extractedPoints.length - 1];

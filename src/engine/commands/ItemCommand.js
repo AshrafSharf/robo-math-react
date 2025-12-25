@@ -49,24 +49,18 @@ export class ItemCommand extends BaseCommand {
 
             this.commandResult = this.extractedItem;
         } else {
-            // Shape collections: data is already extracted during resolve
-            // The expression has the shape data, we just need to set commandResult
-            // for shapeRegistry storage (via BaseCommand.setLabelName)
-
-            // For shape collections, the extracted shape data is in the expression
-            // We return the expression itself as the commandResult so it can be
-            // looked up and used for chaining
-            this.commandResult = expression;
+            // Shape collections (translate, rotate, scale, polygon, change)
+            const collection = this.commandContext.shapeRegistry[collectionVariableName];
+            this.commandResult = collection.get(index);
         }
     }
 
     async playSingle() {
-        // No-op - this command doesn't animate
         return Promise.resolve();
     }
 
     doDirectPlay() {
-        // No-op - this command doesn't animate
+        // Nothing to do - shape already extracted in doInit
     }
 
     getLabelPosition() {

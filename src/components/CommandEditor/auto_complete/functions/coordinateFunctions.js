@@ -19,20 +19,20 @@ export const COORDINATE_FUNCTIONS = {
     altSignatures: ['y(point: Point)'],
     category: 'Coordinates'
   },
-  st: {
-    name: 'st',
-    signature: '(shape)',
-    args: ['shape: Line|Arc|Vec'],
-    description: 'Start point of shape',
-    altSignatures: ['st(shape: Line|Arc|Vec)'],
+  start: {
+    name: 'start',
+    signature: '(g, shape)',
+    args: ['g: Graph', 'shape: Line|Arc|Vec|Circle|Polygon'],
+    description: 'Start point of shape (ratio 0)',
+    altSignatures: ['start(g, shape)'],
     category: 'Coordinates'
   },
-  ed: {
-    name: 'ed',
-    signature: '(shape)',
-    args: ['shape: Line|Arc|Vec'],
-    description: 'End point of shape',
-    altSignatures: ['ed(shape: Line|Arc|Vec)'],
+  end: {
+    name: 'end',
+    signature: '(g, shape)',
+    args: ['g: Graph', 'shape: Line|Arc|Vec|Circle|Polygon'],
+    description: 'End point of shape (ratio 1)',
+    altSignatures: ['end(g, shape)'],
     category: 'Coordinates'
   },
   mid: {

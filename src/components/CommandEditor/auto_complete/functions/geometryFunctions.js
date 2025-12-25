@@ -26,7 +26,7 @@ export const GEOMETRY_FUNCTIONS = {
       'L = line(G, point(G, 1, 2), point(G, 5, 6))',
       'L = line(G, A, B, 1.5)',
       'L = line(G, A, B, 2)',
-      'L = line(G, st(V), ed(V))'
+      'L = line(G, start(G, V), end(G, V))'
     ],
     category: 'Geometry'
   },
@@ -75,6 +75,55 @@ export const GEOMETRY_FUNCTIONS = {
       'P = polygon(G, A, B, C)',
       'P = polygon(G, A, B, C, D)',
       'P = polygon(G, A, B, C, D, E)'
+    ],
+    category: 'Geometry'
+  },
+  sss: {
+    name: 'sss',
+    signature: '(g, a, b, c)',
+    args: ['g: Graph', 'a: number', 'b: number', 'c: number'],
+    description: 'Triangle from 3 side lengths (Side-Side-Side)',
+    altSignatures: [
+      'T = sss(G, 3, 4, 5)',
+      'T = sss(G, mag(L1), mag(L2), mag(L3))',
+      'T = sss(G, 3, 4, 5, basePoint)',
+      'T = sss(G, 3, 4, 5, basePoint, rotation)'
+    ],
+    category: 'Geometry'
+  },
+  sas: {
+    name: 'sas',
+    signature: '(g, b, angleA, c)',
+    args: ['g: Graph', 'b: number', 'angleA: degrees', 'c: number'],
+    description: 'Triangle from Side-Angle-Side (included angle)',
+    altSignatures: [
+      'T = sas(G, 4, 90, 3)',
+      'T = sas(G, 5, 60, 5)',
+      'T = sas(G, mag(L1), 45, mag(L2))'
+    ],
+    category: 'Geometry'
+  },
+  asa: {
+    name: 'asa',
+    signature: '(g, angleA, c, angleB)',
+    args: ['g: Graph', 'angleA: degrees', 'c: number', 'angleB: degrees'],
+    description: 'Triangle from Angle-Side-Angle (included side)',
+    altSignatures: [
+      'T = asa(G, 60, 5, 60)',
+      'T = asa(G, 90, 5, 45)',
+      'T = asa(G, 30, mag(L), 60)'
+    ],
+    category: 'Geometry'
+  },
+  aas: {
+    name: 'aas',
+    signature: '(g, angleA, angleB, a)',
+    args: ['g: Graph', 'angleA: degrees', 'angleB: degrees', 'a: number'],
+    description: 'Triangle from Angle-Angle-Side (opposite side)',
+    altSignatures: [
+      'T = aas(G, 30, 60, 5)',
+      'T = aas(G, 45, 45, 5)',
+      'T = aas(G, 30, 60, mag(L))'
     ],
     category: 'Geometry'
   }

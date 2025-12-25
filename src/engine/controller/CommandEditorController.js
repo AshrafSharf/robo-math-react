@@ -190,10 +190,11 @@ export class CommandEditorController {
         this.errors = pipelineResult.errors;
         this.canPlayInfos = pipelineResult.canPlayInfos;
 
-        if (pipelineResult.errors.length > 0 || pipelineResult.commands.length === 0) {
+        if (pipelineResult.commands.length === 0) {
             this._notifyStateChange();
             return false;
         }
+        // Continue with setup even if there are errors - we can still play valid commands
 
         this.clearAndReset();
         this.expressionContext = newContext;
@@ -209,7 +210,8 @@ export class CommandEditorController {
         this.commandExecutor.setCommandContext(commandContext);
 
         this.commandExecutor.setOnError((error, command, index) => {
-            this.errors = [...this.errors, { index, error }];
+            const id = command ? command.getExpressionId() : null;
+            this.errors = [...this.errors, { index, id, error }];
             this._notifyStateChange();
         });
 

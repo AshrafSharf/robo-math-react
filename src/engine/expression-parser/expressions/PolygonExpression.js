@@ -1,5 +1,5 @@
 /**
- * Polygon expression - represents a 2D polygon
+ * Polygon expression - represents a 2D polygon as a collection of edges
  *
  * Syntax options:
  *   polygon(graph, point1, point2, point3, ...) - graph with points
@@ -7,6 +7,11 @@
  *
  * Requires at least 3 points (6 coordinate values).
  * The polygon is auto-closed if the first and last points differ.
+ *
+ * Supports edge access via item():
+ *   P = polygon(G, A, B, C)
+ *   edge = item(P, 0)       // First edge (A to B)
+ *   hide(item(P, 1))        // Hide second edge
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { PolygonCommand } from '../../commands/PolygonCommand.js';
@@ -20,6 +25,10 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
         this.subExpressions = subExpressions;
         this.coordinates = []; // [x1, y1, x2, y2, x3, y3, ...]
         this.graphExpression = null; // Reference to graph expression
+
+        // Multi-shape support for edge access
+        this.isMultiShape = true;
+        this.shapeDataArray = [];
     }
 
     resolve(context) {
@@ -58,6 +67,27 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
 
         // Auto-close polygon if needed
         this.joinPointsIfRequired();
+
+        // Compute edge data for item() access
+        this._computeEdges();
+    }
+
+    /**
+     * Compute edge data from vertices for item() access
+     */
+    _computeEdges() {
+        const vertices = this.getVertices();
+        this.shapeDataArray = [];
+
+        for (let i = 0; i < vertices.length - 1; i++) {
+            this.shapeDataArray.push({
+                startPoint: vertices[i],
+                endPoint: vertices[i + 1],
+                edgeIndex: i,
+                originalShapeType: 'line',
+                originalShapeName: 'line'
+            });
+        }
     }
 
     /**
@@ -191,6 +221,33 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
      * @returns {boolean}
      */
     canPlay() {
+        return true;
+    }
+
+    // ===== Collection Accessor Methods (for item() support) =====
+
+    /**
+     * Get shape data at index (edge data)
+     * @param {number} index
+     * @returns {Object} Edge data with startPoint, endPoint, etc.
+     */
+    getShapeDataAt(index) {
+        return this.shapeDataArray[index];
+    }
+
+    /**
+     * Get collection size (number of edges)
+     * @returns {number}
+     */
+    getCollectionSize() {
+        return this.shapeDataArray.length;
+    }
+
+    /**
+     * Check if this is a collection
+     * @returns {boolean}
+     */
+    isCollection() {
         return true;
     }
 }

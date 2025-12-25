@@ -39,6 +39,10 @@ import { RotateExpression } from '../expressions/RotateExpression.js';
 import { TranslateExpression } from '../expressions/TranslateExpression.js';
 import { CircleExpression } from '../expressions/CircleExpression.js';
 import { PolygonExpression } from '../expressions/PolygonExpression.js';
+import { SSSExpression } from '../expressions/SSSExpression.js';
+import { SASExpression } from '../expressions/SASExpression.js';
+import { ASAExpression } from '../expressions/ASAExpression.js';
+import { AASExpression } from '../expressions/AASExpression.js';
 import { XPointExpression } from '../expressions/XPointExpression.js';
 import { YPointExpression } from '../expressions/YPointExpression.js';
 import { StartPointExpression } from '../expressions/StartPointExpression.js';
@@ -102,6 +106,8 @@ import { Para3DExpression } from '../expressions/3d/Para3DExpression.js';
 import { Curve3DExpression } from '../expressions/3d/Curve3DExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { ParametricPlotExpression } from '../expressions/ParametricPlotExpression.js';
+import { AreaUnderExpression } from '../expressions/AreaUnderExpression.js';
+import { AreaBetweenExpression } from '../expressions/AreaBetweenExpression.js';
 import { FunctionDefinitionExpression } from '../expressions/FunctionDefinitionExpression.js';
 import { FunctionCallExpression } from '../expressions/FunctionCallExpression.js';
 import { VariableReferenceExpression } from '../expressions/VariableReferenceExpression.js';
@@ -184,6 +190,13 @@ export class IntrepreterFunctionTable {
         registerMultiArg('arc', ArcExpression);
         registerMultiArg('circle', CircleExpression);
         registerMultiArg('polygon', PolygonExpression);
+
+        // Triangle construction expressions
+        registerMultiArg('sss', SSSExpression);      // Side-Side-Side
+        registerMultiArg('sas', SASExpression);      // Side-Angle-Side
+        registerMultiArg('asa', ASAExpression);      // Angle-Side-Angle
+        registerMultiArg('aas', AASExpression);      // Angle-Angle-Side
+
         registerMultiArg('g2d', Graph2DExpression);
         registerMultiArg('p2d', Polar2DExpression);
         registerMultiArg('g3d', Graph3DExpression);
@@ -241,6 +254,8 @@ export class IntrepreterFunctionTable {
 
         registerMultiArg('plot', PlotExpression);
         registerMultiArg('paraplot', ParametricPlotExpression);
+        registerMultiArg('areaunder', AreaUnderExpression);
+        registerMultiArg('areabetween', AreaBetweenExpression);
         registerMultiArg('label', LabelExpression);
         registerMultiArg('mathtext', MathTextExpression);
         registerMultiArg('write', WriteExpression);
@@ -305,8 +320,8 @@ export class IntrepreterFunctionTable {
         // Coordinate extraction
         registerMultiArg('x', XPointExpression);
         registerMultiArg('y', YPointExpression);
-        registerMultiArg('st', StartPointExpression);
-        registerMultiArg('ed', EndPointExpression);
+        registerMultiArg('start', StartPointExpression);
+        registerMultiArg('end', EndPointExpression);
         registerMultiArg('mid', MidExpression);     // midpoint
         registerMultiArg('pointatratio', PointAtRatioExpression);     // point at ratio along any shape
         registerMultiArg('a2p', A2PExpression);     // angle to point (point on circle at angle)
