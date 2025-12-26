@@ -176,18 +176,16 @@ export class Point3DExpression extends AbstractArithmeticExpression {
 
     /**
      * Create a Point3DCommand from this expression
-     * @param {Object} options - { styleOptions: { radius, color, ... } }
+     * Style comes directly from expression: c() -> color, s() -> radius
+     * @param {Object} options - Additional options (for registry/animation use)
      * @returns {Point3DCommand}
      */
     toCommand(options = {}) {
-        const defaults = ExpressionOptionsRegistry.get('point3d');
-        const mergedOpts = {
-            styleOptions: {
-                ...defaults.styleOptions,
-                ...(options.styleOptions || {})
-            }
+        const styleOptions = {
+            color: this.color,
+            radius: this.strokeWidth  // s() maps to point radius
         };
-        return new Point3DCommand(this.graphExpression, this.getPoint(), mergedOpts);
+        return new Point3DCommand(this.graphExpression, this.getPoint(), { styleOptions });
     }
 
     /**

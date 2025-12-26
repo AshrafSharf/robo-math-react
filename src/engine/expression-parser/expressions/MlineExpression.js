@@ -7,12 +7,21 @@
  * Used inside meq() to define an equation step with optional reason and number.
  * Not playable on its own.
  *
+ * Template syntax for dynamic values:
+ *   :varName        - simple variable substitution
+ *   :{expr}         - mathjs expression (e.g., :{a+b}, :{sqrt(x)})
+ *   :varName:.Nf    - with N decimal places
+ *   :{expr}:.Nf     - expression with formatting
+ *
  * Examples:
  *   mline("x^2 = 4", "given")           // auto-numbered with reason
  *   mline("x = \\pm 2")                 // auto-numbered, no reason
  *   mline("E = mc^2", "Einstein", 42)   // explicit number 42
+ *   mline("x = :a")                     // dynamic value from variable a
+ *   mline("sum = :{a+b}:.2f")           // expression with 2 decimals
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
+import { TemplateEvaluator } from '../../template/TemplateEvaluator.js';
 
 export class MlineExpression extends AbstractNonArithmeticExpression {
     static NAME = 'mline';
@@ -24,6 +33,10 @@ export class MlineExpression extends AbstractNonArithmeticExpression {
         this.reason = '';        // Optional reason/annotation (e.g., "given")
         this.explicitNumber = null;  // Optional explicit equation number
         this.number = null;      // Assigned number (set by meq)
+        // Template support
+        this.isTemplate = false;     // Whether equation uses template syntax
+        this.templateString = null;  // Original template with placeholders
+        this.templateScope = {};     // Variable values for template evaluation
     }
 
     resolve(context) {
@@ -36,7 +49,28 @@ export class MlineExpression extends AbstractNonArithmeticExpression {
         eqExpr.resolve(context);
         const resolvedEq = this._getResolvedExpression(context, eqExpr);
         if (resolvedEq && resolvedEq.getName() === 'quotedstring') {
-            this.equation = resolvedEq.getStringValue();
+            const rawEquation = resolvedEq.getStringValue();
+            this.templateString = rawEquation;  // Store original for re-evaluation
+
+            // Check for template placeholders
+            if (TemplateEvaluator.hasPlaceholders(rawEquation)) {
+                this.isTemplate = true;
+
+                // Get variable names and build scope from context
+                const varNames = TemplateEvaluator.getVariables(rawEquation);
+                this.templateScope = {};
+                for (const varName of varNames) {
+                    const value = context.getReference(varName);
+                    if (value !== undefined && typeof value.getNumericValue === 'function') {
+                        this.templateScope[varName] = value.getNumericValue();
+                    }
+                }
+
+                // Evaluate template to get actual equation string
+                this.equation = TemplateEvaluator.evaluate(rawEquation, this.templateScope);
+            } else {
+                this.equation = rawEquation;
+            }
         } else {
             this.dispatchError('mline() first argument (equation) must be a quoted string');
         }

@@ -146,19 +146,17 @@ export class Vector3DExpression extends AbstractNonArithmeticExpression {
 
     /**
      * Create a Vector3DCommand from this expression
-     * @param {Object} options - Command options { styleOptions: { strokeWidth, color, ... } }
+     * Style comes directly from expression: c() -> color, s() -> strokeWidth (shaft thickness)
+     * @param {Object} options - Additional options (for registry/animation use)
      * @returns {Vector3DCommand}
      */
     toCommand(options = {}) {
         const pts = this.getVectorPoints();
-        const defaults = ExpressionOptionsRegistry.get('vector3d');
-        const mergedOpts = {
-            styleOptions: {
-                ...defaults.styleOptions,
-                ...(options.styleOptions || {})
-            }
+        const styleOptions = {
+            color: this.color,
+            strokeWidth: this.strokeWidth  // s() maps to vector shaft thickness
         };
-        return new Vector3DCommand(this.graphExpression, pts[0], pts[1], mergedOpts);
+        return new Vector3DCommand(this.graphExpression, pts[0], pts[1], { styleOptions });
     }
 
     /**

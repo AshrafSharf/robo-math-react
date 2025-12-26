@@ -138,7 +138,20 @@ class SVGShapeAnchorAdapter extends BaseAnchorAdapter {
   getAnchor2D() {
     const node = this.shape.shapeGroup.node;
     if (!node) return null;
+
+    // Temporarily show if hidden (display:none) to get accurate bounding rect
+    const wasHidden = node.style.display === 'none';
+    if (wasHidden) {
+      node.style.display = '';
+    }
+
     const bbox = node.getBoundingClientRect();
+
+    // Restore hidden state
+    if (wasHidden) {
+      node.style.display = 'none';
+    }
+
     return this._toCanvasCoords(bbox);
   }
 

@@ -45,6 +45,15 @@ sel4 = select(m3, "=")
 overbrace(sel4, "equals")
 ```
 
+
+```
+M=write(4,4,meq(mline("x^2 = \frac{3}{4}","given"),mline("x = \pm 2","solved")),c(black),f(30))
+r1=select(M,"3",1)
+overbrace(r1,"need to test for both",15)
+replace("9",r1)
+K = print(10,10, "\frac{x^2}{y}")
+```
+
 ## Comments
 
 | Line | Explanation |

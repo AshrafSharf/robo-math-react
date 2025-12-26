@@ -133,6 +133,9 @@ export class ChangeCommand extends FromToCommand {
                 const mergedOptions = { ...originalOptions, ...this.options };
 
                 const newCmd = cmdExpr.toCommand(mergedOptions);
+                // Skip if expression doesn't produce a command (e.g., meq returns null)
+                if (!newCmd) continue;
+
                 newCmd.diagram2d = this.diagram2d;
                 newCmd.setCommandContext(this.commandContext);
                 // Don't set labelName on temporary animation commands

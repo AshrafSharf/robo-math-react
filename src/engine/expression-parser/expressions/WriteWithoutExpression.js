@@ -11,6 +11,7 @@
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { WriteWithoutCommand } from '../../commands/WriteWithoutCommand.js';
 import { RewriteWithoutCommand } from '../../commands/RewriteWithoutCommand.js';
+import { WriteWithoutMeqCommand } from '../../commands/WriteWithoutMeqCommand.js';
 
 export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
     static NAME = 'writewithout';
@@ -18,7 +19,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        this.mode = null;  // 'existing' or 'create'
+        this.mode = null;  // 'existing', 'create', or 'meq'
         // For 'existing' mode
         this.targetVariableName = null;
         this.excludePatterns = [];  // Array of patterns to exclude
@@ -26,6 +27,8 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
         this.row = 0;
         this.col = 0;
         this.latexString = '';
+        // For 'meq' mode
+        this.meqExpression = null;
         // Reference to MathTextComponent
         this.mathTextComponent = null;
     }
@@ -88,13 +91,53 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
             this.row = positionCoords[0];
             this.col = positionCoords[1];
 
-            // Next arg: LaTeX string
+            // Next arg: LaTeX string or meq expression
             if (argIndex >= this.subExpressions.length) {
                 this.dispatchError('writewithout() requires a latex string after position');
             }
             const latexExpr = this.subExpressions[argIndex];
             latexExpr.resolve(context);
+
+            // Check if it's a meq expression (direct)
+            const contentName = latexExpr.getName && latexExpr.getName();
+            if (contentName === 'meq') {
+                this.mode = 'meq';
+                this.meqExpression = latexExpr;
+                argIndex++;
+                // Collect exclude patterns (remaining args)
+                for (let i = argIndex; i < this.subExpressions.length; i++) {
+                    const excludeExpr = this.subExpressions[i];
+                    excludeExpr.resolve(context);
+                    const resolvedExclude = this._getResolvedExpression(context, excludeExpr);
+                    if (!resolvedExclude || resolvedExclude.getName() !== 'quotedstring') {
+                        this.dispatchError(`writewithout() argument ${i + 1} must be a quoted string (exclude pattern)`);
+                    }
+                    this.excludePatterns.push(resolvedExclude.getStringValue());
+                }
+                return;
+            }
+
             const resolvedLatex = this._getResolvedExpression(context, latexExpr);
+
+            // Check if resolved expression is meq (via variable reference)
+            const resolvedName = resolvedLatex && resolvedLatex.getName && resolvedLatex.getName();
+            if (resolvedName === 'meq') {
+                this.mode = 'meq';
+                this.meqExpression = resolvedLatex;
+                argIndex++;
+                // Collect exclude patterns (remaining args)
+                for (let i = argIndex; i < this.subExpressions.length; i++) {
+                    const excludeExpr = this.subExpressions[i];
+                    excludeExpr.resolve(context);
+                    const resolvedExclude = this._getResolvedExpression(context, excludeExpr);
+                    if (!resolvedExclude || resolvedExclude.getName() !== 'quotedstring') {
+                        this.dispatchError(`writewithout() argument ${i + 1} must be a quoted string (exclude pattern)`);
+                    }
+                    this.excludePatterns.push(resolvedExclude.getStringValue());
+                }
+                return;
+            }
+
             if (!resolvedLatex || typeof resolvedLatex.getStringValue !== 'function') {
                 this.dispatchError('writewithout() latex argument must be a quoted string, meq(), or mflow()');
             }
@@ -142,6 +185,17 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
                 targetVariableName: this.targetVariableName,
                 excludePatterns: this.excludePatterns
             }, options);
+        } else if (this.mode === 'meq') {
+            // Use WriteWithoutMeqCommand for meq expressions
+            // - line-by-line animation (Y-sorted)
+            // - excludes specified patterns
+            return new WriteWithoutMeqCommand(
+                this.meqExpression,
+                this.row,
+                this.col,
+                this.excludePatterns,
+                { color: this.color, fontSize: this.fontSize, ...options }
+            );
         } else {
             return new WriteWithoutCommand('create', {
                 row: this.row,
