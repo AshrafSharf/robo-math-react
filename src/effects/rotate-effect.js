@@ -84,6 +84,8 @@ export class RotateEffect extends BaseEffect {
         }
 
         this.clone = cloneElement(originalElement);
+        // Ensure clone is visible for animation (original may be hidden)
+        this.clone.show();
         const clonePath = getPathElement(this.clone);
 
         if (!clonePath) {

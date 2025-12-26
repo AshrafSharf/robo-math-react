@@ -43,7 +43,8 @@
       "Bash(npm run build:*)",
       "Bash(xargs:*)",
       "WebFetch(domain:wiki.geogebra.org)",
-      "WebFetch(domain:geogebra.github.io)"
+      "WebFetch(domain:geogebra.github.io)",
+      "WebFetch(domain:www.robocompass.com)"
     ],
     "deny": [],
     "ask": []

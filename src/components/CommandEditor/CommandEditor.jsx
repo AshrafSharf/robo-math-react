@@ -49,7 +49,7 @@ const CommandEditor = ({
   playback = { isIdle: true, isPlaying: false, isPaused: false, isActive: false, isInteractiveActive: false, activeSource: null, stop: () => {} }
 }) => {
   // Derive playback state for easier usage
-  const { isPlaying, isPaused, isActive, isInteractiveActive, activeSource, stop: stopPlayback } = playback;
+  const { isPlaying, isPaused, isActive, isRestoring, isInteractiveActive, activeSource, stop: stopPlayback } = playback;
   // Use external commands if provided (controlled mode), otherwise local state
   const [localCommands, setLocalCommands] = useState([createCommand(1)]);
   const commands = externalCommands ?? localCommands;
@@ -302,6 +302,7 @@ const CommandEditor = ({
                 </SortableContext>
               </DndContext>
             </div>
+
           </div>
         </div>
 

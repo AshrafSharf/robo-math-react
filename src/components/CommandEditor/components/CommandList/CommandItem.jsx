@@ -67,7 +67,7 @@ const CommandItem = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`robo-cmditem ${isSelected ? 'selected' : ''}`}
+      className={`robo-cmditem ${isSelected ? 'selected' : ''} ${isPlayingThis ? 'playing' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

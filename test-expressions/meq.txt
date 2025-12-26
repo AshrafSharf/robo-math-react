@@ -1,0 +1,51 @@
+# meq - Aligned equation steps with circled numbers
+
+# Basic usage - inline mlines
+meq(4, 4,
+  mline("x^2 = 4", "given"),
+  mline("x = \\pm 2", "take square root"),
+  mline("x = 2 \\text{ or } x = -2", "simplify")
+)
+
+# Variable assignment - mlines declared separately
+m1 = mline("a^2 + b^2 = c^2", "Pythagorean theorem")
+m2 = mline("3^2 + 4^2 = c^2", "substitute values")
+m3 = mline("9 + 16 = c^2")
+m4 = mline("c^2 = 25")
+m5 = mline("c = 5", "solved")
+meq(4, 4, m1, m2, m3, m4, m5)
+
+# Explicit numbering
+meq(4, 4,
+  mline("E = mc^2", "Einstein", 42),
+  mline("F = ma", "Newton", 43)
+)
+
+# mline with variable references
+eq1 = "\\sin^2(\\theta) + \\cos^2(\\theta) = 1"
+reason1 = "Pythagorean identity"
+m1 = mline(eq1, reason1)
+meq(4, 4, m1)
+
+# mref - Reference equation numbers
+meq(4, 4,
+  mline("x + y = 10", "equation 1"),
+  mline("x - y = 2", "equation 2"),
+  mline("2x = 12", "add equations"),
+  mline("x = 6", "solved")
+)
+write(12, 4, "Adding " + mref(1) + " and " + mref(2) + " gives " + mref(3))
+
+# No reason, just equations
+meq(4, 4,
+  mline("2x + 3 = 7"),
+  mline("2x = 4"),
+  mline("x = 2")
+)
+
+# Mixed - some with reasons, some without
+meq(4, 4,
+  mline("\\frac{d}{dx}(x^2) = 2x", "power rule"),
+  mline("\\frac{d}{dx}(\\sin x) = \\cos x"),
+  mline("\\frac{d}{dx}(e^x) = e^x", "exponential")
+)

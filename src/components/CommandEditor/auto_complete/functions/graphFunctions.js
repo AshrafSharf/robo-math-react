@@ -198,6 +198,42 @@ export const GRAPH_FUNCTIONS = {
     ],
     category: 'Graph'
   },
+  mline: {
+    name: 'mline',
+    signature: '(equation, reason?, number?)',
+    args: ['equation: string', 'reason: string (optional)', 'number: number (optional)'],
+    description: 'Define a line for meq (equation, optional reason, optional explicit number)',
+    altSignatures: [
+      'mline("x^2 = 4", "given")',
+      'mline("x = \\\\pm 2")',
+      'mline("E = mc^2", "Einstein", 42)'
+    ],
+    category: 'Graph'
+  },
+  meq: {
+    name: 'meq',
+    signature: '(row, col, mline(...), ...)',
+    args: ['row: number', 'col: number', 'lines: mline...'],
+    description: 'Create aligned equation steps with circled numbers (①②③...)',
+    altSignatures: [
+      'meq(4, 4, mline("x^2 = 4", "given"), mline("x = \\\\pm 2", "solved"))',
+      'meq(4, 4, mline("a^2 + b^2 = c^2", "Pythagorean"), mline("c = 5"))',
+      'm1 = mline("x = 1")\nmeq(4, 4, m1)'
+    ],
+    category: 'Graph'
+  },
+  mref: {
+    name: 'mref',
+    signature: '(number)',
+    args: ['number: number'],
+    description: 'Get circled equation reference number (①②③...) for use in text',
+    altSignatures: [
+      'mref(1)',
+      '"From " + mref(1) + " we get..."',
+      'write(8, 4, "Using " + mref(1) + " and " + mref(2))'
+    ],
+    category: 'Graph'
+  },
   mcancel: {
     name: 'mcancel',
     signature: '(textItem, "text", "direction")',

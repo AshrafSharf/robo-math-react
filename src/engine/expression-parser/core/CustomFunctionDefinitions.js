@@ -2,9 +2,10 @@
  * Custom Function Definitions
  *
  * Registers custom functions (math, utility, etc.) into the expression table.
- * Add new function definitions here as the system grows.
+ * Uses MathFunctionExpression to properly defer evaluation until resolve(),
+ * enabling nested expressions like cos(rad(45)).
  */
-import { NumericExpression } from '../expressions/NumericExpression.js';
+import { MathFunctionExpression } from '../expressions/MathFunctionExpression.js';
 
 /**
  * Register all custom functions
@@ -17,49 +18,29 @@ export function registerCustomFunctions(expTable) {
 }
 
 /**
- * Register standard math functions that wrap JavaScript Math object
+ * Register math functions that wrap mathjs
  * @param {Object} expTable - The expression table
  */
 function registerMathFunctions(expTable) {
     const mathFunctions = [
-        // Trigonometric
-        'sin', 'cos', 'tan', 'asin', 'acos', 'atan',
+        // Trigonometric (mathjs uses radians)
+        'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
+        // Hyperbolic
+        'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
         // Exponential/logarithmic
-        'exp', 'sqrt', 'log',
+        'exp', 'sqrt', 'cbrt', 'log', 'log10', 'log2',
         // Rounding
-        'abs', 'floor', 'ceil', 'round',
+        'abs', 'floor', 'ceil', 'round', 'sign',
         // Comparison
-        'min', 'max'
+        'min', 'max',
+        // Statistics
+        'mean', 'median', 'std', 'variance',
+        // Custom degree/radian conversion
+        'rad',  // rad(45) → 45 degrees to radians
+        'deg'   // deg(pi) → radians to degrees
     ];
 
-    mathFunctions.forEach(name => defineMathFunction(expTable, name));
-}
-
-/**
- * Define a math function that wraps JavaScript Math object
- * @param {Object} expTable - The expression table
- * @param {string} functionName - Name of the Math function
- */
-function defineMathFunction(expTable, functionName) {
-    expTable[functionName] = (e) => {
-        const args = e.args;
-
-        // Get numeric values from expressions
-        const numericArgs = args.map(arg => {
-            const values = arg.getVariableAtomicValues();
-            if (values.length === 0) {
-                throw new Error(`Cannot apply ${functionName} to non-numeric value`);
-            }
-            return values[0];
-        });
-
-        // Apply the Math function
-        const mathFunc = Math[functionName];
-        if (!mathFunc) {
-            throw new Error(`Math function ${functionName} not found`);
-        }
-
-        const result = mathFunc(...numericArgs);
-        return new NumericExpression(result);
-    };
+    mathFunctions.forEach(name => {
+        expTable[name] = (e) => new MathFunctionExpression(name, e.args);
+    });
 }

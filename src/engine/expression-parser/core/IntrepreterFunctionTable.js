@@ -134,6 +134,9 @@ import { OverbraceExpression } from '../expressions/OverbraceExpression.js';
 import { UnderbraceExpression } from '../expressions/UnderbraceExpression.js';
 import { MstepExpression } from '../expressions/MstepExpression.js';
 import { MflowExpression } from '../expressions/MflowExpression.js';
+import { MlineExpression } from '../expressions/MlineExpression.js';
+import { MeqExpression } from '../expressions/MeqExpression.js';
+import { MrefExpression } from '../expressions/MrefExpression.js';
 import { McancelExpression } from '../expressions/McancelExpression.js';
 import { MarrowExpression } from '../expressions/MarrowExpression.js';
 import { DistanceMarkerExpression } from '../expressions/DistanceMarkerExpression.js';
@@ -284,6 +287,9 @@ export class IntrepreterFunctionTable {
         registerMultiArg('underbrace', UnderbraceExpression);
         registerMultiArg('mstep', MstepExpression);
         registerMultiArg('mflow', MflowExpression);
+        registerMultiArg('mline', MlineExpression);
+        registerMultiArg('meq', MeqExpression);
+        registerMultiArg('mref', MrefExpression);
         registerMultiArg('mcancel', McancelExpression);
         registerMultiArg('marrow', MarrowExpression);
         registerMultiArg('measure', DistanceMarkerExpression);  // 2D measurement indicator (consistent with measure3d)

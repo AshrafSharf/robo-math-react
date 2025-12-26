@@ -76,7 +76,7 @@ export function useCommandExecution(roboCanvas, options = {}) {
         if (!command) return;
 
         const shape = command.getCommandResult();
-        const scene3d = command.graphContainer ? command.graphContainer.getScene() : null;
+        const scene3d = command.graphContainer?.getScene?.() ?? null;
 
         document.dispatchEvent(new CustomEvent(FOCUS_EVENT, {
             detail: {

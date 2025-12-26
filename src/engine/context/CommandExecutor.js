@@ -121,8 +121,8 @@ export class CommandExecutor {
   }
 
   /**
-   * Play a single command at the given index (replay animation on existing shape)
-   * Non-destructive, idempotent - just replays the animation effect.
+   * Play a single command at the given index
+   * Clears all visuals, rebuilds state up to index, then animates target command.
    *
    * @param {number} index - Command index to play
    * @returns {Promise}
@@ -133,10 +133,24 @@ export class CommandExecutor {
       return;
     }
 
-    const command = this.commands[index];
+    // 1. Clear all command visuals (but keep command array)
+    for (const command of this.commands) {
+      command.clear();
+    }
+    this.commandContext.shapeRegistry = {};
+    this.commandContext.commandRegistry = {};
 
+    // 2. drawTo(index) - re-init and directPlay commands 0 to index-1
+    await this.drawTo(index);
+
+    // 3. playSingle on target command
+    const command = this.commands[index];
     try {
+      await this.initCommand(command);
       await command.playSingle();
+
+      // 4. drawAll to restore full state
+      await this.drawAll();
 
       if (this.onCommandComplete) {
         this.onCommandComplete(command, index);
