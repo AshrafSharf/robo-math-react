@@ -41,7 +41,9 @@
       "Bash(aws s3 sync:*)",
       "Bash(git log:*)",
       "Bash(npm run build:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "WebFetch(domain:wiki.geogebra.org)",
+      "WebFetch(domain:geogebra.github.io)"
     ],
     "deny": [],
     "ask": []

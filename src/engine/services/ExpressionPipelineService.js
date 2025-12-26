@@ -56,6 +56,28 @@ const EXPRESSION_TYPE_MAP = {
 export class ExpressionPipelineService {
     constructor() {
         this.interpreter = new ExpressionInterpreter();
+        this._autoLabelCounters = {};
+    }
+
+    /**
+     * Generate a unique auto-label for unlabeled expressions
+     * Format: __expressionName_N__ (e.g., __perp_1__, __circle_2__)
+     * Double underscores indicate auto-generated labels
+     */
+    _generateAutoLabel(expression) {
+        const name = expression.getName ? expression.getName() : 'expr';
+        if (!this._autoLabelCounters[name]) {
+            this._autoLabelCounters[name] = 0;
+        }
+        this._autoLabelCounters[name]++;
+        return `__${name}_${this._autoLabelCounters[name]}__`;
+    }
+
+    /**
+     * Reset auto-label counters (call when starting a new session)
+     */
+    resetAutoLabels() {
+        this._autoLabelCounters = {};
     }
 
     /**
@@ -88,14 +110,25 @@ export class ExpressionPipelineService {
             const expression = this.interpreter.evalExpression(ast[0]);
             result.expression = expression;
 
-            // 3. Resolve variables in context (set caller for dependency tracking)
+            // 3. For non-assignment expressions, generate auto-label BEFORE resolve
+            //    so dependency tracking can use it
+            if (!(expression instanceof AssignmentExpression)) {
+                if (typeof expression.toCommand === 'function') {
+                    const autoLabel = options.label || this._generateAutoLabel(expression);
+                    result.label = autoLabel;
+                    // Set label on expression so getLabel() returns it during dependency tracking
+                    expression.label = autoLabel;
+                }
+            }
+
+            // 4. Resolve variables in context (set caller for dependency tracking)
             context.setCaller(expression);
             expression.resolve(context);
 
-            // 4. Determine if expression can play
+            // 5. Determine if expression can play
             result.canPlay = typeof expression.canPlay === 'function' && expression.canPlay();
 
-            // 5. Handle assignment expressions (variable binding)
+            // 6. Handle assignment expressions (variable binding)
             if (expression instanceof AssignmentExpression) {
                 result.label = expression.getLabel();
 
@@ -109,7 +142,7 @@ export class ExpressionPipelineService {
             } else {
                 // Non-assignment: create command directly if toCommand exists
                 if (typeof expression.toCommand === 'function') {
-                    result.command = this._createCommand(expression, options, options.label || '', index);
+                    result.command = this._createCommand(expression, options, result.label, index);
                 }
             }
 

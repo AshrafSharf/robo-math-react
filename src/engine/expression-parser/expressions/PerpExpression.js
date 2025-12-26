@@ -36,7 +36,10 @@ export class PerpExpression extends AbstractNonArithmeticExpression {
         // Detect input type from second argument (line/vec)
         this.subExpressions[1].resolve(context);
         const sourceExpr = this._getResolvedExpression(context, this.subExpressions[1]);
-        this.inputType = sourceExpr.getName() === 'line' ? 'line' : 'vec';
+        // Use geometry type for line-like shapes (line, tangent), but check name for vectors
+        const geoType = sourceExpr.getGeometryType?.() || sourceExpr.getName();
+        const name = sourceExpr.getName();
+        this.inputType = (geoType === 'line' && name !== 'vector') ? 'line' : 'vec';
 
         // Collect all atomic values from remaining subexpressions
         const allCoords = [];
