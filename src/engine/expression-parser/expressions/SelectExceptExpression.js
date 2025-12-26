@@ -19,7 +19,9 @@ export class SelectExceptExpression extends AbstractNonArithmeticExpression {
         this.subExpressions = subExpressions;
         this.targetVariableName = null;
         this.excludePatterns = [];
+        this.itemIndex = null;  // Optional: 1-based index to extract single item
         this.collection = null;  // Set by command during doInit
+        this.singleItem = null;  // Set when itemIndex is specified
     }
 
     resolve(context) {
@@ -41,15 +43,35 @@ export class SelectExceptExpression extends AbstractNonArithmeticExpression {
         if (!resolvedExpr) {
             this.dispatchError(`selectexcept(): Variable "${this.targetVariableName}" not found`);
         }
-        const validSources = ['mathtext', 'write'];
+        const validSources = ['mathtext', 'write', 'meq', 'mtext'];
         if (resolvedExpr.getName && !validSources.includes(resolvedExpr.getName())) {
-            this.dispatchError(`selectexcept(): "${this.targetVariableName}" must be a mathtext or write expression`);
+            this.dispatchError(`selectexcept(): "${this.targetVariableName}" must be a mathtext, write, or meq expression`);
         }
 
-        // Remaining args: patterns to exclude (strings)
-        for (let i = 1; i < this.subExpressions.length; i++) {
+        // Check if last argument is a number (item index)
+        const lastExpr = this.subExpressions[this.subExpressions.length - 1];
+        lastExpr.resolve(context);
+        const resolvedLast = this._getResolvedExpression(context, lastExpr);
+
+        let endIndex = this.subExpressions.length;
+        if (resolvedLast && resolvedLast.getName() !== 'quotedstring') {
+            // Last arg is not a string - treat as index
+            const indexValues = resolvedLast.getVariableAtomicValues();
+            if (indexValues.length === 1 && typeof indexValues[0] === 'number') {
+                this.itemIndex = Math.floor(indexValues[0]);
+                if (this.itemIndex < 1) {
+                    this.dispatchError('selectexcept() index must be >= 1');
+                }
+                endIndex = this.subExpressions.length - 1;
+            }
+        }
+
+        // Remaining args (up to endIndex): patterns to exclude (strings)
+        for (let i = 1; i < endIndex; i++) {
             const patternExpr = this.subExpressions[i];
-            patternExpr.resolve(context);
+            if (i !== this.subExpressions.length - 1) {
+                patternExpr.resolve(context);
+            }
             const resolvedPattern = this._getResolvedExpression(context, patternExpr);
             if (!resolvedPattern || resolvedPattern.getName() !== 'quotedstring') {
                 this.dispatchError(`selectexcept() argument ${i + 1} must be a quoted string (pattern)`);
@@ -72,13 +94,24 @@ export class SelectExceptExpression extends AbstractNonArithmeticExpression {
      */
     setCollection(collection) {
         this.collection = collection;
+
+        // If itemIndex specified, extract single item
+        if (this.itemIndex !== null && collection) {
+            const zeroBasedIndex = this.itemIndex - 1;
+            if (zeroBasedIndex >= 0 && zeroBasedIndex < collection.size()) {
+                this.singleItem = collection.get(zeroBasedIndex);
+            }
+        }
     }
 
     /**
-     * Get the resolved TextItemCollection
-     * @returns {TextItemCollection}
+     * Get the resolved value
+     * @returns {TextItemCollection|TextItem} Collection or single item if index was specified
      */
     getResolvedValue() {
+        if (this.itemIndex !== null) {
+            return this.singleItem;
+        }
         return this.collection;
     }
 

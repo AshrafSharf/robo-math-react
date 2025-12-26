@@ -9,6 +9,10 @@ export class AbstractArithmeticExpression {
         this.resultantExpression = null;
         this.expressionId = -1;
         this.commandText = '';
+        // Optional styling (overrides settings if provided)
+        this.fontSize = null;
+        this.color = null;
+        this.strokeWidth = null;
     }
 
     getExpressionId() {
@@ -241,6 +245,33 @@ export class AbstractArithmeticExpression {
             return this.graphExpression.getGrapher();
         }
         return null;
+    }
+
+    /**
+     * Parse styling expressions (c, f, s) from resolved sub-expressions
+     * @param {Array} expressions - Array of resolved expressions to check
+     */
+    _parseStyleExpressions(expressions) {
+        for (const expr of expressions) {
+            const name = expr.getName && expr.getName();
+            if (name === 'c') {
+                this.color = expr.getColorValue();
+            } else if (name === 'f') {
+                this.fontSize = expr.getFontSizeValue();
+            } else if (name === 's') {
+                this.strokeWidth = expr.getStrokeWidthValue();
+            }
+        }
+    }
+
+    /**
+     * Check if expression is a styling expression (c, f, or s)
+     * @param {Object} expr - Expression to check
+     * @returns {boolean}
+     */
+    _isStyleExpression(expr) {
+        const name = expr.getName && expr.getName();
+        return name === 'c' || name === 'f' || name === 's';
     }
 }
 

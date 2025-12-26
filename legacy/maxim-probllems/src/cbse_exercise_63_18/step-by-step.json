@@ -1,0 +1,40 @@
+{
+  "problem_statement": "A rectangular sheet of tin 45 cm by 24 cm is to be made into a box without top, by cutting off square from each corner and folding up the flaps. What should be the side of the square to be cut off so that the volume of the box is maximum ?",
+  "overview": "Recognize that when a problem asks for a maximum volume with variable dimensions, we need to express volume as a function of one variable and use calculus to find where $\\frac{dV}{dx} = 0$.",
+  "step_details": [
+    {
+      "step_index": 1,
+      "explanation": "$\\textbf{Define variables, express dimensions, and formulate volume function}$",
+      "expressions": [
+        "$\\text{Let } x \\text{ cm be the side of the square cut from each corner} \\quad \\color{blue}{\\text{(variable definition for optimization)}}$",
+        "$\\text{Height of the box} = x \\text{ cm} \\quad \\color{blue}{\\text{(height equals side of the cut square)}}$",
+        "$\\text{Length of the box} = 45 - 2x \\text{ cm} \\quad \\color{blue}{\\text{(original length minus squares from both ends)}}$",
+        "$\\text{Width of the box} = 24 - 2x \\text{ cm} \\quad \\color{blue}{\\text{(original width minus squares from both ends)}}$",
+        "$\\htmlClass{light_green_box_big}{V = x(45 - 2x)(24 - 2x)} \\quad \\color{blue}{\\text{(volume formula for rectangular box: } V = \\text{length} \\times \\text{width} \\times \\text{height})}$",
+        "$V = x(4x^2 - 138x + 1080) \\quad \\color{blue}{\\text{(expanding } (45 - 2x)(24 - 2x) \\text{ using FOIL)}}$",
+        "$\\htmlClass{light_orange_box_big}{V = 4x^3 - 138x^2 + 1080x \\quad \\color{blue}{\\text{(distributing } x \\text{ to get polynomial form)}}}$"
+      ]
+    },
+    {
+      "step_index": 2,
+      "explanation": "$\\textbf{Find critical points, check feasibility, and confirm maximum}$",
+      "expressions": [
+        "$\\htmlClass{light_yellow_box_bigger}{\\displaystyle \\frac{dV}{dx} = 12x^2 - 276x + 1080} \\quad \\color{blue}{\\text{(derivative of volume function with respect to } x)}$",
+        "$\\text{Set } \\displaystyle \\frac{dV}{dx} = 0: \\quad \\color{blue}{\\text{(finding critical points by setting derivative to zero)}}$",
+        "$12x^2 - 276x + 1080 = 0$",
+        "$x^2 - 23x + 90 = 0 \\quad \\color{blue}{\\text{(dividing entire equation by 12 to simplify)}}$",
+        "$\\text{Solve the quadratic equation:}$",
+        "$x = \\displaystyle \\frac{23 \\pm \\sqrt{529 - 360}}{2} = \\frac{23 \\pm 13}{2} \\quad \\color{blue}{\\text{(applying quadratic formula)}}$",
+        "$\\htmlClass{light_purple_box_big}{x = 18 \\text{ or } x = 5}$",
+        "$x = 18 \\text{ is not feasible because } 24 - 2(18) = -12 \\text{ cm (impossible)} \\quad \\color{blue}{\\text{(negative width is physically invalid)}}$",
+        "$x = 5 \\text{ is feasible} \\quad \\color{blue}{\\text{(both dimensions positive when } x = 5)}$",
+        "$\\displaystyle \\frac{d^2V}{dx^2} = 24x - 276 \\quad \\color{blue}{\\text{(second derivative test for concavity)}}$",
+        "$\\text{At } x = 5:$",
+        "$\\displaystyle \\frac{d^2V}{dx^2}|_{x=5} = 24(5) - 276 = -156 < 0 \\quad \\color{blue}{\\text{(concave down indicates local maximum)}}$",
+        "$\\text{Since second derivative is negative, } x = 5 \\text{ gives a local maximum}$",
+        "$\\htmlClass{light_green_box_big}{\\text{The side of the square to be cut off for maximum volume is } 5 \\text{ cm}}$"
+      ]
+    }
+  ],
+  "short_cuts": "In optimization problems, express the quantity to be maximized in terms of a single variable, then use derivatives to find critical points."
+}

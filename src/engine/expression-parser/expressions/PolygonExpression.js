@@ -44,16 +44,21 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(polygon_error_messages.GRAPH_REQUIRED());
         }
 
-        // Remaining args are coordinates
+        // Remaining args are coordinates, separating styling expressions
         this.coordinates = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-
             const resultExpression = this.subExpressions[i];
-            const atomicValues = resultExpression.getVariableAtomicValues();
 
-            for (let j = 0; j < atomicValues.length; j++) {
-                this.coordinates.push(atomicValues[j]);
+            if (this._isStyleExpression(resultExpression)) {
+                styleExprs.push(resultExpression);
+            } else {
+                const atomicValues = resultExpression.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    this.coordinates.push(atomicValues[j]);
+                }
             }
         }
 
@@ -70,6 +75,8 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
 
         // Compute edge data for item() access
         this._computeEdges();
+
+        this._parseStyleExpressions(styleExprs);
     }
 
     /**

@@ -10,7 +10,7 @@ g1 = g2d(0, 0, 16, 8, -5, 5, -5, 5, 1)
 ang = 0
 v1 = polarvector(g1, 3, ang)
 arc(g1, 0, 0, 1.5, 0, ang)
-label(g1, ang, 2, 2)
+label(g1, 2, 2, ":ang:.0f")
 mtext("\\theta = ", 5, 1)
 change(ang, 120)
 ```
@@ -25,7 +25,7 @@ radians = atan2(y(A), x(A))
 degrees = deg(radians)
 line(g1, O, A)
 angle(g1, point(g1, 3, 0), O, A)
-label(g1, degrees, 3.5, 2.5)
+label(g1, 3.5, 2.5, ":degrees:.1f")
 ```
 Shows angle measurement converted from radians.
 
@@ -76,7 +76,7 @@ v1 = polarvector(g1, 1, ang)
 tanHeight = tan(rad(ang))
 vector(g1, 1, 0, 1, tanHeight)
 dashedline(g1, end(g1, v1), point(g1, 1, tanHeight))
-label(g1, tanHeight, 1.3, tanHeight/2)
+label(g1, 1.3, tanHeight/2, ":tanHeight:.2f")
 change(ang, 70)
 ```
 Shows tangent as vertical segment at x=1.
@@ -88,7 +88,7 @@ v1 = vector(g1, 0, 0, 4, 0)
 v2 = vector(g1, 0, 0, 3, 3)
 ang = deg(atan2(3, 3))
 angle(g1, end(g1, v1), point(g1, 0, 0), end(g1, v2))
-label(g1, ang, 2, 1)
+label(g1, 2, 1, ":ang:.0f")
 ```
 
 ---
@@ -104,7 +104,7 @@ t = 0
 pt = point(g1, t, exp(t))
 slope = exp(t)
 tangent(g1, pt, plot(g1, "exp(x)"))
-label(g1, slope, t + 0.5, exp(t))
+label(g1, t + 0.5, exp(t), ":slope:.2f")
 change(t, 2)
 ```
 
@@ -121,7 +121,7 @@ h = sqrt(a * b)
 pt = point(g1, a, h)
 line(g1, 0, 0, a + b, 0)
 vector(g1, a, 0, a, h)
-label(g1, h, a + 0.5, h/2)
+label(g1, a + 0.5, h/2, ":h:.2f")
 mtext("\\sqrt{ab}", 12, 3)
 ```
 Geometric mean as altitude in semicircle.
@@ -152,7 +152,7 @@ pt1 = point(g1, x, 2)
 pt2 = point(g1, -x, 2)
 dashedline(g1, pt1, pt2)
 dist = abs(x) * 2
-label(g1, dist, 0, 2.5)
+label(g1, 0, 2.5, ":dist:.1f")
 change(x, 3)
 ```
 
@@ -165,8 +165,8 @@ plot(g1, "x")
 x = 0.5
 pt1 = point(g1, x, floor(x))
 pt2 = point(g1, x, ceil(x))
-label(g1, floor(x), x - 0.5, floor(x))
-label(g1, ceil(x), x - 0.5, ceil(x))
+label(g1, x - 0.5, floor(x), ":{floor(x)}:.0f")
+label(g1, x - 0.5, ceil(x), ":{ceil(x)}:.0f")
 stroke(pt1, "blue")
 stroke(pt2, "red")
 change(x, 5)
@@ -232,7 +232,7 @@ dashedline(g1, -5, -1, 5, -1)
 // Animated point on curve
 x = -4
 pt = point(g1, x, tanh(x))
-label(g1, tanh(x), x + 0.5, tanh(x))
+label(g1, x + 0.5, tanh(x), ":{tanh(x)}:.2f")
 change(x, 4)
 ```
 
@@ -262,14 +262,12 @@ change(t, 360)
 
 ### Polar Rose with Vectors
 ```
-g1 = g2d(0, 0, 16, 8, -4, 4, -4, 4, 1)
-n = 3
-t = 0
-r = 3 * cos(rad(n * t))
+g1 = g2d(0, 0, 30,30)
+t = 40
+r = 3
 v1 = vector(g1, 0, 0, r*cos(rad(t)), r*sin(rad(t)))
-arc(g1, 0, 0, 1, 0, t)
-label(g1, t, 1.5, 0.5)
-change(t, 360)
+label(g1, 1.5, 0.5, ":t:.0f")
+change(t, 220)
 ```
 Three-petal rose with rotating vector.
 
@@ -311,7 +309,7 @@ dashedline(g1, pt, f2)
 // Sum of distances (constant = 2a)
 d1 = distance(pt, f1)
 d2 = distance(pt, f2)
-label(g1, d1 + d2, 0, 3)
+label(g1, 0, 3, ":{d1 + d2}:.2f")
 change(t, 360)
 ```
 Demonstrates ellipse focal property.

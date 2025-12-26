@@ -45,15 +45,22 @@ export class Angle3D2Expression extends AbstractNonArithmeticExpression {
             this.dispatchError(angle3d_error_messages.GRAPH_REQUIRED(Angle3D2Expression.NAME));
         }
 
-        // Collect all atomic values from remaining subexpressions
+        // Collect all atomic values from remaining subexpressions, separating styling
         const allCoords = [];
+        const styleExprs = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                allCoords.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allCoords.push(atomicValues[j]);
+                }
             }
         }
+        this._parseStyleExpressions(styleExprs);
 
         // Handle different input formats
         if (allCoords.length === 12 || allCoords.length === 13) {

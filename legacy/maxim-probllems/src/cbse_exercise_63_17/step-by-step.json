@@ -1,0 +1,37 @@
+{
+  "problem_statement": "A square piece of tin of side 18 cm is to be made into a box without top, by cutting a square from each corner and folding up the flaps to form the box. What should be the side of the square to be cut off so that the volume of the box is the maximum possible.",
+  "overview": "Recognize that when a problem asks for maximum volume from a folded shape, you need to express volume as a function of one variable and use calculus to find where $\\frac{dV}{dx} = 0$.",
+  "step_details": [
+    {
+      "step_index": 1,
+      "explanation": "$\\textbf{Define variables and constraints} \\text{ and } \\textbf{Express volume as a function of x}$",
+      "expressions": [
+        "$\\text{Let } x \\text{ be the side length of squares cut from each corner} \\quad \\color{blue}{\\text{(defining the variable for optimization)}}$",
+        "$0 < x < 9 \\text{ (since cutting larger than 9 cm leaves no base)} \\quad \\color{blue}{\\text{(constraint to ensure valid box dimensions)}}$",
+        "$\\text{Base dimensions: } (18 - 2x) \\text{ cm by } (18 - 2x) \\text{ cm} \\quad \\color{blue}{\\text{(each side reduces by } 2x \\text{ due to corner cuts)}}$",
+        "$\\text{Height of box: } x \\text{ cm} \\quad \\color{blue}{\\text{(height equals the side length of cut squares)}}$",
+        "$V = \\text{length} \\times \\text{width} \\times \\text{height} \\quad \\color{blue}{\\text{(standard volume formula for a box)}}$",
+        "$\\htmlClass{light_green_box_big}{V = (18 - 2x)(18 - 2x)(x) \\quad \\color{blue}{\\text{(substituting base dimensions and height)}}}$",
+        "$V = x(18 - 2x)^2 = 4x(9 - x)^2 \\quad \\color{blue}{\\text{(factor out 4 for simplification)}}$",
+        "$\\htmlClass{light_orange_box_big}{V = 4(x^3 - 18x^2 + 81x) \\quad \\color{blue}{\\text{(expanding } (9 - x)^2 \\text{ and multiplying by } x)}}$"
+      ]
+    },
+    {
+      "step_index": 2,
+      "explanation": "$\\textbf{Find critical points using first derivative} \\text{ and } \\textbf{Confirm maximum using second derivative} \\text{ and } \\textbf{Conclude the} \\\\ \\textbf{optimal solution}$",
+      "expressions": [
+        "$\\htmlClass{light_yellow_box_bigger}{\\displaystyle \\frac{dV}{dx} = 4(3x^2 - 36x + 81) = 12(x^2 - 12x + 27) \\quad \\color{blue}{\\text{(differentiating volume function)}}}$",
+        "$\\text{Set } \\displaystyle \\frac{dV}{dx} = 0: \\quad \\color{blue}{\\text{(finding critical points)}}$",
+        "$x^2 - 12x + 27 = 0 \\quad \\color{blue}{\\text{(simplified equation for critical points)}}$",
+        "$\\text{Solve: } (x - 3)(x - 9) = 0 \\quad \\color{blue}{\\text{(factoring quadratic equation)}}$",
+        "$\\htmlClass{light_purple_box_big}{x = 3 \\text{ or } x = 9 \\text{ (but } x = 9 \\text{ is not feasible)} \\quad \\color{blue}{\\text{(only } x = 3 \\text{ satisfies constraint from Step 1)}}}$",
+        "$\\displaystyle \\frac{d^2V}{dx^2} = 12(2x - 12) = 24(x - 6) \\quad \\color{blue}{\\text{(second derivative test for concavity)}}$",
+        "$\\text{Evaluate at } x = 3: \\quad \\color{blue}{\\text{(checking concavity at critical point)}}$",
+        "$\\displaystyle \\frac{d^2V}{dx^2} \\bigg|_{x=3} = 24(3 - 6) = -72 < 0 \\quad \\color{blue}{\\text{(concave down implies local maximum)}}$",
+        "${\\text{Since second derivative is negative, } x =} 3 \\text{ gives maximum volume} \\quad \\color{blue}{\\text{(conclusion from second derivative test)}}$",
+        "$\\htmlClass{light_green_box_big}{\\text{The side length of squares to be cut for maximum volume is 3 cm} \\quad \\color{blue}{\\text{(final optimal solution)}}}$"
+      ]
+    }
+  ],
+  "short_cuts": "In optimization problems with geometric shapes, express the quantity to be maximized in terms of a single variable, then use derivatives to find critical points."
+}

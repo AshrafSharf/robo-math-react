@@ -38,16 +38,13 @@ export function convertRectsToPath(cheerio$, strokeWidthInEx) {
                  `A${r},${r} 0 0 1 ${x},${y + height - r} ` +
                  `L${x},${y + r} ` +
                  `A${r},${r} 0 0 1 ${x + r},${y}`;
-    } else if (height > 10) {
-      // Full rectangle (significant height) - draw all 4 sides
+    } else if (height > strokeWidthInEx) {
+      // Full rectangle (height > stroke width) - draw all 4 sides
       pathData = `M${x},${y} L${x + width},${y} L${x + width},${y + height} L${x},${y + height} L${x},${y}`;
     } else {
-      // Thin rect (fraction bar, etc.) - just draw horizontal line
-      var data = [];
-      data.push([x, y]);
-      data.push([x + width, y]);
-      var lineGenerator = d3.line();
-      pathData = lineGenerator(data);
+      // Thin rect (fraction bar, rule, etc.) - just draw single horizontal line
+      const centerY = y + height / 2;
+      pathData = `M${x},${centerY} L${x + width},${centerY}`;
     }
 
     let childPath = cheerio$('<path>');

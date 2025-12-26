@@ -67,17 +67,28 @@ export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
             this
         );
 
-        // Optional t range arguments (tMin, tMax)
-        if (this.subExpressions.length >= 5) {
-            this.subExpressions[3].resolve(context);
-            this.subExpressions[4].resolve(context);
+        // Optional t range and styling arguments
+        const styleExprs = [];
+        const rangeValues = [];
 
-            const minValues = this.subExpressions[3].getVariableAtomicValues();
-            const maxValues = this.subExpressions[4].getVariableAtomicValues();
+        for (let i = 3; i < this.subExpressions.length; i++) {
+            this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
 
-            if (minValues.length > 0) this.tMin = minValues[0];
-            if (maxValues.length > 0) this.tMax = maxValues[0];
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const values = expr.getVariableAtomicValues();
+                for (const v of values) {
+                    rangeValues.push(v);
+                }
+            }
         }
+
+        if (rangeValues.length >= 1) this.tMin = rangeValues[0];
+        if (rangeValues.length >= 2) this.tMax = rangeValues[1];
+
+        this._parseStyleExpressions(styleExprs);
     }
 
     /**

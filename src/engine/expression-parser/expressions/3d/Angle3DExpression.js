@@ -51,12 +51,19 @@ export class Angle3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(angle3d_error_messages.GRAPH_REQUIRED(Angle3DExpression.NAME));
         }
 
-        // Resolve remaining arguments and detect types
+        // Resolve remaining arguments and detect types, separating styling
         const args = [];
+        const styleExprs = [];
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            args.push(this._getResolvedExpression(context, this.subExpressions[i]));
+            const expr = this._getResolvedExpression(context, this.subExpressions[i]);
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                args.push(expr);
+            }
         }
+        this._parseStyleExpressions(styleExprs);
 
         // Detect types of first two arguments
         const type1 = args[0].getGeometryType?.() || args[0].getName();

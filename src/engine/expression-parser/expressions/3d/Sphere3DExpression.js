@@ -38,29 +38,33 @@ export class Sphere3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(sphere3d_error_messages.GRAPH_REQUIRED());
         }
 
-        // Second arg is radius
-        this.subExpressions[1].resolve(context);
-        const radiusValues = this.subExpressions[1].getVariableAtomicValues();
-        if (radiusValues.length !== 1) {
-            this.dispatchError(sphere3d_error_messages.INVALID_RADIUS());
-        }
-        this.radius = radiusValues[0];
+        // Resolve all remaining args, separating styling
+        const allValues = [];
+        const styleExprs = [];
 
-        // Remaining args are center coordinates
-        const coordinates = [];
-        for (let i = 2; i < this.subExpressions.length; i++) {
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                coordinates.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allValues.push(atomicValues[j]);
+                }
             }
         }
 
-        if (coordinates.length !== 3) {
-            this.dispatchError(sphere3d_error_messages.WRONG_COORD_COUNT(coordinates.length));
+        this._parseStyleExpressions(styleExprs);
+
+        // First value is radius, next 3 are center coordinates
+        if (allValues.length !== 4) {
+            this.dispatchError(sphere3d_error_messages.WRONG_COORD_COUNT(allValues.length - 1));
         }
 
-        this.center = { x: coordinates[0], y: coordinates[1], z: coordinates[2] };
+        this.radius = allValues[0];
+        this.center = { x: allValues[1], y: allValues[2], z: allValues[3] };
     }
 
     getName() {

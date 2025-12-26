@@ -34,13 +34,25 @@ export class PLL3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(`pll3d() needs arguments.\nUsage: pll3d(vec/line, point) or pll3d(vec/line, point, length)`);
         }
 
-        // Resolve all subexpressions
+        // Resolve all subexpressions, separating styling
+        const resolvedExprs = [];
+        const styleExprs = [];
+
         for (let i = 0; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                resolvedExprs.push(expr);
+            }
         }
 
+        this._parseStyleExpressions(styleExprs);
+
         // First arg is vector3d or line3d reference
-        const sourceExpr = this._getResolvedExpression(context, this.subExpressions[0]);
+        const sourceExpr = this._getResolvedExpression(context, resolvedExprs[0]);
         const sourceType = sourceExpr.getGeometryType?.() || sourceExpr.getName();
 
         if (sourceType !== 'vector3d' && sourceType !== 'line3d') {
@@ -64,7 +76,7 @@ export class PLL3DExpression extends AbstractNonArithmeticExpression {
         const refLength = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
 
         // Second arg is the point to pass through
-        const pointExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        const pointExpr = this._getResolvedExpression(context, resolvedExprs[1]);
         const pointCoords = pointExpr.getVariableAtomicValues();
 
         if (pointCoords.length < 3) {
@@ -75,8 +87,8 @@ export class PLL3DExpression extends AbstractNonArithmeticExpression {
 
         // Third arg (optional) is length
         let length = refLength; // default to reference length
-        if (this.subExpressions.length >= 3) {
-            const lengthExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+        if (resolvedExprs.length >= 3) {
+            const lengthExpr = this._getResolvedExpression(context, resolvedExprs[2]);
             const lengthValue = lengthExpr.getVariableAtomicValues()[0];
             if (typeof lengthValue === 'number' && lengthValue !== 0) {
                 length = lengthValue;

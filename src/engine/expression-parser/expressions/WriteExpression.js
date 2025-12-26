@@ -21,6 +21,7 @@ import { WriteTextItemVarCommand } from '../../commands/WriteTextItemVarCommand.
 import { WriteTextItemExprCommand } from '../../commands/WriteTextItemExprCommand.js';
 import { WriteTextItemCommand } from '../../commands/WriteTextItemCommand.js';
 import { WriteCellCommand } from '../../commands/WriteCellCommand.js';
+import { WriteMeqCommand } from '../../commands/WriteMeqCommand.js';
 
 export class WriteExpression extends AbstractNonArithmeticExpression {
     static NAME = 'write';
@@ -28,7 +29,7 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        // Mode: 'existing', 'create', 'collection_var', 'textitem_var', 'textitem_expr', 'tablecell'
+        // Mode: 'existing', 'create', 'collection_var', 'textitem_var', 'textitem_expr', 'tablecell', 'meq'
         this.mode = null;
         // For 'existing' mode
         this.targetVariableName = null;
@@ -46,6 +47,8 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         this.tableVariableName = null;
         this.tableCellRowIndex = null;
         this.tableCellColIndex = null;
+        // For 'meq' mode (multi-line equation with bounds)
+        this.meqExpression = null;
         // Reference to created MathTextComponent (set by command after init)
         this.mathTextComponent = null;
     }
@@ -115,13 +118,29 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
             // Mode 2: write(row, col, "latex") or write(point, "latex") - create new and animate
             this.mode = 'create';
 
+            // First, resolve all expressions and separate styling
+            const resolvedExprs = [];
+            const styleExprs = [];
+
+            for (let i = 0; i < this.subExpressions.length; i++) {
+                const expr = this.subExpressions[i];
+                expr.resolve(context);
+
+                if (this._isStyleExpression(expr)) {
+                    styleExprs.push(expr);
+                } else {
+                    resolvedExprs.push(expr);
+                }
+            }
+
+            this._parseStyleExpressions(styleExprs);
+
             // Collect position coordinates (need exactly 2: row, col)
             const positionCoords = [];
             let argIndex = 0;
 
-            while (argIndex < this.subExpressions.length && positionCoords.length < 2) {
-                const expr = this.subExpressions[argIndex];
-                expr.resolve(context);
+            while (argIndex < resolvedExprs.length && positionCoords.length < 2) {
+                const expr = resolvedExprs[argIndex];
                 const atomicValues = expr.getVariableAtomicValues();
 
                 for (const val of atomicValues) {
@@ -138,11 +157,10 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
             this.col = positionCoords[1];
 
             // Next arg: latex string or item expression
-            if (argIndex >= this.subExpressions.length) {
+            if (argIndex >= resolvedExprs.length) {
                 this.dispatchError('write() requires a latex string or item expression after position');
             }
-            const contentExpr = this.subExpressions[argIndex];
-            contentExpr.resolve(context);
+            const contentExpr = resolvedExprs[argIndex];
 
             // Check if it's an item expression (returns TextItem)
             const contentName = contentExpr.getName && contentExpr.getName();
@@ -152,11 +170,26 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
                 return;
             }
 
-            // Otherwise expect a latex string
+            // Check if it's a meq expression (direct) - use bounds-based animation
+            if (contentName === 'meq') {
+                this.mode = 'meq';
+                this.meqExpression = contentExpr;
+                return;
+            }
+
+            // Otherwise expect a latex string or expression with getStringValue()
             const resolvedLatexExpr = this._getResolvedExpression(context, contentExpr);
 
-            if (!resolvedLatexExpr || resolvedLatexExpr.getName() !== 'quotedstring') {
-                this.dispatchError('write() content argument must be a quoted string or item expression');
+            // Check if resolved expression is meq (via variable reference)
+            const resolvedName = resolvedLatexExpr && resolvedLatexExpr.getName && resolvedLatexExpr.getName();
+            if (resolvedName === 'meq') {
+                this.mode = 'meq';
+                this.meqExpression = resolvedLatexExpr;
+                return;
+            }
+
+            if (!resolvedLatexExpr || typeof resolvedLatexExpr.getStringValue !== 'function') {
+                this.dispatchError('write() content argument must be a quoted string, meq(), mflow(), or item expression');
             }
             this.latexString = resolvedLatexExpr.getStringValue();
         } else {
@@ -209,17 +242,25 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
                     this.textItemExpression.index
                 );
             }
+        } else if (this.mode === 'meq') {
+            // Use WriteMeqCommand for bounds-based line animation
+            return new WriteMeqCommand(
+                this.meqExpression,
+                this.row,
+                this.col,
+                { color: this.color, fontSize: this.fontSize }
+            );
         } else if (this.mode === 'existing') {
             return new WriteCommand('existing', {
                 targetVariableName: this.targetVariableName
-            }, options);
+            }, { color: this.color, fontSize: this.fontSize, ...options });
         } else {
             return new WriteCommand('create', {
                 row: this.row,
                 col: this.col,
                 latexString: this.latexString,
                 expression: this
-            }, options);
+            }, { color: this.color, fontSize: this.fontSize, ...options });
         }
     }
 

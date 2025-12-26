@@ -35,15 +35,21 @@ export class PatternSelector {
             const originalContent = mathComponent.getContent();
             const wrappedContent = wrapMultipleWithBBox(originalContent, latexPatterns);
 
+            // Count how many \bbox were added
+            const bboxCount = (wrappedContent.match(/\\bbox\[0px\]/g) || []).length;
+
             const tempComponent = MathTextComponent.createTempAtSamePosition(
                 mathComponent,
                 wrappedContent
             );
 
             const bboxBounds = tempComponent.getBBoxHighlightBounds();
+
+            // Only take the first bboxCount bounds (matching number of patterns wrapped)
+            const filteredBounds = bboxBounds.slice(0, bboxCount);
             tempComponent.destroy();
 
-            const bboxUnits = mathComponent.computeSelectionUnitsFromBounds(bboxBounds);
+            const bboxUnits = mathComponent.computeSelectionUnitsFromBounds(filteredBounds);
             selectionUnits.push(...bboxUnits);
         }
 

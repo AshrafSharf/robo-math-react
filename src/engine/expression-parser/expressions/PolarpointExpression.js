@@ -34,21 +34,33 @@ export class PolarpointExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('polarpoint() requires: polarpoint(graph, radius, angle) or polarpoint(graph, radius, angle, centerX, centerY)');
         }
 
-        // Resolve all subexpressions first
+        // Resolve all subexpressions first, separating styling
+        const styleExprs = [];
+        const resolvedExprs = [];
+
         for (let i = 0; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                resolvedExprs.push(expr);
+            }
         }
 
+        this._parseStyleExpressions(styleExprs);
+
         // First arg must be graph
-        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+        this.graphExpression = this._getResolvedExpression(context, resolvedExprs[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
             this.dispatchError('polarpoint() requires graph as first argument');
         }
 
         // Get radius and angle
-        const radiusExpr = this._getResolvedExpression(context, this.subExpressions[1]);
-        const angleExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+        const radiusExpr = this._getResolvedExpression(context, resolvedExprs[1]);
+        const angleExpr = this._getResolvedExpression(context, resolvedExprs[2]);
 
         const radius = radiusExpr.getVariableAtomicValues()[0];
         const angleDeg = angleExpr.getVariableAtomicValues()[0];
@@ -56,15 +68,15 @@ export class PolarpointExpression extends AbstractNonArithmeticExpression {
         // Determine center point
         let center = { x: 0, y: 0 };
 
-        if (this.subExpressions.length === 4) {
+        if (resolvedExprs.length === 4) {
             // polarpoint(graph, radius, angle, centerPoint)
-            const centerExpr = this._getResolvedExpression(context, this.subExpressions[3]);
+            const centerExpr = this._getResolvedExpression(context, resolvedExprs[3]);
             const centerValues = centerExpr.getVariableAtomicValues();
             center = { x: centerValues[0], y: centerValues[1] };
-        } else if (this.subExpressions.length >= 5) {
+        } else if (resolvedExprs.length >= 5) {
             // polarpoint(graph, radius, angle, centerX, centerY)
-            const centerXExpr = this._getResolvedExpression(context, this.subExpressions[3]);
-            const centerYExpr = this._getResolvedExpression(context, this.subExpressions[4]);
+            const centerXExpr = this._getResolvedExpression(context, resolvedExprs[3]);
+            const centerYExpr = this._getResolvedExpression(context, resolvedExprs[4]);
             center = {
                 x: centerXExpr.getVariableAtomicValues()[0],
                 y: centerYExpr.getVariableAtomicValues()[0]

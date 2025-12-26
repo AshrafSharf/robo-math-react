@@ -33,27 +33,39 @@ export class TangentExpression extends AbstractNonArithmeticExpression {
             );
         }
 
-        // Resolve all subexpressions
+        // Resolve all subexpressions, separating styling
+        const styleExprs = [];
+        const resolvedExprs = [];
+
         for (let i = 0; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                resolvedExprs.push(expr);
+            }
         }
 
+        this._parseStyleExpressions(styleExprs);
+
         // First arg: graph reference
-        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+        this.graphExpression = this._getResolvedExpression(context, resolvedExprs[0]);
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
             this.dispatchError('tangent() requires graph as first argument');
         }
 
         // Second arg: shape (circle or plot)
-        const shapeExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        const shapeExpr = this._getResolvedExpression(context, resolvedExprs[1]);
         this.shapeType = this._detectShapeType(shapeExpr);
 
         // Third arg: parameter (angle for circle, x for plot)
-        const paramExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+        const paramExpr = this._getResolvedExpression(context, resolvedExprs[2]);
         const paramValue = paramExpr.getVariableAtomicValues()[0];
 
         // Fourth arg: length
-        const lengthExpr = this._getResolvedExpression(context, this.subExpressions[3]);
+        const lengthExpr = this._getResolvedExpression(context, resolvedExprs[3]);
         const length = lengthExpr.getVariableAtomicValues()[0];
 
         // Calculate tangent based on shape type

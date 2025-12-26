@@ -42,14 +42,25 @@ export class RightAngleExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(angle_error_messages.GRAPH_REQUIRED(RightAngleExpression.NAME));
         }
 
+        // Collect all atomic values from remaining subexpressions, separating styling
         const allCoords = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                allCoords.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allCoords.push(atomicValues[j]);
+                }
             }
         }
+
+        this._parseStyleExpressions(styleExprs);
 
         if (allCoords.length === 8 || allCoords.length === 9) {
             const line1 = { start: { x: allCoords[0], y: allCoords[1] }, end: { x: allCoords[2], y: allCoords[3] } };

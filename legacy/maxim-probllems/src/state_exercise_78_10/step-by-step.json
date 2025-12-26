@@ -1,0 +1,36 @@
+{
+  "problem_statement": "A manufacturer wants to design an open box having a square base and a surface area of 108 sq.cm. Determine the dimensions of the box for the maximum volume.",
+  "overview": "Recognize that when a problem asks for maximum volume with a fixed surface area, we need to use calculus to find critical points by setting up a constraint equation, expressing one variable in terms of another, and then optimizing the volume function.",
+  "step_details": [
+    {
+      "step_index": 1,
+      "explanation": "$\\textbf{Define variables, set up equations, and express volume in terms of x}$",
+      "expressions": [
+        "$\\text{Let } x = \\text{length and width of square base} \\quad \\color{blue}{\\text{(since the base is square, length = width)}}$",
+        "$\\text{Let } y = \\text{height of the box}$",
+        "$\\text{Surface area equation: } x^2 + 4xy = 108 \\quad \\color{blue}{\\text{(since the box is open, surface area is base + 4 sides)}}$",
+        "$y = \\displaystyle \\frac{108 - x^2}{4x} \\quad \\color{blue}{\\text{(rearranged from surface area equation)}}$",
+        "$\\htmlClass{light_purple_box_big}{V = x^2y = x^2 \\times \\displaystyle \\frac{108 - x^2}{4x} \\quad \\color{blue}{\\text{(substituting } y \\text{ from above)}}}$",
+        "$V = \\displaystyle \\frac{108x - x^3}{4} \\quad \\color{blue}{\\text{(simplified expression for volume in terms of } x)}$"
+      ]
+    },
+    {
+      "step_index": 2,
+      "explanation": "$\\textbf{Find critical points, verify maximum, and calculate dimensions}$",
+      "expressions": [
+        "$\\displaystyle \\frac{dV}{dx} = \\frac{108 - 3x^2}{4} \\quad \\color{blue}{\\text{(derivative of volume with respect to } x)}$",
+        "$\\text{Set } \\displaystyle \\frac{dV}{dx} = 0:$",
+        "$\\displaystyle \\frac{108 - 3x^2}{4} = 0$",
+        "$108 - 3x^2 = 0 \\quad \\color{blue}{\\text{(multiplied both sides by 4)}}$",
+        "$x^2 = 36 \\implies x = \\pm 6$",
+        "$\\text{Since } x \\text{ is a length, } x = 6 \\quad \\color{blue}{\\text{(length cannot be negative)}}$",
+        "$\\htmlClass{light_orange_box_bigger}{\\displaystyle \\frac{d^2V}{dx^2} = -\\frac{3x}{2} \\quad \\color{blue}{\\text{(second derivative test for concavity)}}}$",
+        "$\\text{At } x = 6: \\displaystyle \\frac{d^2V}{dx^2} = -9 < 0 \\quad \\color{blue}{\\text{(concave down, confirming maximum)}}$",
+        "$\\text{Therefore, } x = 6 \\text{ gives a maximum}$",
+        "$y = \\displaystyle \\frac{108 - x^2}{4x} = \\frac{108 - 6^2}{4(6)} = 3 \\quad \\color{blue}{\\text{(substituting } x = 6 \\text{ into expression for } y)}$",
+        "$\\htmlClass{light_green_box_big}{\\therefore \\text{Length} = 6 \\text{ cm},\\  \\text{Width} = 6 \\text{ cm}, \\ \\text{Height} = 3 \\text{ cm}} \\quad \\color{blue} ( x \\rightarrow \\text{length and  width}, \\  y \\rightarrow \\text{height}) $"
+      ]
+    }
+  ],
+  "short_cuts": "In optimization problems, express the objective function in terms of one variable, then find critical points by setting the derivative to zero."
+}

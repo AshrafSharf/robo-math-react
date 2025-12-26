@@ -58,6 +58,9 @@ export class WriteCommand extends BaseCommand {
             const coordinateMapper = this.diagram2d.coordinateMapper;
             const canvasSection = this.diagram2d.canvasSection;
 
+            // Use color from styleOptions if provided, otherwise fall back to BaseCommand default
+            const effectiveColor = this.styleOptions.color || this.color;
+
             this.mathComponent = new MathTextComponent(
                 this.options.latexString,
                 this.options.row,
@@ -66,8 +69,8 @@ export class WriteCommand extends BaseCommand {
                 canvasSection,
                 {
                     fontSize: this.styleOptions.fontSize ?? 22,
-                    stroke: this.color,
-                    fill: this.color
+                    stroke: effectiveColor,
+                    fill: effectiveColor
                 }
             );
 

@@ -1,17 +1,16 @@
 /**
- * MflowExpression - Generates annotated arrow chains as mathtext
+ * MflowExpression - Generates annotated arrow chains
+ *
+ * Returns LaTeX string for use with write() or print()
  *
  * Syntax:
- *   mflow(row, col, start, mstep(above, below, result), mstep(...), ...)
+ *   mflow(start, mstep(above, below, result), mstep(...), ...)
  *
- * Example:
- *   mflow(4, 4, "x", mstep("f(x)", "step 1", "y"), mstep("g(y)", "step 2", "z"))
- *
- * Produces LaTeX:
- *   x \xrightarrow[\text{step 1}]{f(x)} y \xrightarrow[\text{step 2}]{g(y)} z
+ * Usage:
+ *   write(4, 4, mflow("x", mstep("f(x)", "step 1", "y")))
+ *   print(4, 4, mflow("x", mstep("f(x)", "step 1", "y")))
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
-import { WriteCommand } from '../../commands/WriteCommand.js';
 
 export class MflowExpression extends AbstractNonArithmeticExpression {
     static NAME = 'mflow';
@@ -19,47 +18,28 @@ export class MflowExpression extends AbstractNonArithmeticExpression {
     constructor(subExpressions) {
         super();
         this.subExpressions = subExpressions;
-        this.row = null;
-        this.col = null;
         this.start = '';
-        this.steps = [];  // Array of resolved mstep expressions
+        this.steps = [];
+        this.latexString = '';
     }
 
     resolve(context) {
-        if (this.subExpressions.length < 4) {
-            this.dispatchError('mflow() requires at least 4 arguments: mflow(row, col, start, mstep(...))');
+        if (this.subExpressions.length < 2) {
+            this.dispatchError('mflow() requires at least 2 arguments: mflow(start, mstep(...))');
         }
 
-        // Resolve row (first arg)
-        const rowExpr = this.subExpressions[0];
-        rowExpr.resolve(context);
-        const rowValues = rowExpr.getVariableAtomicValues();
-        if (rowValues.length === 0) {
-            this.dispatchError('mflow() first argument (row) must be a number');
-        }
-        this.row = rowValues[0];
-
-        // Resolve col (second arg)
-        const colExpr = this.subExpressions[1];
-        colExpr.resolve(context);
-        const colValues = colExpr.getVariableAtomicValues();
-        if (colValues.length === 0) {
-            this.dispatchError('mflow() second argument (col) must be a number');
-        }
-        this.col = colValues[0];
-
-        // Resolve start (third arg)
-        const startExpr = this.subExpressions[2];
+        // Resolve start (first arg)
+        const startExpr = this.subExpressions[0];
         startExpr.resolve(context);
         const resolvedStart = this._getResolvedExpression(context, startExpr);
         if (resolvedStart && resolvedStart.getName() === 'quotedstring') {
             this.start = resolvedStart.getStringValue();
         } else {
-            this.dispatchError('mflow() third argument (start) must be a quoted string');
+            this.dispatchError('mflow() first argument (start) must be a quoted string');
         }
 
         // Resolve mstep expressions (remaining args)
-        for (let i = 3; i < this.subExpressions.length; i++) {
+        for (let i = 1; i < this.subExpressions.length; i++) {
             const stepExpr = this.subExpressions[i];
             stepExpr.resolve(context);
 
@@ -73,23 +53,18 @@ export class MflowExpression extends AbstractNonArithmeticExpression {
         if (this.steps.length === 0) {
             this.dispatchError('mflow() requires at least one mstep() expression');
         }
+
+        // Build latex string
+        this.latexString = this._buildLatex();
     }
 
-    /**
-     * Format text for LaTeX - wrap in \text{} if plain text, pass through if LaTeX
-     */
     _formatText(text) {
-        // If contains backslash, assume it's LaTeX
         if (text.includes('\\')) {
             return text;
         }
-        // Otherwise wrap in \text{}
         return `\\text{${text}}`;
     }
 
-    /**
-     * Build the complete LaTeX string from start and steps
-     */
     _buildLatex() {
         let latex = this._formatText(this.start);
 
@@ -108,22 +83,19 @@ export class MflowExpression extends AbstractNonArithmeticExpression {
         return MflowExpression.NAME;
     }
 
+    getStringValue() {
+        return this.latexString;
+    }
+
     getVariableAtomicValues() {
         return [];
     }
 
-    toCommand(options = {}) {
-        const latexString = this._buildLatex();
-
-        return new WriteCommand('create', {
-            row: this.row,
-            col: this.col,
-            latexString: latexString,
-            expression: this
-        }, options);
+    toCommand() {
+        return null;
     }
 
     canPlay() {
-        return true;
+        return false;
     }
 }

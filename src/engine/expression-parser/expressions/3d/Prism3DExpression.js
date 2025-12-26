@@ -40,45 +40,35 @@ export class Prism3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(prism3d_error_messages.GRAPH_REQUIRED());
         }
 
-        // Second arg is number of sides
-        this.subExpressions[1].resolve(context);
-        const sidesValues = this.subExpressions[1].getVariableAtomicValues();
-        if (sidesValues.length !== 1) {
-            this.dispatchError(prism3d_error_messages.INVALID_SIDES());
-        }
-        this.sides = Math.floor(sidesValues[0]);
+        // Collect all values from remaining args, separating styling
+        const allValues = [];
+        const styleExprs = [];
 
-        // Third arg is height
-        this.subExpressions[2].resolve(context);
-        const heightValues = this.subExpressions[2].getVariableAtomicValues();
-        if (heightValues.length !== 1) {
-            this.dispatchError(prism3d_error_messages.INVALID_HEIGHT());
-        }
-        this.height = heightValues[0];
-
-        // Fourth arg is base radius
-        this.subExpressions[3].resolve(context);
-        const radiusValues = this.subExpressions[3].getVariableAtomicValues();
-        if (radiusValues.length !== 1) {
-            this.dispatchError(prism3d_error_messages.INVALID_RADIUS());
-        }
-        this.baseRadius = radiusValues[0];
-
-        // Remaining args are base center coordinates
-        const coordinates = [];
-        for (let i = 4; i < this.subExpressions.length; i++) {
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                coordinates.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allValues.push(atomicValues[j]);
+                }
             }
         }
 
-        if (coordinates.length !== 3) {
-            this.dispatchError(prism3d_error_messages.WRONG_COORD_COUNT(coordinates.length));
+        this._parseStyleExpressions(styleExprs);
+
+        // Values: sides + height + baseRadius + center(3) = 6
+        if (allValues.length !== 6) {
+            this.dispatchError(prism3d_error_messages.WRONG_COORD_COUNT(allValues.length - 3));
         }
 
-        this.baseCenter = { x: coordinates[0], y: coordinates[1], z: coordinates[2] };
+        this.sides = Math.floor(allValues[0]);
+        this.height = allValues[1];
+        this.baseRadius = allValues[2];
+        this.baseCenter = { x: allValues[3], y: allValues[4], z: allValues[5] };
     }
 
     getName() {

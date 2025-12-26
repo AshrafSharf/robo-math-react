@@ -149,7 +149,12 @@ export class CommandExecutor {
       await this.initCommand(command);
       await command.playSingle();
 
-      // 4. drawAll to restore full state
+      // 4. Clear all and drawAll to restore full state
+      for (const cmd of this.commands) {
+        cmd.clear();
+      }
+      this.commandContext.shapeRegistry = {};
+      this.commandContext.commandRegistry = {};
       await this.drawAll();
 
       if (this.onCommandComplete) {

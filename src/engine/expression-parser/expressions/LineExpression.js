@@ -34,16 +34,21 @@ export class LineExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(line_error_messages.GRAPH_REQUIRED());
         }
 
-        // Remaining args are coordinates
+        // Remaining args are coordinates, separating styling expressions
         this.coordinates = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-
             const resultExpression = this.subExpressions[i];
-            const atomicValues = resultExpression.getVariableAtomicValues();
 
-            for (let j = 0; j < atomicValues.length; j++) {
-                this.coordinates.push(atomicValues[j]);
+            if (this._isStyleExpression(resultExpression)) {
+                styleExprs.push(resultExpression);
+            } else {
+                const atomicValues = resultExpression.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    this.coordinates.push(atomicValues[j]);
+                }
             }
         }
 
@@ -55,6 +60,8 @@ export class LineExpression extends AbstractNonArithmeticExpression {
         if (this.coordinates.length !== 5) {
             this.dispatchError(line_error_messages.WRONG_COORD_COUNT(this.coordinates.length));
         }
+
+        this._parseStyleExpressions(styleExprs);
 
         // Extend endpoint if extension parameter is non-zero
         if (this.coordinates[4] !== 0) {

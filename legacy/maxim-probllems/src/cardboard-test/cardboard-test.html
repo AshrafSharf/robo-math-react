@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardboard Box Test</title>
+    <link rel="stylesheet" href="../common/css/common.css">
+    <link rel="stylesheet" href="../common/css/mobile.css">
+</head>
+<body>
+    <div id="boards-container"></div>
+
+    <script type="module">
+        import { initLesson3D } from '../common/js/lesson-init-3d.js';
+        import * as lessonModule from './cardboard-test.js';
+        
+        initLesson3D('cardboard-test', lessonModule);
+    </script>
+</body>
+</html>

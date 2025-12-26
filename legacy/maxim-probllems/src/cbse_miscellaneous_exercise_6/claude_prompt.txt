@@ -1,0 +1,188 @@
+I need you to generate a render method for a 3D lesson named "cbse_miscellaneous_exercise_6".
+
+## CRITICAL INSTRUCTION FILES TO READ FIRST
+
+You MUST read ALL of these files in order before starting implementation:
+
+### Core Files (MANDATORY):
+1. Render method instructions: llm_generation/instructions/render-method-instructions.md
+2. Problem specification: src/cbse_miscellaneous_exercise_6/step-by-step.json
+3. **🔴 REFERENCE IMPLEMENTATION (YOUR PRIMARY TEMPLATE)**: 
+   Main file: src/volume-max/volume-max.js
+   Step details: src/volume-max/step_details.js
+   Step descriptions: src/volume-max/step_descriptions.js
+   
+   ⚠️ THIS IS THE MOST IMPORTANT FILE TO READ!
+   The reference lesson shows you EXACTLY how to structure your code.
+   Copy its patterns, follow its organization, use its approach.
+
+### Critical Guidelines (MANDATORY - Read ALL that apply):
+5. 🎯 MUST READ FIRST - Overview of optimization problems: llm_generation/instructions/maximization-problems-overview.md
+6. 📚 Complete API documentation: llm_generation/instructions/api-reference.md
+7. 📊 Graph module implementation for optimization functions: llm_generation/instructions/graph-instructions.md
+8. 📋 Table module for value displays: llm_generation/instructions/table-details-instructions.md
+9. 📏 Dimension indicators and measurements: llm_generation/instructions/measurement-indicators-instructions.md
+10. 🎮 Control panel with sliders and displays: llm_generation/instructions/control-panel-design.md
+11. 🎨 Material and color guidelines: llm_generation/instructions/material-application.md
+12. ✅ CRITICAL - Testing procedures and checklist - MUST COMPLETE: llm_generation/instructions/testing-procedures.md
+
+## ⚠️ CRITICAL: PUPPETEER PORT REQUIREMENTS FOR PARALLEL TESTING
+
+**MANDATORY PORT RULES - FAILURE TO FOLLOW WILL BREAK PARALLEL EXECUTION:**
+1. **NEVER use ports 3000 or 3001** - These are reserved for single lesson development
+2. **ALWAYS use ports in range 4000-9000** when testing with Puppeteer
+3. **Each lesson MUST use a UNIQUE port** when running in parallel
+4. **Port allocation example:**
+   - Lesson 1: Use port 4001
+   - Lesson 2: Use port 4002
+   - Lesson 3: Use port 4003
+   - Continue incrementing for each parallel lesson
+
+**When using Puppeteer for testing:**
+```javascript
+// ❌ WRONG - Will conflict with other lessons:
+mcp__puppeteer__puppeteer_navigate http://localhost:3000/lesson/lesson.html
+
+// ✅ CORRECT - Uses unique port in safe range:
+const PORT = 4000 + lessonIndex; // or any unique port 4000-9000
+mcp__puppeteer__puppeteer_navigate http://localhost:${PORT}/lesson/lesson.html
+```
+
+
+### Reference Images:
+13. Examine image: src/cbse_miscellaneous_exercise_6/visual.png
+
+## COMPREHENSIVE IMPLEMENTATION CHECKLIST
+
+You MUST complete this checklist in order. DO NOT skip any step. Check off each item as you complete it:
+
+### Phase 1: Pre-Implementation Analysis
+- [ ] **🔴 FIRST PRIORITY: If reference lesson exists, READ IT COMPLETELY**
+  - [ ] Study the main .js file structure and organization
+  - [ ] Analyze how createLessonObjects is implemented
+  - [ ] Understand the buildAnimationSequence pattern
+  - [ ] Review step_details.js for control panel structure
+  - [ ] Check step_descriptions.js for formatting style
+  - [ ] Note material choices, colors, and visual patterns
+- [ ] Read ALL instruction files listed above (every single one that applies)
+- [ ] Read and understand the problem specification completely
+- [ ] **CRITICAL: If custom_instructions.txt exists, read it and follow ALL custom requirements**
+- [ ] **CRITICAL: If visual.png exists, examine it carefully and note ALL visual elements**
+- [ ] Examine any reference images provided
+- [ ] Identify lesson type from meta.json
+- [ ] Note if animation is required from meta.json
+- [ ] Identify all inputs that need to be adjustable
+- [ ] Identify the exact output requested in the problem
+- [ ] Check step-by-step.json for any intermediate calculations to display
+
+### Phase 2: Implementation Planning
+- [ ] Determine appropriate bounding box for the visualization
+- [ ] Plan control panel sections (inputs, calculations, result, instructions)
+- [ ] Identify which common utility functions to use
+- [ ] Plan any animations if required
+- [ ] Consider coordinate transformations if 3D
+- [ ] Plan color scheme using standard constants
+
+### Phase 3: Core Implementation
+- [ ] Create proper module structure with render() function
+- [ ] Import all required utilities from common modules
+- [ ] Store references for namespace isolation
+- [ ] Set appropriate bounding box
+- [ ] Create coordinate system with proper labels
+- [ ] Implement all mathematical objects from the problem
+- [ ] Add labels to ALL important elements (points, angles, vectors)
+- [ ] Ensure ALL labels use black color (#000000)
+
+### Phase 3a: Solid of Revolution Specific (if applicable)
+- [ ] Read solid-of-revolution-overview.md to identify method type
+- [ ] Create orange shaded region (boundedRegion) with shadedRegion function
+- [ ] Ensure solid is visible on initial load (no solid.visible = false)
+- [ ] Use consistent glass material settings (opacity: 0.85, transmission: 0.2)
+- [ ] Implement StepDetails class for control panel integration
+- [ ] Use createDiskPaginator for disk/washer methods
+- [ ] Include shaded region in fade out animations
+- [ ] Follow disk-slice-details.md for sliding disk visualization
+
+### Phase 4: Control Panel Implementation
+- [ ] Create control panel sections in correct order
+- [ ] Add steppers/sliders for ALL adjustable parameters
+- [ ] Check step-by-step.json for intermediate calculations
+- [ ] Display ONLY calculations mentioned in step-by-step.json
+- [ ] Ensure one equation per row (NEVER multiple on same line)
+- [ ] Display the exact output requested in the problem
+- [ ] Add ONE clear, single-line instruction at bottom
+- [ ] Verify instruction is not cut off (test with Puppeteer)
+
+### Phase 5: Visual Requirements Verification
+- [ ] All text and labels are black (#000000)
+- [ ] No colored text in diagrams
+- [ ] Font sizes: 20-22px for labels, 16-18px for control panel
+- [ ] Proper spacing between elements (no overlapping)
+- [ ] Clean, professional appearance
+- [ ] Animation controls present if required by meta.json
+- [ ] For 3D: Use cylinders for lines (linewidth > 10)
+- [ ] For 3D: Use spheres for points
+- [ ] For 3D: Axis labels present (except solid_of_revolution)
+
+### Phase 6: Interactive Features
+- [ ] Implement update functions for dynamic content
+- [ ] Add event handlers for user interactions
+- [ ] Test dragging functionality
+- [ ] Test stepper controls
+- [ ] Test animation if present
+- [ ] Verify immediate visual feedback
+
+### Phase 7: Visual.png Verification (if visual.png exists)
+- [ ] Compare point positions with visual.png
+- [ ] Verify line directions match exactly
+- [ ] Check vector arrow directions and positions
+- [ ] **CRITICAL for angles**: Read angle-rendering-guidelines.md if lesson has angles
+- [ ] Verify angle orientations match exactly (check quadrants and direction)
+- [ ] Confirm all labels match the reference
+- [ ] Check distance markers are positioned correctly
+- [ ] If axes shown in visual.png, ensure they're rendered
+- [ ] Verify overall figure orientation (not rotated/flipped)
+
+### Phase 8: Final Verification
+- [ ] Save the render method to src/cbse_miscellaneous_exercise_6/cbse_miscellaneous_exercise_6.js
+- [ ] Verify the code is syntactically correct
+- [ ] Ensure all imports are properly referenced
+- [ ] Check that all mathematical calculations match step-by-step.json
+- [ ] Verify all visual elements from visual.png are implemented in code
+- [ ] Confirm control panel layout follows guidelines
+- [ ] Check that all labels use black color (#000000)
+- [ ] Ensure proper error handling is in place
+
+### Phase 9: Code Completion
+- [ ] Report that the lesson implementation is complete
+
+### Phase 10: Final Verification
+- [ ] Lesson implements the exact mathematical concept
+- [ ] All inputs from problem are adjustable
+- [ ] Output matches what problem asks to find
+- [ ] Visual representation is clear and educational
+- [ ] Interactive elements provide immediate feedback
+- [ ] No JavaScript errors in console (dev or standalone)
+- [ ] Control panel fully visible without scrolling
+- [ ] Professional, polished appearance
+- [ ] All instruction guidelines have been followed
+
+## CRITICAL REMINDERS:
+1. **VISUAL.PNG IS TRUTH** - If visual.png exists, your implementation MUST match it exactly
+2. **TESTING IS MANDATORY** - You MUST complete ALL steps in testing-procedures.md
+3. Check step-by-step.json for actual numerical values (not just symbols)
+4. For 3D maximization: Start at OPTIMAL value, not at zero or random
+5. **PORT REQUIREMENT**: Use ports 4000-9000 for Puppeteer testing (NEVER 3000-3001)
+6. ALL labels must be black (#000000) - no exceptions
+7. Graph visibility controlled by checkbox, NOT by slider
+
+## BEFORE REPORTING COMPLETION:
+**YOU MUST COMPLETE THE TESTING PROCEDURES CHECKLIST:**
+1. Read testing-procedures.md completely
+2. Run through ALL test cases in section "3. Maximization Problem Implementation Checklist"
+3. Verify ALL interactive controls work (slider, graph toggle, table, fold button)
+4. Test with Puppeteer on a port between 4000-9000
+5. Confirm no console errors
+6. Verify graph shows ONLY when checkbox is checked
+
+Only after ALL testing procedures are verified can you report the lesson as complete.

@@ -1,0 +1,46 @@
+{
+    "problem_statement": "$\\text{We have a 12 unit square piece of thin material and want to make an open box by}$ $\\text{cutting small squares from the corners and folding the sides up. Find the cut that produces}$ $\\text{the box of maximum volume.}$",
+    "overview": "$\\text{We will model the volume of the box as a function of the cut length }x. \\\\ \\text{Then, we will use differentiation to find the cut that produces}$ $\\text{the maximum volume.}$",
+    "short_cuts": "$\\text{For optimization problems, we need to:}$ $\\text{Define variable(s), Write function to optimize, Find critical points using } \\displaystyle\\frac{dV}{dx} = 0, \\text{Test points for maximum}$",
+    "step_details": [
+      {
+        "step_index": 1,
+        "explanation": "$\\text{Let's start by defining our variables and understanding how they form the volume:}$",
+        "expressions": [
+          "$\\htmlClass{light_green_box_medium}{\\text{Let }x = \\text{ length of the cut on each side of the little squares}}$",
+          "$\\htmlClass{light_red_box_medium}{\\text{Let }V = \\text{ the volume of the folded box}}$",
+          "${\\text{Base length} = 12-2x} \\quad \\color{blue}{\\text{(each side reduced by }2x\\text{ from two cuts)}}$",
+          "$V = \\underbrace{x}_{\\text{height}} \\cdot \\underbrace{(12-2x)}_{\\text{length}} \\cdot \\underbrace{(12-2x)}_{\\text{width}}$",
+          "$\\htmlClass{light_yellow_box_medium}{V = x(12-2x)^2} \\quad \\color{blue}{\\text{(volume as a function of cut length }x\\text{)}}$",
+          "$\\text{When }x = 0:\\text{ No height, so }V = 0$",
+          "$\\text{When }x = 6:\\text{ No base area, so }V = 0$",
+          "$\\htmlClass{light_purple_box_medium}{{\\text{Therefore, }x \\in (0,6)} \\quad \\color{blue}{\\text{(valid range for a real box)}}}$"
+        ]
+      },
+      {
+        "step_index": 2,
+        "explanation": "$\\text{To find critical points, let's find }\\displaystyle\\frac{dV}{dx}\\text{ using the product rule:}$",
+        "expressions": [
+          "$\\displaystyle\\frac{d}{dx}[x(12-2x)^2] = \\underbrace{1 \\cdot (12-2x)^2}_{u'v} + \\underbrace{x \\cdot 2(12-2x)(-2)}_{uv'} \\quad \\color{blue}{\\text{(product rule: }(uv)' = u'v + uv'\\text{)}}$",
+          "$\\htmlClass{light_red_box_medium}{V'(x)= (12-2x)^2 - 4x(12-2x)}$",
+          "$= (12-2x)[(12-2x) - 4x] \\quad \\color{blue}{\\text{(factor out }(12-2x)\\text{)}}$",
+          "$= (12-2x)[12-2x-4x]$",
+          "$= (12-2x)(12-6x)$",
+          "$\\htmlClass{light_green_box_bigger}{\\text{Setting }\\displaystyle\\frac{dV}{dx} = 0: (12-2x)(12-6x) = 0} \\quad \\color{blue}{\\text{(find critical points)}}$",
+          "$\\text{For }(12-2x) = 0: \\quad 12-2x = 0 \\implies x = 6 \\quad \\color{blue}{\\text{(solving first factor)}}$",
+          "$\\text{For }(12-6x) = 0: \\quad 12-6x = 0 \\implies x = 2 \\quad \\color{blue}{\\text{(solving second factor)}}$",
+          "$\\htmlClass{light_yellow_box_medium}{\\text{Therefore, }x = 2\\text{ or }x = 6}$"
+        ]
+      },
+      {
+        "step_index": 3,
+        "explanation": "$\\text{Let's analyze our critical points within our domain }(0,6)$",
+        "expressions": [
+          "$x = 6\\text{ is on the boundary where }V = 0$",
+          "${x = 2 \\in (0,6)} \\quad \\color{blue}{\\text{(this is our only valid critical point)}}$",
+          "$\\displaystyle\\frac{d^2V}{dx^2}\\text{ changes from positive to negative at }x = 2$",
+          "$\\htmlClass{light_green_box_medium}{\\text{At }x = 2: V = 2(8)^2 = 128} \\quad \\color{blue}{\\text{(maximum volume at }x=2)}$"
+        ]
+      }
+    ]
+  }

@@ -124,6 +124,7 @@ import { MathTextExpression } from '../expressions/MathTextExpression.js';
 import { WriteExpression } from '../expressions/WriteExpression.js';
 import { WriteOnlyExpression } from '../expressions/WriteOnlyExpression.js';
 import { WriteWithoutExpression } from '../expressions/WriteWithoutExpression.js';
+import { PrintExpression } from '../expressions/PrintExpression.js';
 import { SelectExpression } from '../expressions/SelectExpression.js';
 import { SelectExceptExpression } from '../expressions/SelectExceptExpression.js';
 import { SurroundExpression } from '../expressions/SurroundExpression.js';
@@ -152,6 +153,9 @@ import { SubtractionExpression } from '../expressions/SubtractionExpression.js';
 import { MultiplicationExpression } from '../expressions/MultiplicationExpression.js';
 import { DivisionExpression } from '../expressions/DivisionExpression.js';
 import { PowerExpression } from '../expressions/PowerExpression.js';
+import { CExpression } from '../expressions/styling/CExpression.js';
+import { FExpression } from '../expressions/styling/FExpression.js';
+import { SExpression } from '../expressions/styling/SExpression.js';
 import { resolveExpressionDependencies } from './ExpressionDependencyResolver.js';
 import { registerCustomFunctions } from './CustomFunctionDefinitions.js';
 
@@ -277,6 +281,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('write', WriteExpression);
         registerMultiArg('writeonly', WriteOnlyExpression);
         registerMultiArg('writewithout', WriteWithoutExpression);
+        registerMultiArg('print', PrintExpression);
         registerMultiArg('select', SelectExpression);
         registerMultiArg('selectexcept', SelectExceptExpression);
         registerMultiArg('surround', SurroundExpression);
@@ -402,6 +407,11 @@ export class IntrepreterFunctionTable {
 
             return new CopyExpression(pageRef, indices);
         };
+
+        // Styling expressions
+        registerMultiArg('c', CExpression);   // color: c(red), c("#ff0000")
+        registerMultiArg('f', FExpression);   // fontSize: f(24)
+        registerMultiArg('s', SExpression);   // strokeWidth: s(2)
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

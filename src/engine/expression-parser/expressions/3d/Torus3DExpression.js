@@ -39,37 +39,34 @@ export class Torus3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(torus3d_error_messages.GRAPH_REQUIRED());
         }
 
-        // Second arg is main radius
-        this.subExpressions[1].resolve(context);
-        const radiusValues = this.subExpressions[1].getVariableAtomicValues();
-        if (radiusValues.length !== 1) {
-            this.dispatchError(torus3d_error_messages.INVALID_RADIUS());
-        }
-        this.radius = radiusValues[0];
+        // Collect all values from remaining args, separating styling
+        const allValues = [];
+        const styleExprs = [];
 
-        // Third arg is tube radius
-        this.subExpressions[2].resolve(context);
-        const tubeRadiusValues = this.subExpressions[2].getVariableAtomicValues();
-        if (tubeRadiusValues.length !== 1) {
-            this.dispatchError(torus3d_error_messages.INVALID_TUBE_RADIUS());
-        }
-        this.tubeRadius = tubeRadiusValues[0];
-
-        // Remaining args are center coordinates
-        const coordinates = [];
-        for (let i = 3; i < this.subExpressions.length; i++) {
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                coordinates.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allValues.push(atomicValues[j]);
+                }
             }
         }
 
-        if (coordinates.length !== 3) {
-            this.dispatchError(torus3d_error_messages.WRONG_COORD_COUNT(coordinates.length));
+        this._parseStyleExpressions(styleExprs);
+
+        // Values: radius + tubeRadius + center(3) = 5
+        if (allValues.length !== 5) {
+            this.dispatchError(torus3d_error_messages.WRONG_COORD_COUNT(allValues.length - 2));
         }
 
-        this.center = { x: coordinates[0], y: coordinates[1], z: coordinates[2] };
+        this.radius = allValues[0];
+        this.tubeRadius = allValues[1];
+        this.center = { x: allValues[2], y: allValues[3], z: allValues[4] };
     }
 
     getName() {

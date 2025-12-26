@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume-Max</title>
+    <link rel="stylesheet" href="../common/css/common.css">
+    <link rel="stylesheet" href="../common/css/mobile.css">
+    <link rel="stylesheet" href="../common/css/step_details.css">
+    <link rel="stylesheet" href="../../node_modules/katex/dist/katex.min.css">
+</head>
+<body>
+    <div id="boards-container"></div>
+
+    <script type="module">
+        import { initLesson3D } from '../common/js/lesson-init-3d.js';
+        import * as lessonModule from './volume-max.js';
+        import lessonConfig from './volume-max_config.json';
+        
+        initLesson3D('volume-max', lessonModule, lessonConfig);
+    </script>
+</body>
+</html>

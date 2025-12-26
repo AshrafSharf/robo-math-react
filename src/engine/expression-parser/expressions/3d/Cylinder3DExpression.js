@@ -44,25 +44,35 @@ export class Cylinder3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(cylinder3d_error_messages.GRAPH_REQUIRED());
         }
 
-        // Second arg is radius
-        this.subExpressions[1].resolve(context);
-        const radiusValues = this.subExpressions[1].getVariableAtomicValues();
-        if (radiusValues.length !== 1) {
-            this.dispatchError(cylinder3d_error_messages.INVALID_RADIUS());
-        }
-        this.radius = radiusValues[0];
+        // Collect all values from remaining args, separating styling
+        const allValues = [];
+        const styleExprs = [];
 
-        // Collect remaining coordinates
-        const coordinates = [];
-        for (let i = 2; i < this.subExpressions.length; i++) {
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                coordinates.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allValues.push(atomicValues[j]);
+                }
             }
         }
 
-        // Determine which form: 4 coords = height + center, 6 coords = two points
+        this._parseStyleExpressions(styleExprs);
+
+        // First value is radius
+        if (allValues.length < 1) {
+            this.dispatchError(cylinder3d_error_messages.INVALID_RADIUS());
+        }
+        this.radius = allValues[0];
+
+        // Remaining values: 4 = height + center, 6 = two points
+        const coordinates = allValues.slice(1);
+
         if (coordinates.length === 4) {
             // height + center (x, y, z)
             this.height = coordinates[0];

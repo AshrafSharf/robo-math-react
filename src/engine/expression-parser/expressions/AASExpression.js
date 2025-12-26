@@ -50,21 +50,33 @@ export class AASExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('aas() requires: aas(graph, angleA, angleB, sideA) - two angles and opposite side');
         }
 
-        // Resolve all subexpressions first
+        // Resolve all subexpressions first, separating styling
+        const styleExprs = [];
+        const resolvedExprs = [];
+
         for (let i = 0; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                resolvedExprs.push(expr);
+            }
         }
 
+        this._parseStyleExpressions(styleExprs);
+
         // First arg must be graph
-        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+        this.graphExpression = this._getResolvedExpression(context, resolvedExprs[0]);
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
             this.dispatchError('aas() requires graph as first argument');
         }
 
         // Get angle-angle-side values
-        const angleAExpr = this._getResolvedExpression(context, this.subExpressions[1]);
-        const angleBExpr = this._getResolvedExpression(context, this.subExpressions[2]);
-        const aExpr = this._getResolvedExpression(context, this.subExpressions[3]);
+        const angleAExpr = this._getResolvedExpression(context, resolvedExprs[1]);
+        const angleBExpr = this._getResolvedExpression(context, resolvedExprs[2]);
+        const aExpr = this._getResolvedExpression(context, resolvedExprs[3]);
 
         this.angleA = angleAExpr.getVariableAtomicValues()[0];
         this.angleB = angleBExpr.getVariableAtomicValues()[0];
@@ -83,8 +95,8 @@ export class AASExpression extends AbstractNonArithmeticExpression {
 
         // Get optional base point
         let baseX = 0, baseY = 0;
-        if (this.subExpressions.length >= 5) {
-            const baseExpr = this._getResolvedExpression(context, this.subExpressions[4]);
+        if (resolvedExprs.length >= 5) {
+            const baseExpr = this._getResolvedExpression(context, resolvedExprs[4]);
             const baseValues = baseExpr.getVariableAtomicValues();
             baseX = baseValues[0];
             baseY = baseValues[1];
@@ -92,8 +104,8 @@ export class AASExpression extends AbstractNonArithmeticExpression {
 
         // Get optional rotation angle (in degrees)
         let rotationDeg = 0;
-        if (this.subExpressions.length >= 6) {
-            const rotExpr = this._getResolvedExpression(context, this.subExpressions[5]);
+        if (resolvedExprs.length >= 6) {
+            const rotExpr = this._getResolvedExpression(context, resolvedExprs[5]);
             rotationDeg = rotExpr.getVariableAtomicValues()[0];
         }
 

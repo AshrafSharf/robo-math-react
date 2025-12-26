@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Box Volume Maximization</title>
+    <link rel="stylesheet" href="../common/css/common.css">
+    <link rel="stylesheet" href="../common/css/mobile.css">
+    <link rel="stylesheet" href="../common/css/step_details.css">
+    <link rel="stylesheet" href="../../node_modules/katex/dist/katex.min.css">
+    
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            svg: { fontCache: 'global' },
+            startup: {
+                ready: () => {
+                    MathJax.startup.defaultReady();
+                    window.MathJaxReady = true;
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+    <div id="boards-container"></div>
+
+    <script type="module">
+        import { initLesson3D } from '../common/js/lesson-init-3d.js';
+        import * as lessonModule from './state_exercise_78_10.js';
+        import lessonConfig from './state_exercise_78_10_config.json';
+        
+        initLesson3D('state_exercise_78_10', lessonModule, lessonConfig);
+    </script>
+</body>
+</html>

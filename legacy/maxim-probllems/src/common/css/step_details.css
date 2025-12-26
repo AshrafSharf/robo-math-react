@@ -1,0 +1,38 @@
+/* Step Details Panel Styles */
+
+.step-details-title {
+    background-color: #cfe2ff;
+    color: black;
+    padding: 5px 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    margin: 8px -4px 6px -4px;
+    border-radius: 4px;
+}
+
+/* Control KaTeX display math spacing */
+.katex-display {
+    margin: 0.2em 0 !important;
+}
+
+/* Add small spacing to each text element */
+#text-function, #text-bounds, #text-axis, #text-radius-function,
+#text-solid-volume, #text-disk-method, #text-disk-area, 
+#text-disk-radius, #text-thickness, #text-volume-element, #text-final-answer {
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.step-details-final {
+    font-weight: bold;
+}
+
+/* Highlight styles for active elements */
+.step-details-highlight {
+    background-color: #ffeb3b;
+    padding: 2px 5px;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+}

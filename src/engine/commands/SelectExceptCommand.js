@@ -38,9 +38,11 @@ export class SelectExceptCommand extends BaseCommand {
         // Store in expression for variable assignment
         if (this.options.expression) {
             this.options.expression.setCollection(this.collection);
+            // Use getResolvedValue() - returns single item if index specified, else collection
+            this.commandResult = this.options.expression.getResolvedValue();
+        } else {
+            this.commandResult = this.collection;
         }
-
-        this.commandResult = this.collection;
     }
 
     /**

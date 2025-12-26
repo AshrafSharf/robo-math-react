@@ -35,21 +35,33 @@ export class PolarvectorExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('polarvector() requires: polarvector(graph, length, angle) or polarvector(graph, length, angle, fromX, fromY)');
         }
 
-        // Resolve all subexpressions first
+        // Resolve all subexpressions first, separating styling
+        const styleExprs = [];
+        const resolvedExprs = [];
+
         for (let i = 0; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                resolvedExprs.push(expr);
+            }
         }
 
+        this._parseStyleExpressions(styleExprs);
+
         // First arg must be graph
-        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+        this.graphExpression = this._getResolvedExpression(context, resolvedExprs[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
             this.dispatchError('polarvector() requires graph as first argument');
         }
 
         // Get length and angle
-        const lengthExpr = this._getResolvedExpression(context, this.subExpressions[1]);
-        const angleExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+        const lengthExpr = this._getResolvedExpression(context, resolvedExprs[1]);
+        const angleExpr = this._getResolvedExpression(context, resolvedExprs[2]);
 
         const length = lengthExpr.getVariableAtomicValues()[0];
         const angleDeg = angleExpr.getVariableAtomicValues()[0];
@@ -57,15 +69,15 @@ export class PolarvectorExpression extends AbstractNonArithmeticExpression {
         // Determine origin point
         let origin = { x: 0, y: 0 };
 
-        if (this.subExpressions.length === 4) {
+        if (resolvedExprs.length === 4) {
             // polarvector(graph, length, angle, fromPoint)
-            const fromExpr = this._getResolvedExpression(context, this.subExpressions[3]);
+            const fromExpr = this._getResolvedExpression(context, resolvedExprs[3]);
             const fromValues = fromExpr.getVariableAtomicValues();
             origin = { x: fromValues[0], y: fromValues[1] };
-        } else if (this.subExpressions.length >= 5) {
+        } else if (resolvedExprs.length >= 5) {
             // polarvector(graph, length, angle, fromX, fromY)
-            const fromXExpr = this._getResolvedExpression(context, this.subExpressions[3]);
-            const fromYExpr = this._getResolvedExpression(context, this.subExpressions[4]);
+            const fromXExpr = this._getResolvedExpression(context, resolvedExprs[3]);
+            const fromYExpr = this._getResolvedExpression(context, resolvedExprs[4]);
             origin = {
                 x: fromXExpr.getVariableAtomicValues()[0],
                 y: fromYExpr.getVariableAtomicValues()[0]

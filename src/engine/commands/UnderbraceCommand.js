@@ -67,7 +67,7 @@ export class UnderbraceCommand extends BaseCommand {
 
         // 7. Get source bounds and calculate position using utility
         const sourceBounds = MathTextPositionUtil.getPathBoundsInContainer(this.mathComponent.containerDOM);
-        const buffer = this.options.buffer || 0;
+        const buffer = this.options.buffer ?? 15;  // Default 15px gap
         const position = MathTextPositionUtil.bottomAlignPosition(targetBounds, sourceBounds, buffer);
         this.mathComponent.setCanvasPosition(position.x, position.y);
 

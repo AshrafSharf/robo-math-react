@@ -95,8 +95,8 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
             const latexExpr = this.subExpressions[argIndex];
             latexExpr.resolve(context);
             const resolvedLatex = this._getResolvedExpression(context, latexExpr);
-            if (!resolvedLatex || resolvedLatex.getName() !== 'quotedstring') {
-                this.dispatchError('writewithout() latex argument must be a quoted string');
+            if (!resolvedLatex || typeof resolvedLatex.getStringValue !== 'function') {
+                this.dispatchError('writewithout() latex argument must be a quoted string, meq(), or mflow()');
             }
             this.latexString = resolvedLatex.getStringValue();
             argIndex++;

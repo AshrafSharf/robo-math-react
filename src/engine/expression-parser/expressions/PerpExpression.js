@@ -41,15 +41,25 @@ export class PerpExpression extends AbstractNonArithmeticExpression {
         const name = sourceExpr.getName();
         this.inputType = (geoType === 'line' && name !== 'vector') ? 'line' : 'vec';
 
-        // Collect all atomic values from remaining subexpressions
+        // Collect all atomic values from remaining subexpressions, separating styling
         const allCoords = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             if (i > 1) this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                allCoords.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allCoords.push(atomicValues[j]);
+                }
             }
         }
+
+        this._parseStyleExpressions(styleExprs);
 
         // Validate and set default length
         this._validateAndSetLength(allCoords);

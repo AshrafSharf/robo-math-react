@@ -40,13 +40,21 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(angle_error_messages.GRAPH_REQUIRED(AngleExpression.NAME));
         }
 
-        // Collect all atomic values from remaining subexpressions
+        // Collect all atomic values from remaining subexpressions, separating styling
         const allCoords = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                allCoords.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allCoords.push(atomicValues[j]);
+                }
             }
         }
 
@@ -95,6 +103,8 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
 
         // Calculate angle value
         this._calculateAngleValue();
+
+        this._parseStyleExpressions(styleExprs);
     }
 
     /**

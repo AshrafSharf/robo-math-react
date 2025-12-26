@@ -41,20 +41,32 @@ export class ExtendlineExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('extendline() requires: extendline(graph, line, proportion) or extendline(graph, p1, p2, proportion)');
         }
 
-        // Resolve all subexpressions first
+        // Resolve all subexpressions first, separating styling
+        const styleExprs = [];
+        const resolvedExprs = [];
+
         for (let i = 0; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                resolvedExprs.push(expr);
+            }
         }
 
+        this._parseStyleExpressions(styleExprs);
+
         // First arg must be graph
-        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+        this.graphExpression = this._getResolvedExpression(context, resolvedExprs[0]);
 
         if (!this.graphExpression || this.graphExpression.getName() !== 'g2d') {
             this.dispatchError('extendline() requires graph as first argument');
         }
 
         // Determine argument pattern
-        const secondArg = this._getResolvedExpression(context, this.subExpressions[1]);
+        const secondArg = this._getResolvedExpression(context, resolvedExprs[1]);
         const secondArgValues = secondArg.getVariableAtomicValues();
 
         // Check if second arg is a line (has 4 coords) or a point (has 2 coords)
@@ -71,17 +83,17 @@ export class ExtendlineExpression extends AbstractNonArithmeticExpression {
             start = { x: startVal[0], y: startVal[1] };
             end = { x: endVal[0], y: endVal[1] };
 
-            if (this.subExpressions.length === 3) {
+            if (resolvedExprs.length === 3) {
                 // xl(graph, line, proportion)
-                const propExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+                const propExpr = this._getResolvedExpression(context, resolvedExprs[2]);
                 const proportion = propExpr.getVariableAtomicValues()[0];
 
                 const result = LineUtil.extend(start, end, proportion);
                 this.coordinates = [result.start.x, result.start.y, result.end.x, result.end.y];
             } else {
                 // xl(graph, line, startProp, endProp)
-                const startPropExpr = this._getResolvedExpression(context, this.subExpressions[2]);
-                const endPropExpr = this._getResolvedExpression(context, this.subExpressions[3]);
+                const startPropExpr = this._getResolvedExpression(context, resolvedExprs[2]);
+                const endPropExpr = this._getResolvedExpression(context, resolvedExprs[3]);
                 const startProp = startPropExpr.getVariableAtomicValues()[0];
                 const endProp = endPropExpr.getVariableAtomicValues()[0];
 
@@ -91,7 +103,7 @@ export class ExtendlineExpression extends AbstractNonArithmeticExpression {
         } else {
             // Pattern: xl(graph, p1, p2, ...)
             const p1Expr = secondArg;
-            const p2Expr = this._getResolvedExpression(context, this.subExpressions[2]);
+            const p2Expr = this._getResolvedExpression(context, resolvedExprs[2]);
 
             const p1Values = p1Expr.getVariableAtomicValues();
             const p2Values = p2Expr.getVariableAtomicValues();
@@ -99,17 +111,17 @@ export class ExtendlineExpression extends AbstractNonArithmeticExpression {
             start = { x: p1Values[0], y: p1Values[1] };
             end = { x: p2Values[0], y: p2Values[1] };
 
-            if (this.subExpressions.length === 4) {
+            if (resolvedExprs.length === 4) {
                 // xl(graph, p1, p2, proportion)
-                const propExpr = this._getResolvedExpression(context, this.subExpressions[3]);
+                const propExpr = this._getResolvedExpression(context, resolvedExprs[3]);
                 const proportion = propExpr.getVariableAtomicValues()[0];
 
                 const result = LineUtil.extend(start, end, proportion);
                 this.coordinates = [result.start.x, result.start.y, result.end.x, result.end.y];
-            } else if (this.subExpressions.length >= 5) {
+            } else if (resolvedExprs.length >= 5) {
                 // xl(graph, p1, p2, startProp, endProp)
-                const startPropExpr = this._getResolvedExpression(context, this.subExpressions[3]);
-                const endPropExpr = this._getResolvedExpression(context, this.subExpressions[4]);
+                const startPropExpr = this._getResolvedExpression(context, resolvedExprs[3]);
+                const endPropExpr = this._getResolvedExpression(context, resolvedExprs[4]);
                 const startProp = startPropExpr.getVariableAtomicValues()[0];
                 const endProp = endPropExpr.getVariableAtomicValues()[0];
 

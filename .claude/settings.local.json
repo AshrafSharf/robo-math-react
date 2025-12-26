@@ -44,7 +44,8 @@
       "Bash(xargs:*)",
       "WebFetch(domain:wiki.geogebra.org)",
       "WebFetch(domain:geogebra.github.io)",
-      "WebFetch(domain:www.robocompass.com)"
+      "WebFetch(domain:www.robocompass.com)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

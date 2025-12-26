@@ -39,30 +39,34 @@ export class Cone3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(cone3d_error_messages.GRAPH_REQUIRED());
         }
 
-        // Second arg is radius
-        this.subExpressions[1].resolve(context);
-        const radiusValues = this.subExpressions[1].getVariableAtomicValues();
-        if (radiusValues.length !== 1) {
-            this.dispatchError(cone3d_error_messages.INVALID_RADIUS());
-        }
-        this.radius = radiusValues[0];
+        // Collect all values from remaining args, separating styling
+        const allValues = [];
+        const styleExprs = [];
 
-        // Remaining args are apex and base center coordinates
-        const coordinates = [];
-        for (let i = 2; i < this.subExpressions.length; i++) {
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                coordinates.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allValues.push(atomicValues[j]);
+                }
             }
         }
 
-        if (coordinates.length !== 6) {
-            this.dispatchError(cone3d_error_messages.WRONG_COORD_COUNT(coordinates.length));
+        this._parseStyleExpressions(styleExprs);
+
+        // Values: radius + apex(3) + baseCenter(3) = 7
+        if (allValues.length !== 7) {
+            this.dispatchError(cone3d_error_messages.WRONG_COORD_COUNT(allValues.length - 1));
         }
 
-        this.apex = { x: coordinates[0], y: coordinates[1], z: coordinates[2] };
-        this.baseCenter = { x: coordinates[3], y: coordinates[4], z: coordinates[5] };
+        this.radius = allValues[0];
+        this.apex = { x: allValues[1], y: allValues[2], z: allValues[3] };
+        this.baseCenter = { x: allValues[4], y: allValues[5], z: allValues[6] };
     }
 
     getName() {

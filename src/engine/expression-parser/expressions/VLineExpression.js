@@ -31,13 +31,23 @@ export class VLineExpression extends AbstractNonArithmeticExpression {
         this.subExpressions[0].resolve(context);
         this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
 
-        // Collect remaining values
+        // Collect remaining values, separating styling expressions
         const values = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            values.push(...atomicValues);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                values.push(...atomicValues);
+            }
         }
+
+        this._parseStyleExpressions(styleExprs);
 
         if (values.length < 1) {
             this.dispatchError(`vline() needs x coordinate.\nUsage: vline(g, x)`);

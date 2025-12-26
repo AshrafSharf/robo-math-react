@@ -2,12 +2,10 @@
  * Expression Options Schema
  * Defines available options and defaults for each expression type
  *
- * _style: 'stroke' | 'fill' | 'strokeFill' | 'font' | null
- *   - stroke: color + strokeWidth + opacity (line, segment, ray, vec, arc, plot, etc.)
- *   - fill: color only, applies to both stroke and fill (point)
- *   - strokeFill: stroke color + fill color + opacities (circle, polygon, ellipse, angle)
- *   - font: fontSize + fontColor (label)
- *   - null/undefined: no style controls (g2d, p2d)
+ * All shapes use expression-based styling (c, s, f, so, fo, fc) and only show Animation tab.
+ * Graph containers (g2d, p2d) and table have dedicated options panels.
+ *
+ * _tabs: Array of allowed tab ids (e.g., ['animation'] or ['expression'])
  */
 
 export const EXPRESSION_OPTIONS_SCHEMA = {
@@ -42,84 +40,74 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
     angleLabels: { type: 'checkbox', default: true, label: 'Show Angle Labels' },
   },
 
-  // Line - stroke style
+  // Line - animation only (styling via expressions)
   line: {
-    _style: 'stroke',
-    dashPattern: { type: 'select', options: ['solid', 'dashed', 'dotted'], default: 'solid', label: 'Dash Pattern' },
+    _tabs: ['animation'],
   },
 
-  // Circle - stroke + fill style
+  // Circle - animation only (styling via expressions)
   circle: {
-    _style: 'strokeFill',
+    _tabs: ['animation'],
   },
 
-  // Point - fill style (single color for both stroke and fill)
+  // Point - animation only (styling via expressions)
   point: {
-    _style: 'fill',
+    _tabs: ['animation'],
   },
 
-  // Vector - stroke style
+  // Vector - animation only (styling via expressions)
   vec: {
-    _style: 'stroke',
-    arrowSize: { type: 'number', min: 5, max: 20, default: 10, label: 'Arrow Size' },
+    _tabs: ['animation'],
   },
 
-  // Angle - stroke + fill style
+  // Angle - animation only (styling via expressions)
   angle: {
-    _style: 'strokeFill',
-    radius: { type: 'number', min: 0.3, max: 3, step: 0.1, default: 0.8, label: 'Arc Radius' },
-    showArc: { type: 'checkbox', default: true, label: 'Show Arc' },
+    _tabs: ['animation'],
   },
 
-  // Label - font style
+  // Label - animation only (styling via expressions)
   label: {
-    _style: 'font',
-    fontSize: { type: 'number', min: 10, max: 48, default: 16, label: 'Font Size' },
+    _tabs: ['animation'],
   },
 
-  // MathText expressions (mathtext, write, writeonly, writewithout) - font style
+  // MathText expressions (mathtext, write, writeonly, writewithout) - animation only (styling via expressions)
   mathtext: {
-    _style: 'font',
-    fontSize: { type: 'number', min: 12, max: 72, default: 22, label: 'Font Size' },
+    _tabs: ['animation'],
   },
 
-  // Polygon - stroke + fill style
+  // Polygon - animation only (styling via expressions)
   polygon: {
-    _style: 'strokeFill',
+    _tabs: ['animation'],
   },
 
-  // Arc - stroke style
+  // Arc - animation only (styling via expressions)
   arc: {
-    _style: 'stroke',
+    _tabs: ['animation'],
   },
 
-  // Plot - stroke style
+  // Plot - animation only (styling via expressions)
   plot: {
-    _style: 'stroke',
-    samples: { type: 'number', min: 50, max: 500, step: 50, default: 200, label: 'Sample Points' },
+    _tabs: ['animation'],
   },
 
-  // Parametric plot - stroke style
+  // Parametric plot - animation only (styling via expressions)
   paraplot: {
-    _style: 'stroke',
-    samples: { type: 'number', min: 50, max: 500, step: 50, default: 200, label: 'Sample Points' },
+    _tabs: ['animation'],
   },
 
-  // Segment - stroke style
+  // Segment - animation only (styling via expressions)
   segment: {
-    _style: 'stroke',
-    dashPattern: { type: 'select', options: ['solid', 'dashed', 'dotted'], default: 'solid', label: 'Dash Pattern' },
+    _tabs: ['animation'],
   },
 
-  // Ray - stroke style
+  // Ray - animation only (styling via expressions)
   ray: {
-    _style: 'stroke',
-    dashPattern: { type: 'select', options: ['solid', 'dashed', 'dotted'], default: 'solid', label: 'Dash Pattern' },
+    _tabs: ['animation'],
   },
 
-  // Ellipse - stroke + fill style
+  // Ellipse - animation only (styling via expressions)
   ellipse: {
-    _style: 'strokeFill',
+    _tabs: ['animation'],
   },
 
   // Ref - dynamic style based on inner expression

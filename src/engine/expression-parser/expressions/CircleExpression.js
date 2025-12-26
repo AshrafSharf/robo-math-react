@@ -33,16 +33,21 @@ export class CircleExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(circle_error_messages.GRAPH_REQUIRED());
         }
 
-        // Collect all atomic values from remaining args
+        // Collect all atomic values from remaining args, separating styling expressions
         const allCoords = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-
             const resultExpression = this.subExpressions[i];
-            const atomicValues = resultExpression.getVariableAtomicValues();
 
-            for (let j = 0; j < atomicValues.length; j++) {
-                allCoords.push(atomicValues[j]);
+            if (this._isStyleExpression(resultExpression)) {
+                styleExprs.push(resultExpression);
+            } else {
+                const atomicValues = resultExpression.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allCoords.push(atomicValues[j]);
+                }
             }
         }
 
@@ -62,6 +67,8 @@ export class CircleExpression extends AbstractNonArithmeticExpression {
         } else {
             this.dispatchError(circle_error_messages.WRONG_COORD_COUNT(allCoords.length));
         }
+
+        this._parseStyleExpressions(styleExprs);
     }
 
     // getGrapher() inherited from AbstractNonArithmeticExpression

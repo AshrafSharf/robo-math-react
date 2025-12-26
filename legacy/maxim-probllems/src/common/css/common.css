@@ -1,0 +1,115 @@
+/* Common styles for all lessons */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#boards-container {
+    margin: 0 auto;
+}
+
+
+.jxgbox {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+
+/* JSXGraph navigation controls - shown by default, hidden when showNavigation is false */
+.JXGnavi {
+    opacity: 0.7;
+    bottom: 5px !important;
+    right: 5px !important;
+    border: none !important;
+    border-radius: 4px !important;
+    background-color: white !important;
+    padding: 2px !important;
+    box-shadow: none !important;
+}
+
+/* Hide arrow navigation buttons (panning can be done with mouse drag) */
+.JXG_navigation_button_left,
+.JXG_navigation_button_right,
+.JXG_navigation_button_up,
+.JXG_navigation_button_down {
+    display: none !important;
+}
+
+/* Style individual navigation buttons */
+.JXGnavi button {
+    border: none !important;
+    background-color: white !important;
+    margin: 1px !important;
+    border-radius: 0 !important;
+}
+
+.JXGnavi button:hover {
+    background-color: #f5f5f5 !important;
+}
+
+.JXGnavi button:active {
+    background-color: #e0e0e0 !important;
+}
+
+/* Cursor styles for draggable elements */
+.JXGdragable {
+    cursor: move !important;
+    cursor: grab !important;
+}
+
+.JXGdragable:active {
+    cursor: grabbing !important;
+}
+
+/* Override for when hovering over draggable points */
+.jxgbox .JXGdragable ellipse,
+.jxgbox .JXGdragable circle {
+    cursor: move !important;
+    cursor: grab !important;
+}
+
+.jxgbox .JXGdragable:active ellipse,
+.jxgbox .JXGdragable:active circle {
+    cursor: grabbing !important;
+}
+
+/* Zoom controls styling */
+.zoom-controls button {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+.zoom-controls button:active {
+    transform: scale(0.95);
+}
+
+/* Mobile-specific zoom controls */
+@media (max-width: 768px) {
+    .zoom-controls {
+        bottom: 5px !important;
+        right: 5px !important;
+    }
+    
+    .zoom-controls button {
+        width: 12px !important;
+        height: 12px !important;
+        font-size: 8px !important;
+    }
+    
+    /* JSXGraph navigation controls on mobile */
+    .JXGnavi {
+        transform: scale(1.2);
+        transform-origin: bottom right;
+    }
+}
+

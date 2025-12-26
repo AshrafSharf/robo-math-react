@@ -1,0 +1,1 @@
+meq(4, 4,mline("x^2 = 4", "given"),mline("x = \pm 2", "solved"))

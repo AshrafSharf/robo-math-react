@@ -41,13 +41,25 @@ export class Perp3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(`perp3d() needs arguments.\nUsage: perp3d(vec/line, point, axisVec) or perp3d(vec/line, point, ax, ay, az)`);
         }
 
-        // Resolve all subexpressions
+        // Resolve all subexpressions, separating styling
+        const resolvedExprs = [];
+        const styleExprs = [];
+
         for (let i = 0; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                resolvedExprs.push(expr);
+            }
         }
 
+        this._parseStyleExpressions(styleExprs);
+
         // First arg is vector3d or line3d reference
-        const sourceExpr = this._getResolvedExpression(context, this.subExpressions[0]);
+        const sourceExpr = this._getResolvedExpression(context, resolvedExprs[0]);
         const sourceType = sourceExpr.getGeometryType?.() || sourceExpr.getName();
 
         if (sourceType !== 'vector3d' && sourceType !== 'line3d') {
@@ -70,7 +82,7 @@ export class Perp3DExpression extends AbstractNonArithmeticExpression {
         const refLength = Math.sqrt(vecDir.x * vecDir.x + vecDir.y * vecDir.y + vecDir.z * vecDir.z);
 
         // Second arg is the point to pass through
-        const pointExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        const pointExpr = this._getResolvedExpression(context, resolvedExprs[1]);
         const pointCoords = pointExpr.getVariableAtomicValues();
 
         if (pointCoords.length < 3) {
@@ -80,7 +92,7 @@ export class Perp3DExpression extends AbstractNonArithmeticExpression {
         const throughPoint = { x: pointCoords[0], y: pointCoords[1], z: pointCoords[2] };
 
         // Parse axis and optional length from remaining args
-        const { axis, length } = this._parseAxisAndLength(context, refLength);
+        const { axis, length } = this._parseAxisAndLength(context, refLength, resolvedExprs);
 
         // Compute perpendicular direction using cross product
         const perpDir = this._crossProduct(vecDir, axis);
@@ -118,8 +130,8 @@ export class Perp3DExpression extends AbstractNonArithmeticExpression {
     /**
      * Parse axis vector and optional length from remaining arguments (starting at index 2)
      */
-    _parseAxisAndLength(context, defaultLength) {
-        const remainingArgs = this.subExpressions.slice(2);
+    _parseAxisAndLength(context, defaultLength, resolvedExprs) {
+        const remainingArgs = resolvedExprs.slice(2);
         let axis = { x: 0, y: 0, z: 1 }; // default: z-axis
         let length = defaultLength;
 

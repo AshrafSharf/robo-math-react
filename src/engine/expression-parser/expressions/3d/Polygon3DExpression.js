@@ -33,11 +33,18 @@ export class Polygon3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(polygon3d_error_messages.GRAPH_REQUIRED());
         }
 
-        // Remaining args must be point3d expressions
+        // Remaining args must be point3d expressions, separating styling
         this.vertices = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
             const arg = this._getResolvedExpression(context, this.subExpressions[i]);
+
+            if (this._isStyleExpression(arg)) {
+                styleExprs.push(arg);
+                continue;
+            }
 
             // Check if it's a point3d
             if (typeof arg.getGeometryType !== 'function' || arg.getGeometryType() !== 'point3d') {
@@ -47,6 +54,8 @@ export class Polygon3DExpression extends AbstractNonArithmeticExpression {
             const pt = arg.getPoint();
             this.vertices.push({ x: pt.x, y: pt.y, z: pt.z });
         }
+
+        this._parseStyleExpressions(styleExprs);
 
         if (this.vertices.length < 3) {
             this.dispatchError(polygon3d_error_messages.MIN_VERTICES());

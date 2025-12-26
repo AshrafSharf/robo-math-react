@@ -40,45 +40,35 @@ export class Pyramid3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(pyramid3d_error_messages.GRAPH_REQUIRED());
         }
 
-        // Second arg is number of sides
-        this.subExpressions[1].resolve(context);
-        const sidesValues = this.subExpressions[1].getVariableAtomicValues();
-        if (sidesValues.length !== 1) {
-            this.dispatchError(pyramid3d_error_messages.INVALID_SIDES());
-        }
-        this.sides = Math.floor(sidesValues[0]);
+        // Collect all values from remaining args, separating styling
+        const allValues = [];
+        const styleExprs = [];
 
-        // Third arg is height
-        this.subExpressions[2].resolve(context);
-        const heightValues = this.subExpressions[2].getVariableAtomicValues();
-        if (heightValues.length !== 1) {
-            this.dispatchError(pyramid3d_error_messages.INVALID_HEIGHT());
-        }
-        this.height = heightValues[0];
-
-        // Fourth arg is base size
-        this.subExpressions[3].resolve(context);
-        const sizeValues = this.subExpressions[3].getVariableAtomicValues();
-        if (sizeValues.length !== 1) {
-            this.dispatchError(pyramid3d_error_messages.INVALID_SIZE());
-        }
-        this.size = sizeValues[0];
-
-        // Remaining args are position coordinates
-        const coordinates = [];
-        for (let i = 4; i < this.subExpressions.length; i++) {
+        for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-            const atomicValues = this.subExpressions[i].getVariableAtomicValues();
-            for (let j = 0; j < atomicValues.length; j++) {
-                coordinates.push(atomicValues[j]);
+            const expr = this.subExpressions[i];
+
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const atomicValues = expr.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    allValues.push(atomicValues[j]);
+                }
             }
         }
 
-        if (coordinates.length !== 3) {
-            this.dispatchError(pyramid3d_error_messages.WRONG_COORD_COUNT(coordinates.length));
+        this._parseStyleExpressions(styleExprs);
+
+        // Values: sides + height + size + position(3) = 6
+        if (allValues.length !== 6) {
+            this.dispatchError(pyramid3d_error_messages.WRONG_COORD_COUNT(allValues.length - 3));
         }
 
-        this.position = { x: coordinates[0], y: coordinates[1], z: coordinates[2] };
+        this.sides = Math.floor(allValues[0]);
+        this.height = allValues[1];
+        this.size = allValues[2];
+        this.position = { x: allValues[3], y: allValues[4], z: allValues[5] };
     }
 
     getName() {

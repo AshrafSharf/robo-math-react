@@ -87,17 +87,27 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
         // Register as dependent of user variables in the equation (for fromTo support)
         MathFunctionCompiler.registerDependencies(this.equation, ['x'], context, this);
 
-        // Optional domain arguments
-        if (this.subExpressions.length >= 4) {
-            this.subExpressions[2].resolve(context);
-            this.subExpressions[3].resolve(context);
+        // Optional domain and styling arguments
+        const styleExprs = [];
+        for (let i = 2; i < this.subExpressions.length; i++) {
+            this.subExpressions[i].resolve(context);
+            const expr = this.subExpressions[i];
 
-            const minValues = this.subExpressions[2].getVariableAtomicValues();
-            const maxValues = this.subExpressions[3].getVariableAtomicValues();
-
-            if (minValues.length > 0) this.domainMin = minValues[0];
-            if (maxValues.length > 0) this.domainMax = maxValues[0];
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const values = expr.getVariableAtomicValues();
+                if (values.length > 0) {
+                    if (this.domainMin === null) {
+                        this.domainMin = values[0];
+                    } else if (this.domainMax === null) {
+                        this.domainMax = values[0];
+                    }
+                }
+            }
         }
+
+        this._parseStyleExpressions(styleExprs);
     }
 
     // getGrapher() inherited from AbstractNonArithmeticExpression

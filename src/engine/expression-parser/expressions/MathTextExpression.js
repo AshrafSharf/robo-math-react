@@ -44,13 +44,13 @@ export class MathTextExpression extends AbstractNonArithmeticExpression {
         }
         this.col = colValues[0];
 
-        // Third arg: latex string (quoted string or variable reference to one)
+        // Third arg: latex string (quoted string, meq, mflow, or variable)
         const latexExpr = this.subExpressions[2];
         latexExpr.resolve(context);
         const resolvedLatexExpr = this._getResolvedExpression(context, latexExpr);
 
-        if (!resolvedLatexExpr || resolvedLatexExpr.getName() !== 'quotedstring') {
-            this.dispatchError('mtext() third argument must be a quoted string or variable containing one');
+        if (!resolvedLatexExpr || typeof resolvedLatexExpr.getStringValue !== 'function') {
+            this.dispatchError('mtext() third argument must be a quoted string, meq(), or mflow()');
         }
         this.latexString = resolvedLatexExpr.getStringValue();
     }

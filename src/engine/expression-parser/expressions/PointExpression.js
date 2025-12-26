@@ -38,18 +38,24 @@ export class PointExpression extends AbstractArithmeticExpression {
             this.dispatchError(point_error_messages.GRAPH_REQUIRED());
         }
 
-        // Collect coordinates from remaining args
+        // Collect coordinates from remaining args, separating styling expressions
         // - point(g, x, y) - separate numeric values
         // - point(g, expr) - expression returning 2 values (e.g., start(g, line), end(g, line))
+        // - point(g, x, y, c(red), s(2)) - with optional styling
         const coordinates = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-
             const resultExpression = this.subExpressions[i];
-            const atomicValues = resultExpression.getVariableAtomicValues();
 
-            for (let j = 0; j < atomicValues.length; j++) {
-                coordinates.push(atomicValues[j]);
+            if (this._isStyleExpression(resultExpression)) {
+                styleExprs.push(resultExpression);
+            } else {
+                const atomicValues = resultExpression.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    coordinates.push(atomicValues[j]);
+                }
             }
         }
 
@@ -58,6 +64,7 @@ export class PointExpression extends AbstractArithmeticExpression {
         }
 
         this.point = { x: coordinates[0], y: coordinates[1] };
+        this._parseStyleExpressions(styleExprs);
     }
 
     // getGrapher() inherited from AbstractArithmeticExpression

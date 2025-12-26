@@ -39,21 +39,28 @@ export class Point3DExpression extends AbstractArithmeticExpression {
             this.dispatchError(point3d_error_messages.GRAPH_REQUIRED());
         }
 
-        // Collect coordinates from remaining args
+        // Collect coordinates from remaining args, separating styling
         // - point3d(g, x, y, z) - separate numeric values
         // - point3d(g, point2d, z) - 2D point + z value
         // - point3d(g, expr) - expression returning 3 values
         const coordinates = [];
+        const styleExprs = [];
+
         for (let i = 1; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
-
             const resultExpression = this.subExpressions[i];
-            const atomicValues = resultExpression.getVariableAtomicValues();
 
-            for (let j = 0; j < atomicValues.length; j++) {
-                coordinates.push(atomicValues[j]);
+            if (this._isStyleExpression(resultExpression)) {
+                styleExprs.push(resultExpression);
+            } else {
+                const atomicValues = resultExpression.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    coordinates.push(atomicValues[j]);
+                }
             }
         }
+
+        this._parseStyleExpressions(styleExprs);
 
         if (coordinates.length !== 3) {
             this.dispatchError(point3d_error_messages.WRONG_COORD_COUNT(coordinates.length));

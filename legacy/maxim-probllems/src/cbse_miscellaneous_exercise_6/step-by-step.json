@@ -1,0 +1,42 @@
+{
+  "problem_statement": "A tank with rectangular base and rectangular sides, open at the top is to be constructed so that its depth is 2 m and volume is 8 m³. If building of tank costs Rs 70 per sq metres for the base and Rs 45 per square metre for sides. What is the cost of least expensive tank?",
+  "overview": "Recognize that when a problem asks for the \"least expensive\" design with fixed volume, we need to minimize a cost function by setting up expressions for the areas, applying the volume constraint, and using calculus to find the optimal dimensions.",
+  "short_cuts": "For optimization problems involving rectangular shapes, express one dimension in terms of the other using the given constraints, then minimize the resulting single-variable cost function.",
+  "step_details": [
+    {
+      "step_index": 1,
+      "explanation": "$\\textbf{Define variables, volume constraint, and form cost function}$",
+      "expressions": [
+        "$\\text{Let } x = \\text{length of tank (m)} \\quad \\color{blue}{\\text{(variable definition)}}$",
+        "$\\text{Let } y = \\text{width of tank (m)} \\quad \\color{blue}{\\text{(variable definition)}}$",
+        "$\\text{Depth } = 2 \\text{ m (given)} \\quad \\color{blue}{\\text{(given parameter)}}$",
+        "$\\htmlClass{light_yellow_box_big}{\\text{Volume } = x \\cdot y \\cdot 2 = 8 \\text{ m}^3 \\text{ (given)} \\quad \\color{blue}{\\text{(volume formula for rectangular prism)}}}$",
+        "$xy = 4 \\implies y = \\displaystyle\\frac{4}{x} \\quad \\color{blue}{\\text{(solving for } y \\text{ in terms of } x)}$",
+        "$\\text{Base area } = xy = 4 \\text{ m}^2 \\quad \\color{blue}{\\text{(since } xy = 4 \\text{ from volume constraint)}}$",
+        "${\\text{Side areas } = 2x + 2y + 2x + 2y = 4(x + y)} \\text{ m}^2 \\quad \\color{blue}{\\text{(sum of all four side areas)}}$",
+        "$\\text{Cost } C = 70 \\cdot 4 + 45 \\cdot 4(x + y) \\quad \\color{blue}{\\text{(cost function: base cost + side cost)}}$",
+        "$C = 280 + 180(x + y) \\quad \\color{blue}{\\text{(simplified cost expression)}}$",
+        "$\\htmlClass{light_purple_box_bigger}{C = 280 + 180\\left(x + \\displaystyle\\frac{4}{x}\\right) = 280 + 180x + \\displaystyle\\frac{720}{x} \\quad \\color{blue}{\\text{(substituting } y = \\displaystyle\\frac{4}{x} \\text{ from step 1)}}}$"
+      ]
+    },
+    {
+      "step_index": 2,
+      "explanation": "$\\textbf{Minimize cost using calculus, verify minimum, and calculate cost}$",
+      "expressions": [
+        "$\\displaystyle\\frac{dC}{dx} = 180 - \\displaystyle\\frac{720}{x^2} \\quad \\color{blue}{\\text{(derivative of cost function with respect to } x)}$",
+        "$\\text{Set } \\displaystyle\\frac{dC}{dx} = 0: \\quad \\color{blue}{\\text{(necessary condition for extremum)}}$",
+        "$180 - \\displaystyle\\frac{720}{x^2} = 0 \\quad \\color{blue}{\\text{(setting derivative to zero)}}$",
+        "$180x^2 = 720 \\quad \\color{blue}{\\text{(algebraic rearrangement)}}$",
+        "$x^2 = 4 \\quad \\color{blue}{\\text{(simplification)}}$",
+        "$\\htmlClass{light_yellow_box_big}{x = 2 \\text{ (since length is positive)} \\quad \\color{blue}{\\text{(taking positive root)}}}$",
+        "$\\displaystyle\\frac{d^2C}{dx^2} = \\displaystyle\\frac{1440}{x^3} > 0 \\text{ for } x > 0, \\text{ confirming minimum} \\quad \\color{blue}{\\text{(second derivative test for convexity)}}$",
+        "$x = 2 \\text{ m (length)} \\quad \\color{blue}{\\text{(optimal length)}}$",
+        "$y = \\displaystyle\\frac{4}{x} = \\displaystyle\\frac{4}{2} = 2 \\text{ m (width)} \\quad \\color{blue}{\\text{(using } y = \\displaystyle\\frac{4}{x} \\text{ from step 1)}}$",
+        "$C = 280 + 180(2 + 2) \\quad \\color{blue}{\\text{(substituting optimal dimensions into cost function)}}$",
+        "$C = 280 + 180 \\cdot 4 \\quad \\color{blue}{\\text{(arithmetic simplification)}}$",
+        "$\\htmlClass{light_green_box_big}{C = 280 + 720 = 1000 \\quad \\color{blue}{\\text{(final cost calculation)}}}$",
+        "$\\text{The cost of the least expensive tank is Rs } 1000 \\quad \\color{blue}{\\text{(conclusion)}}$"
+      ]
+    }
+  ]
+}
