@@ -4,11 +4,14 @@
  * Syntax:
  *   rotate3d(shapeVar, angle, ax, ay, az)           - single shape, axis as 3 numbers
  *   rotate3d(shapeVar, angle, axisVector)           - single shape, axis as vector
+ *   rotate3d(face, angle)                            - Face3D: auto-detect pivot axis
+ *   rotate3d(face, angle, pivot(face))              - Face3D with explicit pivot
  *   rotate3d(s1, s2, ..., angle, ax, ay, az)        - multiple shapes (parallel animation)
  *   rotate3d(s1, s2, ..., angle, axisVector)        - multiple shapes with vector axis
  *
  * Creates new shape(s) at the rotated position with arc animation.
  * Original shapes remain visible.
+ * When rotating Face3D, rotates the face around its hinge pivot.
  * When rotating multiple shapes, returns a Shape3DCollection.
  *
  * Examples:
@@ -16,9 +19,12 @@
  *   V = vector3d(g, 0, 0, 0, 3, 0, 0)
  *   rotate3d(V, 90, 0, 0, 1)                  // single shape
  *   rotate3d(V1, V2, V3, 45, 0, 1, 0)         // multiple shapes
+ *   F = foldable(G, 12, 2, "box")
+ *   rotate3d(face(F, "top"), 90)              // Face3D with auto-pivot
  */
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
 import { Rotate3DCommand } from '../../../commands/3d/Rotate3DCommand.js';
+import { Rotate3DFaceCommand } from '../../../commands/3d/Rotate3DFaceCommand.js';
 import { vectorRotateHandler } from '../../../../3d/common/rotate-handlers/vector_rotate_handler.js';
 import { lineRotateHandler } from '../../../../3d/common/rotate-handlers/line_rotate_handler.js';
 import { pointRotateHandler } from '../../../../3d/common/rotate-handlers/point_rotate_handler.js';
@@ -31,6 +37,13 @@ const ROTATE_HANDLERS = {
     'line3d': lineRotateHandler,
     'point3d': pointRotateHandler
 };
+
+/**
+ * Check if expression is a Face3D (from face() accessor)
+ */
+function isFaceExpression(expr) {
+    return expr && (expr.getName() === 'face' || expr.getGeometryType?.() === 'face3d');
+}
 
 export class Rotate3DExpression extends AbstractNonArithmeticExpression {
     static NAME = 'rotate3d';
@@ -55,16 +68,34 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
         // Multi-shape mode
         this.isMultiShape = false;
         this.shapeDataArray = []; // [{shapeExpression, handler, originalPoints, rotatedPoints, varName}, ...]
+
+        // Face3D mode
+        this.isFace3DMode = false;
+        this.faceExpression = null;
     }
 
     resolve(context) {
-        if (this.subExpressions.length < 3) {
-            this.dispatchError('rotate3d() requires at least 3 arguments');
+        if (this.subExpressions.length < 2) {
+            this.dispatchError('rotate3d() requires at least 2 arguments');
         }
 
         // Resolve all subexpressions first
         for (let i = 0; i < this.subExpressions.length; i++) {
             this.subExpressions[i].resolve(context);
+        }
+
+        // Check for Face3D mode (auto-pivot detection)
+        const firstExpr = this._getResolvedExpression(context, this.subExpressions[0]);
+
+        if (isFaceExpression(firstExpr)) {
+            // Face3D mode - handle specially
+            this._resolveFace3D(context, firstExpr);
+            return;
+        }
+
+        // Regular mode - requires at least 3 args (shape, angle, axis)
+        if (this.subExpressions.length < 3) {
+            this.dispatchError('rotate3d() requires at least 3 arguments for non-Face3D shapes');
         }
 
         // Find angle and axis by examining args from end
@@ -89,6 +120,49 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
         } else {
             // Single shape mode
             this._resolveSingleShape(context);
+        }
+    }
+
+    /**
+     * Resolve Face3D rotation mode
+     * Supports: rotate3d(face, angle) with auto-pivot
+     *           rotate3d(face, angle, pivot) with explicit pivot
+     */
+    _resolveFace3D(context, faceExpr) {
+        this.isFace3DMode = true;
+        this.faceExpression = faceExpr;
+        this.graphExpression = faceExpr.getFoldableExpression()?.graphExpression;
+
+        // Get angle (second arg)
+        const angleExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+        this.angle = angleExpr.getVariableAtomicValues()[0];
+
+        // Check for explicit axis (third arg)
+        if (this.subExpressions.length >= 3) {
+            const axisExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+            const axisValues = axisExpr.getVariableAtomicValues();
+
+            // If it's a line/pivot (6 values: start + end), extract direction
+            if (axisValues.length >= 6) {
+                this.axis = {
+                    x: axisValues[3] - axisValues[0],
+                    y: axisValues[4] - axisValues[1],
+                    z: axisValues[5] - axisValues[2]
+                };
+            } else if (axisValues.length >= 3) {
+                // Point3D as direction
+                this.axis = { x: axisValues[0], y: axisValues[1], z: axisValues[2] };
+            }
+        } else {
+            // Auto-detect pivot from Face3D
+            const face = faceExpr.getFace();
+            if (face) {
+                const pivotAxis = face.getPivotAxis();
+                this.axis = pivotAxis;
+            } else {
+                // Face not yet available (before command execution), use default
+                this.axis = { x: 1, y: 0, z: 0 };
+            }
         }
     }
 
@@ -209,6 +283,9 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
     }
 
     getGeometryType() {
+        if (this.isFace3DMode) {
+            return 'face3d';
+        }
         if (this.isMultiShape) {
             return 'shape3dcollection';
         }
@@ -262,6 +339,16 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        // Face3D mode - use specialized command
+        if (this.isFace3DMode) {
+            return new Rotate3DFaceCommand(
+                this.faceExpression,
+                this.angle,
+                this.axis,
+                options
+            );
+        }
+
         if (this.isMultiShape) {
             return new Rotate3DCommand(
                 this.graphExpression,
@@ -295,6 +382,9 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
     }
 
     canPlay() {
+        if (this.isFace3DMode) {
+            return true;  // Face3D rotation is always playable
+        }
         if (this.isMultiShape) {
             return this.shapeDataArray.length > 0;
         }

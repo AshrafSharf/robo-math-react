@@ -1,19 +1,31 @@
 /**
  * McancelExpression - Applies cancel strikethrough to TextItem(s)
  *
+ * Example:
+ *   Q = print(6, 4, "x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}")
+ *   D = select(Q, "b^2 - 4ac")
+ *   mcancel(D)
+ *   mcancel(D, "u")
+ *   mcancel(D, "x", c(blue), s(3))
+ *
  * Syntax:
- *   mcancel(T, "text", "u")           - Cancel with text, up diagonal (default)
- *   mcancel(T, "text", "d")           - Cancel with down diagonal (bcancel)
- *   mcancel(T, "text", "x")           - Cancel with X (xcancel)
- *   mcancel(T, "text", "u", "red")    - With custom color
+ *   mcancel(T)                    - Cancel with down diagonal (default)
+ *   mcancel(T, "u")               - Cancel with up diagonal
+ *   mcancel(T, "d")               - Cancel with down diagonal
+ *   mcancel(T, "x")               - Cancel with X pattern
+ *   mcancel(T, c(blue))           - With color styling
+ *   mcancel(T, "u", c(red), s(3)) - Direction with styling
  *
  * Direction codes:
- *   "u" - up diagonal (\cancel, \cancelto)
- *   "d" - down diagonal (\bcancel)
- *   "x" - X pattern (\xcancel)
+ *   "u" - up diagonal (bottom-left to top-right)
+ *   "d" - down diagonal (top-left to bottom-right) - DEFAULT
+ *   "x" - X pattern (both diagonals)
+ *
+ * Styling:
+ *   c(color) - stroke color
+ *   s(width) - stroke width
  *
  * If T is a TextItemCollection, applies cancel to each item.
- * Text is wrapped in \text{} if plain, used as LaTeX if contains special chars.
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { McancelCommand } from '../../commands/McancelCommand.js';
@@ -25,14 +37,12 @@ export class McancelExpression extends AbstractNonArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.textItemVariableName = null;
-        this.cancelText = '';
-        this.direction = 'u';  // default: up diagonal
-        this.color = 'red';    // default: red
+        this.direction = 'd';  // default: down diagonal
     }
 
     resolve(context) {
-        if (this.subExpressions.length < 3) {
-            this.dispatchError('mcancel() requires at least 3 arguments: mcancel(T, "text", "direction")');
+        if (this.subExpressions.length < 1) {
+            this.dispatchError('mcancel() requires at least 1 argument: mcancel(T)');
         }
 
         // Arg 0: TextItem variable reference
@@ -44,37 +54,29 @@ export class McancelExpression extends AbstractNonArithmeticExpression {
         }
         this.textItemVariableName = targetExpr.variableName;
 
-        // Arg 1: Cancel text (what to show as replacement, e.g., "0" in cancelto)
-        const textExpr = this.subExpressions[1];
-        textExpr.resolve(context);
-        const resolvedText = this._getResolvedExpression(context, textExpr);
-        if (!resolvedText || resolvedText.getName() !== 'quotedstring') {
-            this.dispatchError('mcancel() second argument must be a quoted string (cancel text)');
-        }
-        this.cancelText = resolvedText.getStringValue();
+        // Remaining args: direction string and/or styling expressions
+        const styleExprs = [];
 
-        // Arg 2: Direction
-        const dirExpr = this.subExpressions[2];
-        dirExpr.resolve(context);
-        const resolvedDir = this._getResolvedExpression(context, dirExpr);
-        if (!resolvedDir || resolvedDir.getName() !== 'quotedstring') {
-            this.dispatchError('mcancel() third argument must be a quoted string (direction: "u", "d", or "x")');
-        }
-        const dir = resolvedDir.getStringValue().toLowerCase();
-        if (!['u', 'd', 'x'].includes(dir)) {
-            this.dispatchError('mcancel() direction must be "u", "d", or "x"');
-        }
-        this.direction = dir;
+        for (let i = 1; i < this.subExpressions.length; i++) {
+            const expr = this.subExpressions[i];
+            expr.resolve(context);
 
-        // Arg 3 (optional): Color
-        if (this.subExpressions.length >= 4) {
-            const colorExpr = this.subExpressions[3];
-            colorExpr.resolve(context);
-            const resolvedColor = this._getResolvedExpression(context, colorExpr);
-            if (resolvedColor && resolvedColor.getName() === 'quotedstring') {
-                this.color = resolvedColor.getStringValue();
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                // Check if it's a direction string
+                const resolved = this._getResolvedExpression(context, expr);
+                if (resolved && resolved.getName() === 'quotedstring') {
+                    const dir = resolved.getStringValue().toLowerCase();
+                    if (['u', 'd', 'x'].includes(dir)) {
+                        this.direction = dir;
+                    }
+                }
             }
         }
+
+        // Parse styling expressions (c, s, f)
+        this._parseStyleExpressions(styleExprs);
     }
 
     getName() {
@@ -86,12 +88,16 @@ export class McancelExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new McancelCommand({
+        const command = new McancelCommand({
             textItemVariableName: this.textItemVariableName,
-            cancelText: this.cancelText,
-            direction: this.direction,
-            color: this.color
+            direction: this.direction
         });
+
+        // Apply styling from expressions
+        if (this.color) command.color = this.color;
+        if (this.strokeWidth) command.strokeWidth = this.strokeWidth;
+
+        return command;
     }
 
     canPlay() {

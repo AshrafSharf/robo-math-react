@@ -10,6 +10,7 @@
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { SelectCommand } from '../../commands/SelectCommand.js';
+import { SelectKatexCommand } from '../../commands/SelectKatexCommand.js';
 
 export class SelectExpression extends AbstractNonArithmeticExpression {
     static NAME = 'select';
@@ -22,6 +23,7 @@ export class SelectExpression extends AbstractNonArithmeticExpression {
         this.itemIndex = null;  // Optional: 1-based index to extract single item
         this.collection = null;  // Set by command during doInit
         this.singleItem = null;  // Set when itemIndex is specified
+        this.sourceExpression = null;  // Reference to source expression for type detection
     }
 
     resolve(context) {
@@ -43,10 +45,11 @@ export class SelectExpression extends AbstractNonArithmeticExpression {
         if (!resolvedExpr) {
             this.dispatchError(`select(): Variable "${this.targetVariableName}" not found`);
         }
-        const validSources = ['mathtext', 'write', 'meq', 'mtext'];
+        const validSources = ['mathtext', 'write', 'meq', 'mtext', 'print', 'printonly', 'printwithout'];
         if (resolvedExpr.getName && !validSources.includes(resolvedExpr.getName())) {
-            this.dispatchError(`select(): "${this.targetVariableName}" must be a mathtext, write, or meq expression`);
+            this.dispatchError(`select(): "${this.targetVariableName}" must be a mathtext, write, meq, or print expression`);
         }
+        this.sourceExpression = resolvedExpr;
 
         // Check if last argument is a number (item index)
         const lastExpr = this.subExpressions[this.subExpressions.length - 1];
@@ -116,6 +119,19 @@ export class SelectExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        // Detect if source is KaTeX-based
+        const katexSources = ['print', 'printonly', 'printwithout'];
+        const isKatexSource = this.sourceExpression &&
+            katexSources.includes(this.sourceExpression.getName());
+
+        if (isKatexSource) {
+            return new SelectKatexCommand({
+                targetVariableName: this.targetVariableName,
+                includePatterns: this.includePatterns,
+                expression: this
+            });
+        }
+
         return new SelectCommand({
             targetVariableName: this.targetVariableName,
             includePatterns: this.includePatterns,

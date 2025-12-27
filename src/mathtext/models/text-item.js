@@ -1,4 +1,5 @@
 import { Bounds2 } from '../../geom/Bounds2.js';
+import { BaseTextItem } from './base-text-item.js';
 
 /**
  * TextItem - Represents a single extracted part of a MathTextComponent
@@ -6,18 +7,16 @@ import { Bounds2 } from '../../geom/Bounds2.js';
  * Created by select/selectexcept expressions to capture specific regions
  * of math text that can be animated later with write().
  *
- * This is a pure data class. For operations, use:
- * - MathTextMoveEffect(textItem, ...) - animated move
- * - MathTextRectEffect(textItem, ...) - animated annotation rect
- * - mathComponent.cloneTextItemTo(textItem, ...) - static clone
+ * Extends BaseTextItem for common interface with KatexTextItem.
  */
-export class TextItem {
+export class TextItem extends BaseTextItem {
     /**
      * @param {MathTextComponent} mathComponent - Parent MathTextComponent
      * @param {SelectionUnit} selectionUnit - SelectionUnit with fragmentPaths
      * @param {Bounds2} bounds - Bounding box coordinates
      */
     constructor(mathComponent, selectionUnit, bounds) {
+        super();
         this.mathComponent = mathComponent;
         this.selectionUnit = selectionUnit;
         this.bounds = bounds;

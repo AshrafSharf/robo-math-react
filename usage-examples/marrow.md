@@ -1,99 +1,109 @@
 # marrow
 
-Adds a curved annotation arrow pointing to a text item with an optional label. Useful for explaining parts of mathematical expressions.
+Draws a circle around a TextItem/KatexTextItem and a curved arrow pointing outward.
 
-## Visual
-
-```
-                    "squared"
-                        |
-                       \|/
-    x^2 + y^2  <--------'
-    ^^^
-    target
-```
-
-## API
+## Syntax
 
 ```
-marrow(textItem, anchor, direction, length, label, curvature, offset)
-         │        │        │         │       │        │         └── offset from edge (px)
-         │        │        │         │       │        └──────────── bend amount (px)
-         │        │        │         │       └───────────────────── label text
-         │        │        │         └───────────────────────────── arrow length (px)
-         │        │        └─────────────────────────────────────── arrow direction
-         │        └──────────────────────────────────────────────── anchor position
-         └───────────────────────────────────────────────────────── selected text item
+marrow(T)
+marrow(T, "anchor", "direction")
+marrow(T, "anchor", "direction", length)
+marrow(T, "anchor", "direction", length, curvature)
+marrow(T, ..., c(color), s(width))
 ```
 
-### Anchor Positions
+## Parameters
 
-| Code | Position |
-|------|----------|
-| `"tl"` | top-left |
-| `"tm"` | top-middle |
-| `"tr"` | top-right |
-| `"ml"` | middle-left |
-| `"mr"` | middle-right |
-| `"bl"` | bottom-left |
-| `"bm"` | bottom-middle |
-| `"br"` | bottom-right |
-| `"rm"` | right-middle (alias for mr) |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| T | TextItem | required | Selection from `select()` |
+| anchor | string | "rm" | Position on TextItem where arrow starts |
+| direction | string | "E" | Direction arrow points |
+| length | number | 50 | Arrow length in pixels |
+| curvature | number | 50 | Curve amount (higher = more curved) |
+
+### Anchors
+
+```
+tl --- tm --- tr
+|             |
+lm           rm
+|             |
+bl --- bm --- br
+```
+
+- `tl` - top-left
+- `tm` - top-middle
+- `tr` - top-right
+- `lm` - left-middle
+- `rm` - right-middle (default)
+- `bl` - bottom-left
+- `bm` - bottom-middle
+- `br` - bottom-right
 
 ### Directions
 
-| Code | Direction |
-|------|-----------|
-| `"N"` | North (up) |
-| `"S"` | South (down) |
-| `"E"` | East (right) |
-| `"W"` | West (left) |
-| `"NE"` | Northeast |
-| `"NW"` | Northwest |
-| `"SE"` | Southeast |
-| `"SW"` | Southwest |
+- `N` - North (up)
+- `E` - East (right) - default
+- `S` - South (down)
+- `W` - West (left)
 
-## Code
+## Examples
+
+### Basic usage
 
 ```
-# Basic arrow pointing to x^2
-eq1 = "x^2 + y^2"
-m1 = write(4, 10, eq1)
-sel1 = select(m1, "x^2")
-lbl1 = "squared"
-marrow(sel1, "bl", "S", 60, lbl1, 70, 5)
-
-# Arrow from the right side
-eq2 = "a + b = c"
-m2 = write(6, 10, eq2)
-sel2 = select(m2, "b")
-lbl2 = "variable"
-marrow(sel2, "rm", "E", 50, lbl2, 20, 5)
-
-# Arrow with more curvature
-eq3 = "\\frac{a}{b}"
-m3 = write(8, 10, eq3)
-sel3 = select(m3, "a")
-lbl3 = "numerator"
-marrow(sel3, "tm", "N", 40, lbl3, 50, 3)
-
-# Arrow pointing to denominator
-sel4 = select(m3, "b")
-lbl4 = "denominator"
-marrow(sel4, "bm", "S", 40, lbl4, 50, 3)
+Q = print(6, 4, "x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}")
+D = select(Q, "b^2 - 4ac")
+marrow(D)
 ```
 
-## Comments
+### Different anchors and directions
 
-| Line | Explanation |
-|------|-------------|
-| `marrow(sel1, "bl", "S", 60, lbl1, 70, 5)` | Arrow from bottom-left, pointing south, 60px long, 70px curve, 5px offset |
-| `marrow(sel2, "rm", "E", 50, lbl2, 20, 5)` | Arrow from right-middle, pointing east, slight curve |
-| `marrow(sel3, "tm", "N", 40, lbl3, 50, 3)` | Arrow from top-middle, pointing north |
+```
+marrow(D, "tm", "N")      # top-middle, arrow pointing up
+marrow(D, "bl", "W")      # bottom-left, arrow pointing left
+marrow(D, "rm", "S")      # right-middle, arrow pointing down
+marrow(D, "lm", "W")      # left-middle, arrow pointing left
+```
+
+### With arrow length
+
+```
+marrow(D, "tm", "N", 80)   # 80px long arrow
+marrow(D, "rm", "E", 100)  # 100px long arrow
+```
+
+### With length and curvature
+
+```
+marrow(D, "rm", "E", 60, 30)   # less curved
+marrow(D, "rm", "E", 60, 100)  # more curved
+```
+
+### With styling
+
+```
+marrow(D, c(red))                       # red color
+marrow(D, "tm", "N", c(blue), s(3))     # blue, 3px stroke width
+marrow(D, "rm", "E", 70, 50, c(green))  # all options + green color
+```
+
+### Multiple annotations
+
+```
+Q = print(6, 4, "x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}")
+A = select(Q, "-b")
+B = select(Q, "b^2 - 4ac")
+C = select(Q, "2a")
+
+marrow(A, "tm", "N", 40, c(red))
+marrow(B, "bm", "S", 60, c(blue))
+marrow(C, "rm", "E", 50, c(green))
+```
 
 ## Notes
 
 - `length` controls how far the arrow extends from the text
 - `curvature` controls the bend of the arrow (higher = more curved)
-- `offset` adds spacing between the text edge and arrow start
-- The label appears at the end of the arrow
+- Works with both `write()` (MathJax) and `print()` (KaTeX) expressions

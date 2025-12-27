@@ -1,19 +1,30 @@
 /**
- * MarrowExpression - Draws a curved arrow from a TextItem with annotation
+ * MarrowExpression - Draws a circle around TextItem and curved arrow
+ *
+ * Example:
+ *   Q = print(6, 4, "x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}")
+ *   D = select(Q, "b^2 - 4ac")
+ *   marrow(D)
+ *   marrow(D, "rm", "E", 50)
+ *   marrow(D, "tm", "N", 80, 30, c(blue))
  *
  * Syntax:
- *   marrow(T, "anchor", direction, length, "text")
- *   marrow(T, "anchor", direction, length, "text", curvature)
- *   marrow(T, "anchor", direction, length, "text", curvature, offset)
+ *   marrow(T)                                    - Default: right-middle anchor, East direction
+ *   marrow(T, "anchor", "direction")             - Specify anchor and direction
+ *   marrow(T, "anchor", "direction", length)     - With arrow length
+ *   marrow(T, "anchor", "direction", length, curvature)  - With curvature
+ *   marrow(T, ..., c(color), s(width))           - With styling
  *
  * Parameters:
  *   T          - TextItem variable reference
- *   anchor     - Anchor position on TextItem: "tl", "tm", "tr", "lm", "rm", "bl", "bm", "br"
- *   direction  - "N", "E", "S", "W" (cardinal direction for arrow)
- *   length     - Arrow length in pixels
- *   text       - Annotation text (LaTeX supported), appears at arrowhead
- *   curvature  - Curve amount (optional, default 0)
- *   offset     - Offset from TextItem edge (optional, default 5)
+ *   anchor     - Anchor on TextItem: "tl", "tm", "tr", "lm", "rm", "bl", "bm", "br"
+ *   direction  - Arrow direction: "N", "E", "S", "W"
+ *   length     - Arrow length in pixels (default: 50)
+ *   curvature  - Curve amount (default: 50)
+ *
+ * Styling:
+ *   c(color) - stroke color
+ *   s(width) - stroke width
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { MarrowCommand } from '../../commands/MarrowCommand.js';
@@ -28,15 +39,12 @@ export class MarrowExpression extends AbstractNonArithmeticExpression {
         this.anchor = 'rm';
         this.direction = 'E';
         this.length = 50;
-        this.text = '';
         this.curvature = 50;
-        this.offset = 5;
     }
 
     resolve(context) {
-        // Minimum 5 arguments required
-        if (this.subExpressions.length < 5) {
-            this.dispatchError('marrow() requires at least 5 arguments: marrow(T, "anchor", direction, length, "text")');
+        if (this.subExpressions.length < 1) {
+            this.dispatchError('marrow() requires at least 1 argument: marrow(T)');
         }
 
         // Arg 0: TextItem variable reference
@@ -48,76 +56,50 @@ export class MarrowExpression extends AbstractNonArithmeticExpression {
         }
         this.textItemVariableName = targetExpr.variableName;
 
-        // Arg 1: anchor ("tl", "tm", "tr", "lm", "rm", "bl", "bm", "br")
-        const anchorExpr = this.subExpressions[1];
-        anchorExpr.resolve(context);
-        const resolvedAnchor = this._getResolvedExpression(context, anchorExpr);
-        if (resolvedAnchor && resolvedAnchor.getName() === 'quotedstring') {
-            this.anchor = resolvedAnchor.getStringValue().toLowerCase();
-        } else {
-            this.dispatchError('marrow() anchor must be a quoted string ("tl", "tm", "tr", "lm", "rm", "bl", "bm", "br")');
-        }
+        // Track position for non-style arguments
+        let argIndex = 1;
+        const styleExprs = [];
 
-        // Validate anchor
-        const validAnchors = ['tl', 'tm', 'tr', 'lm', 'rm', 'bl', 'bm', 'br'];
-        if (!validAnchors.includes(this.anchor)) {
-            this.dispatchError(`marrow() invalid anchor "${this.anchor}". Must be one of: ${validAnchors.join(', ')}`);
-        }
+        // Process remaining arguments
+        for (let i = 1; i < this.subExpressions.length; i++) {
+            const expr = this.subExpressions[i];
+            expr.resolve(context);
 
-        // Arg 2: direction ("N", "E", "S", "W")
-        const directionExpr = this.subExpressions[2];
-        directionExpr.resolve(context);
-        const resolvedDirection = this._getResolvedExpression(context, directionExpr);
-        if (resolvedDirection && resolvedDirection.getName() === 'quotedstring') {
-            this.direction = resolvedDirection.getStringValue().toUpperCase();
-        } else {
-            this.dispatchError('marrow() direction must be a quoted string ("N", "E", "S", or "W")');
-        }
+            if (this._isStyleExpression(expr)) {
+                styleExprs.push(expr);
+            } else {
+                const resolved = this._getResolvedExpression(context, expr);
 
-        // Validate direction
-        if (!['N', 'E', 'S', 'W'].includes(this.direction)) {
-            this.dispatchError(`marrow() invalid direction "${this.direction}". Must be "N", "E", "S", or "W"`);
-        }
+                // Check if it's a quoted string (anchor or direction)
+                if (resolved && resolved.getName() === 'quotedstring') {
+                    const strValue = resolved.getStringValue();
+                    const upperValue = strValue.toUpperCase();
 
-        // Arg 3: length
-        const lengthExpr = this.subExpressions[3];
-        lengthExpr.resolve(context);
-        const lengthValues = lengthExpr.getVariableAtomicValues();
-        if (lengthValues.length > 0) {
-            this.length = lengthValues[0];
-        } else {
-            this.dispatchError('marrow() length must be a number');
-        }
-
-        // Arg 4: text (quoted string)
-        const textExpr = this.subExpressions[4];
-        textExpr.resolve(context);
-        const resolvedText = this._getResolvedExpression(context, textExpr);
-        if (resolvedText && resolvedText.getName() === 'quotedstring') {
-            this.text = resolvedText.getStringValue();
-        } else {
-            this.dispatchError('marrow() text must be a quoted string');
-        }
-
-        // Arg 5 (optional): curvature
-        if (this.subExpressions.length >= 6) {
-            const curvatureExpr = this.subExpressions[5];
-            curvatureExpr.resolve(context);
-            const curvatureValues = curvatureExpr.getVariableAtomicValues();
-            if (curvatureValues.length > 0) {
-                this.curvature = curvatureValues[0];
+                    // Check if it's a direction
+                    if (['N', 'E', 'S', 'W'].includes(upperValue)) {
+                        this.direction = upperValue;
+                    }
+                    // Check if it's an anchor
+                    else if (['TL', 'TM', 'TR', 'LM', 'RM', 'BL', 'BM', 'BR'].includes(upperValue)) {
+                        this.anchor = strValue.toLowerCase();
+                    }
+                } else {
+                    // Numeric value - could be length or curvature
+                    const atomicValues = expr.getVariableAtomicValues();
+                    if (atomicValues.length > 0) {
+                        if (argIndex === 1) {
+                            this.length = atomicValues[0];
+                        } else if (argIndex === 2) {
+                            this.curvature = atomicValues[0];
+                        }
+                        argIndex++;
+                    }
+                }
             }
         }
 
-        // Arg 6 (optional): offset
-        if (this.subExpressions.length >= 7) {
-            const offsetExpr = this.subExpressions[6];
-            offsetExpr.resolve(context);
-            const offsetValues = offsetExpr.getVariableAtomicValues();
-            if (offsetValues.length > 0) {
-                this.offset = offsetValues[0];
-            }
-        }
+        // Parse styling expressions (c, s, f)
+        this._parseStyleExpressions(styleExprs);
     }
 
     getName() {
@@ -129,15 +111,19 @@ export class MarrowExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new MarrowCommand({
+        const command = new MarrowCommand({
             textItemVariableName: this.textItemVariableName,
             anchor: this.anchor,
             direction: this.direction,
             length: this.length,
-            text: this.text,
-            curvature: this.curvature,
-            offset: this.offset
+            curvature: this.curvature
         });
+
+        // Apply styling from expressions
+        if (this.color) command.color = this.color;
+        if (this.strokeWidth) command.strokeWidth = this.strokeWidth;
+
+        return command;
     }
 
     canPlay() {

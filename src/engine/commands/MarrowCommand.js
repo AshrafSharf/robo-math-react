@@ -1,19 +1,16 @@
 /**
- * MarrowCommand - Draws a circle around TextItem, curved arrow, and annotation text
+ * MarrowCommand - Draws a circle around TextItem and a curved arrow
  *
  * Creates:
  * - AnnotationCircleShape around TextItem
- * - CurvedArrowShape from circle to annotation
- * - AnnotationTextComponent for text at arrowhead
+ * - CurvedArrowShape from circle edge outward
  *
- * Animation sequence: Circle draws, then arrow, then text
+ * Animation sequence: Circle draws, then arrow
  */
 import { BaseCommand } from './BaseCommand.js';
 import { AnnotationCircleShape } from '../../script-shapes/annotation-circle-shape.js';
 import { CurvedArrowShape } from '../../script-shapes/curved-arrow-shape.js';
 import { CurvedArrowPathGenerator } from '../../path-generators/curved-arrow-path-generator.js';
-import { AnnotationTextComponent } from '../../mathtext/components/annotation-text-component.js';
-import { WriteEffect } from '../../mathtext/effects/write-effect.js';
 import { RoboEventManager } from '../../events/robo-event-manager.js';
 
 export class MarrowCommand extends BaseCommand {
@@ -22,7 +19,6 @@ export class MarrowCommand extends BaseCommand {
         this.options = options;
         this.circleShape = null;
         this.arrowShape = null;
-        this.textComponent = null;
     }
 
     async doInit() {
@@ -96,66 +92,7 @@ export class MarrowCommand extends BaseCommand {
         );
         this.arrowShape.create();
 
-        // Create the text component at arrowhead
-        if (this.options.text) {
-            const textPosition = this._calculateTextPosition(end, direction);
-            const textParentDOM = this.commandContext.canvasSection;
-
-            this.textComponent = new AnnotationTextComponent(
-                this._formatText(this.options.text),
-                textPosition.x,
-                textPosition.y,
-                textParentDOM,
-                {
-                    fontSize: this.fontSize || 18,
-                    stroke: this.color || '#333',
-                    fill: this.color || '#333'
-                }
-            );
-            // Text starts hidden
-            this.textComponent.hide();
-            this.textComponent.disableStroke();
-        }
-
-        this.commandResult = { circleShape: this.circleShape, arrowShape: this.arrowShape, textComponent: this.textComponent };
-    }
-
-    /**
-     * Calculate text position based on arrow endpoint and direction
-     */
-    _calculateTextPosition(end, direction) {
-        const buffer = 8;
-
-        let x = end.x;
-        let y = end.y;
-
-        switch (direction.toUpperCase()) {
-            case 'N':
-                y -= buffer;
-                break;
-            case 'S':
-                y += buffer;
-                break;
-            case 'E':
-                x += buffer;
-                break;
-            case 'W':
-                x -= buffer;
-                break;
-        }
-
-        return { x, y };
-    }
-
-    /**
-     * Format text - wrap in \text{} if plain text
-     */
-    _formatText(text) {
-        const hasLatexChars = /[\\^_{}]/.test(text);
-        if (hasLatexChars) {
-            return text;
-        }
-        return `\\text{${text}}`;
+        this.commandResult = { circleShape: this.circleShape, arrowShape: this.arrowShape };
     }
 
     async playSingle() {
@@ -165,10 +102,6 @@ export class MarrowCommand extends BaseCommand {
         }
         if (this.arrowShape) {
             this.arrowShape.hide();
-        }
-        if (this.textComponent) {
-            this.textComponent.hide();
-            this.textComponent.disableStroke();
         }
 
         // Phase 1: Animate the circle
@@ -186,12 +119,6 @@ export class MarrowCommand extends BaseCommand {
                 this.arrowShape.renderWithAnimation(startPoint, resolve);
             });
         }
-
-        // Phase 3: Animate the text
-        if (this.textComponent) {
-            const textEffect = new WriteEffect(this.textComponent);
-            await textEffect.play();
-        }
     }
 
     doDirectPlay() {
@@ -203,12 +130,6 @@ export class MarrowCommand extends BaseCommand {
         // Instant render arrow
         if (this.arrowShape) {
             this.arrowShape.renderEndState();
-        }
-
-        // Instant render text
-        if (this.textComponent) {
-            this.textComponent.show();
-            this.textComponent.enableStroke();
         }
     }
 
@@ -224,13 +145,6 @@ export class MarrowCommand extends BaseCommand {
         if (this.arrowShape) {
             this.arrowShape.remove();
             this.arrowShape = null;
-        }
-        if (this.textComponent && this.textComponent.containerDOM) {
-            const containerDOM = this.textComponent.containerDOM;
-            if (containerDOM.parentNode) {
-                containerDOM.parentNode.removeChild(containerDOM);
-            }
-            this.textComponent = null;
         }
         this.commandResult = null;
         this.isInitialized = false;

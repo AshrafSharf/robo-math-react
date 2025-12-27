@@ -1,11 +1,48 @@
 import { FontDefs } from '../mathtext/font-defs.js';
 import { FontMapService } from '../mathtext/services/font-map.service.js';
+import katex from 'katex';
 
 export class PluginInitializer {
   static initialize() {
     this.addMathJaxConfig();
     this.addMathJaxDOM();
+    this.preloadKatexFonts();
     return this.addPluginLibraries();
+  }
+
+  /**
+   * Preload KaTeX fonts by rendering a test element
+   * This ensures fonts are loaded before any KaTeX content is measured
+   */
+  static preloadKatexFonts() {
+    console.log("Preloading KaTeX fonts...");
+
+    // Create a hidden test element
+    const testDiv = document.createElement('div');
+    testDiv.id = 'katex-font-preload';
+    testDiv.style.cssText = 'position: absolute; left: -9999px; visibility: hidden;';
+
+    // Render test content with various symbols to trigger font loading
+    try {
+      testDiv.innerHTML = katex.renderToString(
+        '\\displaystyle{x^2 + \\frac{a}{b} + \\sqrt{c} + \\sum_{i=1}^{n} + \\int + \\alpha\\beta\\gamma}',
+        { throwOnError: false, displayMode: true, output: 'html', trust: true }
+      );
+      document.body.appendChild(testDiv);
+
+      // Wait for fonts to load then remove
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          console.log("KaTeX fonts loaded");
+          testDiv.remove();
+        });
+      } else {
+        // Fallback: remove after a delay
+        setTimeout(() => testDiv.remove(), 1000);
+      }
+    } catch (e) {
+      console.warn("KaTeX font preload failed:", e);
+    }
   }
 
   static addMathJaxConfig() {

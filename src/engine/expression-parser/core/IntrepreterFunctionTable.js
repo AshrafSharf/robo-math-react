@@ -111,6 +111,10 @@ import { Measure3DExpression } from '../expressions/3d/Measure3DExpression.js';
 import { Plot3DExpression } from '../expressions/3d/Plot3DExpression.js';
 import { Para3DExpression } from '../expressions/3d/Para3DExpression.js';
 import { Curve3DExpression } from '../expressions/3d/Curve3DExpression.js';
+import { FoldableExpression } from '../expressions/3d/FoldableExpression.js';
+import { FaceExpression } from '../expressions/3d/FaceExpression.js';
+import { FacesExpression } from '../expressions/3d/FacesExpression.js';
+import { PivotExpression } from '../expressions/3d/PivotExpression.js';
 import { PlotExpression } from '../expressions/PlotExpression.js';
 import { ParametricPlotExpression } from '../expressions/ParametricPlotExpression.js';
 import { AreaUnderExpression } from '../expressions/AreaUnderExpression.js';
@@ -125,6 +129,8 @@ import { WriteExpression } from '../expressions/WriteExpression.js';
 import { WriteOnlyExpression } from '../expressions/WriteOnlyExpression.js';
 import { WriteWithoutExpression } from '../expressions/WriteWithoutExpression.js';
 import { PrintExpression } from '../expressions/PrintExpression.js';
+import { PrintOnlyExpression } from '../expressions/PrintOnlyExpression.js';
+import { PrintWithoutExpression } from '../expressions/PrintWithoutExpression.js';
 import { SelectExpression } from '../expressions/SelectExpression.js';
 import { SelectExceptExpression } from '../expressions/SelectExceptExpression.js';
 import { SurroundExpression } from '../expressions/SurroundExpression.js';
@@ -272,6 +278,12 @@ export class IntrepreterFunctionTable {
         registerMultiArg('para3d', Para3DExpression);              // parametric surface (u,v) → (x,y,z)
         registerMultiArg('curve3d', Curve3DExpression);            // parametric curve t → (x,y,z)
 
+        // 3D foldable expressions (box nets, cube nets, etc.)
+        registerMultiArg('foldable', FoldableExpression);          // foldable(G, params..., "type")
+        registerMultiArg('face', FaceExpression);                  // face(foldable, "name" or index)
+        registerMultiArg('faces', FacesExpression);                // faces(foldable) - all faces array
+        registerMultiArg('pivot', PivotExpression);                // pivot(face) - hinge line
+
         registerMultiArg('plot', PlotExpression);
         registerMultiArg('paraplot', ParametricPlotExpression);
         registerMultiArg('areaunder', AreaUnderExpression);
@@ -282,6 +294,8 @@ export class IntrepreterFunctionTable {
         registerMultiArg('writeonly', WriteOnlyExpression);
         registerMultiArg('writewithout', WriteWithoutExpression);
         registerMultiArg('print', PrintExpression);
+        registerMultiArg('printonly', PrintOnlyExpression);
+        registerMultiArg('printwithout', PrintWithoutExpression);
         registerMultiArg('select', SelectExpression);
         registerMultiArg('selectexcept', SelectExceptExpression);
         registerMultiArg('surround', SurroundExpression);
