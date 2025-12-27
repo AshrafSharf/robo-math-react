@@ -31,7 +31,6 @@ import {
 } from './lhs/lhs_3d_primitives.js';
 import * as geoUtils from './geo3d_utils.js';
 import { clearAll, hideAll, showAll } from './lifecycle_utils.js';
-import { createFoldable } from './lhs/lhs_foldable.js';
 
 export class LHS3DDiagram extends BaseDiagram3D {
     constructor(scene, effectsManager = null) {
@@ -1416,28 +1415,5 @@ export class LHS3DDiagram extends BaseDiagram3D {
         }
 
         return pyramidMesh;
-    }
-
-    /**
-     * Create a foldable shape (box net, cube net, etc.)
-     * @param {string} type - Foldable type ("box", "rectbox", "cube")
-     * @param {Array} params - Type-specific parameters
-     * @param {Object} options - Styling options
-     * @returns {Object} Foldable object with group, faces, volume, etc.
-     */
-    foldable(type, params, options = {}) {
-        // Parse color if provided
-        if (options.color) {
-            options.color = this.parseColor(options.color);
-        }
-
-        // Create the foldable
-        const foldableResult = createFoldable(type, params, options);
-
-        // Add main group to scene
-        this.scene.add(foldableResult.group);
-        this.objects.push(foldableResult.group);
-
-        return foldableResult;
     }
 }
