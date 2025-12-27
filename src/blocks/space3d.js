@@ -67,10 +67,18 @@ export class Space3D {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.containerDOM.appendChild(this.renderer.domElement);
 
-        // Setup camera (perspective)
+        // Setup camera (orthographic like LHS)
         const aspect = this.options.width / this.options.height;
-        this.camera = new THREE.PerspectiveCamera(50, aspect, 0.1, 1000);
-        this.camera.position.set(15, 15, 15);
+        const viewSize = 15;
+        this.camera = new THREE.OrthographicCamera(
+            -viewSize * aspect / 2,
+            viewSize * aspect / 2,
+            viewSize / 2,
+            -viewSize / 2,
+            0.1,
+            1000
+        );
+        this.camera.position.set(-15, 12, -15);
         this.camera.lookAt(0, 0, 0);
 
         // Setup orbit controls
@@ -91,19 +99,26 @@ export class Space3D {
     }
 
     _setupLighting() {
-        // Ambient light for overall illumination
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        this.scene.add(ambientLight);
+        // 3-point lighting setup (like LHS)
 
-        // Directional light for shadows and depth
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(10, 20, 10);
-        this.scene.add(directionalLight);
+        // Ambient light
+        const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+        this.scene.add(ambient);
 
-        // Second directional light from opposite direction
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
-        directionalLight2.position.set(-10, 10, -10);
-        this.scene.add(directionalLight2);
+        // Key light
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.0);
+        keyLight.position.set(5, 10, 5);
+        this.scene.add(keyLight);
+
+        // Fill light
+        const fillLight = new THREE.DirectionalLight(0xaaaaaa, 0.4);
+        fillLight.position.set(-5, 5, -5);
+        this.scene.add(fillLight);
+
+        // Rim light
+        const rimLight = new THREE.PointLight(0xffffff, 0.6);
+        rimLight.position.set(0, 15, -10);
+        this.scene.add(rimLight);
     }
 
     animate() {
