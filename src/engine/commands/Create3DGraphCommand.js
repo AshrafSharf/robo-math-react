@@ -91,10 +91,12 @@ export class Create3DGraphCommand extends BaseCommand {
      */
     clear() {
         if (this.commandResult) {
-            const containerDOM = this.commandResult.containerDOM;
+            // Get outer container (from factory) before destroy nulls it
+            const outerContainer = this.commandResult.containerElement;
             this.commandResult.destroy();
-            if (containerDOM && containerDOM.parentNode) {
-                containerDOM.parentNode.removeChild(containerDOM);
+            // Remove outer container from canvasSection
+            if (outerContainer && outerContainer.parentNode) {
+                outerContainer.parentNode.removeChild(outerContainer);
             }
             this.commandResult = null;
         }

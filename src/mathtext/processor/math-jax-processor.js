@@ -92,10 +92,16 @@ export class MathJaxProcessor {
         convertToSVG();
         return svgProcessed;
       } catch (e) {
-        console.error('Second attempt also failed:', e);
-        throw e;
+        console.error('MathJaxProcessor:', e.message);
+        return this.getErrorSvg();
       }
     }
+  }
+
+  static getErrorSvg() {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="24" viewBox="0 0 120 24">
+      <text x="2" y="17" fill="#cc0000" font-size="14">⚠️ Invalid LaTeX</text>
+    </svg>`;
   }
 
   static isLatex(inputMathText) {

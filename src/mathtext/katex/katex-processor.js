@@ -31,18 +31,16 @@ export class KatexProcessor {
       // Wrap in displaystyle for consistency with MathJax behavior
       const displayLatex = `\\displaystyle{${latex}}`;
 
-      const html = katex.renderToString(displayLatex, {
-        throwOnError: false,
+      return katex.renderToString(displayLatex, {
+        throwOnError: true,
         displayMode: true,
         output: 'html',
         trust: true,
         strict: false
       });
-
-      return html;
     } catch (error) {
-      console.error('KatexProcessor render error:', error);
-      return `<span class="katex-error">${latex}</span>`;
+      console.error('KatexProcessor:', error.message);
+      return `<span class="katex-error" style="color: #cc0000;">⚠️ Invalid LaTeX</span>`;
     }
   }
 }

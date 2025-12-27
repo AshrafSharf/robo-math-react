@@ -18,83 +18,21 @@ export class BoundsExtractor {
   static extractFBoxBoundsDescriptors(svgDocument$) {
     const svgDocument = svgDocument$[0];
     const boundsList = [];
-
-    console.log('\n=== SVG STRUCTURE ANALYSIS ===');
-
-    // First, check for <rect> elements (bbox might create these)
-    const rectElements = svgDocument.querySelectorAll('rect');
-    console.log('Total <rect> elements found:', rectElements.length);
-    rectElements.forEach((rect, i) => {
-      console.log(`Rect ${i}:`, {
-        x: rect.getAttribute('x'),
-        y: rect.getAttribute('y'),
-        width: rect.getAttribute('width'),
-        height: rect.getAttribute('height'),
-        fill: rect.getAttribute('fill'),
-        stroke: rect.getAttribute('stroke'),
-        style: rect.getAttribute('style'),
-        class: rect.getAttribute('class'),
-        allAttributes: Array.from(rect.attributes).map(a => `${a.name}="${a.value}"`).join(', ')
-      });
-    });
-
     const gTags = svgDocument.querySelectorAll('g');
-    console.log('\nTotal <g> tags found:', gTags.length);
+    const requiredValues = ['hline', 'vline', 'hline', 'vline'];
 
-    // Filter the g tags to find all with the required children
-    Array.from(gTags).forEach((g, gIndex) => {
-      const allChildren = Array.from(g.children);
-      const pathChildren = allChildren.filter(node => node.tagName === 'path');
-      const rectChildren = allChildren.filter(node => node.tagName === 'rect');
+    Array.from(gTags).forEach((g) => {
+      const pathChildren = Array.from(g.children).filter(node => node.tagName === 'path');
 
-      // Log groups that have rect children (bbox creates these)
-      if (rectChildren.length > 0) {
-        console.log(`\nGroup ${gIndex} has ${rectChildren.length} rect children:`);
-        rectChildren.forEach((rect, ri) => {
-          console.log(`  Rect ${ri}:`, {
-            x: rect.getAttribute('x'),
-            y: rect.getAttribute('y'),
-            width: rect.getAttribute('width'),
-            height: rect.getAttribute('height'),
-            stroke: rect.getAttribute('stroke'),
-            fill: rect.getAttribute('fill'),
-            allAttrs: Array.from(rect.attributes).map(a => `${a.name}="${a.value}"`).join(', ')
-          });
-        });
-
-        // Also log the group's attributes
-        console.log(`  Group attributes:`, {
-          class: g.getAttribute('class'),
-          'data-mml-node': g.getAttribute('data-mml-node'),
-          transform: g.getAttribute('transform'),
-          allAttrs: Array.from(g.attributes).map(a => `${a.name}="${a.value}"`).join(', ')
-        });
-      }
-
-      const requiredValues = ['hline', 'vline', 'hline', 'vline'];
-
-      // Check if exactly 4 paths
       if (pathChildren.length === 4) {
-        // Log meta attributes
-        const metaAttrs = pathChildren.map(child => child.getAttribute('meta'));
-        const dAttrs = pathChildren.map(child => {
-          const d = child.getAttribute('d');
-          return d ? d.substring(0, 30) + '...' : 'null';
-        });
-        console.log(`\nGroup ${gIndex}: found 4 paths`);
-        console.log(`  meta=[${metaAttrs.join(', ')}]`);
-        console.log(`  d samples=[${dAttrs[0]}, ${dAttrs[1]}]`);
-
         const hasValidHighlightSection = pathChildren.every((child, index) => {
           const metaAttr = child.getAttribute('meta');
           return metaAttr !== null && metaAttr === requiredValues[index];
         });
 
         if (hasValidHighlightSection) {
-          console.log(`  → Valid fbox pattern detected!`);
           const sortedPaths = this.sortNodesByGivenOrder(pathChildren, requiredValues);
           const bounds2 = this.combinePathsAndGetBBox(sortedPaths);
-          // Store both bounds and paths for later removal if needed
           boundsList.push({
             bounds: bounds2,
             paths: sortedPaths
@@ -102,21 +40,6 @@ export class BoundsExtractor {
         }
       }
     });
-
-    console.log(`Total fbox bounds found: ${boundsList.length}`);
-
-    // If no fbox patterns found, let's see what we have
-    if (boundsList.length === 0) {
-      console.warn('No fbox patterns detected! Checking for alternative markers...');
-      // Sample a few groups to see what we're dealing with
-      for (let i = 0; i < Math.min(5, gTags.length); i++) {
-        const g = gTags[i];
-        const paths = Array.from(g.children).filter(n => n.tagName === 'path');
-        if (paths.length > 0) {
-          console.log(`Sample group ${i}: ${paths.length} paths, first meta="${paths[0].getAttribute('meta')}"`);
-        }
-      }
-    }
 
     return boundsList;
   }
