@@ -23,6 +23,10 @@ export class VectorCommand extends BaseCommand {
         this.endPoint = endPoint;     // {x, y}
         this.strokeWidth = options.strokeWidth ?? 2;
         this.arrowSize = options.arrowSize || null;
+        // Apply color from expression style options
+        if (options.color) {
+            this.setColor(options.color);
+        }
     }
 
     /**

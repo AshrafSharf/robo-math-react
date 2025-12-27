@@ -196,6 +196,7 @@ export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
      */
     toCommand(options = {}) {
         // Always pass compiled functions - both string and def() paths compile at resolve time
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         return new ParametricPlotCommand(
             this.graphExpression,
             this.compiledXFunction,  // Pre-compiled x(t) function
@@ -204,7 +205,7 @@ export class ParametricPlotExpression extends AbstractNonArithmeticExpression {
             this.tMax,
             this.xEquation,          // Keep for display/debugging
             this.yEquation,          // Keep for display/debugging
-            options
+            mergedOptions
         );
     }
 

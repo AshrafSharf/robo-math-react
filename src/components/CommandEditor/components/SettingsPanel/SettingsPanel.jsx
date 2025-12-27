@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import SettingsTabs from './SettingsTabs';
-import StyleTab from './tabs/StyleTab';
 import ExpressionOptionsTab from './tabs/ExpressionOptionsTab';
 import AnimationTab from './tabs/AnimationTab';
 import RefTab from './tabs/RefTab';
@@ -14,9 +13,12 @@ import { extractVariables } from '../../auto_complete';
 
 /**
  * Tabbed Settings Panel for command properties
- * Tab 1: Style (color, label, offset, comment)
- * Tab 2: Expression Options (dynamic based on expression type)
- * Tab 3: Animation (speed)
+ * - Expression Options (dynamic based on expression type)
+ * - Ref (for ref expressions)
+ * - Animation (speed)
+ *
+ * Note: Style options (color, strokeWidth, fontSize) are set via expression syntax:
+ *   c(green), s(2), f(24)
  */
 const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, anchorElement, onApplySpeedToAll }) => {
   const panelRef = useRef(null);
@@ -36,10 +38,9 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
 
   // Check allowed tabs from schema (e.g., table only allows 'expression')
   const allowedTabs = getAllowedTabs(expressionType);
-  const hasStyleTab = !allowedTabs || allowedTabs.includes('style');
 
-  // Default tab: first allowed tab
-  const [activeTab, setActiveTab] = useState(() => hasStyleTab ? 'style' : 'expression');
+  // Default tab: expression options
+  const [activeTab, setActiveTab] = useState('expression');
 
   // Check if this is a ref expression
   const isRefExpression = hasRefTab(expressionType);
@@ -152,112 +153,6 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
     setOptionsVersion(v => v + 1);
   };
 
-  // Handle stroke color change - save to registry, command model, and redraw
-  const handleColorChange = (color) => {
-    if (!command?.id) return;
-
-    // Update the registry with the new color
-    ExpressionOptionsRegistry.setById(command.id, { color });
-
-    // Update command model for persistence
-    onUpdate({ color });
-
-    // Redraw just this command with new color (no full canvas redraw)
-    if (onRedrawSingle) {
-      onRedrawSingle({ color });
-    }
-  };
-
-  // Handle fill color change - save to registry, command model, and redraw
-  const handleFillColorChange = (fillColor) => {
-    if (!command?.id) return;
-
-    // Update the registry with the new fill color
-    ExpressionOptionsRegistry.setById(command.id, { fillColor });
-
-    // Update command model for persistence
-    onUpdate({ fillColor });
-
-    // Redraw just this command with new fill (no full canvas redraw)
-    if (onRedrawSingle) {
-      onRedrawSingle({ fill: fillColor });
-    }
-  };
-
-  // Handle stroke width change - save to registry, command model, and redraw
-  const handleStrokeWidthChange = (strokeWidth) => {
-    if (!command?.id) return;
-
-    // Update the registry with the new stroke width
-    ExpressionOptionsRegistry.setById(command.id, { strokeWidth });
-
-    // Update command model for persistence
-    onUpdate({ strokeWidth });
-
-    // Redraw just this command with new stroke width (no full canvas redraw)
-    if (onRedrawSingle) {
-      onRedrawSingle({ strokeWidth });
-    }
-  };
-
-  // Handle stroke opacity change - save to registry, command model, and redraw
-  const handleStrokeOpacityChange = (strokeOpacity) => {
-    if (!command?.id) return;
-
-    // Update the registry with the new stroke opacity
-    ExpressionOptionsRegistry.setById(command.id, { strokeOpacity });
-
-    // Update command model for persistence
-    onUpdate({ strokeOpacity });
-
-    // Redraw just this command with new stroke opacity (no full canvas redraw)
-    if (onRedrawSingle) {
-      onRedrawSingle({ strokeOpacity });
-    }
-  };
-
-  // Handle fill opacity change - save to registry, command model, and redraw
-  const handleFillOpacityChange = (fillOpacity) => {
-    if (!command?.id) return;
-
-    // Update the registry with the new fill opacity
-    ExpressionOptionsRegistry.setById(command.id, { fillOpacity });
-
-    // Update command model for persistence
-    onUpdate({ fillOpacity });
-
-    // Redraw just this command with new fill opacity (no full canvas redraw)
-    if (onRedrawSingle) {
-      onRedrawSingle({ fillOpacity });
-    }
-  };
-
-  // Handle font size change - save to registry, command model, and redraw
-  const handleFontSizeChange = (fontSize) => {
-    if (!command?.id || !expressionType) return;
-
-    // Update the registry with the new font size (expression-specific option)
-    ExpressionOptionsRegistry.setExpressionOptions(command.id, expressionType, { fontSize });
-
-    // Update command model for persistence (store in expressionOptions)
-    const updatedExpressionOptions = {
-      ...command.expressionOptions,
-      [expressionType]: {
-        ...(command.expressionOptions?.[expressionType] || {}),
-        fontSize
-      }
-    };
-    onUpdate({ expressionOptions: updatedExpressionOptions });
-
-    // Force re-read from registry
-    setOptionsVersion(v => v + 1);
-
-    // Redraw the command with new font size (clears and re-inits)
-    if (onRedrawSingle) {
-      onRedrawSingle({ fontSize });
-    }
-  };
-
   // Handle ref content change - save to registry and trigger redraw
   const handleRefContentChange = (content) => {
     if (!command?.id) return;
@@ -283,9 +178,9 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
       setActiveTab(allowedTabs[0] || 'expression');
       return;
     }
-    // For other types: switch away from expression if no options panel
+    // For types without options panel, default to animation tab
     if (activeTab === 'expression' && !hasOptionsPanel(effectiveStyleType)) {
-      setActiveTab('style');
+      setActiveTab('animation');
     }
   }, [effectiveStyleType, activeTab, allowedTabs]);
 
@@ -370,21 +265,6 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
 
           {/* Tab content */}
           <div className="popover-content tab-content" style={{ flex: 1, overflow: 'auto' }}>
-            {activeTab === 'style' && (
-              <StyleTab
-                command={command}
-                expressionType={effectiveStyleType}
-                expressionOptions={currentExpressionOptions}
-                onUpdate={onUpdate}
-                onColorChange={handleColorChange}
-                onFillColorChange={handleFillColorChange}
-                onStrokeWidthChange={handleStrokeWidthChange}
-                onStrokeOpacityChange={handleStrokeOpacityChange}
-                onFillOpacityChange={handleFillOpacityChange}
-                onFontSizeChange={handleFontSizeChange}
-              />
-            )}
-
             {activeTab === 'expression' && hasOptionsPanel(effectiveStyleType) && (
               <ExpressionOptionsTab
                 expressionType={effectiveStyleType}

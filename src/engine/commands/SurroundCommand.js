@@ -8,12 +8,19 @@ import { BaseCommand } from './BaseCommand.js';
 import { MathTextRectEffect } from '../../effects/math-text-rect-effect.js';
 
 export class SurroundCommand extends BaseCommand {
-    constructor(options = {}) {
+    constructor(options = {}, styleOptions = {}) {
         super();
         this.options = options;
         this.textItem = null;
         this.effect = null;
         this.padding = 5;  // Default padding
+        // Apply color from style options
+        if (styleOptions.color) {
+            this.setColor(styleOptions.color);
+        }
+        if (styleOptions.strokeWidth) {
+            this.strokeWidth = styleOptions.strokeWidth;
+        }
     }
 
     async doInit() {

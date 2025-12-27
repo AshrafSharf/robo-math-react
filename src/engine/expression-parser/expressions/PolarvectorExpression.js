@@ -142,7 +142,8 @@ export class PolarvectorExpression extends AbstractNonArithmeticExpression {
 
     toCommand(options = {}) {
         const pts = this.getVectorPoints();
-        return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new VectorCommand(this.graphExpression, pts[0], pts[1], mergedOptions);
     }
 
     canPlay() {

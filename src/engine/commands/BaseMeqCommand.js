@@ -46,7 +46,7 @@ export class BaseMeqCommand extends BaseCommand {
             coordinateMapper,
             canvasSection,
             {
-                fontSize: this.styleOptions.fontSize ?? 22,
+                fontSize: this.styleOptions.fontSize,
                 stroke: effectiveColor,
                 fill: effectiveColor
             }

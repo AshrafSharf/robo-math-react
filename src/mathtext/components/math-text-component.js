@@ -41,7 +41,7 @@ export class MathTextComponent {
     this.visible = false;
     this.strokeColor = options.stroke || '#000000';
     this.fillColor = options.fill || '#000000';
-    this.fontSizeValue = options.fontSize || 22;  // Default font size
+    this.fontSizeValue = options.fontSize || 35;  // Default font size (same as print)
     this.mathNodes = [];
     this.containerDOM = null;
     this.renderedSVG = null;

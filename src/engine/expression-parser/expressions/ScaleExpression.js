@@ -476,6 +476,7 @@ export class ScaleExpression extends AbstractArithmeticExpression {
      * Create command for the scaled shape(s)
      */
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         if (this.isMultiShape) {
             // Multi-shape mode: pass shape data array
             return new ScaleCommand(
@@ -483,7 +484,7 @@ export class ScaleExpression extends AbstractArithmeticExpression {
                 this.shapeDataArray,
                 this.scaleFactor,
                 this.center,
-                { ...options, isMultiShape: true }
+                { ...mergedOptions, isMultiShape: true }
             );
         }
 
@@ -496,7 +497,7 @@ export class ScaleExpression extends AbstractArithmeticExpression {
             this.originalShapeType,
             this.scaleFactor,
             this.center,
-            options
+            mergedOptions
         );
     }
 

@@ -14,11 +14,18 @@ import { CurvedArrowPathGenerator } from '../../path-generators/curved-arrow-pat
 import { RoboEventManager } from '../../events/robo-event-manager.js';
 
 export class MarrowCommand extends BaseCommand {
-    constructor(options = {}) {
+    constructor(options = {}, styleOptions = {}) {
         super();
         this.options = options;
         this.circleShape = null;
         this.arrowShape = null;
+        // Apply color from style options
+        if (styleOptions.color) {
+            this.setColor(styleOptions.color);
+        }
+        if (styleOptions.strokeWidth) {
+            this.strokeWidth = styleOptions.strokeWidth;
+        }
     }
 
     async doInit() {

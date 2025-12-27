@@ -25,6 +25,10 @@ export class LineCommand extends BaseCommand {
     this.strokeOpacity = options.strokeOpacity ?? null;
     this.fill = options.fill || null;
     this.dashPattern = options.dashPattern || 'solid';
+    // Apply color from expression style options
+    if (options.color) {
+      this.setColor(options.color);
+    }
   }
 
   /**

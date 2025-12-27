@@ -64,7 +64,7 @@ export class WriteOnlyCommand extends BaseCommand {
                 coordinateMapper,
                 canvasSection,
                 {
-                    fontSize: this.styleOptions.fontSize ?? 22,
+                    fontSize: this.styleOptions.fontSize,
                     stroke: this.color,
                     fill: this.color
                 }

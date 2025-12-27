@@ -12,6 +12,15 @@ import { ExpressionOptionsRegistry } from '../expression-parser/core/ExpressionO
 import { getColorByIndex } from '../constants/colors.js';
 
 /**
+ * Text expression types that default to black instead of color cycling
+ */
+const TEXT_EXPRESSION_TYPES = new Set([
+    'write', 'writeonly', 'writewithout',
+    'print', 'mathtext', 'mtext', 'label',
+    'meq', 'meqwrite', 'meqwriteonly'
+]);
+
+/**
  * Map expression names to their normalized type for options lookup
  */
 const EXPRESSION_TYPE_MAP = {
@@ -171,14 +180,14 @@ export class ExpressionPipelineService {
             ? ExpressionOptionsRegistry.getById(options.expressionId, normalizedType)
             : {};
 
-        // Merge type-specific options for command creation
+        // Merge options for command creation
+        // Style options (color, strokeWidth, fontSize) are handled by expression.getStyleOptions()
         const commandOptions = {
             // Point options
             radius: registryOptions.radius,
             fill: registryOptions.fill,
 
-            // Line/shape stroke options (default to 2)
-            strokeWidth: registryOptions.strokeWidth ?? 2,
+            // Stroke options
             strokeOpacity: registryOptions.strokeOpacity,
             dashPattern: registryOptions.dashPattern,
 
@@ -190,10 +199,6 @@ export class ExpressionPipelineService {
 
             // Angle options
             showArc: registryOptions.showArc,
-
-            // Label options
-            fontSize: registryOptions.fontSize,
-            fontColor: registryOptions.fontColor,
 
             // Plot options
             samples: registryOptions.samples,
@@ -242,9 +247,16 @@ export class ExpressionPipelineService {
             return null;
         }
 
-        // Apply command options - color from registry takes precedence, then options, then cycling
-        const color = registryOptions.color || options.color || getColorByIndex(index);
-        command.setColor(color);
+        // Apply default color only if expression didn't set one via c()
+        if (!expression.color) {
+            if (expressionName && TEXT_EXPRESSION_TYPES.has(expressionName)) {
+                // Text expressions default to black
+                command.setColor('#000000');
+            } else {
+                // Geometry expressions use color cycling
+                command.setColor(getColorByIndex(index));
+            }
+        }
         if (label) {
             command.setLabelName(label);
         }

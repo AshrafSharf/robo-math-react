@@ -67,27 +67,30 @@ export class PrintExpression extends AbstractNonArithmeticExpression {
     this.latexString = resolvedLatexExpr.getStringValue();
     argIndex++;
 
-    // Parse optional fontSize (4th argument)
-    if (argIndex < this.subExpressions.length) {
-      const fontSizeExpr = this.subExpressions[argIndex];
-      fontSizeExpr.resolve(context);
-      const fontSizeValues = fontSizeExpr.getVariableAtomicValues();
-      if (fontSizeValues.length > 0 && typeof fontSizeValues[0] === 'number') {
-        this.fontSize = fontSizeValues[0];
+    // Parse remaining arguments - can be fontSize, color, or style expressions (c(), f())
+    const styleExprs = [];
+    while (argIndex < this.subExpressions.length) {
+      const expr = this.subExpressions[argIndex];
+      expr.resolve(context);
+      const resolvedExpr = this._getResolvedExpression(context, expr);
+
+      if (this._isStyleExpression(resolvedExpr)) {
+        styleExprs.push(resolvedExpr);
+      } else if (resolvedExpr && resolvedExpr.getName() === 'quotedstring') {
+        // Legacy: color as quoted string
+        this.color = resolvedExpr.getStringValue();
+      } else {
+        // Legacy: fontSize as number
+        const values = resolvedExpr.getVariableAtomicValues();
+        if (values.length > 0 && typeof values[0] === 'number') {
+          this.fontSize = values[0];
+        }
       }
       argIndex++;
     }
 
-    // Parse optional color (5th argument)
-    if (argIndex < this.subExpressions.length) {
-      const colorExpr = this.subExpressions[argIndex];
-      colorExpr.resolve(context);
-      const resolvedColorExpr = this._getResolvedExpression(context, colorExpr);
-
-      if (resolvedColorExpr && resolvedColorExpr.getName() === 'quotedstring') {
-        this.color = resolvedColorExpr.getStringValue();
-      }
-    }
+    // Parse style expressions (c(), f()) - these override legacy positional args
+    this._parseStyleExpressions(styleExprs);
   }
 
   getName() {
@@ -106,13 +109,14 @@ export class PrintExpression extends AbstractNonArithmeticExpression {
     return [];
   }
 
-  toCommand() {
+  toCommand(options = {}) {
+    const styleOptions = this.getStyleOptions();
     return new PrintCommand({
       row: this.row,
       col: this.col,
       latexString: this.latexString,
-      fontSize: this.fontSize,
-      color: this.color,
+      fontSize: styleOptions.fontSize || this.fontSize,
+      color: styleOptions.color || this.color,
       expression: this
     });
   }

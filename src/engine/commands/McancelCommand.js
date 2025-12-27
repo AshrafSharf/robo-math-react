@@ -9,10 +9,17 @@ import { BaseCommand } from './BaseCommand.js';
 import { MathTextCancelEffect } from '../../effects/math-text-cancel-effect.js';
 
 export class McancelCommand extends BaseCommand {
-    constructor(options = {}) {
+    constructor(options = {}, styleOptions = {}) {
         super();
         this.options = options;
         this.effects = [];  // Array for collection support
+        // Apply color from style options
+        if (styleOptions.color) {
+            this.setColor(styleOptions.color);
+        }
+        if (styleOptions.strokeWidth) {
+            this.strokeWidth = styleOptions.strokeWidth;
+        }
     }
 
     async doInit() {

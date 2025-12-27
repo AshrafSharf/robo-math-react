@@ -188,7 +188,9 @@ export class PointExpression extends AbstractArithmeticExpression {
      * @returns {PointCommand}
      */
     toCommand(options = {}) {
-        return new PointCommand(this.graphExpression, this.getPoint(), options);
+        // Merge style options from expression (c(), s(), f()) with passed options
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new PointCommand(this.graphExpression, this.getPoint(), mergedOptions);
     }
 
     /**

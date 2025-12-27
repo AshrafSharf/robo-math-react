@@ -190,6 +190,7 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
     toCommand(options = {}) {
         // Automatically use 'right' angle type if angle is ~90°
         const angleType = this.isRightAngle() ? 'right' : this.getAngleType();
+        const mergedOptions = { ...options, ...this.getStyleOptions(), radius: this.radius };
 
         return new AngleCommand(
             this.graphExpression,
@@ -197,7 +198,7 @@ export class AngleExpression extends AbstractNonArithmeticExpression {
             this.getPoint1(),
             this.getPoint2(),
             angleType,
-            { ...options, radius: this.radius }
+            mergedOptions
         );
     }
 

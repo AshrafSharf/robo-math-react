@@ -112,7 +112,8 @@ export class PolarpointExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new PointCommand(this.graphExpression, this.point, options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new PointCommand(this.graphExpression, this.point, mergedOptions);
     }
 
     canPlay() {

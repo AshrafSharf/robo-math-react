@@ -476,6 +476,7 @@ export class RotateExpression extends AbstractArithmeticExpression {
      * Create command for the rotated shape(s)
      */
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         if (this.isMultiShape) {
             // Multi-shape mode: pass shape data array
             return new RotateCommand(
@@ -483,7 +484,7 @@ export class RotateExpression extends AbstractArithmeticExpression {
                 this.shapeDataArray,
                 this.angle,
                 this.center,
-                { ...options, isMultiShape: true }
+                { ...mergedOptions, isMultiShape: true }
             );
         }
 
@@ -496,7 +497,7 @@ export class RotateExpression extends AbstractArithmeticExpression {
             this.originalShapeType,
             this.angle,
             this.center,
-            options
+            mergedOptions
         );
     }
 

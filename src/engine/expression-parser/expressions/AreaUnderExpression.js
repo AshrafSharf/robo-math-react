@@ -106,15 +106,18 @@ export class AreaUnderExpression extends AbstractNonArithmeticExpression {
      * @returns {AreaUnderCommand}
      */
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        // Allow c() to override fill color
+        const fillColor = mergedOptions.color || this.fillColor;
         // Get fresh compiled function from plot expression (supports change() updates)
         return new AreaUnderCommand(
             this.graphExpression,
             this.plotExpression.getCompiledFunction(),
             this.xmin,
             this.xmax,
-            this.fillColor,
+            fillColor,
             this.fillOpacity,
-            options
+            mergedOptions
         );
     }
 

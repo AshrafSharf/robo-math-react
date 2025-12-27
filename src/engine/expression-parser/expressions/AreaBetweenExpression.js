@@ -112,14 +112,17 @@ export class AreaBetweenExpression extends AbstractNonArithmeticExpression {
      * @returns {AreaBetweenCommand}
      */
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        // Allow c() to override fill color
+        const fillColor = mergedOptions.color || this.fillColor;
         // Get fresh compiled functions from plot expressions (supports change() updates)
         return new AreaBetweenCommand(
             this.graphExpression,
             this.plotExpression1.getCompiledFunction(),
             this.plotExpression2.getCompiledFunction(),
-            this.fillColor,
+            fillColor,
             this.fillOpacity,
-            options
+            mergedOptions
         );
     }
 

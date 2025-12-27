@@ -88,14 +88,11 @@ export class McancelExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         const command = new McancelCommand({
             textItemVariableName: this.textItemVariableName,
             direction: this.direction
-        });
-
-        // Apply styling from expressions
-        if (this.color) command.color = this.color;
-        if (this.strokeWidth) command.strokeWidth = this.strokeWidth;
+        }, mergedOptions);
 
         return command;
     }

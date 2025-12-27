@@ -67,13 +67,10 @@ export class SurroundExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         const command = new SurroundCommand({
             textItemVariableName: this.textItemVariableName
-        });
-
-        // Apply styling from expressions
-        if (this.color) command.color = this.color;
-        if (this.strokeWidth) command.strokeWidth = this.strokeWidth;
+        }, mergedOptions);
 
         return command;
     }

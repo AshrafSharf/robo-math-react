@@ -237,7 +237,8 @@ export class ArcExpression extends AbstractNonArithmeticExpression {
      */
     toCommand(options = {}) {
         const ep = this.getEndpointFormat();
-        return new ArcCommand(this.graphExpression, ep.start, ep.end, ep.rx, ep.ry, options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new ArcCommand(this.graphExpression, ep.start, ep.end, ep.rx, ep.ry, mergedOptions);
     }
 
     /**

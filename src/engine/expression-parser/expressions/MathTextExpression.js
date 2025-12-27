@@ -73,12 +73,13 @@ export class MathTextExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         return new MathTextCommand(
             this.row,
             this.col,
             this.latexString,
             this,  // Pass expression reference so command can set component
-            options  // Pass style options (fontSize, color)
+            mergedOptions  // Pass style options (fontSize, color)
         );
     }
 }

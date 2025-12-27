@@ -13,6 +13,9 @@ export class AbstractArithmeticExpression {
         this.fontSize = null;
         this.color = null;
         this.strokeWidth = null;
+        this.fillColor = null;
+        this.strokeOpacity = null;
+        this.fillOpacity = null;
     }
 
     getExpressionId() {
@@ -248,7 +251,7 @@ export class AbstractArithmeticExpression {
     }
 
     /**
-     * Parse styling expressions (c, f, s) from resolved sub-expressions
+     * Parse styling expressions (c, f, s, fc, so, fo) from resolved sub-expressions
      * @param {Array} expressions - Array of resolved expressions to check
      */
     _parseStyleExpressions(expressions) {
@@ -260,18 +263,40 @@ export class AbstractArithmeticExpression {
                 this.fontSize = expr.getFontSizeValue();
             } else if (name === 's') {
                 this.strokeWidth = expr.getStrokeWidthValue();
+            } else if (name === 'fc') {
+                this.fillColor = expr.getFillColorValue();
+            } else if (name === 'so') {
+                this.strokeOpacity = expr.getStrokeOpacityValue();
+            } else if (name === 'fo') {
+                this.fillOpacity = expr.getFillOpacityValue();
             }
         }
     }
 
     /**
-     * Check if expression is a styling expression (c, f, or s)
+     * Check if expression is a styling expression (c, f, s, fc, so, fo)
      * @param {Object} expr - Expression to check
      * @returns {boolean}
      */
     _isStyleExpression(expr) {
         const name = expr.getName && expr.getName();
-        return name === 'c' || name === 'f' || name === 's';
+        return name === 'c' || name === 'f' || name === 's' ||
+               name === 'fc' || name === 'so' || name === 'fo';
+    }
+
+    /**
+     * Get style options dict parsed from c(), s(), f(), fc(), so(), fo() expressions
+     * @returns {Object} Style options {color, strokeWidth, fontSize, fillColor, strokeOpacity, fillOpacity}
+     */
+    getStyleOptions() {
+        const options = {};
+        if (this.color != null) options.color = this.color;
+        if (this.strokeWidth != null) options.strokeWidth = this.strokeWidth;
+        if (this.fontSize != null) options.fontSize = this.fontSize;
+        if (this.fillColor != null) options.fillColor = this.fillColor;
+        if (this.strokeOpacity != null) options.strokeOpacity = this.strokeOpacity;
+        if (this.fillOpacity != null) options.fillOpacity = this.fillOpacity;
+        return options;
     }
 }
 

@@ -155,6 +155,7 @@ export class DistanceMarkerExpression extends AbstractNonArithmeticExpression {
      * @returns {DistanceMarkerCommand}
      */
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         return new DistanceMarkerCommand(
             this.graphExpression,
             this.getStartPoint(),
@@ -162,7 +163,7 @@ export class DistanceMarkerExpression extends AbstractNonArithmeticExpression {
             this.text,
             this.textOffset,
             this.markerOffset,
-            options
+            mergedOptions
         );
     }
 

@@ -220,7 +220,8 @@ export class PolygonExpression extends AbstractNonArithmeticExpression {
      */
     toCommand(options = {}) {
         const vertices = this.getVertices();
-        return new PolygonCommand(this.graphExpression, vertices, options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new PolygonCommand(this.graphExpression, vertices, mergedOptions);
     }
 
     /**

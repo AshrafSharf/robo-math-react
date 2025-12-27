@@ -64,7 +64,8 @@ export class VecProjectExpression extends AbstractNonArithmeticExpression {
     toCommand(options = {}) {
         const start = { x: this.coordinates[0], y: this.coordinates[1] };
         const end = { x: this.coordinates[2], y: this.coordinates[3] };
-        return new VectorCommand(this.graphExpression, start, end, options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new VectorCommand(this.graphExpression, start, end, mergedOptions);
     }
 
     canPlay() { return true; }

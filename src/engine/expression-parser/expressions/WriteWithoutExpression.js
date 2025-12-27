@@ -176,6 +176,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         if (this.mode === 'existing') {
             // Use RewriteWithoutCommand for existing components
             // - doesn't hide container
@@ -184,7 +185,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
             return new RewriteWithoutCommand({
                 targetVariableName: this.targetVariableName,
                 excludePatterns: this.excludePatterns
-            }, options);
+            }, mergedOptions);
         } else if (this.mode === 'meq') {
             // Use WriteWithoutMeqCommand for meq expressions
             // - line-by-line animation (Y-sorted)
@@ -194,7 +195,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
                 this.row,
                 this.col,
                 this.excludePatterns,
-                { color: this.color, fontSize: this.fontSize, ...options }
+                mergedOptions
             );
         } else {
             return new WriteWithoutCommand('create', {
@@ -203,7 +204,7 @@ export class WriteWithoutExpression extends AbstractNonArithmeticExpression {
                 latexString: this.latexString,
                 excludePatterns: this.excludePatterns,
                 expression: this
-            }, options);
+            }, mergedOptions);
         }
     }
 

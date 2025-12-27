@@ -12,17 +12,26 @@ export class PointCommand extends BaseCommand {
    * Create a point command
    * @param {Object} graphExpression - The graph expression (resolved at init time to get grapher)
    * @param {Object} position - Point position {x, y}
-   * @param {Object} options - Additional options {radius, fill}
+   * @param {Object} options - Additional options {radius, fill, color, strokeWidth}
    */
   constructor(graphExpression, position, options = {}) {
     super();
     this.graphExpression = graphExpression; // Resolved at init time
     this.graphContainer = null; // Set at init time
     this.position = position; // {x, y}
-    this.radius = options.radius || 4;
+    // f() can be used for point radius (fontSize doubles as radius for points)
+    this.radius = options.fontSize || options.radius || 4;
     this.fill = options.fill !== undefined ? options.fill : true; // Points are filled by default
     this.fillOpacity = options.fillOpacity ?? null;
     this.strokeOpacity = options.strokeOpacity ?? null;
+    // Apply color from expression style options
+    if (options.color) {
+      this.setColor(options.color);
+    }
+    // Apply fill color if specified separately
+    if (options.fillColor) {
+      this.fillColor = options.fillColor;
+    }
   }
 
   /**
@@ -55,7 +64,8 @@ export class PointCommand extends BaseCommand {
     const options = {
       radius: this.radius,
       label: this.labelName,
-      fill: this.fill
+      // For points, use fillColor if specified, otherwise use stroke color for both
+      fill: this.fill ? (this.fillColor || this.color) : null
     };
 
     if (this.fillOpacity !== null) {

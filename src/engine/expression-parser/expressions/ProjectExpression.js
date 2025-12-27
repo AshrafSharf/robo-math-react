@@ -165,12 +165,13 @@ export class ProjectExpression extends AbstractArithmeticExpression {
      * Create command - ProjectCommand with animation support
      */
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         return new ProjectCommand(
             this.graphExpression,
             this.originalPointVariableName,
             this.point,
             this.linePoints,
-            options
+            mergedOptions
         );
     }
 

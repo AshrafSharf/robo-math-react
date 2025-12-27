@@ -222,7 +222,8 @@ export class ASAExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new PolygonCommand(this.graphExpression, this.vertices, options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new PolygonCommand(this.graphExpression, this.vertices, mergedOptions);
     }
 
     canPlay() {

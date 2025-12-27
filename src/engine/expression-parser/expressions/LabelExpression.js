@@ -144,9 +144,10 @@ export class LabelExpression extends AbstractNonArithmeticExpression {
      * @returns {LabelCommand}
      */
     toCommand(options = {}) {
-        // Pass template info to command for dynamic updates
+        // Pass template info and style options to command
         const commandOptions = {
             ...options,
+            ...this.getStyleOptions(),
             isTemplate: this.isTemplate,
             templateString: this.templateString,
             templateScope: this.templateScope

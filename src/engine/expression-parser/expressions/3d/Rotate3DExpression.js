@@ -19,6 +19,7 @@
  */
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
 import { Rotate3DCommand } from '../../../commands/3d/Rotate3DCommand.js';
+import { RotateS3DCommand } from '../../../commands/s3d/RotateS3DCommand.js';
 import { vectorRotateHandler } from '../../../../3d/common/rotate-handlers/vector_rotate_handler.js';
 import { lineRotateHandler } from '../../../../3d/common/rotate-handlers/line_rotate_handler.js';
 import { pointRotateHandler } from '../../../../3d/common/rotate-handlers/point_rotate_handler.js';
@@ -55,6 +56,10 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
         // Multi-shape mode
         this.isMultiShape = false;
         this.shapeDataArray = []; // [{shapeExpression, handler, originalPoints, rotatedPoints, varName}, ...]
+
+        // s3d mode (pure Three.js)
+        this.isS3DMode = false;
+        this.s3dTargetExpression = null;
     }
 
     resolve(context) {
@@ -83,6 +88,15 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
 
         this.isMultiShape = shapeCount > 1;
 
+        // Check if first shape is s3d group or face
+        const firstShapeExpr = this._getResolvedExpression(context, this.subExpressions[0]);
+        if (this._isS3DTarget(firstShapeExpr)) {
+            // s3d mode - pure Three.js rotation
+            this.isS3DMode = true;
+            this.s3dTargetExpression = firstShapeExpr;
+            return; // No further processing needed for s3d
+        }
+
         if (this.isMultiShape) {
             // Multi-shape mode
             this._resolveMultiShape(context, shapeCount);
@@ -90,6 +104,18 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
             // Single shape mode
             this._resolveSingleShape(context);
         }
+    }
+
+    /**
+     * Check if target is an s3d object (group, face, or primitive)
+     */
+    _isS3DTarget(expr) {
+        return (expr.isS3DGroup && expr.isS3DGroup()) ||
+               (expr.isS3DFace && expr.isS3DFace()) ||
+               (expr.isS3DSphere && expr.isS3DSphere()) ||
+               (expr.isS3DCube && expr.isS3DCube()) ||
+               (expr.isS3DCone && expr.isS3DCone()) ||
+               (expr.isS3DCylinder && expr.isS3DCylinder());
     }
 
     /**
@@ -262,6 +288,16 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        // s3d mode - pure Three.js rotation
+        if (this.isS3DMode) {
+            return new RotateS3DCommand(
+                this.s3dTargetExpression,
+                this.angle,
+                this.axis,
+                options
+            );
+        }
+
         if (this.isMultiShape) {
             return new Rotate3DCommand(
                 this.graphExpression,
@@ -295,6 +331,9 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
     }
 
     canPlay() {
+        if (this.isS3DMode) {
+            return this.s3dTargetExpression != null;
+        }
         if (this.isMultiShape) {
             return this.shapeDataArray.length > 0;
         }

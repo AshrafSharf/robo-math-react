@@ -163,7 +163,8 @@ export class PointAtRatioExpression extends AbstractArithmeticExpression {
     }
 
     toCommand(options = {}) {
-        return new PointCommand(this.graphExpression, this.getPoint(), options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new PointCommand(this.graphExpression, this.getPoint(), mergedOptions);
     }
 
     canPlay() {

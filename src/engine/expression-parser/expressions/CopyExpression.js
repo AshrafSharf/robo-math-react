@@ -217,12 +217,13 @@ export class CopyExpression extends AbstractNonArithmeticExpression {
      * Apply styling from the copy command to all children
      */
     toCommand(options = {}) {
-        // Apply copy command's styling to all child commands
-        this.childCommands.forEach(cmd => {
-            if (options.color) {
-                cmd.setColor(options.color);
-            }
-        });
+        // Apply styling from c() to all child commands
+        const styleOptions = this.getStyleOptions();
+        if (styleOptions.color) {
+            this.childCommands.forEach(cmd => {
+                cmd.setColor(styleOptions.color);
+            });
+        }
 
         return new CopyCommand(this.childCommands);
     }

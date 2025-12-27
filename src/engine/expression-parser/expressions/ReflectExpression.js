@@ -362,6 +362,7 @@ export class ReflectExpression extends AbstractArithmeticExpression {
      * Create command for the reflected shape
      */
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         return new ReflectCommand(
             this.graphExpression,
             this.originalShapeVariableName,
@@ -369,7 +370,7 @@ export class ReflectExpression extends AbstractArithmeticExpression {
             this.originalShapeName,
             this.originalShapeType,
             this.linePoints,
-            options
+            mergedOptions
         );
     }
 

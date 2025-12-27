@@ -45,7 +45,14 @@
       "WebFetch(domain:wiki.geogebra.org)",
       "WebFetch(domain:geogebra.github.io)",
       "WebFetch(domain:www.robocompass.com)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(for file in IntersectExpression MidExpression CopyExpression PlotExpression DashedLineExpression RightAngleExpression)",
+      "Bash(do echo '=== $file ===' grep -A5 'toCommand(options = {})' /Users/ashraf/robocompass/robomath-react/src/engine/expression-parser/expressions/$file.js)",
+      "Bash(for:*)",
+      "Bash(do if grep -q \"toCommand(options\" \"$f\")",
+      "Bash(! grep -q \"getStyleOptions\" \"$f\")",
+      "Bash(then echo \"$f\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

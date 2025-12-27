@@ -93,10 +93,11 @@ export class VecDiffExpression extends AbstractNonArithmeticExpression {
     toCommand(options = {}) {
         const start = { x: this.coordinates[0], y: this.coordinates[1] };
         const end = { x: this.coordinates[2], y: this.coordinates[3] };
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         if (this.inputType === 'line') {
-            return new LineCommand(this.graphExpression, start, end, options);
+            return new LineCommand(this.graphExpression, start, end, mergedOptions);
         }
-        return new VectorCommand(this.graphExpression, start, end, options);
+        return new VectorCommand(this.graphExpression, start, end, mergedOptions);
     }
 
     canPlay() { return true; }

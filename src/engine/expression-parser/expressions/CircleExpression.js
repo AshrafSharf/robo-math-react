@@ -169,7 +169,8 @@ export class CircleExpression extends AbstractNonArithmeticExpression {
     toCommand(options = {}) {
         const center = this.getCenter();
         const radius = this.getRadius();
-        return new CircleCommand(this.graphExpression, center, radius, options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new CircleCommand(this.graphExpression, center, radius, mergedOptions);
     }
 
     /**

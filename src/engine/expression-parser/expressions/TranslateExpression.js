@@ -450,6 +450,7 @@ export class TranslateExpression extends AbstractArithmeticExpression {
      * Create command for the translated shape(s)
      */
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         if (this.isMultiShape) {
             // Multi-shape mode: pass shape data array
             return new TranslateCommand(
@@ -457,7 +458,7 @@ export class TranslateExpression extends AbstractArithmeticExpression {
                 this.shapeDataArray,
                 this.dx,
                 this.dy,
-                { ...options, isMultiShape: true }
+                { ...mergedOptions, isMultiShape: true }
             );
         }
 
@@ -470,7 +471,7 @@ export class TranslateExpression extends AbstractArithmeticExpression {
             this.originalShapeType,
             this.dx,
             this.dy,
-            options
+            mergedOptions
         );
     }
 

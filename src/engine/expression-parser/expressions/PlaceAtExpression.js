@@ -120,11 +120,12 @@ export class PlaceAtExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         const pts = this.getVectorPoints();
         if (this.inputType === 'line') {
-            return new LineCommand(this.graphExpression, pts[0], pts[1], options);
+            return new LineCommand(this.graphExpression, pts[0], pts[1], mergedOptions);
         }
-        return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
+        return new VectorCommand(this.graphExpression, pts[0], pts[1], mergedOptions);
     }
 
     canPlay() {

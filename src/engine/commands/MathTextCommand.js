@@ -22,7 +22,7 @@ export class MathTextCommand extends BaseCommand {
         this.col = col;
         this.latexString = latexString;
         this.expression = expression;
-        this.fontSize = options.fontSize ?? 22;
+        this.fontSize = options.fontSize ?? 35;
     }
 
     /**

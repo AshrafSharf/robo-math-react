@@ -69,6 +69,11 @@ import { SizeExpression } from '../expressions/SizeExpression.js';
 import { Graph2DExpression } from '../expressions/Graph2DExpression.js';
 import { Polar2DExpression } from '../expressions/Polar2DExpression.js';
 import { Graph3DExpression } from '../expressions/Graph3DExpression.js';
+import { Space3DExpression } from '../expressions/Space3DExpression.js';
+import { GroupExpression } from '../expressions/s3d/GroupExpression.js';
+import { Face3DExpression } from '../expressions/s3d/Face3DExpression.js';
+import { AttachExpression } from '../expressions/s3d/AttachExpression.js';
+import { Position3DExpression } from '../expressions/s3d/Position3DExpression.js';
 import { Point3DExpression } from '../expressions/3d/Point3DExpression.js';
 import { Line3DExpression } from '../expressions/3d/Line3DExpression.js';
 import { DashedLine3DExpression } from '../expressions/3d/DashedLine3DExpression.js';
@@ -158,6 +163,9 @@ import { PowerExpression } from '../expressions/PowerExpression.js';
 import { CExpression } from '../expressions/styling/CExpression.js';
 import { FExpression } from '../expressions/styling/FExpression.js';
 import { SExpression } from '../expressions/styling/SExpression.js';
+import { FCExpression } from '../expressions/styling/FCExpression.js';
+import { SOExpression } from '../expressions/styling/SOExpression.js';
+import { FOExpression } from '../expressions/styling/FOExpression.js';
 import { resolveExpressionDependencies } from './ExpressionDependencyResolver.js';
 import { registerCustomFunctions } from './CustomFunctionDefinitions.js';
 
@@ -219,6 +227,11 @@ export class IntrepreterFunctionTable {
         registerMultiArg('g2d', Graph2DExpression);
         registerMultiArg('p2d', Polar2DExpression);
         registerMultiArg('g3d', Graph3DExpression);
+        registerMultiArg('s3d', Space3DExpression);
+        registerMultiArg('group', GroupExpression);
+        registerMultiArg('face3d', Face3DExpression);
+        registerMultiArg('attach', AttachExpression);
+        registerMultiArg('position3d', Position3DExpression);
         registerMultiArg('point3d', Point3DExpression);
         registerMultiArg('line3d', Line3DExpression);
         registerMultiArg('dashedline3d', DashedLine3DExpression);
@@ -416,6 +429,9 @@ export class IntrepreterFunctionTable {
         registerMultiArg('c', CExpression);   // color: c(red), c("#ff0000")
         registerMultiArg('f', FExpression);   // fontSize: f(24)
         registerMultiArg('s', SExpression);   // strokeWidth: s(2)
+        registerMultiArg('fc', FCExpression); // fillColor: fc(red), fc("#ff0000")
+        registerMultiArg('so', SOExpression); // strokeOpacity: so(0.5)
+        registerMultiArg('fo', FOExpression); // fillOpacity: fo(0.5)
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

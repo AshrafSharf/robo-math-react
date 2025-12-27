@@ -24,6 +24,10 @@ export class CircleCommand extends BaseCommand {
         this.strokeWidth = options.strokeWidth ?? 2;
         this.fill = options.fill || null;
         this.fillOpacity = options.fillOpacity !== undefined ? options.fillOpacity : null;
+        // Apply color from expression style options
+        if (options.color) {
+            this.setColor(options.color);
+        }
     }
 
     /**

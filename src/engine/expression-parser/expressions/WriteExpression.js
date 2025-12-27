@@ -248,19 +248,19 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
                 this.meqExpression,
                 this.row,
                 this.col,
-                { color: this.color, fontSize: this.fontSize }
+                this.getStyleOptions()
             );
         } else if (this.mode === 'existing') {
             return new WriteCommand('existing', {
                 targetVariableName: this.targetVariableName
-            }, { color: this.color, fontSize: this.fontSize, ...options });
+            }, { ...options, ...this.getStyleOptions() });
         } else {
             return new WriteCommand('create', {
                 row: this.row,
                 col: this.col,
                 latexString: this.latexString,
                 expression: this
-            }, { color: this.color, fontSize: this.fontSize, ...options });
+            }, { ...options, ...this.getStyleOptions() });
         }
     }
 

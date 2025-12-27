@@ -32,6 +32,10 @@ export class ParametricPlotCommand extends BaseCommand {
         this.tMax = tMax;
         this.strokeWidth = options.strokeWidth ?? 2;
         this.samples = options.samples || null;
+        // Apply color from expression style options
+        if (options.color) {
+            this.setColor(options.color);
+        }
     }
 
     /**

@@ -105,7 +105,8 @@ export class StartPointExpression extends AbstractArithmeticExpression {
      * Create a PointCommand - start() renders as a point when used standalone
      */
     toCommand(options = {}) {
-        return new PointCommand(this.graphExpression, this.getPoint(), options);
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new PointCommand(this.graphExpression, this.getPoint(), mergedOptions);
     }
 
     /**

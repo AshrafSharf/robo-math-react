@@ -167,13 +167,14 @@ export class PlotExpression extends AbstractNonArithmeticExpression {
      */
     toCommand(options = {}) {
         // Always pass compiled function - both string and def() paths compile at resolve time
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         return new PlotCommand(
             this.graphExpression,
             this.compiledFunction,   // Pre-compiled function
             this.domainMin,
             this.domainMax,
             this.equation,           // Keep equation string for display/debugging
-            options
+            mergedOptions
         );
     }
 

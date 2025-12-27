@@ -12,13 +12,8 @@ const SettingsTabs = ({ activeTab, onTabChange, expressionType, innerExpressionT
   // Check if this expression type has restricted tabs via schema
   const allowedTabs = getAllowedTabs(expressionType);
 
-  // Build tabs list
+  // Build tabs list (style options removed - use c(), s(), f() in expressions)
   const tabs = [];
-
-  // Style tab (unless restricted)
-  if (!allowedTabs || allowedTabs.includes('style')) {
-    tabs.push({ id: 'style', label: 'Style' });
-  }
 
   // Ref tab for ref() expressions
   if (hasRefTab(expressionType)) {

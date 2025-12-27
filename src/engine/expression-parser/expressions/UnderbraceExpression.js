@@ -76,14 +76,11 @@ export class UnderbraceExpression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         const command = new UnderbraceCommand({
             textItemVariableName: this.textItemVariableName,
             buffer: this.buffer
-        });
-
-        // Apply styling from expressions
-        if (this.color) command.color = this.color;
-        if (this.strokeWidth) command.strokeWidth = this.strokeWidth;
+        }, mergedOptions);
 
         return command;
     }

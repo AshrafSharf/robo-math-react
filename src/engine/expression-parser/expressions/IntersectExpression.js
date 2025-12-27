@@ -419,7 +419,8 @@ export class IntersectExpression extends AbstractArithmeticExpression {
      */
     toCommand(options = {}) {
         if (this.hasValidPoint) {
-            return new PointCommand(this.graphExpression, this.point, options);
+            const mergedOptions = { ...options, ...this.getStyleOptions() };
+            return new PointCommand(this.graphExpression, this.point, mergedOptions);
         }
         return new NoOpCommand();
     }

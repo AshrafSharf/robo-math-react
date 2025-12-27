@@ -144,10 +144,11 @@ export class PLLExpression extends AbstractNonArithmeticExpression {
 
     toCommand(options = {}) {
         const pts = this.getLinePoints();
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         if (this.inputType === 'line') {
-            return new LineCommand(this.graphExpression, pts[0], pts[1], options);
+            return new LineCommand(this.graphExpression, pts[0], pts[1], mergedOptions);
         }
-        return new VectorCommand(this.graphExpression, pts[0], pts[1], options);
+        return new VectorCommand(this.graphExpression, pts[0], pts[1], mergedOptions);
     }
 
     canPlay() {

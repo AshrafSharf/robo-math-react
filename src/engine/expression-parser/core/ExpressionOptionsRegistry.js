@@ -1,177 +1,60 @@
 /**
- * ExpressionOptionsRegistry - Central registry for expression options
+ * ExpressionOptionsRegistry - Registry for expression-specific options
  *
- * Supports two levels of options:
- * 1. Type-based defaults - default options for each expression type (line, point, etc.)
- * 2. Instance-based options - options for specific command editor items (by ID)
+ * Note: Style options (color, strokeWidth, fontSize) are set via expression syntax:
+ *   c(green), s(2), f(24)
  *
- * Usage:
- *   // Get type defaults
- *   const { styleOptions } = ExpressionOptionsRegistry.get('line');
- *   // Returns { styleOptions: { strokeWidth: 2, color: 'black' } }
- *
- *   // Set instance options (by command editor item ID)
- *   ExpressionOptionsRegistry.setById('item-123', { color: '#FF0000', strokeWidth: 3 });
- *
- *   // Get instance options (merged with type defaults)
- *   const options = ExpressionOptionsRegistry.getById('item-123', 'line');
- *   // Returns { styleOptions: { strokeWidth: 3, color: '#FF0000' } }
+ * This registry only handles non-style options like:
+ * - 3D shape geometry (radius, headLength, size, opacity for 3D)
+ * - Grid options (showGrid, xRange, yRange)
+ * - Table options (rows, cols, cells)
+ * - Ref content
  */
 
 const defaults = {
-    // 3D shapes
-    line3d: {
-        styleOptions: {
-            strokeWidth: 0.06,
-            color: 0x000000
-        }
-    },
+    // 3D shapes - geometry options only
     point3d: {
-        styleOptions: {
-            radius: 0.12,
-            color: 0xff0000
-        }
+        radius: 0.12
     },
     vector3d: {
-        styleOptions: {
-            strokeWidth: 0.05,
-            headLength: 0.3,
-            headRadius: 0.12,
-            color: 0x0000ff
-        }
+        headLength: 0.3,
+        headRadius: 0.12
     },
     plane3d: {
-        styleOptions: {
-            opacity: 0.5,
-            color: 0x00ffff,
-            size: 12,
-            sweepDirection: 'r'  // 'h', 'v', 'd', 'r'
-        }
+        opacity: 0.5,
+        size: 12,
+        sweepDirection: 'r'  // 'h', 'v', 'd', 'r'
     },
     polygon3d: {
-        styleOptions: {
-            opacity: 0.7,
-            color: 0x4444ff,
-            showEdges: false,
-            edgeColor: 0x000000
-        }
+        opacity: 0.7,
+        showEdges: false
     },
     sphere: {
-        styleOptions: {
-            color: 0x4444ff,
-            opacity: 1.0
-        }
+        opacity: 1.0
     },
     cylinder: {
-        styleOptions: {
-            color: 0x44ff44,
-            opacity: 1.0
-        }
+        opacity: 1.0
     },
     cube: {
-        styleOptions: {
-            color: 0xff4444,
-            opacity: 1.0
-        }
+        opacity: 1.0
     },
     cone: {
-        styleOptions: {
-            color: 0x44ff44,
-            opacity: 1.0
-        }
+        opacity: 1.0
     },
     torus: {
-        styleOptions: {
-            color: 0xffaa00,
-            opacity: 1.0
-        }
+        opacity: 1.0
     },
     prism: {
-        styleOptions: {
-            color: 0x44ff88,
-            opacity: 1.0
-        }
+        opacity: 1.0
     },
     frustum: {
-        styleOptions: {
-            color: 0xff8844,
-            opacity: 1.0
-        }
+        opacity: 1.0
     },
     pyramid: {
-        styleOptions: {
-            color: 0xffaa44,
-            opacity: 1.0
-        }
-    },
-
-    // 2D shapes
-    line: {
-        styleOptions: {
-            strokeWidth: 2,
-            color: 'black'
-        }
-    },
-    point: {
-        styleOptions: {
-            radius: 5,
-            color: 'red'
-        }
-    },
-    vector: {
-        styleOptions: {
-            strokeWidth: 2,
-            color: 'blue'
-        }
-    },
-    circle: {
-        styleOptions: {
-            strokeWidth: 2,
-            color: 'black'
-        }
-    },
-    polygon: {
-        styleOptions: {
-            strokeWidth: 2,
-            color: 'black',
-            fillOpacity: 0.1
-        }
-    },
-    arc: {
-        styleOptions: {
-            strokeWidth: 2,
-            color: 'black'
-        }
-    },
-    angle: {
-        styleOptions: {
-            strokeWidth: 1.5,
-            color: 'orange',
-            radius: 0.5
-        }
-    },
-
-    // Labels
-    label: {
-        styleOptions: {
-            fontSize: 24,
-            color: 'black'
-        }
-    },
-
-    // MathText expressions (mathtext, write, writeonly, writewithout all use this)
-    mathtext: {
-        styleOptions: {
-            fontSize: 22,
-            color: 'black'
-        }
+        opacity: 1.0
     },
     label3d: {
-        styleOptions: {
-            fontSize: 32,
-            scale: 0.04,
-            color: 0x000000
-        }
+        scale: 0.04
     }
 };
 
@@ -255,17 +138,16 @@ export const ExpressionOptionsRegistry = {
 
         // Get type-level options
         const typeKey = expressionType.toLowerCase();
-        const typeDefaults = defaults[typeKey]?.styleOptions || {};
-        const typeOverride = typeOverrides[typeKey]?.styleOptions || {};
+        const typeDefaults = defaults[typeKey] || {};
+        const typeOverride = typeOverrides[typeKey] || {};
 
         // Get expression-specific options from instance
         const expressionOpts = instance.expressionOptions?.[typeKey] || {};
 
-        // Merge: type defaults < type overrides < instance base < instance expression-specific
+        // Merge: type defaults < type overrides < instance expression-specific
         return {
             ...typeDefaults,
             ...typeOverride,
-            color: instance.color,
             ...expressionOpts
         };
     },

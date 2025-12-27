@@ -57,7 +57,7 @@ export class WriteTextItemCommand extends BaseCommand {
             pixelCoords.y,
             this.diagram2d.canvasSection,
             {
-                fontSize: 22,
+                fontSize: 35,
                 stroke: this.color,
                 fill: this.color
             }

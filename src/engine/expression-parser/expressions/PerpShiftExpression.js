@@ -116,6 +116,7 @@ export class PerpShiftExpression extends AbstractNonArithmeticExpression {
             start: { x: this.coordinates[0], y: this.coordinates[1] },
             end: { x: this.coordinates[2], y: this.coordinates[3] }
         };
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
         return new PerpShiftCommand(
             this.graphExpression,
             this.originalShapeVarName,
@@ -123,7 +124,7 @@ export class PerpShiftExpression extends AbstractNonArithmeticExpression {
             this.dx,
             this.dy,
             this.inputType,
-            options
+            mergedOptions
         );
     }
 

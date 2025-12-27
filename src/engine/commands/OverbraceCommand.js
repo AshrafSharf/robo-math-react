@@ -7,10 +7,17 @@ import { BaseCommand } from './BaseCommand.js';
 import { MathTextOverbraceEffect } from '../../effects/math-text-overbrace-effect.js';
 
 export class OverbraceCommand extends BaseCommand {
-    constructor(options = {}) {
+    constructor(options = {}, styleOptions = {}) {
         super();
         this.options = options;
         this.effect = null;
+        // Apply color from style options
+        if (styleOptions.color) {
+            this.setColor(styleOptions.color);
+        }
+        if (styleOptions.strokeWidth) {
+            this.strokeWidth = styleOptions.strokeWidth;
+        }
     }
 
     async doInit() {

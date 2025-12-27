@@ -124,13 +124,14 @@ export class Angle3Expression extends AbstractNonArithmeticExpression {
     }
 
     toCommand(options = {}) {
+        const mergedOptions = { ...options, ...this.getStyleOptions(), radius: this.radius };
         return new AngleCommand(
             this.graphExpression,
             this.getVertex(),
             this.getPoint1(),
             this.getPoint2(),
             this.getAngleType(),
-            { ...options, radius: this.radius }
+            mergedOptions
         );
     }
 
