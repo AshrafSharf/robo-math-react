@@ -39,6 +39,7 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
         this.xScale = 'linear';
         this.yScale = 'linear';
         this.showGrid = true;
+        this.showGridLines = false;  // default: gridlines hidden
         this.gridColor = null;
         this.gridStrokeWidth = null;
         // Reference to created grapher (set by command after init)
@@ -115,6 +116,10 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
             this.gridColor = grid.getColor();
             this.gridStrokeWidth = grid.getStrokeWidth();
         }
+
+        // Extract grid visibility options
+        this.showGrid = axesExpr.getShowGrid();
+        this.showGridLines = axesExpr.getShowGridLines();
     }
 
     _extractFromRange(rangeExpr, axis) {
@@ -157,6 +162,7 @@ export class Graph2DExpression extends AbstractNonArithmeticExpression {
                 xScaleType: this.xScale,
                 yScaleType: this.yScale,
                 showGrid: this.showGrid,
+                showGridLines: this.showGridLines,
                 gridColor: this.gridColor,
                 gridStrokeWidth: this.gridStrokeWidth,
             },

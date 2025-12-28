@@ -24,6 +24,7 @@ export class Create2DGraphCommand extends BaseCommand {
         this.xRange = options.xRange || [-10, 10];
         this.yRange = options.yRange || [-10, 10];
         this.showGrid = options.showGrid !== false;
+        this.showGridLines = options.showGridLines === true;  // default: false
 
         // Scale type from range expression (pi, log, linear)
         this.xScaleType = options.xScaleType || 'linear';
@@ -50,6 +51,7 @@ export class Create2DGraphCommand extends BaseCommand {
             xRange: this.xRange,
             yRange: this.yRange,
             showGrid: this.showGrid,
+            showGridLines: this.showGridLines,
             xScaleType: this.xScaleType,
             yScaleType: this.yScaleType,
             xStep: this.xStep,

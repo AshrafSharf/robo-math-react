@@ -1,13 +1,23 @@
 /**
  * AxesExpression - Bundle axis ranges and grid options for g2d
  *
- * Syntax: axes(xRange, yRange), axes(xRange, yRange, grid)
- * Example: axes(range(-10,10), range(-5,5), grid(c(gray)))
+ * Syntax: axes(xRange, yRange), axes(xRange, yRange, grid), axes(xRange, yRange, "option")
+ *
+ * String options (can appear in any order):
+ *   - "gridlines" - show gridlines (default: hidden)
+ *   - "nogrid"    - hide everything including axes
+ *
+ * Examples:
+ *   axes(range(-10,10), range(-5,5))                          // axes only (default)
+ *   axes(range(-10,10), range(-5,5), "gridlines")             // axes + gridlines
+ *   axes(range(-10,10), range(-5,5), "nogrid")                // nothing
+ *   axes(range(-10,10), range(-5,5), grid(c(gray)), "gridlines")  // styled gridlines
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { RangeExpression } from './RangeExpression.js';
 import { GridExpression } from './GridExpression.js';
 import { VariableReferenceExpression } from './VariableReferenceExpression.js';
+import { QuotedStringExpression } from './QuotedStringExpression.js';
 
 /**
  * Unwrap a variable reference to get the underlying expression
@@ -28,6 +38,9 @@ export class AxesExpression extends AbstractNonArithmeticExpression {
         this.xRange = null;
         this.yRange = null;
         this.grid = null;
+        // Grid visibility options (defaults: axes shown, gridlines hidden)
+        this.showGrid = true;       // show axes
+        this.showGridLines = false; // hide gridlines by default
     }
 
     resolve(context) {
@@ -49,6 +62,15 @@ export class AxesExpression extends AbstractNonArithmeticExpression {
                 rangeIndex++;
             } else if (expr instanceof GridExpression) {
                 this.grid = expr;
+            } else if (expr instanceof QuotedStringExpression) {
+                // Handle string options (can appear in any order)
+                const option = expr.getStringValue().toLowerCase();
+                if (option === 'nogrid') {
+                    this.showGrid = false;      // hide everything including axes
+                    this.showGridLines = false;
+                } else if (option === 'gridlines') {
+                    this.showGridLines = true;  // show gridlines
+                }
             }
         }
 
@@ -71,6 +93,14 @@ export class AxesExpression extends AbstractNonArithmeticExpression {
 
     getGrid() {
         return this.grid;
+    }
+
+    getShowGrid() {
+        return this.showGrid;
+    }
+
+    getShowGridLines() {
+        return this.showGridLines;
     }
 
     getVariableAtomicValues() {

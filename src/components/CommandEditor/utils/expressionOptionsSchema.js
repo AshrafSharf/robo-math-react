@@ -9,25 +9,9 @@
  */
 
 export const EXPRESSION_OPTIONS_SCHEMA = {
-  // Graph 2D - no style controls
+  // Graph 2D - options now handled via expression syntax (axes(), range(), "gridlines", "nogrid")
   g2d: {
-    _style: null,
-    showGrid: { type: 'checkbox', default: true, label: 'Grid' },
-    showGridLines: { type: 'checkbox', default: true, label: 'Grid Lines' },
-    // X-Axis settings
-    xMin: { type: 'number', default: -5, label: 'X Min' },
-    xMax: { type: 'number', default: 5, label: 'X Max' },
-    xScaleType: { type: 'radio', options: ['linear', 'pi', 'log'], default: 'linear', label: 'X Scale' },
-    xDivisions: { type: 'select', options: [4, 5, 8, 10, 20], default: 10, label: 'X Divisions' },
-    xPiMultiplier: { type: 'select', options: ['2pi', 'pi', 'pi/2', 'pi/4', 'pi/6'], default: 'pi', label: 'X Pi Interval' },
-    xLogBase: { type: 'select', options: ['10', 'e', '2'], default: '10', label: 'X Log Base' },
-    // Y-Axis settings
-    yMin: { type: 'number', default: -5, label: 'Y Min' },
-    yMax: { type: 'number', default: 5, label: 'Y Max' },
-    yScaleType: { type: 'radio', options: ['linear', 'pi', 'log'], default: 'linear', label: 'Y Scale' },
-    yDivisions: { type: 'select', options: [4, 5, 8, 10, 20], default: 10, label: 'Y Divisions' },
-    yPiMultiplier: { type: 'select', options: ['2pi', 'pi', 'pi/2', 'pi/4', 'pi/6'], default: 'pi', label: 'Y Pi Interval' },
-    yLogBase: { type: 'select', options: ['10', 'e', '2'], default: '10', label: 'Y Log Base' },
+    _tabs: ['animation'],
   },
 
   // Polar 2D - no style controls
@@ -164,9 +148,9 @@ export function getExpressionSchema(expressionType) {
 
 /**
  * List of expression types that have dedicated options panels
- * Graph containers (g2d, p2d) and table have dedicated panels
+ * p2d and table have dedicated panels (g2d uses expression syntax for options)
  */
-export const EXPRESSION_TYPES_WITH_OPTIONS = ['g2d', 'p2d', 'table'];
+export const EXPRESSION_TYPES_WITH_OPTIONS = ['p2d', 'table'];
 
 /**
  * Get style type for expression

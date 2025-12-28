@@ -127,7 +127,7 @@ G = g2d(4, 4, 25, 25, ax)
 
 ## grid() Expression
 
-Configure grid line styling.
+Configure grid line styling. Use with `"gridlines"` option to show styled gridlines.
 
 ```
 grid(c(color))
@@ -144,39 +144,61 @@ grid(c(color), s(strokeWidth))
 ### Examples
 
 ```
-grid(c(gray))              // gray grid lines
-grid(c(lightblue), s(0.5)) // light blue, thin lines
-grid(c(red), s(2))         // red, thick lines
+// Styled gridlines (requires "gridlines" option to be visible)
+ax = axes(range(-10, 10), range(-5, 5), grid(c(gray)), "gridlines")
+ax = axes(range(-10, 10), range(-5, 5), grid(c(lightblue), s(0.5)), "gridlines")
+ax = axes(range(-10, 10), range(-5, 5), grid(c(red), s(2)), "gridlines")
 ```
 
 ---
 
 ## axes() Expression
 
-Bundle x/y ranges and optional grid styling.
+Bundle x/y ranges, grid styling, and visibility options.
 
 ```
 axes(xRange, yRange)
 axes(xRange, yRange, grid)
+axes(xRange, yRange, "option")
+axes(xRange, yRange, grid, "option")
 ```
+
+### Grid Visibility Options
+
+By default, only axes are shown (gridlines are hidden). Use string options to control visibility:
+
+| Option | Description |
+|--------|-------------|
+| `"gridlines"` | Show gridlines (default: hidden) |
+| `"nogrid"` | Hide everything including axes |
+
+Options can appear in any order within axes().
 
 ### Examples
 
 ```
-// Basic axes
+// Axes only - no gridlines (default)
 ax = axes(range(-10, 10), range(-5, 5))
+G = g2d(4, 4, 25, 25, ax)
+
+// With gridlines
+ax = axes(range(-10, 10), range(-5, 5), "gridlines")
+G = g2d(4, 4, 25, 25, ax)
+
+// No grid at all (blank canvas)
+ax = axes(range(-10, 10), range(-5, 5), "nogrid")
 G = g2d(4, 4, 25, 25, ax)
 
 // With step intervals
 ax = axes(range(-10, 10, 2), range(-5, 5, 1))
 G = g2d(4, 4, 25, 25, ax)
 
-// With grid styling
-ax = axes(range(-10, 10, 1), range(-5, 5, 0.5), grid(c(lightgray), s(0.5)))
+// Styled gridlines
+ax = axes(range(-10, 10, 1), range(-5, 5, 0.5), grid(c(lightgray), s(0.5)), "gridlines")
 G = g2d(4, 4, 25, 25, ax)
 
-// Trig scale with custom grid
-ax = axes(range(-2*pi, 2*pi, pi/4, "trig"), range(-1.5, 1.5, 0.5), grid(c(gray)))
+// Trig scale with gridlines
+ax = axes(range(-2*pi, 2*pi, pi/4, "trig"), range(-1.5, 1.5, 0.5), "gridlines")
 G = g2d(4, 4, 25, 25, ax)
 plot(G, "sin(x)")
 ```
@@ -222,7 +244,7 @@ point(G, -1, 4)  // represents -1 + 4i
 ### Quadratic with Custom Grid
 
 ```
-ax = axes(range(-5, 5, 1), range(-2, 10, 2), grid(c(lightblue), s(0.3)))
+ax = axes(range(-5, 5, 1), range(-2, 10, 2), grid(c(lightblue), s(0.3)), "gridlines")
 G = g2d(4, 4, 25, 25, ax)
 plot(G, "x^2")
 ```
@@ -230,9 +252,18 @@ plot(G, "x^2")
 ### Multiple Trig Functions
 
 ```
-ax = axes(range(-pi, pi, pi/4, "trig"), range(-2, 2, 0.5), grid(c(gray)))
+ax = axes(range(-pi, pi, pi/4, "trig"), range(-2, 2, 0.5), grid(c(gray)), "gridlines")
 G = g2d(4, 4, 25, 25, ax)
 plot(G, "sin(x)", c(blue))
 plot(G, "cos(x)", c(red))
 plot(G, "sin(2*x)", c(green))
+```
+
+### Clean Graph (No Grid)
+
+```
+ax = axes(range(-5, 5), range(-5, 5), "nogrid")
+G = g2d(4, 4, 25, 25, ax)
+point(G, 2, 3)
+vector(G, 0, 0, 2, 3)
 ```

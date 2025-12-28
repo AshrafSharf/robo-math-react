@@ -2,7 +2,7 @@ export class GridOptions {
   constructor() {
     // Boolean flags for grid and axis visibility
     this.renderGrid = true;
-    this.renderGridLines = true;
+    this.renderGridLines = false;  // gridlines hidden by default
     this.renderAxis = true;
 
     // Scale type from range expression (linear, pi, log)
