@@ -60,9 +60,19 @@ class PlaybackMediator {
 
         TweenMax.killAll();
 
-        if (this.controller?.commandExecutor) {
-            await this.controller.commandExecutor.drawAll();
+        const executor = this.controller.commandExecutor;
+
+        // Clear all command visuals (shapes are in intermediate state after killAll)
+        for (const command of executor.commands) {
+            command.clear();
         }
+
+        // Reset registries
+        executor.commandContext.shapeRegistry = {};
+        executor.commandContext.commandRegistry = {};
+
+        // Redraw all commands in final state
+        await executor.drawAll();
 
         this.state = 'idle';
         this.activeSource = null;
