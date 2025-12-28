@@ -5,14 +5,17 @@
  *   point3d(graph, x, y, z)     - using graph with separate x, y, z values
  *   point3d(graph, point2d, z)  - using a 2D point with z coordinate
  *   point3d(graph, expr)        - using an expression that returns 3 values
+ *   point3d(x, y, z)            - s3d mode: just coordinates, no graph needed
  *
  * Examples:
- *   point3d(g, 3, 5, 7)         // point at (3, 5, 7)
+ *   point3d(g, 3, 5, 7)         // point at (3, 5, 7) in g3d
  *   point3d(g, P, 4)            // point at (P.x, P.y, 4) where P is a 2D point
+ *   point3d(1, 2, 3)            // s3d mode: just returns coordinates
  */
 import { AbstractArithmeticExpression } from '../AbstractArithmeticExpression.js';
 import { NumericExpression } from '../NumericExpression.js';
 import { Point3DCommand } from '../../../commands/3d/Point3DCommand.js';
+import { NoOpCommand } from '../../../commands/NoOpCommand.js';
 import { point3d_error_messages } from '../../core/ErrorMessages.js';
 import { ExpressionOptionsRegistry } from '../../core/ExpressionOptionsRegistry.js';
 
@@ -23,26 +26,37 @@ export class Point3DExpression extends AbstractArithmeticExpression {
         super();
         this.subExpressions = subExpressions;
         this.point = { x: 0, y: 0, z: 0 };
-        this.graphExpression = null; // Reference to graph expression
+        this.graphExpression = null; // Reference to graph expression (null in s3d mode)
+        this.isS3DMode = false;      // True when used without graph (just coordinates)
     }
 
     resolve(context) {
-        if (this.subExpressions.length < 2) {
+        if (this.subExpressions.length < 1) {
             this.dispatchError(point3d_error_messages.MISSING_ARGS());
         }
 
-        // First arg must be g3d graph
+        // Resolve first arg to check if it's a graph or coordinate
         this.subExpressions[0].resolve(context);
-        this.graphExpression = this._getResolvedExpression(context, this.subExpressions[0]);
+        const firstExpr = this._getResolvedExpression(context, this.subExpressions[0]);
 
-        if (!this.graphExpression || this.graphExpression.getName() !== 'g3d') {
-            this.dispatchError(point3d_error_messages.GRAPH_REQUIRED());
+        // Check if first arg is a g3d graph
+        if (firstExpr && firstExpr.getName() === 'g3d') {
+            // g3d mode - requires graph
+            this.graphExpression = firstExpr;
+            this.isS3DMode = false;
+            this._resolveWithGraph(context);
+        } else {
+            // s3d mode - no graph, just coordinates
+            this.graphExpression = null;
+            this.isS3DMode = true;
+            this._resolveWithoutGraph(context);
         }
+    }
 
-        // Collect coordinates from remaining args, separating styling
-        // - point3d(g, x, y, z) - separate numeric values
-        // - point3d(g, point2d, z) - 2D point + z value
-        // - point3d(g, expr) - expression returning 3 values
+    /**
+     * Resolve in g3d mode (with graph container)
+     */
+    _resolveWithGraph(context) {
         const coordinates = [];
         const styleExprs = [];
 
@@ -64,6 +78,39 @@ export class Point3DExpression extends AbstractArithmeticExpression {
 
         if (coordinates.length !== 3) {
             this.dispatchError(point3d_error_messages.WRONG_COORD_COUNT(coordinates.length));
+        }
+
+        this.point = { x: coordinates[0], y: coordinates[1], z: coordinates[2] };
+    }
+
+    /**
+     * Resolve in s3d mode (just coordinates, no graph)
+     */
+    _resolveWithoutGraph(context) {
+        const coordinates = [];
+        const styleExprs = [];
+
+        // All args are coordinates (first arg already resolved)
+        for (let i = 0; i < this.subExpressions.length; i++) {
+            if (i > 0) {
+                this.subExpressions[i].resolve(context);
+            }
+            const resultExpression = this._getResolvedExpression(context, this.subExpressions[i]);
+
+            if (this._isStyleExpression(resultExpression)) {
+                styleExprs.push(resultExpression);
+            } else {
+                const atomicValues = resultExpression.getVariableAtomicValues();
+                for (let j = 0; j < atomicValues.length; j++) {
+                    coordinates.push(atomicValues[j]);
+                }
+            }
+        }
+
+        this._parseStyleExpressions(styleExprs);
+
+        if (coordinates.length !== 3) {
+            this.dispatchError(`point3d() requires exactly 3 coordinates, got ${coordinates.length}`);
         }
 
         this.point = { x: coordinates[0], y: coordinates[1], z: coordinates[2] };
@@ -178,9 +225,15 @@ export class Point3DExpression extends AbstractArithmeticExpression {
      * Create a Point3DCommand from this expression
      * Style comes directly from expression: c() -> color, s() -> radius
      * @param {Object} options - Additional options (for registry/animation use)
-     * @returns {Point3DCommand}
+     * @returns {Point3DCommand|NoOpCommand}
      */
     toCommand(options = {}) {
+        // s3d mode - no rendering, just data
+        if (this.isS3DMode) {
+            return new NoOpCommand();
+        }
+
+        // g3d mode - render the point
         const styleOptions = {
             color: this.color,
             radius: this.strokeWidth  // s() maps to point radius
@@ -189,10 +242,10 @@ export class Point3DExpression extends AbstractArithmeticExpression {
     }
 
     /**
-     * Points can be played (animated)
+     * Points can be played (animated) only in g3d mode
      * @returns {boolean}
      */
     canPlay() {
-        return true;
+        return !this.isS3DMode;
     }
 }

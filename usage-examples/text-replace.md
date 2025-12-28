@@ -27,6 +27,14 @@ sel1 = select(m1, "x^2")
 seq(fadeout(sel1), replace("a^2", sel1))
 ```
 
+
+M = print(0,10,"a + b = c")
+T = select(M, "b")
+replace("\beta",T)
+P = print(5,10,"x^2 + y^2")
+replace("z^2",select(P, "x^2"))
+
+
 ## Comments
 
 | Line | Explanation |

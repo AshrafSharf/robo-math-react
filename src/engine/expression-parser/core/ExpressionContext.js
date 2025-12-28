@@ -1,3 +1,13 @@
+import { NumericExpression } from '../expressions/NumericExpression.js';
+
+/**
+ * System constants - predefined numeric variables available in all expressions
+ */
+const SYSTEM_CONSTANTS = {
+    pi: Math.PI,
+    e: Math.E
+};
+
 /**
  * Context for expression evaluation - stores variable references and state
  * Also tracks dependencies between expressions for reactive updates (fromTo)
@@ -12,6 +22,18 @@ export class ExpressionContext {
         this.pages = [];              // All lesson pages
         this.currentPageIndex = 0;    // Index of current page
         this.pipelineService = null;  // Pipeline service for reuse
+
+        // Initialize system constants
+        this.initSystemConstants();
+    }
+
+    /**
+     * Initialize predefined system constants (pi, e)
+     */
+    initSystemConstants() {
+        for (const [name, value] of Object.entries(SYSTEM_CONSTANTS)) {
+            this.references[name] = new NumericExpression(value);
+        }
     }
 
     // Dependency tracking: set/get current caller

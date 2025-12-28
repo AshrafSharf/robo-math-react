@@ -74,6 +74,8 @@ import { GroupExpression } from '../expressions/s3d/GroupExpression.js';
 import { Face3DExpression } from '../expressions/s3d/Face3DExpression.js';
 import { AttachExpression } from '../expressions/s3d/AttachExpression.js';
 import { Position3DExpression } from '../expressions/s3d/Position3DExpression.js';
+import { EdgeExpression } from '../expressions/s3d/EdgeExpression.js';
+import { Pivot3DExpression } from '../expressions/s3d/Pivot3DExpression.js';
 import { Point3DExpression } from '../expressions/3d/Point3DExpression.js';
 import { Line3DExpression } from '../expressions/3d/Line3DExpression.js';
 import { DashedLine3DExpression } from '../expressions/3d/DashedLine3DExpression.js';
@@ -135,9 +137,10 @@ import { PrintWithoutExpression } from '../expressions/PrintWithoutExpression.js
 import { SelectExpression } from '../expressions/SelectExpression.js';
 import { SelectExceptExpression } from '../expressions/SelectExceptExpression.js';
 import { SurroundExpression } from '../expressions/SurroundExpression.js';
-import { MoveToExpression } from '../expressions/MoveToExpression.js';
+import { MmoveExpression } from '../expressions/MmoveExpression.js';
+import { McopyExpression } from '../expressions/McopyExpression.js';
 import { ItemExpression } from '../expressions/ItemExpression.js';
-import { ReplaceTextItemExpression } from '../expressions/ReplaceTextItemExpression.js';
+import { MsubExpression } from '../expressions/MsubExpression.js';
 import { OverbraceExpression } from '../expressions/OverbraceExpression.js';
 import { UnderbraceExpression } from '../expressions/UnderbraceExpression.js';
 import { MstepExpression } from '../expressions/MstepExpression.js';
@@ -166,6 +169,11 @@ import { SExpression } from '../expressions/styling/SExpression.js';
 import { FCExpression } from '../expressions/styling/FCExpression.js';
 import { SOExpression } from '../expressions/styling/SOExpression.js';
 import { FOExpression } from '../expressions/styling/FOExpression.js';
+import { RangeExpression } from '../expressions/RangeExpression.js';
+import { GridExpression } from '../expressions/GridExpression.js';
+import { AxesExpression } from '../expressions/AxesExpression.js';
+import { NextToExpression } from '../expressions/NextToExpression.js';
+import { NextBoundsExpression } from '../expressions/NextBoundsExpression.js';
 import { resolveExpressionDependencies } from './ExpressionDependencyResolver.js';
 import { registerCustomFunctions } from './CustomFunctionDefinitions.js';
 
@@ -232,6 +240,8 @@ export class IntrepreterFunctionTable {
         registerMultiArg('face3d', Face3DExpression);
         registerMultiArg('attach', AttachExpression);
         registerMultiArg('position3d', Position3DExpression);
+        registerMultiArg('edge', EdgeExpression);           // extract edge info from face3d
+        registerMultiArg('pivot3d', Pivot3DExpression);     // set pivot point for folding
         registerMultiArg('point3d', Point3DExpression);
         registerMultiArg('line3d', Line3DExpression);
         registerMultiArg('dashedline3d', DashedLine3DExpression);
@@ -302,9 +312,10 @@ export class IntrepreterFunctionTable {
         registerMultiArg('select', SelectExpression);
         registerMultiArg('selectexcept', SelectExceptExpression);
         registerMultiArg('surround', SurroundExpression);
-        registerMultiArg('moveto', MoveToExpression);
+        registerMultiArg('mmove', MmoveExpression);
+        registerMultiArg('mcopy', McopyExpression);
         registerMultiArg('item', ItemExpression);
-        registerMultiArg('replace', ReplaceTextItemExpression);
+        registerMultiArg('msub', MsubExpression);
         registerMultiArg('overbrace', OverbraceExpression);
         registerMultiArg('underbrace', UnderbraceExpression);
         registerMultiArg('mstep', MstepExpression);
@@ -432,6 +443,15 @@ export class IntrepreterFunctionTable {
         registerMultiArg('fc', FCExpression); // fillColor: fc(red), fc("#ff0000")
         registerMultiArg('so', SOExpression); // strokeOpacity: so(0.5)
         registerMultiArg('fo', FOExpression); // fillOpacity: fo(0.5)
+
+        // Axis configuration expressions
+        registerMultiArg('range', RangeExpression);  // range(min, max, step, scale)
+        registerMultiArg('grid', GridExpression);    // grid(c(gray), s(0.5))
+        registerMultiArg('axes', AxesExpression);    // axes(xRange, yRange, grid)
+
+        // Position expressions (deferred evaluation)
+        registerMultiArg('nextto', NextToExpression);       // nextto(ref, position, dx?, dy?) → {row, col}
+        registerMultiArg('nextbounds', NextBoundsExpression); // nextbounds(ref, position, rows, cols, dx?, dy?) → {row1, col1, row2, col2}
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

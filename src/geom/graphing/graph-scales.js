@@ -47,14 +47,15 @@ export function YLogScale(range, height, base = 10) {
 
 /**
  * Get the appropriate scale builder based on scale type
- * @param {string} scaleType - 'linear', 'log', or 'pi'
- * @param {Object} options - Scale options (logBase for log scale)
+ * @param {string} scaleType - 'linear', 'log', 'ln', or 'pi'
  * @returns {Function} Scale builder function
  */
-export function getXScaleBuilder(scaleType, options = {}) {
+export function getXScaleBuilder(scaleType) {
     switch (scaleType) {
         case 'log':
-            return (domain, width) => XLogScale(domain, width, options.logBase);
+            return (domain, width) => XLogScale(domain, width, 10);
+        case 'ln':
+            return (domain, width) => XLogScale(domain, width, 'e');
         case 'pi':
             // Pi scale uses linear scale, ticks/labels handled separately
             return (domain, width) => XLinearScale(domain, width);
@@ -63,10 +64,12 @@ export function getXScaleBuilder(scaleType, options = {}) {
     }
 }
 
-export function getYScaleBuilder(scaleType, options = {}) {
+export function getYScaleBuilder(scaleType) {
     switch (scaleType) {
         case 'log':
-            return (range, height) => YLogScale(range, height, options.logBase);
+            return (range, height) => YLogScale(range, height, 10);
+        case 'ln':
+            return (range, height) => YLogScale(range, height, 'e');
         case 'pi':
             // Pi scale uses linear scale, ticks/labels handled separately
             return (range, height) => YLinearScale(range, height);

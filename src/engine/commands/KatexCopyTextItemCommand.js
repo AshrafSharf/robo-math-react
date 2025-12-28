@@ -1,18 +1,20 @@
 /**
- * TextItemMoveToCommand - Moves a TextItem to a target position
+ * KatexCopyTextItemCommand - Copies a KatexTextItem to a target position
+ *
+ * Original TextItem stays visible, a clone animates to the target position.
  *
  * Handles resolving target to canvas coordinates from:
  * - Point on a graph (view coords + grapher position)
  * - Another TextItem (canvas bounds)
  * - Logical coordinates (row, col via layoutMapper)
  *
- * Uses MathTextMoveEffect internally.
+ * Uses KatexMoveEffect internally for DOM-based animation.
  */
 import { BaseCommand } from './BaseCommand.js';
-import { MathTextMoveEffect } from '../../effects/math-text-move-effect.js';
+import { KatexMoveEffect } from '../../effects/katex-move-effect.js';
 import { MathTextPositionUtil } from '../../mathtext/utils/math-text-position-util.js';
 
-export class TextItemMoveToCommand extends BaseCommand {
+export class KatexCopyTextItemCommand extends BaseCommand {
     constructor(textItemVariableName, targetType, targetData, graphExpression = null) {
         super();
         this.textItemVariableName = textItemVariableName;
@@ -30,13 +32,12 @@ export class TextItemMoveToCommand extends BaseCommand {
         // Resolve grapher if we have a graphExpression (for point targets)
         if (this.graphExpression) {
             if (typeof this.graphExpression.getGrapher !== 'function') {
-                console.warn('TextItemMoveToCommand: graphExpression has no getGrapher method', this.graphExpression);
+                console.warn('KatexCopyTextItemCommand: graphExpression has no getGrapher method', this.graphExpression);
                 return;
             }
             this.graphContainer = this.graphExpression.getGrapher();
-            console.log('TextItemMoveToCommand: graphContainer =', this.graphContainer);
             if (!this.graphContainer) {
-                console.warn('TextItemMoveToCommand: Could not get grapher from graphExpression');
+                console.warn('KatexCopyTextItemCommand: Could not get grapher from graphExpression');
                 return;
             }
         }
@@ -45,7 +46,7 @@ export class TextItemMoveToCommand extends BaseCommand {
         const textItemOrCollection = this.commandContext.shapeRegistry[this.textItemVariableName];
 
         if (!textItemOrCollection) {
-            console.warn(`TextItemMoveToCommand: "${this.textItemVariableName}" not found in registry`);
+            console.warn(`KatexCopyTextItemCommand: "${this.textItemVariableName}" not found in registry`);
             return;
         }
 
@@ -53,14 +54,14 @@ export class TextItemMoveToCommand extends BaseCommand {
         this.textItem = textItemOrCollection.get ? textItemOrCollection.get(0) : textItemOrCollection;
 
         if (!this.textItem) {
-            console.warn('TextItemMoveToCommand: No TextItem found');
+            console.warn('KatexCopyTextItemCommand: No TextItem found');
             return;
         }
 
         // Resolve target to canvas coordinates
         const targetCoords = this._resolveTargetCoordinates();
         if (!targetCoords) {
-            console.warn('TextItemMoveToCommand: Could not resolve target coordinates');
+            console.warn('KatexCopyTextItemCommand: Could not resolve target coordinates');
             return;
         }
 
@@ -70,8 +71,8 @@ export class TextItemMoveToCommand extends BaseCommand {
         // Get parent DOM for the cloned component
         const parentDOM = this.commandContext.canvasSection;
 
-        // Create effect
-        this.effect = new MathTextMoveEffect(
+        // Create KaTeX-specific effect (reuse KatexMoveEffect - it just creates and animates a clone)
+        this.effect = new KatexMoveEffect(
             this.textItem,
             this.targetX,
             this.targetY,
@@ -95,7 +96,7 @@ export class TextItemMoveToCommand extends BaseCommand {
             case 'logical':
                 return this._resolveLogicalTarget();
             default:
-                console.warn(`TextItemMoveToCommand: Unknown target type "${this.targetType}"`);
+                console.warn(`KatexCopyTextItemCommand: Unknown target type "${this.targetType}"`);
                 return null;
         }
     }
@@ -109,13 +110,13 @@ export class TextItemMoveToCommand extends BaseCommand {
         const { pointVariableName, pointExpression } = this.targetData;
 
         if (!this.graphContainer) {
-            console.warn('TextItemMoveToCommand: No graphContainer available');
+            console.warn('KatexCopyTextItemCommand: No graphContainer available');
             return null;
         }
 
         // Verify grapher has toViewX/toViewY methods
         if (typeof this.graphContainer.toViewX !== 'function' || typeof this.graphContainer.toViewY !== 'function') {
-            console.warn('TextItemMoveToCommand: graphContainer missing toViewX/toViewY methods', this.graphContainer);
+            console.warn('KatexCopyTextItemCommand: graphContainer missing toViewX/toViewY methods', this.graphContainer);
             return null;
         }
 
@@ -128,14 +129,14 @@ export class TextItemMoveToCommand extends BaseCommand {
             // Point variable - get from registry
             const pointShape = this.commandContext.shapeRegistry[pointVariableName];
             if (!pointShape) {
-                console.warn(`TextItemMoveToCommand: Point "${pointVariableName}" not found`);
+                console.warn(`KatexCopyTextItemCommand: Point "${pointVariableName}" not found`);
                 return null;
             }
             modelPos = pointShape.getPosition ? pointShape.getPosition() : pointShape.position;
         }
 
         if (!modelPos) {
-            console.warn('TextItemMoveToCommand: Could not get point position');
+            console.warn('KatexCopyTextItemCommand: Could not get point position');
             return null;
         }
 
@@ -162,21 +163,21 @@ export class TextItemMoveToCommand extends BaseCommand {
         // Get the target TextItem from registry
         const targetItemOrCollection = this.commandContext.shapeRegistry[targetTextItemVariableName];
         if (!targetItemOrCollection) {
-            console.warn(`TextItemMoveToCommand: Target "${targetTextItemVariableName}" not found`);
+            console.warn(`KatexCopyTextItemCommand: Target "${targetTextItemVariableName}" not found`);
             return null;
         }
 
         // Handle TextItemCollection (get first item) or single TextItem
         const targetItem = targetItemOrCollection.get ? targetItemOrCollection.get(0) : targetItemOrCollection;
         if (!targetItem) {
-            console.warn('TextItemMoveToCommand: No target TextItem found');
+            console.warn('KatexCopyTextItemCommand: No target TextItem found');
             return null;
         }
 
         // Get canvas bounds of target TextItem
         const canvasBounds = targetItem.getCanvasBounds();
         if (!canvasBounds) {
-            console.warn('TextItemMoveToCommand: Could not get target TextItem bounds');
+            console.warn('KatexCopyTextItemCommand: Could not get target TextItem bounds');
             return null;
         }
 
@@ -193,7 +194,7 @@ export class TextItemMoveToCommand extends BaseCommand {
 
         const layoutMapper = this.commandContext.layoutMapper;
         if (!layoutMapper) {
-            console.warn('TextItemMoveToCommand: No layoutMapper available');
+            console.warn('KatexCopyTextItemCommand: No layoutMapper available');
             return null;
         }
 
@@ -207,6 +208,7 @@ export class TextItemMoveToCommand extends BaseCommand {
     }
 
     async playSingle() {
+        // Note: Unlike mmove, we do NOT hide the original - just animate the clone
         if (this.effect) {
             return this.effect.play();
         }
@@ -214,6 +216,7 @@ export class TextItemMoveToCommand extends BaseCommand {
     }
 
     doDirectPlay() {
+        // Note: Unlike mmove, we do NOT hide the original - just show the clone at end position
         if (this.effect) {
             this.effect.toEndState();
         }

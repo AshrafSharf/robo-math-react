@@ -53,8 +53,18 @@ export class ShapeVisibilityAdapter {
             return new TextItemAdapter(shape);
         }
 
+        // Check for KatexTextItem (has katexComponent)
+        if (shape.katexComponent) {
+            return new KatexTextItemAdapter(shape);
+        }
+
         // Check for TextItemCollection (has items array and get method)
         if (shape.items && Array.isArray(shape.items) && typeof shape.get === 'function') {
+            // Check if it's a KaTeX collection (first item has katexComponent)
+            const firstItem = shape.get(0);
+            if (firstItem && firstItem.katexComponent) {
+                return new KatexTextItemCollectionAdapter(shape);
+            }
             return new TextItemCollectionAdapter(shape);
         }
 
@@ -644,6 +654,143 @@ class TableRowVisibilityAdapter extends BaseAdapter {
 
     getElement() {
         return this.shape.getElements();
+    }
+}
+
+/**
+ * Adapter for KatexTextItem (extracted portions of KatexComponent)
+ * Uses opacity on DOM elements instead of stroke-dasharray
+ */
+class KatexTextItemAdapter extends BaseAdapter {
+    show() {
+        const element = this.shape.getElement();
+        if (element) {
+            element.style.opacity = 1;
+            element.style.visibility = 'visible';
+        }
+    }
+
+    hide() {
+        const element = this.shape.getElement();
+        if (element) {
+            // Don't use display:none - it collapses the parent KaTeX layout
+            element.style.opacity = 0;
+            element.style.visibility = 'hidden';
+        }
+    }
+
+    fadeIn(duration, onComplete) {
+        const element = this.shape.getElement();
+        if (!element) {
+            if (onComplete) onComplete();
+            return;
+        }
+        element.style.visibility = 'visible';
+        element.style.opacity = '0';
+        TweenMax.to(element, duration, {
+            opacity: 1,
+            onComplete: () => {
+                if (onComplete) onComplete();
+            }
+        });
+    }
+
+    fadeOut(duration, onComplete) {
+        const element = this.shape.getElement();
+        if (!element) {
+            if (onComplete) onComplete();
+            return;
+        }
+        TweenMax.to(element, duration, {
+            opacity: 0,
+            onComplete: () => {
+                element.style.visibility = 'hidden';
+                if (onComplete) onComplete();
+            }
+        });
+    }
+
+    getElement() {
+        return this.shape.getElement();
+    }
+}
+
+/**
+ * Adapter for KatexTextItemCollection
+ * Applies visibility operations to all KatexTextItems in the collection
+ */
+class KatexTextItemCollectionAdapter extends BaseAdapter {
+    _getAllElements() {
+        const elements = [];
+        this.shape.getAll().forEach(item => {
+            const el = item.getElement();
+            if (el) elements.push(el);
+        });
+        return elements;
+    }
+
+    show() {
+        this._getAllElements().forEach(el => {
+            el.style.opacity = 1;
+            el.style.visibility = 'visible';
+        });
+    }
+
+    hide() {
+        this._getAllElements().forEach(el => {
+            // Don't use display:none - it collapses the parent KaTeX layout
+            el.style.opacity = 0;
+            el.style.visibility = 'hidden';
+        });
+    }
+
+    fadeIn(duration, onComplete) {
+        const elements = this._getAllElements();
+        if (elements.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        elements.forEach(el => {
+            el.style.visibility = 'visible';
+            el.style.opacity = '0';
+        });
+        let completed = 0;
+        elements.forEach(el => {
+            TweenMax.to(el, duration, {
+                opacity: 1,
+                onComplete: () => {
+                    completed++;
+                    if (completed === elements.length && onComplete) {
+                        onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    fadeOut(duration, onComplete) {
+        const elements = this._getAllElements();
+        if (elements.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+        let completed = 0;
+        elements.forEach(el => {
+            TweenMax.to(el, duration, {
+                opacity: 0,
+                onComplete: () => {
+                    el.style.visibility = 'hidden';
+                    completed++;
+                    if (completed === elements.length && onComplete) {
+                        onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    getElement() {
+        return this._getAllElements();
     }
 }
 

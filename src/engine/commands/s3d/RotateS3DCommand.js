@@ -23,9 +23,16 @@ export class RotateS3DCommand extends BaseCommand {
 
     /**
      * Get the Three.js object to rotate
+     * If the target has a pivot group (from pivot3d), rotate that instead
      */
     _getTargetObject() {
         const expr = this.targetExpression;
+
+        // Check for pivot group first (set by pivot3d command)
+        // If present, rotate the pivot group so rotation happens around pivot point
+        if (expr._pivotGroup) {
+            return expr._pivotGroup;
+        }
 
         // Group
         if (expr.isS3DGroup && expr.isS3DGroup()) {

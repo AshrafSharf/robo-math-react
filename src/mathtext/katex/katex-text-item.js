@@ -63,6 +63,15 @@ export class KatexTextItem extends BaseTextItem {
       height: elRect.height
     };
   }
+
+  /**
+   * Get a cloned copy of the DOM element
+   * Used for move animations
+   * @returns {HTMLElement}
+   */
+  getClonedElement() {
+    return this.element.cloneNode(true);
+  }
 }
 
 export default KatexTextItem;

@@ -3,30 +3,70 @@
  */
 
 export const GRAPH_FUNCTIONS = {
+  range: {
+    name: 'range',
+    signature: '(min, max, step?, "scale"?)',
+    args: ['min: number', 'max: number', 'step: number (optional)', 'scale: "linear"|"trig"|"log"|"ln"|"im" (optional)'],
+    description: 'Define axis range with step and scale type',
+    altSignatures: [
+      'range(-10, 10)',
+      'range(-10, 10, 1)',
+      'range(-2*pi, 2*pi, pi/4, "trig")',
+      'range(0.1, 100, 1, "log")',
+      'range(1, 100, 1, "ln")',
+      'range(-5, 5, 1, "im")'
+    ],
+    category: 'Graph'
+  },
+  grid: {
+    name: 'grid',
+    signature: '(c(...), s(...))',
+    args: ['color: c()', 'strokeWidth: s()'],
+    description: 'Define grid styling with color and stroke width',
+    altSignatures: [
+      'grid(c(gray))',
+      'grid(c(gray), s(0.5))',
+      'grid(c("#cccccc"), s(1))'
+    ],
+    category: 'Graph'
+  },
+  axes: {
+    name: 'axes',
+    signature: '(xRange, yRange, grid?)',
+    args: ['xRange: range()', 'yRange: range()', 'grid: grid() (optional)'],
+    description: 'Bundle axis ranges and grid options for g2d',
+    altSignatures: [
+      'axes(range(-10, 10), range(-5, 5))',
+      'axes(range(-10, 10, 1), range(-5, 5, 0.5))',
+      'axes(range(-10, 10), range(-5, 5), grid(c(gray)))',
+      'ax = axes(range(-2*pi, 2*pi, pi/4, "trig"), range(-2, 2, 0.5))'
+    ],
+    category: 'Graph'
+  },
   g2d: {
     name: 'g2d',
-    signature: '(row1, col1, row2, col2)',
-    args: ['row1: number', 'col1: number', 'row2: number', 'col2: number'],
+    signature: '(row1, col1, row2, col2, axes|xRange, yRange?)',
+    args: ['row1: number', 'col1: number', 'row2: number', 'col2: number', 'axes: axes() or xRange: range()', 'yRange: range() (optional)'],
     description: 'Create 2D graph container',
     altSignatures: [
       'G = g2d(0, 0, 16, 8)',
-      'G = g2d(0, 0, 16, 8, -10, 10)',
-      'G = g2d(0, 0, 16, 8, -10, 10, -5, 5)',
-      'G = g2d(0, 0, 16, 8, -10, 10, -5, 5, 1)'
+      'G = g2d(0, 0, 16, 8, range(-10, 10), range(-5, 5))',
+      'G = g2d(0, 0, 16, 8, axes(range(-10, 10), range(-5, 5)))',
+      'ax = axes(range(-2*pi, 2*pi, pi/4, "trig"), range(-1, 1, 0.5))',
+      'G = g2d(0, 0, 16, 8, ax)',
+      'G = g2d(0, 0, 16, 8, range(-5, 5), range(-5, 5, 1, "im"))'
     ],
     category: 'Graph'
   },
   g3d: {
     name: 'g3d',
-    signature: '(row1, col1, row2, col2)',
-    args: ['row1: number', 'col1: number', 'row2: number', 'col2: number'],
+    signature: '(row1, col1, row2, col2, xRange?, yRange?, zRange?)',
+    args: ['row1: number', 'col1: number', 'row2: number', 'col2: number', 'xRange: range()', 'yRange: range()', 'zRange: range()'],
     description: 'Create 3D graph container',
     altSignatures: [
       'G = g3d(0, 0, 16, 8)',
-      'G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)',
-      'G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5, 1)',
-      'G = g3d(0, 0, 16, 4, ..., "lhs")',
-      'G = g3d(0, 4, 16, 8, ..., "rhs")'
+      'G = g3d(0, 0, 16, 8, range(-5, 5), range(-5, 5), range(-5, 5))',
+      'G = g3d(0, 0, 16, 8, range(-10, 10, 2), range(-10, 10, 2), range(0, 10, 1))'
     ],
     category: 'Graph'
   },
@@ -91,11 +131,45 @@ export const GRAPH_FUNCTIONS = {
     name: 'mtext',
     signature: '(row, col, "latex")',
     args: ['row: number', 'col: number', 'latex: string'],
-    description: 'Create math text at logical position',
+    description: 'Create math text at logical position (MathJax/SVG)',
     altSignatures: [
       'M = mtext(0, 0, "x^2 + y^2")',
       'M = mtext(2, 3, "\\\\frac{a}{b}")',
       'M = mtext(0, 0, "\\\\int_0^1 x^2 dx")'
+    ],
+    category: 'Graph'
+  },
+  print: {
+    name: 'print',
+    signature: '(row, col, "latex")',
+    args: ['row: number', 'col: number', 'latex: string'],
+    description: 'Create math text at logical position (KaTeX/HTML)',
+    altSignatures: [
+      'M = print(2, 2, "x^2 + y^2")',
+      'M = print(4, 3, "\\\\frac{a}{b}")',
+      'M = print(0, 0, "\\\\alpha + \\\\beta")'
+    ],
+    category: 'Graph'
+  },
+  printonly: {
+    name: 'printonly',
+    signature: '(row, col, "latex", "pattern")',
+    args: ['row: number', 'col: number', 'latex: string', 'pattern: string'],
+    description: 'Create KaTeX text, only show matching pattern',
+    altSignatures: [
+      'M = printonly(2, 2, "x^2 + y^2", "x")',
+      'M = printonly(4, 3, "a + b = c", "a")'
+    ],
+    category: 'Graph'
+  },
+  printwithout: {
+    name: 'printwithout',
+    signature: '(row, col, "latex", "pattern")',
+    args: ['row: number', 'col: number', 'latex: string', 'pattern: string'],
+    description: 'Create KaTeX text, hide matching pattern',
+    altSignatures: [
+      'M = printwithout(2, 2, "x^2 + y^2", "y^2")',
+      'M = printwithout(4, 3, "a + b = c", "=")'
     ],
     category: 'Graph'
   },
@@ -138,15 +212,57 @@ export const GRAPH_FUNCTIONS = {
     ],
     category: 'Graph'
   },
-  replace: {
-    name: 'replace',
-    signature: '("latex", textItem)',
-    args: ['latex: string', 'textItem: TextItem'],
-    description: 'Replace text item with new latex',
+  surround: {
+    name: 'surround',
+    signature: '(textItem)',
+    args: ['textItem: TextItem'],
+    description: 'Draw animated rectangle around selected text',
     altSignatures: [
-      'replace("y", item(S, 0))',
-      'replace("2x", select(M, "x"))',
-      'replace("\\\\theta", select(M, "x"))'
+      'M = print(2, 2, "a + b = c")',
+      'T = select(M, "b")',
+      'surround(T)',
+      'surround(select(M, "a"))'
+    ],
+    category: 'Graph'
+  },
+  msub: {
+    name: 'msub',
+    signature: '(textItem, "latex")',
+    args: ['textItem: TextItem', 'latex: string'],
+    description: 'Substitute text item with new latex (fade out original, reveal new)',
+    altSignatures: [
+      'M = print(2, 2, "a + b = c")',
+      'T = select(M, "b")',
+      'msub(T, "\\\\beta")',
+      'msub(select(M, "a"), "\\\\alpha")'
+    ],
+    category: 'Graph'
+  },
+  mmove: {
+    name: 'mmove',
+    signature: '(textItem, row, col)',
+    args: ['textItem: TextItem', 'row: number', 'col: number'],
+    description: 'Move text item to position (original hides, clone moves)',
+    altSignatures: [
+      'M = print(2, 2, "x^2 + y^2")',
+      'T = select(M, "x^2")',
+      'mmove(T, 5, 4)',
+      'mmove(T, P)',
+      'mmove(T, T2)'
+    ],
+    category: 'Graph'
+  },
+  mcopy: {
+    name: 'mcopy',
+    signature: '(textItem, row, col)',
+    args: ['textItem: TextItem', 'row: number', 'col: number'],
+    description: 'Copy text item to position (original stays, copy moves)',
+    altSignatures: [
+      'M = print(2, 2, "a + b = c")',
+      'T = select(M, "a")',
+      'mcopy(T, 5, 4)',
+      'mcopy(T, P)',
+      'mcopy(T, T2)'
     ],
     category: 'Graph'
   },

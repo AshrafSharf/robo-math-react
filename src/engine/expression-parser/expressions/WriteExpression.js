@@ -5,6 +5,7 @@
  *   write(M)                    - Animate existing MathTextComponent variable
  *   write(row, col, "latex")    - Create new MathTextComponent and animate it
  *   write(row, col, item(i))    - Clone TextItem to position and animate it
+ *   write(nextto(M, mr), "latex") - Create at position relative to M
  *   write(collection)           - Animate all items in a TextItemCollection sequentially
  *   write(textItem)             - Animate a single TextItem
  *
@@ -37,6 +38,8 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
         this.row = null;
         this.col = null;
         this.latexString = '';
+        // For deferred position evaluation (nextto expression)
+        this.nextToExpression = null;
         // For 'collection_var' mode
         this.collectionVariableName = null;
         // For 'textitem_var' mode
@@ -115,7 +118,7 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
                 this.dispatchError('write() argument must be a variable reference');
             }
         } else if (this.subExpressions.length >= 2) {
-            // Mode 2: write(row, col, "latex") or write(point, "latex") - create new and animate
+            // Mode 2: write(row, col, "latex") or write(point, "latex") or write(nextto(...), "latex")
             this.mode = 'create';
 
             // First, resolve all expressions and separate styling
@@ -135,7 +138,52 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
 
             this._parseStyleExpressions(styleExprs);
 
-            // Collect position coordinates (need exactly 2: row, col)
+            // Check if first expression is a NextToExpression (deferred position)
+            const firstExpr = resolvedExprs[0];
+            if (firstExpr && firstExpr.getName && firstExpr.getName() === 'nextto') {
+                // Store NextToExpression for deferred evaluation at command init time
+                this.nextToExpression = firstExpr;
+
+                // Next arg should be the latex content
+                if (resolvedExprs.length < 2) {
+                    this.dispatchError('write(nextto(...), "latex") requires a latex string');
+                }
+
+                const contentExpr = resolvedExprs[1];
+                const contentName = contentExpr.getName && contentExpr.getName();
+
+                // Check if it's an item expression
+                if (contentName === 'item') {
+                    this.mode = 'textitem_expr';
+                    this.textItemExpression = contentExpr;
+                    return;
+                }
+
+                // Check if it's a meq expression
+                if (contentName === 'meq') {
+                    this.mode = 'meq';
+                    this.meqExpression = contentExpr;
+                    return;
+                }
+
+                // Otherwise expect a latex string
+                const resolvedLatexExpr = this._getResolvedExpression(context, contentExpr);
+                const resolvedName = resolvedLatexExpr && resolvedLatexExpr.getName && resolvedLatexExpr.getName();
+
+                if (resolvedName === 'meq') {
+                    this.mode = 'meq';
+                    this.meqExpression = resolvedLatexExpr;
+                    return;
+                }
+
+                if (!resolvedLatexExpr || typeof resolvedLatexExpr.getStringValue !== 'function') {
+                    this.dispatchError('write() content argument must be a quoted string, meq(), mflow(), or item expression');
+                }
+                this.latexString = resolvedLatexExpr.getStringValue();
+                return;
+            }
+
+            // Standard path: collect position coordinates (need exactly 2: row, col)
             const positionCoords = [];
             let argIndex = 0;
 
@@ -259,7 +307,8 @@ export class WriteExpression extends AbstractNonArithmeticExpression {
                 row: this.row,
                 col: this.col,
                 latexString: this.latexString,
-                expression: this
+                expression: this,
+                nextToExpression: this.nextToExpression  // For deferred position evaluation
             }, { ...options, ...this.getStyleOptions() });
         }
     }

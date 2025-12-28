@@ -80,30 +80,30 @@ export class Grapher {
     const xRange = options.xRange || [-5, 5];
     const yRange = options.yRange || [-5, 5];
 
-    // Get scale types and options
+    // Get scale types (linear, pi, log, ln)
     const xScaleType = options.xScaleType || 'linear';
     const yScaleType = options.yScaleType || 'linear';
-    const xScaleOptions = { logBase: options.xLogBase || '10' };
-    const yScaleOptions = { logBase: options.yLogBase || '10' };
 
     // Create scale builders using the appropriate scale type
-    const xBuilder = getXScaleBuilder(xScaleType, xScaleOptions);
-    const yBuilder = getYScaleBuilder(yScaleType, yScaleOptions);
+    const xBuilder = getXScaleBuilder(xScaleType);
+    const yBuilder = getYScaleBuilder(yScaleType);
     this.xScaleBuilder = (width) => xBuilder(xRange, width);
     this.yScaleBuilder = (height) => yBuilder(yRange, height);
 
     // Initialize grid options
     this.gridOptions = new GridOptions();
 
-    // Copy scale type options from input options
+    // Copy scale type from range expression
     if (options.xScaleType) this.gridOptions.xScaleType = options.xScaleType;
     if (options.yScaleType) this.gridOptions.yScaleType = options.yScaleType;
-    if (options.xDivisions !== undefined) this.gridOptions.xDivisions = options.xDivisions;
-    if (options.yDivisions !== undefined) this.gridOptions.yDivisions = options.yDivisions;
-    if (options.xLogBase) this.gridOptions.xLogBase = options.xLogBase;
-    if (options.yLogBase) this.gridOptions.yLogBase = options.yLogBase;
-    if (options.xPiMultiplier) this.gridOptions.xPiMultiplier = options.xPiMultiplier;
-    if (options.yPiMultiplier) this.gridOptions.yPiMultiplier = options.yPiMultiplier;
+
+    // Copy step (tick interval) from range expression
+    if (options.xStep !== undefined) this.gridOptions.xStep = options.xStep;
+    if (options.yStep !== undefined) this.gridOptions.yStep = options.yStep;
+
+    // Copy grid styling from grid expression
+    if (options.gridColor) this.gridOptions.gridColor = options.gridColor;
+    if (options.gridStrokeWidth !== undefined) this.gridOptions.gridStrokeWidth = options.gridStrokeWidth;
 
     // Create SVG container
     this.svgContainer = $(`<svg id="graph-${this.componentState.componentId}" width="100%" height="100%" style="overflow: hidden;" xmlns="http://www.w3.org/2000/svg"></svg>`);

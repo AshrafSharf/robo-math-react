@@ -16,9 +16,6 @@
 import { BaseEffect } from './base-effect.js';
 import { MathTextComponent } from '../mathtext/components/math-text-component.js';
 import { TweenMax, Power2 } from 'gsap';
-import { RoboEventManager } from '../events/robo-event-manager.js';
-import { PenEvent } from '../events/pen-event.js';
-import { PenCoordinateUtil } from '../utils/pen-coordinate-util.js';
 
 export class MathTextMoveEffect extends BaseEffect {
   /**
@@ -192,13 +189,6 @@ export class MathTextMoveEffect extends BaseEffect {
 
           // Update clone position
           this.clonedComponent.setCanvasPosition(currentX, currentY);
-
-          // Emit pen position in screen coordinates
-          // Add internal offset to get actual content position
-          const penX = currentX + this.internalOffsetX;
-          const penY = currentY + this.internalOffsetY;
-          const screenPos = PenCoordinateUtil.canvasToScreen(this.parentDOM, penX, penY);
-          RoboEventManager.firePenPosition(new PenEvent(screenPos));
         },
         onComplete: () => {
           this.activeTween = null;

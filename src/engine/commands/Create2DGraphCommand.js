@@ -24,23 +24,18 @@ export class Create2DGraphCommand extends BaseCommand {
         this.xRange = options.xRange || [-10, 10];
         this.yRange = options.yRange || [-10, 10];
         this.showGrid = options.showGrid !== false;
-        this.showGridLines = options.showGridLines !== false;
 
-        // Scale type options
+        // Scale type from range expression (pi, log, linear)
         this.xScaleType = options.xScaleType || 'linear';
         this.yScaleType = options.yScaleType || 'linear';
-        this.xDivisions = options.xDivisions || 10;
-        this.yDivisions = options.yDivisions || 10;
-        this.xLogBase = options.xLogBase || '10';
-        this.yLogBase = options.yLogBase || '10';
-        this.xPiMultiplier = options.xPiMultiplier || 'pi';
-        this.yPiMultiplier = options.yPiMultiplier || 'pi';
 
-        // Legacy options (for backward compatibility)
-        this.tickSize = options.tickSize || null;
-        this.usePiLabels = options.usePiLabels || false;
-        this.xPiScale = options.xPiScale || null;
-        this.yPiScale = options.yPiScale || null;
+        // Step (tick interval) from range expression
+        this.xStep = options.xStep || null;
+        this.yStep = options.yStep || null;
+
+        // Grid styling from grid expression
+        this.gridColor = options.gridColor || null;
+        this.gridStrokeWidth = options.gridStrokeWidth || null;
 
         this.expression = expression;  // Reference to Graph2DExpression
     }
@@ -50,36 +45,18 @@ export class Create2DGraphCommand extends BaseCommand {
      * @returns {Promise}
      */
     async doInit() {
-        // Build options object with all grid settings
+        // Build options object
         const graphOptions = {
             xRange: this.xRange,
             yRange: this.yRange,
             showGrid: this.showGrid,
-            showGridLines: this.showGridLines,
-            // Scale type options
             xScaleType: this.xScaleType,
             yScaleType: this.yScaleType,
-            xDivisions: this.xDivisions,
-            yDivisions: this.yDivisions,
-            xLogBase: this.xLogBase,
-            yLogBase: this.yLogBase,
-            xPiMultiplier: this.xPiMultiplier,
-            yPiMultiplier: this.yPiMultiplier
+            xStep: this.xStep,
+            yStep: this.yStep,
+            gridColor: this.gridColor,
+            gridStrokeWidth: this.gridStrokeWidth
         };
-
-        // Add legacy grid settings if specified (backward compatibility)
-        if (this.tickSize !== null) {
-            graphOptions.tickSize = this.tickSize;
-        }
-        if (this.usePiLabels) {
-            graphOptions.usePiLabels = this.usePiLabels;
-        }
-        if (this.xPiScale !== null) {
-            graphOptions.xPiScale = this.xPiScale;
-        }
-        if (this.yPiScale !== null) {
-            graphOptions.yPiScale = this.yPiScale;
-        }
 
         // Create graph container using bounds-based API
         const grapher = this.diagram2d.graphContainer(this.row1, this.col1, this.row2, this.col2, graphOptions);

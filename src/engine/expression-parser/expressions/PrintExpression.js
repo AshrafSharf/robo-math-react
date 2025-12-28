@@ -8,6 +8,7 @@
  *   print(row, col, "latex")                    - Default: black, 35px
  *   print(row, col, "latex", fontSize)          - Custom fontSize, black
  *   print(row, col, "latex", fontSize, "color") - Custom fontSize and color
+ *   print(nextto(M, mr), "latex")               - Position relative to M
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { PrintCommand } from '../../commands/PrintCommand.js';
@@ -24,20 +25,72 @@ export class PrintExpression extends AbstractNonArithmeticExpression {
     this.fontSize = 35;
     this.color = '#000000';
     this.katexComponent = null;
+    // For deferred position evaluation (nextto expression)
+    this.nextToExpression = null;
   }
 
   resolve(context) {
+    if (this.subExpressions.length < 2) {
+      this.dispatchError('print() requires at least 2 arguments.\nUsage: print(row, col, "latex") or print(nextto(...), "latex")');
+    }
+
+    // Resolve first expression to check if it's a NextToExpression
+    const firstExpr = this.subExpressions[0];
+    firstExpr.resolve(context);
+
+    // Check if first expression is a NextToExpression (deferred position)
+    if (firstExpr.getName && firstExpr.getName() === 'nextto') {
+      this.nextToExpression = firstExpr;
+
+      // Next arg should be the latex string
+      if (this.subExpressions.length < 2) {
+        this.dispatchError('print(nextto(...), "latex") requires a latex string');
+      }
+
+      const latexExpr = this.subExpressions[1];
+      latexExpr.resolve(context);
+      const resolvedLatexExpr = this._getResolvedExpression(context, latexExpr);
+
+      if (!resolvedLatexExpr || typeof resolvedLatexExpr.getStringValue !== 'function') {
+        this.dispatchError('print() second argument must be a quoted string, meq(), or mflow()');
+      }
+      this.latexString = resolvedLatexExpr.getStringValue();
+
+      // Parse remaining arguments for styling
+      let argIndex = 2;
+      const styleExprs = [];
+      while (argIndex < this.subExpressions.length) {
+        const expr = this.subExpressions[argIndex];
+        expr.resolve(context);
+        const resolvedExpr = this._getResolvedExpression(context, expr);
+
+        if (this._isStyleExpression(resolvedExpr)) {
+          styleExprs.push(resolvedExpr);
+        } else if (resolvedExpr && resolvedExpr.getName() === 'quotedstring') {
+          this.color = resolvedExpr.getStringValue();
+        } else {
+          const values = resolvedExpr.getVariableAtomicValues();
+          if (values.length > 0 && typeof values[0] === 'number') {
+            this.fontSize = values[0];
+          }
+        }
+        argIndex++;
+      }
+      this._parseStyleExpressions(styleExprs);
+      return;
+    }
+
+    // Standard path: parse position coordinates (row, col)
     if (this.subExpressions.length < 3) {
       this.dispatchError('print() requires at least 3 arguments.\nUsage: print(row, col, "latex", [fontSize], ["color"])');
     }
 
-    // Parse position coordinates (row, col)
     const positionCoords = [];
     let argIndex = 0;
 
     while (argIndex < this.subExpressions.length && positionCoords.length < 2) {
       const expr = this.subExpressions[argIndex];
-      expr.resolve(context);
+      if (argIndex > 0) expr.resolve(context);  // First already resolved above
       const atomicValues = expr.getVariableAtomicValues();
 
       for (const val of atomicValues) {
@@ -117,7 +170,8 @@ export class PrintExpression extends AbstractNonArithmeticExpression {
       latexString: this.latexString,
       fontSize: styleOptions.fontSize || this.fontSize,
       color: styleOptions.color || this.color,
-      expression: this
+      expression: this,
+      nextToExpression: this.nextToExpression  // For deferred position evaluation
     });
   }
 

@@ -573,6 +573,13 @@ export class BaseDiagram2d {
       // Scale type options
       xScaleType: options.xScaleType,
       yScaleType: options.yScaleType,
+      // Step options for tick intervals
+      xStep: options.xStep,
+      yStep: options.yStep,
+      // Grid styling
+      gridColor: options.gridColor,
+      gridStrokeWidth: options.gridStrokeWidth,
+      // Legacy options
       xDivisions: options.xDivisions,
       yDivisions: options.yDivisions,
       xLogBase: options.xLogBase,

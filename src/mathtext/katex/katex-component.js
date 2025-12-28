@@ -175,4 +175,67 @@ export class KatexComponent {
     }
     this.containerDOM = null;
   }
+
+  /**
+   * Create a KatexComponent-like wrapper from a cloned element
+   * Used for move animations
+   * @param {HTMLElement} sourceElement - The element to clone
+   * @param {number} pixelX - X position in pixels
+   * @param {number} pixelY - Y position in pixels
+   * @param {HTMLElement} parentDOM - Parent DOM element
+   * @param {Object} options - Options (fontSize, color)
+   * @returns {Object} A wrapper with component-like interface
+   */
+  static fromClone(sourceElement, pixelX, pixelY, parentDOM, options = {}) {
+    const clonedElement = sourceElement.cloneNode(true);
+
+    const containerDOM = $('<div>').attr({
+      'class': 'katex-clone-wrapper'
+    }).css({
+      'position': 'absolute',
+      'left': pixelX + 'px',
+      'top': pixelY + 'px',
+      'font-size': (options.fontSize || 35) + 'px',
+      'color': options.color || '#000000',
+      'display': 'none'
+    })[0];
+
+    containerDOM.appendChild(clonedElement);
+    $(parentDOM).append(containerDOM);
+
+    // Return a minimal component-like interface
+    return {
+      containerDOM,
+      parentDOM,
+      fontSizeValue: options.fontSize || 35,
+      color: options.color || '#000000',
+      componentState: {
+        left: pixelX,
+        top: pixelY
+      },
+
+      show() {
+        $(containerDOM).css({ 'display': 'block', 'opacity': 1 });
+        return this;
+      },
+
+      hide() {
+        $(containerDOM).css({ 'display': 'none', 'opacity': 0 });
+        return this;
+      },
+
+      setCanvasPosition(x, y) {
+        this.componentState.left = x;
+        this.componentState.top = y;
+        containerDOM.style.left = x + 'px';
+        containerDOM.style.top = y + 'px';
+      },
+
+      destroy() {
+        if (containerDOM && containerDOM.parentNode) {
+          containerDOM.parentNode.removeChild(containerDOM);
+        }
+      }
+    };
+  }
 }

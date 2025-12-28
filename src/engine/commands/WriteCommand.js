@@ -58,13 +58,25 @@ export class WriteCommand extends BaseCommand {
             const coordinateMapper = this.diagram2d.coordinateMapper;
             const canvasSection = this.diagram2d.canvasSection;
 
+            // Evaluate nextToExpression if provided (deferred position)
+            let row = this.options.row;
+            let col = this.options.col;
+
+            if (this.options.nextToExpression) {
+                // nextto returns canvas coords, convert to logical
+                const canvasPos = this.options.nextToExpression.evaluate(this.commandContext);
+                const logical = coordinateMapper.toLogical(canvasPos.x, canvasPos.y);
+                row = logical.row;
+                col = logical.col;
+            }
+
             // Use color from styleOptions if provided, otherwise fall back to BaseCommand default
             const effectiveColor = this.styleOptions.color || this.color;
 
             this.mathComponent = new MathTextComponent(
                 this.options.latexString,
-                this.options.row,
-                this.options.col,
+                row,
+                col,
                 coordinateMapper,
                 canvasSection,
                 {

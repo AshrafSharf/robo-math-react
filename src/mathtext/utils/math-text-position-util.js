@@ -191,4 +191,34 @@ export class MathTextPositionUtil {
             container.style.left = (currentLeft - bounds.width / 2) + 'px';
         }
     }
+
+    /**
+     * Get the bounds of an HTML element (for KaTeX components).
+     * Unlike getPathBoundsInContainer which looks for SVG paths,
+     * this returns the container element's own dimensions.
+     * Temporarily shows the element if hidden.
+     * @param {HTMLElement} container - The container DOM element
+     * @returns {{offsetX: number, offsetY: number, width: number, height: number}}
+     */
+    static getElementBounds(container) {
+        const wasHidden = container.style.display === 'none';
+
+        if (wasHidden) {
+            container.style.display = 'block';
+        }
+
+        const rect = container.getBoundingClientRect();
+        const bounds = {
+            offsetX: 0,
+            offsetY: 0,
+            width: rect.width,
+            height: rect.height
+        };
+
+        if (wasHidden) {
+            container.style.display = 'none';
+        }
+
+        return bounds;
+    }
 }

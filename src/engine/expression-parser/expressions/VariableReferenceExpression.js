@@ -5,6 +5,14 @@ import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpressi
 import { NumericExpression } from './NumericExpression.js';
 import { common_error_messages } from '../core/ErrorMessages.js';
 
+/**
+ * System constants - known at parse time, available for immediate arithmetic
+ */
+const SYSTEM_CONSTANTS = {
+    pi: Math.PI,
+    e: Math.E
+};
+
 export class VariableReferenceExpression extends AbstractNonArithmeticExpression {
     static NAME = 'variable';
 
@@ -12,6 +20,11 @@ export class VariableReferenceExpression extends AbstractNonArithmeticExpression
         super();
         this.variableName = variableName;
         this.variableValueExpression = null;
+
+        // Pre-resolve system constants so arithmetic works immediately
+        if (SYSTEM_CONSTANTS[variableName] !== undefined) {
+            this.variableValueExpression = new NumericExpression(SYSTEM_CONSTANTS[variableName]);
+        }
     }
 
     resolve(context) {

@@ -124,8 +124,18 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
     _findAngleAndAxis(context) {
         const len = this.subExpressions.length;
 
-        // Check last arg - could be axis vector or z component
+        // Check last arg - could be axis vector, edge, or z component
         const lastExpr = this._getResolvedExpression(context, this.subExpressions[len - 1]);
+
+        // If last arg is an edge expression, use its axis
+        if (lastExpr.isS3DEdge && lastExpr.isS3DEdge()) {
+            const edgeAxis = lastExpr.getAxis();
+            return {
+                angleIndex: len - 2,
+                axis: { x: edgeAxis[0], y: edgeAxis[1], z: edgeAxis[2] }
+            };
+        }
+
         const lastValues = lastExpr.getVariableAtomicValues();
 
         // If last arg has 6 values, it's a vector (use direction)
@@ -168,7 +178,7 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
             }
         }
 
-        this.dispatchError('rotate3d() requires axis as (ax, ay, az) or axisVector');
+        this.dispatchError('rotate3d() requires axis as (ax, ay, az), axisVector, or edge');
     }
 
     /**

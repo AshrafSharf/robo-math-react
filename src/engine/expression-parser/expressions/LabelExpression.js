@@ -2,8 +2,9 @@
  * LabelExpression - renders a MathTextComponent label on a grapher with pen animation
  *
  * Syntax options:
- *   label(graph, x, y, "latex string")     - using separate x and y coordinates
- *   label(graph, point, "latex string")    - using a point expression
+ *   label(graph, x, y, "latex string")       - using separate x and y coordinates
+ *   label(graph, point, "latex string")      - using a point expression
+ *   label(graph, nextto(M, mr), "latex")     - position relative to item M
  *
  * Template syntax for dynamic values:
  *   :varName        - simple variable substitution
@@ -12,10 +13,10 @@
  *   :{expr}:.Nf     - expression with formatting
  *
  * Examples:
- *   label(G, 3.2, 4.2, "A")                // label at coordinates
- *   label(G, A, "x^2 + y^2 = r^2")         // label at point A
- *   label(G, 0, 3, "x = :a")               // dynamic label with variable
- *   label(G, P, "\frac{:a}{:b}")           // fraction with template values
+ *   label(G, 3.2, 4.2, "A")                  // label at coordinates
+ *   label(G, A, "x^2 + y^2 = r^2")           // label at point A
+ *   label(G, 0, 3, "x = :a")                 // dynamic label with variable
+ *   label(G, nextto(P, mr, 5, 0), "label")   // label to the right of point P
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { LabelCommand } from '../../commands/LabelCommand.js';
@@ -35,6 +36,8 @@ export class LabelExpression extends AbstractNonArithmeticExpression {
         this.templateString = null;  // Original template with placeholders
         this.isTemplate = false;     // Whether this label uses template syntax
         this.templateScope = {};     // Variable values for template evaluation
+        // For deferred position evaluation (nextto expression)
+        this.nextToExpression = null;
     }
 
     resolve(context) {
@@ -88,9 +91,23 @@ export class LabelExpression extends AbstractNonArithmeticExpression {
         // Middle args (between graph and string): collect coordinates
         // - label(g, x, y, "text") - separate numeric values
         // - label(g, point, "text") - expression returning 2 values
+        // - label(g, nextto(M, mr), "text") - deferred position from nextto
+
+        // Check if position is a nextto expression
+        const positionExpr = this.subExpressions[1];
+        positionExpr.resolve(context);
+
+        if (positionExpr.getName && positionExpr.getName() === 'nextto') {
+            // Store nextto for deferred evaluation at command init time
+            this.nextToExpression = positionExpr;
+            // Position will be set by command after evaluating nextto
+            return;
+        }
+
+        // Standard path: collect coordinates
         const coordinates = [];
         for (let i = 1; i < lastIndex; i++) {
-            this.subExpressions[i].resolve(context);
+            if (i > 1) this.subExpressions[i].resolve(context);  // First already resolved
             const resultExpression = this._getResolvedExpression(context, this.subExpressions[i]);
             const atomicValues = resultExpression.getVariableAtomicValues();
 
@@ -150,7 +167,8 @@ export class LabelExpression extends AbstractNonArithmeticExpression {
             ...this.getStyleOptions(),
             isTemplate: this.isTemplate,
             templateString: this.templateString,
-            templateScope: this.templateScope
+            templateScope: this.templateScope,
+            nextToExpression: this.nextToExpression  // For deferred position evaluation
         };
         return new LabelCommand(this.graphExpression, this.latexString, this.position, commandOptions);
     }

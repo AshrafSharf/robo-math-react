@@ -72,10 +72,30 @@ export class LabelCommand extends BaseCommand {
       throw err;
     }
 
+    // Evaluate nextToExpression if provided (deferred position)
+    let position = this.position;
+
+    if (this.options.nextToExpression) {
+      // Get canvas coords from nextto
+      const canvasPos = this.options.nextToExpression.evaluate(this.commandContext);
+
+      // Convert canvas coords to graph view coords (subtract graph position)
+      const graphPos = this.graphContainer.getPosition();
+      const viewX = canvasPos.x - graphPos.left;
+      const viewY = canvasPos.y - graphPos.top;
+
+      // Convert view coords to model coords
+      const modelX = this.graphContainer.graphSheet2D.toModelX(viewX);
+      const modelY = this.graphContainer.graphSheet2D.toModelY(viewY);
+
+      position = { x: modelX, y: modelY };
+      this.position = position;  // Update for getLabelPosition()
+    }
+
     // Create the label using diagram's label method
     this.commandResult = this.diagram2d.label(
       this.graphContainer,
-      this.position,
+      position,
       this.latexString,
       this.color,
       this.options

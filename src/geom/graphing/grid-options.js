@@ -1,25 +1,20 @@
 export class GridOptions {
   constructor() {
-    // Simple boolean flags for grid and axis visibility
+    // Boolean flags for grid and axis visibility
     this.renderGrid = true;
-    this.renderGridLines = true;  // Grid lines can be hidden while keeping axis
+    this.renderGridLines = true;
     this.renderAxis = true;
 
-    // Scale type options
+    // Scale type from range expression (linear, pi, log)
     this.xScaleType = 'linear';
     this.yScaleType = 'linear';
 
-    // Divisions for linear scale (number of grid lines)
-    // Interval is calculated as: (max - min) / divisions
-    this.xDivisions = 10;
-    this.yDivisions = 10;
+    // Step (tick interval) from range expression
+    this.xStep = null;
+    this.yStep = null;
 
-    // Log scale base
-    this.xLogBase = '10';
-    this.yLogBase = '10';
-
-    // Pi scale multiplier (preset intervals: 2pi, pi, pi/2, pi/4, pi/6)
-    this.xPiMultiplier = 'pi';
-    this.yPiMultiplier = 'pi';
+    // Grid styling from grid expression
+    this.gridColor = null;
+    this.gridStrokeWidth = null;
   }
 }
