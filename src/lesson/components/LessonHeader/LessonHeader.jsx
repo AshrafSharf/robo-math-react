@@ -21,25 +21,10 @@ const Icons = {
       <path d="M14 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5" />
       <path d="M7 8v5M11 8v5" />
     </svg>
-  ),
-  grid: (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="1" y="1" width="16" height="16" rx="2" />
-      <line x1="6" y1="1" x2="6" y2="17" />
-      <line x1="12" y1="1" x2="12" y2="17" />
-      <line x1="1" y1="6" x2="17" y2="6" />
-      <line x1="1" y1="12" x2="17" y2="12" />
-    </svg>
-  ),
-  import: (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M9 12V2M9 12l-4-4M9 12l4-4" />
-      <path d="M2 14v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1" />
-    </svg>
   )
 };
 
-const LessonHeader = ({ showGrid, onShowGridChange, onOpenImport }) => {
+const LessonHeader = () => {
   const { lesson, setLessonName, newLesson } = useLesson();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(lesson.name);
@@ -145,19 +130,6 @@ const LessonHeader = ({ showGrid, onShowGridChange, onOpenImport }) => {
         )}
       </div>
 
-      {/* Right Side */}
-      <div className="lesson-header-right">
-        <button className="header-icon-btn" onClick={onOpenImport} title="Import">
-          {Icons.import}
-        </button>
-        <button
-          className={`header-icon-btn ${showGrid ? 'active' : ''}`}
-          onClick={() => onShowGridChange(!showGrid)}
-          title={showGrid ? 'Hide Grid' : 'Show Grid'}
-        >
-          {Icons.grid}
-        </button>
-      </div>
     </div>
   );
 };

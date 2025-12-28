@@ -179,7 +179,7 @@ function AppContent() {
     <div id="robo" className="robo-compass-div">
       {/* Top Header */}
       <div className="robo-compass-header navbar navbar-inverse">
-        <LessonHeader showGrid={showGrid} onShowGridChange={setShowGrid} onOpenImport={handleOpenImport} />
+        <LessonHeader />
       </div>
 
       {/* Main Shell */}
@@ -211,9 +211,10 @@ function AppContent() {
         <div className="canvas-area">
           <PageTabBar
             isSidebarCollapsed={isSidebarCollapsed}
-            controller={controller}
-            onPlaybackStart={() => setIsSidebarCollapsed(true)}
             isPlaybackActive={playback.isActive}
+            showGrid={showGrid}
+            onShowGridChange={setShowGrid}
+            onOpenImport={handleOpenImport}
           />
           <div
             ref={containerRef}
@@ -224,6 +225,17 @@ function AppContent() {
               pixelsPerUnit={25}
               visible={showGrid}
             />
+            {/* Floating Play Button */}
+            <button
+              className="canvas-play-fab"
+              onClick={handlePlayAll}
+              title="Play All"
+              disabled={playback.isActive || !controller?.roboCanvas}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7L8 5z"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>

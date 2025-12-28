@@ -18,7 +18,7 @@ export class Scale3DCommand extends Base3DCommand {
      * Constructor supports two signatures:
      *
      * Single shape mode:
-     *   new Scale3DCommand(shapeExpression, varName, scaleFactor, center, handler, originalPoints, scaledPoints, options)
+     *   new Scale3DCommand(shapeExpression, varName, scaleFactor, center, handler, originalPoints, scaledPoints, options, dependentScaledData)
      *
      * Multi-shape mode:
      *   new Scale3DCommand(graphExpression, shapeDataArray, scaleFactor, center, options)
@@ -40,8 +40,10 @@ export class Scale3DCommand extends Base3DCommand {
 
             this.graphContainer = null;
             this.scaledShapes = [];
+            this.dependentScaledData = [];
+            this.childCommands = [];
         } else {
-            // Single shape mode: (shapeExpression, varName, scaleFactor, center, handler, originalPoints, scaledPoints, options)
+            // Single shape mode: (shapeExpression, varName, scaleFactor, center, handler, originalPoints, scaledPoints, options, dependentScaledData)
             this.shapeExpression = args[0];
             this.originalShapeVarName = args[1];
             this.scaleFactor = args[2];
@@ -50,9 +52,11 @@ export class Scale3DCommand extends Base3DCommand {
             this.originalPoints = args[5];
             this.scaledPoints = args[6];
             this.options = args[7] || {};
+            this.dependentScaledData = args[8] || [];
 
             this.graphContainer = null;
             this.scaledShape = null;
+            this.childCommands = [];
         }
     }
 
@@ -82,6 +86,39 @@ export class Scale3DCommand extends Base3DCommand {
         return this._playSingleShape();
     }
 
+    /**
+     * Create child commands for dependents using pre-computed data
+     * @private
+     */
+    async _createDependentCommands() {
+        this.childCommands = [];
+
+        for (const { label, handler, originalPoints, scaledPoints } of this.dependentScaledData) {
+            // Get style options for this shape type
+            const geomType = handler.getGeometryType();
+            const defaults = ExpressionOptionsRegistry.get(geomType);
+            const styleOptions = {
+                ...defaults.styleOptions,
+                ...(this.options.styleOptions || {})
+            };
+
+            // Create child command for this dependent
+            const childCmd = new Scale3DCommand(
+                this.shapeExpression,  // Use same shape expression for graph access
+                label,
+                this.scaleFactor,
+                this.center,
+                handler,
+                originalPoints,
+                scaledPoints,
+                { styleOptions }
+                // No dependentScaledData for children (avoid infinite recursion)
+            );
+            await childCmd.init(this.commandContext);
+            this.childCommands.push(childCmd);
+        }
+    }
+
     async _playSingleShape() {
         const scene = this.graphContainer.getScene();
         const diagram3d = this.graphContainer.diagram3d;
@@ -95,21 +132,53 @@ export class Scale3DCommand extends Base3DCommand {
             return this.handler.createShape(diagram3d, state, styleOptions);
         };
 
-        return new Promise((resolve) => {
-            animateScale(
-                getScaledState,
-                createShape,
-                scene,
-                {
-                    duration: 2,
-                    onComplete: (finalShape) => {
-                        this.scaledShape = finalShape;
-                        this.commandResult = finalShape;
-                        resolve();
+        // If we have dependents, create child commands and play all in parallel
+        if (this.dependentScaledData && this.dependentScaledData.length > 0) {
+            await this._createDependentCommands();
+
+            // Create animation promises for main shape and all dependents
+            const mainPromise = new Promise((resolve) => {
+                animateScale(
+                    getScaledState,
+                    createShape,
+                    scene,
+                    {
+                        duration: 2,
+                        onComplete: (finalShape) => {
+                            this.scaledShape = finalShape;
+                            resolve();
+                        }
                     }
-                }
-            );
-        });
+                );
+            });
+
+            // Play all in parallel
+            await Promise.all([
+                mainPromise,
+                ...this.childCommands.map(cmd => cmd.play())
+            ]);
+
+            // Collect all shapes
+            const allShapes = [this.scaledShape, ...this.childCommands.map(cmd => cmd.commandResult)];
+            this.commandResult = new Shape3DCollection(allShapes);
+        } else {
+            // No dependents - just play the main shape
+            return new Promise((resolve) => {
+                animateScale(
+                    getScaledState,
+                    createShape,
+                    scene,
+                    {
+                        duration: 2,
+                        onComplete: (finalShape) => {
+                            this.scaledShape = finalShape;
+                            this.commandResult = finalShape;
+                            resolve();
+                        }
+                    }
+                );
+            });
+        }
     }
 
     async _playMultiShape() {
@@ -167,7 +236,20 @@ export class Scale3DCommand extends Base3DCommand {
 
         const finalState = this.handler.getScaledState(this.originalPoints, this.scaleFactor, this.center, 1);
         this.scaledShape = this.handler.createShape(diagram3d, finalState, styleOptions);
-        this.commandResult = this.scaledShape;
+
+        // If we have dependents, create and direct-play child commands
+        if (this.dependentScaledData && this.dependentScaledData.length > 0) {
+            await this._createDependentCommands();
+            for (const cmd of this.childCommands) {
+                await cmd.directPlay();
+            }
+
+            // Collect all shapes
+            const allShapes = [this.scaledShape, ...this.childCommands.map(cmd => cmd.commandResult)];
+            this.commandResult = new Shape3DCollection(allShapes);
+        } else {
+            this.commandResult = this.scaledShape;
+        }
     }
 
     async _directPlayMultiShape() {
@@ -204,6 +286,17 @@ export class Scale3DCommand extends Base3DCommand {
         if (this.scaledShape) {
             scene.remove(this.scaledShape);
         }
+
+        // Also remove child command shapes
+        if (this.childCommands && this.childCommands.length > 0) {
+            for (const cmd of this.childCommands) {
+                if (cmd.scaledShape) {
+                    scene.remove(cmd.scaledShape);
+                }
+            }
+            this.childCommands = [];
+        }
+
         return this._playSingleShape();
     }
 

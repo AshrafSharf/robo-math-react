@@ -20,12 +20,14 @@
  *   scale3d(V1, V2, L1, 1.5)             // multiple shapes
  */
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
+import { AssignmentExpression } from '../AssignmentExpression.js';
 import { Scale3DCommand } from '../../../commands/3d/Scale3DCommand.js';
 import { vectorScaleHandler } from '../../../../3d/common/scale-handlers/vector_scale_handler.js';
 import { lineScaleHandler } from '../../../../3d/common/scale-handlers/line_scale_handler.js';
 import { pointScaleHandler } from '../../../../3d/common/scale-handlers/point_scale_handler.js';
 import { scalePoints3D } from '../../../../3d/common/scale_utils.js';
 import { ExpressionOptionsRegistry } from '../../core/ExpressionOptionsRegistry.js';
+import { getOrderedDependents } from '../../../utils/DependencyTrackingUtil.js';
 
 // Handler registry for supported 3D shape types
 const SCALE_HANDLERS = {
@@ -57,6 +59,9 @@ export class Scale3DExpression extends AbstractNonArithmeticExpression {
         // Multi-shape mode
         this.isMultiShape = false;
         this.shapeDataArray = [];
+
+        // Pre-computed dependent scaled data (single shape mode)
+        this.dependentScaledData = [];  // [{label, handler, originalPoints, scaledPoints, varName}, ...]
     }
 
     resolve(context) {
@@ -150,9 +155,32 @@ export class Scale3DExpression extends AbstractNonArithmeticExpression {
         this.dispatchError('scale3d() requires a numeric scale factor');
     }
 
+    /**
+     * Get variable name from expression (matching 2D pattern)
+     */
+    _getVariableName(expr) {
+        if (expr.variableName) {
+            return expr.variableName;
+        }
+        if (typeof expr.getVariableName === 'function') {
+            return expr.getVariableName();
+        }
+        return null;
+    }
+
+    /**
+     * Get the commandable expression (RHS for assignments, or the expression itself)
+     */
+    _getCommandableExpr(expr) {
+        if (expr instanceof AssignmentExpression) {
+            return expr.getComparableExpression();
+        }
+        return expr;
+    }
+
     _resolveSingleShape(context) {
         this.shapeExpression = this._getResolvedExpression(context, this.subExpressions[0]);
-        this.originalShapeVarName = this.subExpressions[0].variableName || this.shapeExpression.variableName;
+        this.originalShapeVarName = this._getVariableName(this.subExpressions[0]);
         this.graphExpression = this.shapeExpression.graphExpression;
 
         const shapeType = this.shapeExpression.getGeometryType?.() || this.shapeExpression.getName();
@@ -168,6 +196,36 @@ export class Scale3DExpression extends AbstractNonArithmeticExpression {
         this.coordinates = [];
         for (const point of this.scaledPoints) {
             this.coordinates.push(point.x, point.y, point.z);
+        }
+
+        // Find dependents and pre-compute their scaled data
+        if (this.originalShapeVarName) {
+            const orderedDependents = getOrderedDependents(context, this.originalShapeVarName);
+            this.dependentScaledData = [];
+
+            for (const { expr, label } of orderedDependents) {
+                if (!label) continue;
+                if (expr === this) continue;  // Skip self to avoid infinite recursion
+
+                expr.resolve(context);
+                const cmdExpr = this._getCommandableExpr(expr);
+                if (!cmdExpr) continue;
+
+                const shapeType = cmdExpr.getGeometryType?.() || cmdExpr.getName();
+                const handler = SCALE_HANDLERS[shapeType];
+                if (!handler) continue;
+
+                const originalPoints = handler.getPoints(cmdExpr);
+                const scaledPoints = scalePoints3D(originalPoints, this.scaleFactor, this.center);
+
+                this.dependentScaledData.push({
+                    label,
+                    handler,
+                    originalPoints,
+                    scaledPoints,
+                    varName: label
+                });
+            }
         }
     }
 
@@ -287,7 +345,8 @@ export class Scale3DExpression extends AbstractNonArithmeticExpression {
             this.handler,
             this.originalPoints,
             this.scaledPoints,
-            mergedOpts
+            mergedOpts,
+            this.dependentScaledData  // Pass pre-computed dependent data
         );
     }
 

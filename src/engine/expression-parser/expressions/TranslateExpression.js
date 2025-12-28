@@ -141,6 +141,7 @@ export class TranslateExpression extends AbstractArithmeticExpression {
 
                 for (const { expr, label } of orderedDependents) {
                     if (!label) continue;
+                    if (expr === this) continue;  // Skip self to avoid infinite recursion
 
                     expr.resolve(context);
                     const cmdExpr = this._getCommandableExpr(expr);

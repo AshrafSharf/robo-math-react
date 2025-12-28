@@ -18,12 +18,14 @@
  *   translate3d(V1, V2, L1, 1, 2, 3)          // multiple mixed shapes
  */
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
+import { AssignmentExpression } from '../AssignmentExpression.js';
 import { Translate3DCommand } from '../../../commands/3d/Translate3DCommand.js';
 import { vectorTranslateHandler } from '../../../../3d/common/translate-handlers/vector_translate_handler.js';
 import { lineTranslateHandler } from '../../../../3d/common/translate-handlers/line_translate_handler.js';
 import { pointTranslateHandler } from '../../../../3d/common/translate-handlers/point_translate_handler.js';
 import { translatePoints3D } from '../../../../3d/common/translate_utils.js';
 import { ExpressionOptionsRegistry } from '../../core/ExpressionOptionsRegistry.js';
+import { getOrderedDependents } from '../../../utils/DependencyTrackingUtil.js';
 
 // Handler registry for supported 3D shape types
 const TRANSLATE_HANDLERS = {
@@ -54,6 +56,9 @@ export class Translate3DExpression extends AbstractNonArithmeticExpression {
         // Multi-shape mode
         this.isMultiShape = false;
         this.shapeDataArray = [];
+
+        // Pre-computed dependent translated data (single shape mode)
+        this.dependentTranslatedData = [];  // [{label, handler, originalPoints, translatedPoints, varName}, ...]
     }
 
     resolve(context) {
@@ -137,9 +142,32 @@ export class Translate3DExpression extends AbstractNonArithmeticExpression {
         this.dispatchError('translate3d() requires delta as (dx, dy, dz) or deltaVector');
     }
 
+    /**
+     * Get variable name from expression (matching 2D pattern)
+     */
+    _getVariableName(expr) {
+        if (expr.variableName) {
+            return expr.variableName;
+        }
+        if (typeof expr.getVariableName === 'function') {
+            return expr.getVariableName();
+        }
+        return null;
+    }
+
+    /**
+     * Get the commandable expression (RHS for assignments, or the expression itself)
+     */
+    _getCommandableExpr(expr) {
+        if (expr instanceof AssignmentExpression) {
+            return expr.getComparableExpression();
+        }
+        return expr;
+    }
+
     _resolveSingleShape(context) {
         this.shapeExpression = this._getResolvedExpression(context, this.subExpressions[0]);
-        this.originalShapeVarName = this.subExpressions[0].variableName || this.shapeExpression.variableName;
+        this.originalShapeVarName = this._getVariableName(this.subExpressions[0]);
         this.graphExpression = this.shapeExpression.graphExpression;
 
         const shapeType = this.shapeExpression.getGeometryType?.() || this.shapeExpression.getName();
@@ -155,6 +183,36 @@ export class Translate3DExpression extends AbstractNonArithmeticExpression {
         this.coordinates = [];
         for (const point of this.translatedPoints) {
             this.coordinates.push(point.x, point.y, point.z);
+        }
+
+        // Find dependents and pre-compute their translated data
+        if (this.originalShapeVarName) {
+            const orderedDependents = getOrderedDependents(context, this.originalShapeVarName);
+            this.dependentTranslatedData = [];
+
+            for (const { expr, label } of orderedDependents) {
+                if (!label) continue;
+                if (expr === this) continue;  // Skip self to avoid infinite recursion
+
+                expr.resolve(context);
+                const cmdExpr = this._getCommandableExpr(expr);
+                if (!cmdExpr) continue;
+
+                const shapeType = cmdExpr.getGeometryType?.() || cmdExpr.getName();
+                const handler = TRANSLATE_HANDLERS[shapeType];
+                if (!handler) continue;
+
+                const originalPoints = handler.getPoints(cmdExpr);
+                const translatedPoints = translatePoints3D(originalPoints, this.delta);
+
+                this.dependentTranslatedData.push({
+                    label,
+                    handler,
+                    originalPoints,
+                    translatedPoints,
+                    varName: label
+                });
+            }
         }
     }
 
@@ -272,7 +330,8 @@ export class Translate3DExpression extends AbstractNonArithmeticExpression {
             this.handler,
             this.originalPoints,
             this.translatedPoints,
-            mergedOpts
+            mergedOpts,
+            this.dependentTranslatedData  // Pass pre-computed dependent data
         );
     }
 

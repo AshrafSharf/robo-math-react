@@ -14,10 +14,19 @@
 .page-tabs {
   display: flex;
   flex: 1;
+  align-items: center;
   overflow-x: auto;
   gap: 2px;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.page-tab-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding-left: 8px;
 }
 
 .page-tabs::-webkit-scrollbar {
@@ -72,52 +81,10 @@
   color: #c62828;
 }
 
-.play-page-btn {
-  width: 24px;
-  height: 24px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #22c55e;
-  flex-shrink: 0;
-}
-
-.play-page-btn:hover:not(:disabled) {
-  background: #ecfdf5;
-  color: #16a34a;
-}
-
-.play-page-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.stop-page-btn {
-  width: 24px;
-  height: 24px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ef4444;
-  flex-shrink: 0;
-}
-
-.stop-page-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
-}
-
 .add-page-btn {
   width: 24px;
   height: 24px;
+  margin-left: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
   background: #fff;
@@ -130,9 +97,60 @@
   flex-shrink: 0;
 }
 
-.add-page-btn:hover {
+.add-page-btn:hover:not(:disabled) {
   background: #e8e8e8;
   color: #333;
+}
+
+.add-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.grid-toggle-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.grid-toggle-btn:hover {
+  background: #e8e8e8;
+  color: #555;
+}
+
+.grid-toggle-btn.active {
+  background: #4A9EFF;
+  border-color: #4A9EFF;
+  color: #fff;
+}
+
+.import-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.import-btn:hover {
+  background: #e8e8e8;
+  color: #555;
 }
 
 /* Disabled state for tabs during playback */

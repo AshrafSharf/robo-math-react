@@ -18,6 +18,7 @@
  *   rotate3d(V1, V2, V3, 45, 0, 1, 0)         // multiple shapes
  */
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
+import { AssignmentExpression } from '../AssignmentExpression.js';
 import { Rotate3DCommand } from '../../../commands/3d/Rotate3DCommand.js';
 import { RotateS3DCommand } from '../../../commands/s3d/RotateS3DCommand.js';
 import { vectorRotateHandler } from '../../../../3d/common/rotate-handlers/vector_rotate_handler.js';
@@ -25,6 +26,7 @@ import { lineRotateHandler } from '../../../../3d/common/rotate-handlers/line_ro
 import { pointRotateHandler } from '../../../../3d/common/rotate-handlers/point_rotate_handler.js';
 import { rotatePoints3D } from '../../../../3d/common/rotation_utils.js';
 import { ExpressionOptionsRegistry } from '../../core/ExpressionOptionsRegistry.js';
+import { getOrderedDependents } from '../../../utils/DependencyTrackingUtil.js';
 
 // Handler registry for supported 3D shape types
 const ROTATE_HANDLERS = {
@@ -56,6 +58,9 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
         // Multi-shape mode
         this.isMultiShape = false;
         this.shapeDataArray = []; // [{shapeExpression, handler, originalPoints, rotatedPoints, varName}, ...]
+
+        // Pre-computed dependent rotated data (single shape mode)
+        this.dependentRotatedData = [];  // [{label, handler, originalPoints, rotatedPoints, varName}, ...]
 
         // s3d mode (pure Three.js)
         this.isS3DMode = false;
@@ -104,6 +109,29 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
             // Single shape mode
             this._resolveSingleShape(context);
         }
+    }
+
+    /**
+     * Get variable name from expression (matching 2D pattern)
+     */
+    _getVariableName(expr) {
+        if (expr.variableName) {
+            return expr.variableName;
+        }
+        if (typeof expr.getVariableName === 'function') {
+            return expr.getVariableName();
+        }
+        return null;
+    }
+
+    /**
+     * Get the commandable expression (RHS for assignments, or the expression itself)
+     */
+    _getCommandableExpr(expr) {
+        if (expr instanceof AssignmentExpression) {
+            return expr.getComparableExpression();
+        }
+        return expr;
     }
 
     /**
@@ -186,7 +214,7 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
      */
     _resolveSingleShape(context) {
         this.shapeExpression = this._getResolvedExpression(context, this.subExpressions[0]);
-        this.originalShapeVarName = this.subExpressions[0].variableName || this.shapeExpression.variableName;
+        this.originalShapeVarName = this._getVariableName(this.subExpressions[0]);
         this.graphExpression = this.shapeExpression.graphExpression;
 
         const shapeType = this.shapeExpression.getGeometryType?.() || this.shapeExpression.getName();
@@ -202,6 +230,36 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
         this.coordinates = [];
         for (const point of this.rotatedPoints) {
             this.coordinates.push(point.x, point.y, point.z);
+        }
+
+        // Find dependents and pre-compute their rotated data
+        if (this.originalShapeVarName) {
+            const orderedDependents = getOrderedDependents(context, this.originalShapeVarName);
+            this.dependentRotatedData = [];
+
+            for (const { expr, label } of orderedDependents) {
+                if (!label) continue;
+                if (expr === this) continue;  // Skip self to avoid infinite recursion
+
+                expr.resolve(context);
+                const cmdExpr = this._getCommandableExpr(expr);
+                if (!cmdExpr) continue;
+
+                const shapeType = cmdExpr.getGeometryType?.() || cmdExpr.getName();
+                const handler = ROTATE_HANDLERS[shapeType];
+                if (!handler) continue;
+
+                const originalPoints = handler.getPoints(cmdExpr);
+                const rotatedPoints = rotatePoints3D(originalPoints, this.axis, this.angle);
+
+                this.dependentRotatedData.push({
+                    label,
+                    handler,
+                    originalPoints,
+                    rotatedPoints,
+                    varName: label
+                });
+            }
         }
     }
 
@@ -336,7 +394,8 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
             this.handler,
             this.originalPoints,
             this.rotatedPoints,
-            mergedOpts
+            mergedOpts,
+            this.dependentRotatedData  // Pass pre-computed dependent data
         );
     }
 
