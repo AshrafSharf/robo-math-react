@@ -21,6 +21,7 @@ import { VectorUtil } from '../../../geom/VectorUtil.js';
 
 export class VecDiffExpression extends AbstractNonArithmeticExpression {
     static NAME = 'vecdiff';
+    static isVectorType = true;
 
     constructor(subExpressions) {
         super();

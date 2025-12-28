@@ -19,6 +19,7 @@ import { NumericExpression } from './NumericExpression.js';
 
 export class VectorExpression extends AbstractNonArithmeticExpression {
     static NAME = 'vector';
+    static isVectorType = true;
 
     constructor(subExpressions) {
         super();

@@ -30,7 +30,7 @@ project3d(plane, point)
 ## Code
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 
 // Create xy-plane (z = 0)
 P = plane3d(g, 0, 0, 1, 0)
@@ -53,7 +53,7 @@ A_proj = project3d(P, A)
 ## More Examples
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 
 // Project onto xz-plane (y = 0)
 P1 = plane3d(g, 0, 1, 0, 0)

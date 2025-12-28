@@ -24,7 +24,7 @@ distance3d(object1, object2)
 
 ### Point to Point
 ```javascript
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 P1 = point3d(G, 0, 0, 0)
 P2 = point3d(G, 3, 4, 0)
@@ -34,7 +34,7 @@ d = distance3d(P1, P2)  // Returns 5
 
 ### Point to Plane
 ```javascript
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 // Plane at z = 0
 Plane = plane3d(G, 0, 0, 1, 0)
@@ -47,7 +47,7 @@ d = distance3d(P, Plane)  // Returns 3 (the z-coordinate)
 
 ### Point to Line
 ```javascript
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 // Line along X axis
 L = line3d(G, 0, 0, 0, 5, 0, 0)
@@ -60,7 +60,7 @@ d = distance3d(P, L)  // Perpendicular distance = 5
 
 ### Between Skew Lines
 ```javascript
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 // Line along X axis
 L1 = line3d(G, 0, 0, 0, 5, 0, 0)
@@ -73,7 +73,7 @@ d = distance3d(L1, L2)  // Returns 3 (vertical separation)
 
 ### Between Parallel Planes
 ```javascript
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 // Plane at z = 0
 P1 = plane3d(G, 0, 0, 1, 0)
@@ -86,7 +86,7 @@ d = distance3d(P1, P2)  // Returns 5
 
 ### With Change Expression
 ```javascript
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 // Create a plane (z = 0)
 Plane = plane3d(G, 0, 0, 1, 0)

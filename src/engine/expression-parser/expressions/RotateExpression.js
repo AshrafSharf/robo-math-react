@@ -17,6 +17,7 @@
  * When rotating multiple shapes, returns a ShapeCollection.
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
+import { AssignmentExpression } from './AssignmentExpression.js';
 import { RotateCommand } from '../../commands/RotateCommand.js';
 import { TransformationUtil } from '../../../geom/TransformationUtil.js';
 import { rotate_error_messages } from '../core/ErrorMessages.js';
@@ -42,6 +43,7 @@ export class RotateExpression extends AbstractArithmeticExpression {
         this.originalShapeName = null;  // 'point', 'line', 'vector', 'circle', 'polygon'
         this.originalShapeType = null;  // GEOMETRY_TYPES value
         this.originalShapeVariableName = null;  // Variable name for registry lookup (e.g., "P")
+        this.isVectorType = false;  // True if shape uses VectorCommand (has arrowhead)
         this.angle = 0;             // Rotation angle in degrees
         this.center = { x: 0, y: 0 }; // Rotation center
         this.graphExpression = null;
@@ -49,6 +51,9 @@ export class RotateExpression extends AbstractArithmeticExpression {
         // Multi-shape mode
         this.isMultiShape = false;
         this.shapeDataArray = [];  // [{originalShapeVarName, rotatedData, originalShapeName, originalShapeType}, ...]
+
+        // Pre-computed dependent rotated data (single shape mode)
+        this.dependentRotatedData = [];  // [{label, rotatedData, originalShapeName, originalShapeType}, ...]
     }
 
     resolve(context) {
@@ -108,7 +113,8 @@ export class RotateExpression extends AbstractArithmeticExpression {
                     originalShapeVarName: shapeVarName,
                     rotatedData,
                     originalShapeName: shapeName,
-                    originalShapeType: shapeType
+                    originalShapeType: shapeType,
+                    isVectorType: shapeExpr.constructor.isVectorType === true
                 });
             }
         } else {
@@ -118,6 +124,7 @@ export class RotateExpression extends AbstractArithmeticExpression {
             this.originalShapeType = this._getGeometryType(shapeExpr);
             this.originalShapeName = shapeExpr.getName();
             this.originalShapeVariableName = this._getVariableName(this.subExpressions[1]);
+            this.isVectorType = shapeExpr.constructor.isVectorType === true;
 
             if (!RotateExpression.SUPPORTED_TYPES.has(this.originalShapeType)) {
                 this.dispatchError(rotate_error_messages.INVALID_SHAPE(this.originalShapeName));
@@ -126,60 +133,44 @@ export class RotateExpression extends AbstractArithmeticExpression {
             // Extract original data and compute rotation based on shape type
             this._extractAndRotate(shapeExpr);
 
-            // Find and add dependents (only for named variables)
+            // Find dependents and pre-compute their rotated data
             if (this.originalShapeVariableName) {
-                let dependents = [];
-                try {
-                    dependents = getOrderedDependents(context, this.originalShapeVariableName);
-                } catch (e) {
-                    console.warn('rotate: Error getting dependents:', e);
-                }
+                const orderedDependents = getOrderedDependents(context, this.originalShapeVariableName);
+                this.dependentRotatedData = [];
 
-                // Add each dependent to shapeDataArray
-                for (const { expr, label } of dependents) {
-                    // Skip the rotate expression itself (it has no label)
+                for (const { expr, label } of orderedDependents) {
                     if (!label) continue;
 
-                    // If expr is an AssignmentExpression, get the actual RHS expression
-                    let actualExpr = expr;
-                    if (typeof expr.getComparableExpression === 'function') {
-                        actualExpr = expr.getComparableExpression();
-                    }
-                    if (!actualExpr) continue;
+                    expr.resolve(context);
+                    const cmdExpr = this._getCommandableExpr(expr);
+                    if (!cmdExpr) continue;
 
-                    const depShapeType = this._getGeometryType(actualExpr);
-                    if (!RotateExpression.SUPPORTED_TYPES.has(depShapeType)) continue;
+                    const shapeType = this._getGeometryType(cmdExpr);
+                    if (!RotateExpression.SUPPORTED_TYPES.has(shapeType)) continue;
 
-                    try {
-                        const rotatedData = this._computeRotatedData(actualExpr, depShapeType);
-                        if (!rotatedData) continue;
+                    const rotatedData = this._computeRotatedData(cmdExpr, shapeType);
+                    if (!rotatedData) continue;
 
-                        this.shapeDataArray.push({
-                            originalShapeVarName: label,
-                            rotatedData,
-                            originalShapeName: actualExpr.getName(),
-                            originalShapeType: depShapeType,
-                            isDependent: true  // Mark as dependency-triggered
-                        });
-                    } catch (e) {
-                        console.warn(`rotate: Could not compute rotation for dependent ${label}:`, e.message);
-                    }
-                }
-
-                // If we added dependents, switch to multi-shape mode
-                if (this.shapeDataArray.length > 0) {
-                    this.isMultiShape = true;
-                    // Move main shape into shapeDataArray as first element
-                    this.shapeDataArray.unshift({
-                        originalShapeVarName: this.originalShapeVariableName,
-                        rotatedData: this.rotatedData,
-                        originalShapeName: this.originalShapeName,
-                        originalShapeType: this.originalShapeType,
-                        isDependent: false  // This is the caller
+                    this.dependentRotatedData.push({
+                        label,
+                        rotatedData,
+                        originalShapeName: cmdExpr.getName(),
+                        originalShapeType: shapeType,
+                        isVectorType: cmdExpr.constructor.isVectorType === true
                     });
                 }
             }
         }
+    }
+
+    /**
+     * Get the commandable expression (RHS for assignments, or the expression itself)
+     */
+    _getCommandableExpr(expr) {
+        if (expr instanceof AssignmentExpression) {
+            return expr.getComparableExpression();
+        }
+        return expr;
     }
 
     /**
@@ -543,7 +534,7 @@ export class RotateExpression extends AbstractArithmeticExpression {
             );
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode: pass pre-computed dependent data
         return new RotateCommand(
             this.graphExpression,
             this.originalShapeVariableName,  // Variable name for registry lookup
@@ -552,7 +543,8 @@ export class RotateExpression extends AbstractArithmeticExpression {
             this.originalShapeType,
             this.angle,
             this.center,
-            mergedOptions
+            { ...mergedOptions, isVectorType: this.isVectorType },
+            this.dependentRotatedData  // Pre-computed rotated data for dependents
         );
     }
 

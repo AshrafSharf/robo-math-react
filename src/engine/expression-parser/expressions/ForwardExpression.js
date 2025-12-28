@@ -17,6 +17,7 @@ import { VectorUtil } from '../../../geom/VectorUtil.js';
 
 export class ForwardExpression extends AbstractNonArithmeticExpression {
     static NAME = 'forward';
+    static isVectorType = true;
 
     constructor(subExpressions) {
         super();

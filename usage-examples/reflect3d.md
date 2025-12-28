@@ -31,7 +31,7 @@ reflect3d(plane, shape)
 ## Code
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 
 // Create xy-plane (z = 0) as mirror
 P = plane3d(g, 0, 0, 1, 0)
@@ -75,7 +75,7 @@ poly_refl = reflect3d(P, poly)
 ## More Examples
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 
 // Reflect across tilted plane
 P = plane3d(g, 1, 1, 0, 0)   // plane where x + y = 0

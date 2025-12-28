@@ -88,7 +88,7 @@ When using `angle3d`, if the angle is exactly or nearly 90 degrees (within 0.5 d
 ## Code
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 
 // Create three points forming an angle
 O = point3d(g, 0, 0, 0)
@@ -143,7 +143,7 @@ linePlaneAngle = angle3d(g, Line, Plane)  // Returns ~35.26 degrees
 
 ### Auto Right-Angle Detection with Animation
 ```
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 // Fixed vertex at origin
 V = point3d(G, 0, 0, 0)
@@ -170,7 +170,7 @@ change(P2, point3d(G, 0, 3, 0))
 
 ### Using Vectors with Animation
 ```
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 // Two vectors from origin
 V1 = vector3d(G, 0, 0, 0, 3, 0, 0)  // Along X axis
@@ -192,7 +192,7 @@ change(V2, vector3d(G, 0, 0, 0, 0, 0, 3))
 
 ### Angle Between Planes with Animation
 ```
-G = g3d(0, 0, 16, 8, -5, 5, -5, 5, -5, 5)
+G = g3d(5, 5, 25, 25, -5, 5, -5, 5, -5, 5)
 
 // Fixed plane (XY plane, normal along Z)
 Plane1 = plane3d(G, 0, 0, 1, 0)

@@ -18,6 +18,7 @@ import { ScaleEffect } from '../../effects/scale-effect.js';
 import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 import { ShapeCollection } from '../../geom/ShapeCollection.js';
 import { RoboEventManager } from '../../events/robo-event-manager.js';
+import { GEOMETRY_TYPES } from '../expression-parser/expressions/IntersectExpression.js';
 
 export class ScaleCommand extends BaseCommand {
     /**
@@ -40,7 +41,7 @@ export class ScaleCommand extends BaseCommand {
      * @param {Object} center - Scale center {x, y}
      * @param {Object} options - Additional options with isMultiShape: true
      */
-    constructor(graphExpression, originalShapeVarNameOrArray, scaledDataOrFactor, originalShapeNameOrCenter, originalShapeType, scaleFactor, center, options = {}) {
+    constructor(graphExpression, originalShapeVarNameOrArray, scaledDataOrFactor, originalShapeNameOrCenter, originalShapeType, scaleFactor, center, options = {}, dependentScaledData = []) {
         super();
         this.graphExpression = graphExpression;
         this.graphContainer = null;
@@ -53,6 +54,7 @@ export class ScaleCommand extends BaseCommand {
             this.scaleFactor = scaledDataOrFactor;
             this.center = originalShapeNameOrCenter;
             this.options = originalShapeType || {};
+            this.dependentScaledData = [];
 
             // Single shape fields not used
             this.originalShapeVarName = null;
@@ -63,7 +65,7 @@ export class ScaleCommand extends BaseCommand {
             // Multi-shape tracking
             this.childCommands = [];
         } else {
-            // Single shape mode: constructor(graphExpression, varName, data, name, type, factor, center, options)
+            // Single shape mode: constructor(graphExpression, varName, data, name, type, factor, center, options, dependentScaledData)
             this.isMultiShape = false;
             this.originalShapeVarName = originalShapeVarNameOrArray;
             this.scaledData = scaledDataOrFactor;
@@ -72,10 +74,11 @@ export class ScaleCommand extends BaseCommand {
             this.scaleFactor = scaleFactor;
             this.center = center;
             this.options = options;
+            this.dependentScaledData = dependentScaledData;
 
             // Multi-shape fields not used
             this.shapeDataArray = null;
-            this.childCommands = null;
+            this.childCommands = [];  // Will hold dependent commands
         }
 
         // Set during init/play
@@ -158,19 +161,22 @@ export class ScaleCommand extends BaseCommand {
     _createDelegateCommand() {
         const styleOptions = this._getStyleOptionsFromOriginal();
 
-        switch (this.originalShapeName) {
-            case 'point':
+        // Vector types need VectorCommand (they return LINE geometry type but need arrowheads)
+        if (this.options.isVectorType) {
+            return new VectorCommand(this.graphExpression, this.scaledData.start, this.scaledData.end, styleOptions);
+        }
+
+        switch (this.originalShapeType) {
+            case GEOMETRY_TYPES.POINT:
                 return new PointCommand(this.graphExpression, this.scaledData.point, styleOptions);
-            case 'line':
+            case GEOMETRY_TYPES.LINE:
                 return new LineCommand(this.graphExpression, this.scaledData.start, this.scaledData.end, styleOptions);
-            case 'vector':
-                return new VectorCommand(this.graphExpression, this.scaledData.start, this.scaledData.end, styleOptions);
-            case 'circle':
+            case GEOMETRY_TYPES.CIRCLE:
                 return new CircleCommand(this.graphExpression, this.scaledData.center, this.scaledData.radius, styleOptions);
-            case 'polygon':
+            case GEOMETRY_TYPES.POLYGON:
                 return new PolygonCommand(this.graphExpression, this.scaledData.vertices, styleOptions);
             default:
-                throw new Error(`ScaleCommand: unsupported shape type '${this.originalShapeName}'`);
+                throw new Error(`ScaleCommand: unsupported geometry type '${this.originalShapeType}'`);
         }
     }
 
@@ -189,8 +195,45 @@ export class ScaleCommand extends BaseCommand {
             shapeData.originalShapeType,
             this.scaleFactor,
             this.center,
-            this.options
+            { ...this.options, isVectorType: shapeData.isVectorType }
         );
+    }
+
+    /**
+     * Supported geometry types for scaling
+     */
+    static SUPPORTED_TYPES = new Set([
+        GEOMETRY_TYPES.POINT,
+        GEOMETRY_TYPES.LINE,
+        GEOMETRY_TYPES.CIRCLE,
+        GEOMETRY_TYPES.POLYGON
+    ]);
+
+    /**
+     * Create and initialize commands for dependents using pre-computed data
+     * @returns {Promise}
+     * @private
+     */
+    async _createAndPlayDependentCommands() {
+        this.childCommands = [];
+
+        for (const { label, scaledData, originalShapeName, originalShapeType, isVectorType } of this.dependentScaledData) {
+            // Create ScaleCommand for this dependent using pre-computed data
+            const childCmd = new ScaleCommand(
+                this.graphExpression,
+                label,
+                scaledData,
+                originalShapeName,
+                originalShapeType,
+                this.scaleFactor,
+                this.center,
+                { ...this.options, isVectorType }
+            );
+            childCmd.diagram2d = this.diagram2d;
+            await childCmd.init(this.commandContext);
+
+            this.childCommands.push(childCmd);
+        }
     }
 
     /**
@@ -226,7 +269,7 @@ export class ScaleCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode: create delegate command for main shape
         this.delegateCommand = this._createDelegateCommand();
         this.delegateCommand.diagram2d = this.diagram2d;
         // Use original shape's stroke color, fallback to command color
@@ -243,10 +286,32 @@ export class ScaleCommand extends BaseCommand {
         // Hide scaled shape, will be shown by scale animation
         this.scaledShape.hide();
 
-        // Play scale effect with model-space center
-        // ScaleEffect animates in model space and regenerates paths, so no view conversion needed
-        const effect = new ScaleEffect(this.originalShape, this.scaledShape, this.scaleFactor, this.center);
-        await effect.play();
+        // If we have dependents, create commands for them
+        if (this.dependentScaledData && this.dependentScaledData.length > 0) {
+            await this._createAndPlayDependentCommands();
+
+            // Disable pen during parallel animation
+            const wasPenActive = RoboEventManager.isPenActive();
+            RoboEventManager.setPenActive(false);
+            try {
+                // Play main shape effect and all dependent commands in parallel
+                const mainEffect = new ScaleEffect(this.originalShape, this.scaledShape, this.scaleFactor, this.center);
+                await Promise.all([
+                    mainEffect.play(),
+                    ...this.childCommands.map(cmd => cmd.play())
+                ]);
+            } finally {
+                RoboEventManager.setPenActive(wasPenActive);
+            }
+
+            // Collect results as ShapeCollection
+            const allShapes = [this.scaledShape, ...this.childCommands.map(cmd => cmd.commandResult)];
+            this.commandResult = new ShapeCollection(allShapes);
+        } else {
+            // No dependents - just play the scale effect
+            const effect = new ScaleEffect(this.originalShape, this.scaledShape, this.scaleFactor, this.center);
+            await effect.play();
+        }
     }
 
     /**
@@ -275,7 +340,7 @@ export class ScaleCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode
         this.delegateCommand = this._createDelegateCommand();
         this.delegateCommand.diagram2d = this.diagram2d;
         // Use original shape's stroke color, fallback to command color
@@ -286,9 +351,22 @@ export class ScaleCommand extends BaseCommand {
         }
 
         await this.delegateCommand.init(this.commandContext);
+        await this.delegateCommand.directPlay();
 
         this.scaledShape = this.delegateCommand.commandResult;
         this.commandResult = this.scaledShape;
+
+        // If we have dependents, create and direct-play them
+        if (this.dependentScaledData && this.dependentScaledData.length > 0) {
+            await this._createAndPlayDependentCommands();
+            for (const cmd of this.childCommands) {
+                await cmd.directPlay();
+            }
+
+            // Collect results as ShapeCollection
+            const allShapes = [this.scaledShape, ...this.childCommands.map(cmd => cmd.commandResult)];
+            this.commandResult = new ShapeCollection(allShapes);
+        }
     }
 
     /**
@@ -298,6 +376,10 @@ export class ScaleCommand extends BaseCommand {
     async playSingle() {
         if (this.isMultiShape) {
             // Multi-shape mode: replay all child commands in parallel
+            if (!this.childCommands || this.childCommands.length === 0) {
+                await this.play();
+                return;
+            }
             const wasPenActive = RoboEventManager.isPenActive();
             RoboEventManager.setPenActive(false);
             try {
@@ -308,12 +390,39 @@ export class ScaleCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode
+        if (!this.scaledShape) {
+            await this.play();
+            return;
+        }
+
         this.scaledShape.hide();
 
-        // Play scale effect with model-space center
-        const effect = new ScaleEffect(this.originalShape, this.scaledShape, this.scaleFactor, this.center);
-        return effect.play();
+        // If we have dependents, replay them in parallel
+        if (this.childCommands && this.childCommands.length > 0) {
+            // Hide all dependent shapes
+            for (const cmd of this.childCommands) {
+                if (cmd.scaledShape) {
+                    cmd.scaledShape.hide();
+                }
+            }
+
+            const wasPenActive = RoboEventManager.isPenActive();
+            RoboEventManager.setPenActive(false);
+            try {
+                const mainEffect = new ScaleEffect(this.originalShape, this.scaledShape, this.scaleFactor, this.center);
+                await Promise.all([
+                    mainEffect.play(),
+                    ...this.childCommands.map(cmd => cmd.playSingle())
+                ]);
+            } finally {
+                RoboEventManager.setPenActive(wasPenActive);
+            }
+        } else {
+            // No dependents - just play the scale effect
+            const effect = new ScaleEffect(this.originalShape, this.scaledShape, this.scaleFactor, this.center);
+            await effect.play();
+        }
     }
 
     /**
@@ -357,11 +466,16 @@ export class ScaleCommand extends BaseCommand {
      * Clear the command and child commands
      */
     clear() {
-        if (this.isMultiShape && this.childCommands) {
+        if (this.childCommands && this.childCommands.length > 0) {
             for (const cmd of this.childCommands) {
                 cmd.clear();
             }
         }
+        // Reset state so playSingle works correctly after clear
+        this.childCommands = [];
+        this.originalShape = null;
+        this.scaledShape = null;
+        this.delegateCommand = null;
         super.clear();
     }
 }

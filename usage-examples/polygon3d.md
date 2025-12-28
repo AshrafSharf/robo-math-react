@@ -33,7 +33,7 @@ All vertices must be point3d expressions. Minimum 3 vertices required.
 ## Code
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 A = point3d(g, 0, 0, 0)
 B = point3d(g, 3, 0, 0)
 C = point3d(g, 1.5, 2, 1)

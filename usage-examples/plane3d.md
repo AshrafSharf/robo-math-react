@@ -62,7 +62,7 @@ plane3d(g, "x + 2*y - z = 5")
 ## Code
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 
 // Method 1: Point + Normal
 P = point3d(g, 0, 0, 0)

@@ -7,6 +7,9 @@
  *
  * For animated mode: creates shape without animation, then plays TranslateEffect.
  * For static mode: delegate command creates and shows shape normally.
+ *
+ * Dependency tracking: When dependentTranslatedData is provided, creates TranslateCommands
+ * for each dependent using pre-computed translated data.
  */
 import { BaseCommand } from './BaseCommand.js';
 import { PointCommand } from './PointCommand.js';
@@ -19,6 +22,7 @@ import { TranslateEffect } from '../../effects/translate-effect.js';
 import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 import { ShapeCollection } from '../../geom/ShapeCollection.js';
 import { RoboEventManager } from '../../events/robo-event-manager.js';
+import { GEOMETRY_TYPES } from '../expression-parser/expressions/IntersectExpression.js';
 
 export class TranslateCommand extends BaseCommand {
     /**
@@ -33,6 +37,7 @@ export class TranslateCommand extends BaseCommand {
      * @param {number} dx - Translation in x direction
      * @param {number} dy - Translation in y direction
      * @param {Object} options - Additional options
+     * @param {Array} dependentTranslatedData - Pre-computed translated data for dependents
      *
      * Multi-shape mode:
      * @param {Object} graphExpression - The graph expression
@@ -41,7 +46,7 @@ export class TranslateCommand extends BaseCommand {
      * @param {number} dy - Translation in y direction
      * @param {Object} options - Additional options with isMultiShape: true
      */
-    constructor(graphExpression, originalShapeVarNameOrArray, translatedDataOrDx, originalShapeNameOrDy, originalShapeType, dx, dy, options = {}) {
+    constructor(graphExpression, originalShapeVarNameOrArray, translatedDataOrDx, originalShapeNameOrDy, originalShapeType, dx, dy, options = {}, dependentTranslatedData = []) {
         super();
         this.graphExpression = graphExpression;
         this.graphContainer = null;
@@ -54,6 +59,7 @@ export class TranslateCommand extends BaseCommand {
             this.dx = translatedDataOrDx;
             this.dy = originalShapeNameOrDy;
             this.options = originalShapeType || {};
+            this.dependentTranslatedData = [];
 
             // Single shape fields not used
             this.originalShapeVarName = null;
@@ -64,7 +70,7 @@ export class TranslateCommand extends BaseCommand {
             // Multi-shape tracking
             this.childCommands = [];
         } else {
-            // Single shape mode: constructor(graphExpression, varName, data, name, type, dx, dy, options)
+            // Single shape mode: constructor(graphExpression, varName, data, name, type, dx, dy, options, dependentTranslatedData)
             this.isMultiShape = false;
             this.originalShapeVarName = originalShapeVarNameOrArray;
             this.translatedData = translatedDataOrDx;
@@ -73,10 +79,11 @@ export class TranslateCommand extends BaseCommand {
             this.dx = dx;
             this.dy = dy;
             this.options = options;
+            this.dependentTranslatedData = dependentTranslatedData;
 
             // Multi-shape fields not used
             this.shapeDataArray = null;
-            this.childCommands = null;
+            this.childCommands = [];  // Will hold dependent commands
         }
 
         // Set during init/play
@@ -84,6 +91,17 @@ export class TranslateCommand extends BaseCommand {
         this.translatedShape = null;
         this.delegateCommand = null;
     }
+
+    /**
+     * Supported geometry types for translation
+     */
+    static SUPPORTED_TYPES = new Set([
+        GEOMETRY_TYPES.POINT,
+        GEOMETRY_TYPES.LINE,
+        GEOMETRY_TYPES.CIRCLE,
+        GEOMETRY_TYPES.POLYGON,
+        GEOMETRY_TYPES.PLOT
+    ]);
 
     /**
      * Initialize - look up original shape(s) and store references
@@ -159,18 +177,21 @@ export class TranslateCommand extends BaseCommand {
     _createDelegateCommand() {
         const styleOptions = this._getStyleOptionsFromOriginal();
 
-        switch (this.originalShapeName) {
-            case 'point':
+        // Vector types need VectorCommand (they return LINE geometry type but need arrowheads)
+        if (this.options.isVectorType) {
+            return new VectorCommand(this.graphExpression, this.translatedData.start, this.translatedData.end, styleOptions);
+        }
+
+        switch (this.originalShapeType) {
+            case GEOMETRY_TYPES.POINT:
                 return new PointCommand(this.graphExpression, this.translatedData.point, styleOptions);
-            case 'line':
+            case GEOMETRY_TYPES.LINE:
                 return new LineCommand(this.graphExpression, this.translatedData.start, this.translatedData.end, styleOptions);
-            case 'vector':
-                return new VectorCommand(this.graphExpression, this.translatedData.start, this.translatedData.end, styleOptions);
-            case 'circle':
+            case GEOMETRY_TYPES.CIRCLE:
                 return new CircleCommand(this.graphExpression, this.translatedData.center, this.translatedData.radius, styleOptions);
-            case 'polygon':
+            case GEOMETRY_TYPES.POLYGON:
                 return new PolygonCommand(this.graphExpression, this.translatedData.vertices, styleOptions);
-            case 'plot': {
+            case GEOMETRY_TYPES.PLOT: {
                 // For plot, create a translated function: f(x) + dy, with x shifted by dx
                 const originalFunc = this.translatedData.compiledFunction;
                 const dx = this.dx;
@@ -187,7 +208,7 @@ export class TranslateCommand extends BaseCommand {
                 );
             }
             default:
-                throw new Error(`TranslateCommand: unsupported shape type '${this.originalShapeName}'`);
+                throw new Error(`TranslateCommand: unsupported geometry type '${this.originalShapeType}'`);
         }
     }
 
@@ -206,8 +227,35 @@ export class TranslateCommand extends BaseCommand {
             shapeData.originalShapeType,
             this.dx,
             this.dy,
-            this.options
+            { ...this.options, isVectorType: shapeData.isVectorType }
         );
+    }
+
+    /**
+     * Create and initialize commands for dependents using pre-computed data
+     * @returns {Promise}
+     * @private
+     */
+    async _createAndPlayDependentCommands() {
+        this.childCommands = [];
+
+        for (const { label, translatedData, originalShapeName, originalShapeType, isVectorType } of this.dependentTranslatedData) {
+            // Create TranslateCommand for this dependent using pre-computed data
+            const childCmd = new TranslateCommand(
+                this.graphExpression,
+                label,
+                translatedData,
+                originalShapeName,
+                originalShapeType,
+                this.dx,
+                this.dy,
+                { ...this.options, isVectorType }
+            );
+            childCmd.diagram2d = this.diagram2d;
+            await childCmd.init(this.commandContext);
+
+            this.childCommands.push(childCmd);
+        }
     }
 
     /**
@@ -243,7 +291,7 @@ export class TranslateCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode: create delegate command for main shape
         this.delegateCommand = this._createDelegateCommand();
         this.delegateCommand.diagram2d = this.diagram2d;
         // Use original shape's stroke color, fallback to command color
@@ -260,9 +308,32 @@ export class TranslateCommand extends BaseCommand {
         // Hide translated shape, will be shown by translation animation
         this.translatedShape.hide();
 
-        // Play translation effect with model-space dx, dy
-        const effect = new TranslateEffect(this.originalShape, this.translatedShape, this.dx, this.dy);
-        await effect.play();
+        // If we have dependents, create commands for them
+        if (this.dependentTranslatedData && this.dependentTranslatedData.length > 0) {
+            await this._createAndPlayDependentCommands();
+
+            // Disable pen during parallel animation
+            const wasPenActive = RoboEventManager.isPenActive();
+            RoboEventManager.setPenActive(false);
+            try {
+                // Play main shape effect and all dependent commands in parallel
+                const mainEffect = new TranslateEffect(this.originalShape, this.translatedShape, this.dx, this.dy);
+                await Promise.all([
+                    mainEffect.play(),
+                    ...this.childCommands.map(cmd => cmd.play())
+                ]);
+            } finally {
+                RoboEventManager.setPenActive(wasPenActive);
+            }
+
+            // Collect results as ShapeCollection
+            const allShapes = [this.translatedShape, ...this.childCommands.map(cmd => cmd.commandResult)];
+            this.commandResult = new ShapeCollection(allShapes);
+        } else {
+            // No dependents - just play the translation effect
+            const effect = new TranslateEffect(this.originalShape, this.translatedShape, this.dx, this.dy);
+            await effect.play();
+        }
     }
 
     /**
@@ -291,7 +362,7 @@ export class TranslateCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode
         this.delegateCommand = this._createDelegateCommand();
         this.delegateCommand.diagram2d = this.diagram2d;
         // Use original shape's stroke color, fallback to command color
@@ -302,9 +373,22 @@ export class TranslateCommand extends BaseCommand {
         }
 
         await this.delegateCommand.init(this.commandContext);
+        await this.delegateCommand.directPlay();
 
         this.translatedShape = this.delegateCommand.commandResult;
         this.commandResult = this.translatedShape;
+
+        // If we have dependents, create and direct-play them
+        if (this.dependentTranslatedData && this.dependentTranslatedData.length > 0) {
+            await this._createAndPlayDependentCommands();
+            for (const cmd of this.childCommands) {
+                await cmd.directPlay();
+            }
+
+            // Collect results as ShapeCollection
+            const allShapes = [this.translatedShape, ...this.childCommands.map(cmd => cmd.commandResult)];
+            this.commandResult = new ShapeCollection(allShapes);
+        }
     }
 
     /**
@@ -314,6 +398,10 @@ export class TranslateCommand extends BaseCommand {
     async playSingle() {
         if (this.isMultiShape) {
             // Multi-shape mode: replay all child commands in parallel
+            if (!this.childCommands || this.childCommands.length === 0) {
+                await this.play();
+                return;
+            }
             const wasPenActive = RoboEventManager.isPenActive();
             RoboEventManager.setPenActive(false);
             try {
@@ -324,12 +412,39 @@ export class TranslateCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode
+        if (!this.translatedShape) {
+            await this.play();
+            return;
+        }
+
         this.translatedShape.hide();
 
-        // Play translation effect with model-space dx, dy
-        const effect = new TranslateEffect(this.originalShape, this.translatedShape, this.dx, this.dy);
-        return effect.play();
+        // If we have dependents, replay them in parallel
+        if (this.childCommands && this.childCommands.length > 0) {
+            // Hide all dependent shapes
+            for (const cmd of this.childCommands) {
+                if (cmd.translatedShape) {
+                    cmd.translatedShape.hide();
+                }
+            }
+
+            const wasPenActive = RoboEventManager.isPenActive();
+            RoboEventManager.setPenActive(false);
+            try {
+                const mainEffect = new TranslateEffect(this.originalShape, this.translatedShape, this.dx, this.dy);
+                await Promise.all([
+                    mainEffect.play(),
+                    ...this.childCommands.map(cmd => cmd.playSingle())
+                ]);
+            } finally {
+                RoboEventManager.setPenActive(wasPenActive);
+            }
+        } else {
+            // No dependents - just play the translation effect
+            const effect = new TranslateEffect(this.originalShape, this.translatedShape, this.dx, this.dy);
+            await effect.play();
+        }
     }
 
     /**
@@ -376,11 +491,16 @@ export class TranslateCommand extends BaseCommand {
      * Clear the command and child commands
      */
     clear() {
-        if (this.isMultiShape && this.childCommands) {
+        if (this.childCommands && this.childCommands.length > 0) {
             for (const cmd of this.childCommands) {
                 cmd.clear();
             }
         }
+        // Reset state so playSingle works correctly after clear
+        this.childCommands = [];
+        this.originalShape = null;
+        this.translatedShape = null;
+        this.delegateCommand = null;
         super.clear();
     }
 }

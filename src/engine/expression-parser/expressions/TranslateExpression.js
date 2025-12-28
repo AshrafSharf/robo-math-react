@@ -13,10 +13,12 @@
  * When translating multiple shapes, returns a ShapeCollection.
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
+import { AssignmentExpression } from './AssignmentExpression.js';
 import { TranslateCommand } from '../../commands/TranslateCommand.js';
 import { TransformationUtil } from '../../../geom/TransformationUtil.js';
 import { translate_error_messages } from '../core/ErrorMessages.js';
 import { GEOMETRY_TYPES } from './IntersectExpression.js';
+import { getOrderedDependents } from '../../utils/DependencyTrackingUtil.js';
 
 export class TranslateExpression extends AbstractArithmeticExpression {
     static NAME = 'translate';
@@ -38,6 +40,7 @@ export class TranslateExpression extends AbstractArithmeticExpression {
         this.originalShapeName = null;  // 'point', 'line', 'vector', 'circle', 'polygon'
         this.originalShapeType = null;  // GEOMETRY_TYPES value
         this.originalShapeVariableName = null;  // Variable name for registry lookup
+        this.isVectorType = false;  // True if shape uses VectorCommand (has arrowhead)
         this.dx = 0;  // Translation in x
         this.dy = 0;  // Translation in y
         this.graphExpression = null;
@@ -45,6 +48,9 @@ export class TranslateExpression extends AbstractArithmeticExpression {
         // Multi-shape mode
         this.isMultiShape = false;
         this.shapeDataArray = [];  // [{originalShapeVarName, translatedData, originalShapeName, originalShapeType}, ...]
+
+        // Pre-computed dependent translated data (single shape mode)
+        this.dependentTranslatedData = [];  // [{label, translatedData, originalShapeName, originalShapeType}, ...]
     }
 
     resolve(context) {
@@ -108,7 +114,8 @@ export class TranslateExpression extends AbstractArithmeticExpression {
                     originalShapeVarName: shapeVarName,
                     translatedData,
                     originalShapeName: shapeName,
-                    originalShapeType: shapeType
+                    originalShapeType: shapeType,
+                    isVectorType: shapeExpr.constructor.isVectorType === true
                 });
             }
         } else {
@@ -118,6 +125,7 @@ export class TranslateExpression extends AbstractArithmeticExpression {
             this.originalShapeType = this._getGeometryType(shapeExpr);
             this.originalShapeName = shapeExpr.getName();
             this.originalShapeVariableName = this._getVariableName(this.subExpressions[1]);
+            this.isVectorType = shapeExpr.constructor.isVectorType === true;
 
             if (!TranslateExpression.SUPPORTED_TYPES.has(this.originalShapeType)) {
                 this.dispatchError(translate_error_messages.INVALID_SHAPE(this.originalShapeName));
@@ -125,7 +133,45 @@ export class TranslateExpression extends AbstractArithmeticExpression {
 
             // Extract original data and compute translation based on shape type
             this._extractAndTranslate(shapeExpr);
+
+            // Find dependents and pre-compute their translated data
+            if (this.originalShapeVariableName) {
+                const orderedDependents = getOrderedDependents(context, this.originalShapeVariableName);
+                this.dependentTranslatedData = [];
+
+                for (const { expr, label } of orderedDependents) {
+                    if (!label) continue;
+
+                    expr.resolve(context);
+                    const cmdExpr = this._getCommandableExpr(expr);
+                    if (!cmdExpr) continue;
+
+                    const shapeType = this._getGeometryType(cmdExpr);
+                    if (!TranslateExpression.SUPPORTED_TYPES.has(shapeType)) continue;
+
+                    const translatedData = this._computeTranslatedData(cmdExpr, shapeType);
+                    if (!translatedData) continue;
+
+                    this.dependentTranslatedData.push({
+                        label,
+                        translatedData,
+                        originalShapeName: cmdExpr.getName(),
+                        originalShapeType: shapeType,
+                        isVectorType: cmdExpr.constructor.isVectorType === true
+                    });
+                }
+            }
         }
+    }
+
+    /**
+     * Get the commandable expression (RHS for assignments, or the expression itself)
+     */
+    _getCommandableExpr(expr) {
+        if (expr instanceof AssignmentExpression) {
+            return expr.getComparableExpression();
+        }
+        return expr;
     }
 
     /**
@@ -462,7 +508,7 @@ export class TranslateExpression extends AbstractArithmeticExpression {
             );
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode: pass pre-computed dependent data
         return new TranslateCommand(
             this.graphExpression,
             this.originalShapeVariableName,
@@ -471,7 +517,8 @@ export class TranslateExpression extends AbstractArithmeticExpression {
             this.originalShapeType,
             this.dx,
             this.dy,
-            mergedOptions
+            { ...mergedOptions, isVectorType: this.isVectorType },
+            this.dependentTranslatedData
         );
     }
 

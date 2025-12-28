@@ -11,7 +11,7 @@
 export { FUNCTION_METADATA, getAllFunctionNames, getFunctionsByCategory, getCategories, CATEGORY_ORDER } from './functionMetadata';
 export { extractVariables, createVariableProvider } from './variableContext';
 export { createRoboCanvasCompletions, roboCanvasCompletions, getCompletionsForPrefix } from './completionSource';
-export { signatureHelpField, signatureHelpTheme, getFunctionInfo, clearSignatureTooltips } from './signatureHelp';
+export { signatureHelpField, signatureHelpTheme, signatureHelpExtension, getFunctionInfo, clearSignatureTooltips } from './signatureHelp';
 
 // Import styles
 import './styles.css';
@@ -27,7 +27,7 @@ import './styles.css';
 import { autocompletion } from '@codemirror/autocomplete';
 import { tooltips } from '@codemirror/view';
 import { createRoboCanvasCompletions } from './completionSource';
-import { signatureHelpField, signatureHelpTheme } from './signatureHelp';
+import { signatureHelpExtension } from './signatureHelp';
 
 export function roboCanvasAutocomplete(variableProvider = null, currentLineIndex = 0) {
   return [
@@ -44,7 +44,6 @@ export function roboCanvasAutocomplete(variableProvider = null, currentLineIndex
       defaultKeymap: false,  // We handle Enter manually
       icons: false  // Disable default icons, we style with CSS
     }),
-    signatureHelpField,
-    signatureHelpTheme
+    signatureHelpExtension
   ];
 }

@@ -7,6 +7,9 @@
  *
  * For animated mode: creates shape without animation, then plays RotateEffect.
  * For static mode: delegate command creates and shows shape normally.
+ *
+ * Dependency tracking: When dependentRotatedData is provided, creates RotateCommands
+ * for each dependent using pre-computed rotated data.
  */
 import { BaseCommand } from './BaseCommand.js';
 import { PointCommand } from './PointCommand.js';
@@ -18,6 +21,7 @@ import { RotateEffect } from '../../effects/rotate-effect.js';
 import { common_error_messages } from '../expression-parser/core/ErrorMessages.js';
 import { ShapeCollection } from '../../geom/ShapeCollection.js';
 import { RoboEventManager } from '../../events/robo-event-manager.js';
+import { GEOMETRY_TYPES } from '../expression-parser/expressions/IntersectExpression.js';
 
 export class RotateCommand extends BaseCommand {
     /**
@@ -32,6 +36,7 @@ export class RotateCommand extends BaseCommand {
      * @param {number} angle - Rotation angle in degrees
      * @param {Object} center - Rotation center {x, y}
      * @param {Object} options - Additional options
+     * @param {Array} dependentRotatedData - Pre-computed rotated data for dependents
      *
      * Multi-shape mode:
      * @param {Object} graphExpression - The graph expression
@@ -40,7 +45,7 @@ export class RotateCommand extends BaseCommand {
      * @param {Object} center - Rotation center {x, y}
      * @param {Object} options - Additional options with isMultiShape: true
      */
-    constructor(graphExpression, originalShapeVarNameOrArray, rotatedDataOrAngle, originalShapeNameOrCenter, originalShapeType, angle, center, options = {}) {
+    constructor(graphExpression, originalShapeVarNameOrArray, rotatedDataOrAngle, originalShapeNameOrCenter, originalShapeType, angle, center, options = {}, dependentRotatedData = []) {
         super();
         this.graphExpression = graphExpression;
         this.graphContainer = null;
@@ -53,6 +58,7 @@ export class RotateCommand extends BaseCommand {
             this.angle = rotatedDataOrAngle;
             this.center = originalShapeNameOrCenter;
             this.options = originalShapeType || {};
+            this.dependentRotatedData = [];
 
             // Single shape fields not used
             this.originalShapeVarName = null;
@@ -63,7 +69,7 @@ export class RotateCommand extends BaseCommand {
             // Multi-shape tracking
             this.childCommands = [];
         } else {
-            // Single shape mode: constructor(graphExpression, varName, data, name, type, angle, center, options)
+            // Single shape mode: constructor(graphExpression, varName, data, name, type, angle, center, options, dependentRotatedData)
             this.isMultiShape = false;
             this.originalShapeVarName = originalShapeVarNameOrArray;
             this.rotatedData = rotatedDataOrAngle;
@@ -72,10 +78,11 @@ export class RotateCommand extends BaseCommand {
             this.angle = angle;
             this.center = center;
             this.options = options;
+            this.dependentRotatedData = dependentRotatedData;
 
             // Multi-shape fields not used
             this.shapeDataArray = null;
-            this.childCommands = null;
+            this.childCommands = [];  // Will hold dependent commands
         }
 
         // Set during init/play
@@ -158,19 +165,22 @@ export class RotateCommand extends BaseCommand {
     _createDelegateCommand() {
         const styleOptions = this._getStyleOptionsFromOriginal();
 
-        switch (this.originalShapeName) {
-            case 'point':
+        // Vector types need VectorCommand (they return LINE geometry type but need arrowheads)
+        if (this.options.isVectorType) {
+            return new VectorCommand(this.graphExpression, this.rotatedData.start, this.rotatedData.end, styleOptions);
+        }
+
+        switch (this.originalShapeType) {
+            case GEOMETRY_TYPES.POINT:
                 return new PointCommand(this.graphExpression, this.rotatedData.point, styleOptions);
-            case 'line':
+            case GEOMETRY_TYPES.LINE:
                 return new LineCommand(this.graphExpression, this.rotatedData.start, this.rotatedData.end, styleOptions);
-            case 'vector':
-                return new VectorCommand(this.graphExpression, this.rotatedData.start, this.rotatedData.end, styleOptions);
-            case 'circle':
+            case GEOMETRY_TYPES.CIRCLE:
                 return new CircleCommand(this.graphExpression, this.rotatedData.center, this.rotatedData.radius, styleOptions);
-            case 'polygon':
+            case GEOMETRY_TYPES.POLYGON:
                 return new PolygonCommand(this.graphExpression, this.rotatedData.vertices, styleOptions);
             default:
-                throw new Error(`RotateCommand: unsupported shape type '${this.originalShapeName}'`);
+                throw new Error(`RotateCommand: unsupported geometry type '${this.originalShapeType}'`);
         }
     }
 
@@ -189,8 +199,45 @@ export class RotateCommand extends BaseCommand {
             shapeData.originalShapeType,
             this.angle,
             this.center,
-            this.options
+            { ...this.options, isVectorType: shapeData.isVectorType }
         );
+    }
+
+    /**
+     * Supported geometry types for rotation
+     */
+    static SUPPORTED_TYPES = new Set([
+        GEOMETRY_TYPES.POINT,
+        GEOMETRY_TYPES.LINE,
+        GEOMETRY_TYPES.CIRCLE,
+        GEOMETRY_TYPES.POLYGON
+    ]);
+
+    /**
+     * Create and initialize commands for dependents using pre-computed data
+     * @returns {Promise}
+     * @private
+     */
+    async _createAndPlayDependentCommands() {
+        this.childCommands = [];
+
+        for (const { label, rotatedData, originalShapeName, originalShapeType, isVectorType } of this.dependentRotatedData) {
+            // Create RotateCommand for this dependent using pre-computed data
+            const childCmd = new RotateCommand(
+                this.graphExpression,
+                label,
+                rotatedData,
+                originalShapeName,
+                originalShapeType,
+                this.angle,
+                this.center,
+                { ...this.options, isVectorType }
+            );
+            childCmd.diagram2d = this.diagram2d;
+            await childCmd.init(this.commandContext);
+
+            this.childCommands.push(childCmd);
+        }
     }
 
     /**
@@ -226,10 +273,9 @@ export class RotateCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode: create delegate command for main shape
         this.delegateCommand = this._createDelegateCommand();
         this.delegateCommand.diagram2d = this.diagram2d;
-        // Use original shape's stroke color, fallback to command color
         const originalStroke = this.originalShape?.styleObj?.stroke;
         this.delegateCommand.setColor(originalStroke || this.color);
         if (this.labelName) {
@@ -243,10 +289,32 @@ export class RotateCommand extends BaseCommand {
         // Hide rotated shape, will be shown by rotation animation
         this.rotatedShape.hide();
 
-        // Play rotation effect with model-space center
-        // RotateEffect animates in model space and regenerates paths, so no view conversion needed
-        const effect = new RotateEffect(this.originalShape, this.rotatedShape, this.angle, this.center);
-        await effect.play();
+        // If we have dependents, create commands for them
+        if (this.dependentRotatedData && this.dependentRotatedData.length > 0) {
+            await this._createAndPlayDependentCommands();
+
+            // Disable pen during parallel animation
+            const wasPenActive = RoboEventManager.isPenActive();
+            RoboEventManager.setPenActive(false);
+            try {
+                // Play main shape effect and all dependent commands in parallel
+                const mainEffect = new RotateEffect(this.originalShape, this.rotatedShape, this.angle, this.center);
+                await Promise.all([
+                    mainEffect.play(),
+                    ...this.childCommands.map(cmd => cmd.play())
+                ]);
+            } finally {
+                RoboEventManager.setPenActive(wasPenActive);
+            }
+
+            // Collect results as ShapeCollection
+            const allShapes = [this.rotatedShape, ...this.childCommands.map(cmd => cmd.commandResult)];
+            this.commandResult = new ShapeCollection(allShapes);
+        } else {
+            // No dependents - just play the rotation effect
+            const effect = new RotateEffect(this.originalShape, this.rotatedShape, this.angle, this.center);
+            await effect.play();
+        }
     }
 
     /**
@@ -275,10 +343,9 @@ export class RotateCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode
         this.delegateCommand = this._createDelegateCommand();
         this.delegateCommand.diagram2d = this.diagram2d;
-        // Use original shape's stroke color, fallback to command color
         const originalStroke = this.originalShape?.styleObj?.stroke;
         this.delegateCommand.setColor(originalStroke || this.color);
         if (this.labelName) {
@@ -286,9 +353,22 @@ export class RotateCommand extends BaseCommand {
         }
 
         await this.delegateCommand.init(this.commandContext);
+        await this.delegateCommand.directPlay();
 
         this.rotatedShape = this.delegateCommand.commandResult;
         this.commandResult = this.rotatedShape;
+
+        // If we have dependents, create and direct-play them
+        if (this.dependentRotatedData && this.dependentRotatedData.length > 0) {
+            await this._createAndPlayDependentCommands();
+            for (const cmd of this.childCommands) {
+                await cmd.directPlay();
+            }
+
+            // Collect results as ShapeCollection
+            const allShapes = [this.rotatedShape, ...this.childCommands.map(cmd => cmd.commandResult)];
+            this.commandResult = new ShapeCollection(allShapes);
+        }
     }
 
     /**
@@ -298,6 +378,10 @@ export class RotateCommand extends BaseCommand {
     async playSingle() {
         if (this.isMultiShape) {
             // Multi-shape mode: replay all child commands in parallel
+            if (!this.childCommands || this.childCommands.length === 0) {
+                await this.play();
+                return;
+            }
             const wasPenActive = RoboEventManager.isPenActive();
             RoboEventManager.setPenActive(false);
             try {
@@ -308,12 +392,39 @@ export class RotateCommand extends BaseCommand {
             return;
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode
+        if (!this.rotatedShape) {
+            await this.play();
+            return;
+        }
+
         this.rotatedShape.hide();
 
-        // Play rotation effect with model-space center
-        const effect = new RotateEffect(this.originalShape, this.rotatedShape, this.angle, this.center);
-        return effect.play();
+        // If we have dependents, replay them in parallel
+        if (this.childCommands && this.childCommands.length > 0) {
+            // Hide all dependent shapes
+            for (const cmd of this.childCommands) {
+                if (cmd.rotatedShape) {
+                    cmd.rotatedShape.hide();
+                }
+            }
+
+            const wasPenActive = RoboEventManager.isPenActive();
+            RoboEventManager.setPenActive(false);
+            try {
+                const mainEffect = new RotateEffect(this.originalShape, this.rotatedShape, this.angle, this.center);
+                await Promise.all([
+                    mainEffect.play(),
+                    ...this.childCommands.map(cmd => cmd.playSingle())
+                ]);
+            } finally {
+                RoboEventManager.setPenActive(wasPenActive);
+            }
+        } else {
+            // No dependents - just play the rotation effect
+            const effect = new RotateEffect(this.originalShape, this.rotatedShape, this.angle, this.center);
+            await effect.play();
+        }
     }
 
     /**
@@ -322,7 +433,6 @@ export class RotateCommand extends BaseCommand {
      */
     getLabelPosition() {
         if (this.isMultiShape) {
-            // For multi-shape, return position of first shape
             if (this.childCommands && this.childCommands.length > 0) {
                 return this.childCommands[0].getLabelPosition();
             }
@@ -334,7 +444,6 @@ export class RotateCommand extends BaseCommand {
                 return this.rotatedData.point;
             case 'line':
             case 'vector':
-                // Midpoint of line
                 return {
                     x: (this.rotatedData.start.x + this.rotatedData.end.x) / 2,
                     y: (this.rotatedData.start.y + this.rotatedData.end.y) / 2
@@ -342,9 +451,8 @@ export class RotateCommand extends BaseCommand {
             case 'circle':
                 return this.rotatedData.center;
             case 'polygon':
-                // Centroid
                 const verts = this.rotatedData.vertices;
-                const n = verts.length - 1; // Exclude closing point
+                const n = verts.length - 1;
                 const sumX = verts.slice(0, n).reduce((s, v) => s + v.x, 0);
                 const sumY = verts.slice(0, n).reduce((s, v) => s + v.y, 0);
                 return { x: sumX / n, y: sumY / n };
@@ -357,11 +465,16 @@ export class RotateCommand extends BaseCommand {
      * Clear the command and child commands
      */
     clear() {
-        if (this.isMultiShape && this.childCommands) {
+        if (this.childCommands && this.childCommands.length > 0) {
             for (const cmd of this.childCommands) {
                 cmd.clear();
             }
         }
+        // Reset state so playSingle works correctly after clear
+        this.childCommands = [];
+        this.originalShape = null;
+        this.rotatedShape = null;
+        this.delegateCommand = null;
         super.clear();
     }
 }

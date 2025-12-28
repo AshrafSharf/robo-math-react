@@ -64,7 +64,7 @@ measure(g1, pt1, pt2, lbl2)
 For 3D graphs, use `measure3d`:
 
 ```
-g1 = g3d(0, 0, 20, 20)
+g1 = g3d(5, 5, 25, 25)
 
 # Basic 3D distance marker
 measure3d(g1, 0, 0, 0, 5, 0, 0, "5 units")

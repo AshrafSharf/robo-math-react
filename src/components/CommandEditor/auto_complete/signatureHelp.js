@@ -1,10 +1,10 @@
 /**
  * Signature help for robo-canvas language.
- * Shows function signatures as tooltips when cursor is after ( or ,
+ * Shows function signatures as a fixed tooltip at bottom-right of viewport.
  */
 
 import { StateField, StateEffect } from '@codemirror/state';
-import { showTooltip, EditorView } from '@codemirror/view';
+import { ViewPlugin, EditorView } from '@codemirror/view';
 import { completionStatus } from '@codemirror/autocomplete';
 import { FUNCTION_METADATA } from './functionMetadata';
 
@@ -120,34 +120,25 @@ function createSignatureTooltip(funcMeta, argIndex) {
 }
 
 /**
- * Compute signature tooltip based on cursor position.
+ * Get signature data based on cursor position.
  * @param {EditorState} state - Current editor state
- * @returns {Array} Array of tooltip objects
+ * @returns {Object|null} { funcMeta, argIndex } or null
  */
-function getSignatureTooltip(state) {
+function getSignatureData(state) {
   const pos = state.selection.main.head;
   const textBefore = state.sliceDoc(0, pos);
 
   const context = parseFunctionContext(textBefore);
   if (!context) {
-    return [];
+    return null;
   }
 
   const funcMeta = FUNCTION_METADATA[context.funcName];
   if (!funcMeta) {
-    return [];
+    return null;
   }
 
-  return [{
-    pos,
-    above: true,
-    strictSide: true,
-    arrow: false,
-    create: () => ({
-      dom: createSignatureTooltip(funcMeta, context.argIndex),
-      offset: { x: 100, y: 60 }
-    })
-  }];
+  return { funcMeta, argIndex: context.argIndex };
 }
 
 /**
@@ -156,119 +147,164 @@ function getSignatureTooltip(state) {
 export const clearSignatureTooltips = StateEffect.define();
 
 /**
- * StateField that manages signature help tooltips.
+ * StateField that tracks whether signature help should be shown.
  */
 export const signatureHelpField = StateField.define({
   create() {
-    return [];
+    return null; // { funcMeta, argIndex } or null
   },
 
-  update(tooltips, tr) {
+  update(data, tr) {
     // Check for clear effect (triggered on blur)
     for (let effect of tr.effects) {
       if (effect.is(clearSignatureTooltips)) {
-        return [];
+        return null;
       }
     }
 
     // Hide signature help when autocomplete dropdown is active to avoid UI clutter
     const autocompleteActive = completionStatus(tr.state) === 'active';
     if (autocompleteActive) {
-      return [];
+      return null;
     }
 
     // Only show signature help when user is actively typing (document changed)
     // Don't show on selection-only changes (like clicking/focusing)
     if (tr.docChanged) {
-      return getSignatureTooltip(tr.state);
+      return getSignatureData(tr.state);
     }
 
-    // Keep existing tooltips if document didn't change, but clear on pure selection changes
+    // Keep existing data if document didn't change, but clear on pure selection changes
     // This allows tooltips to persist while navigating with arrows after typing
     if (tr.selection && !tr.docChanged) {
-      // If there are existing tooltips and cursor moved, recompute to update arg highlighting
-      if (tooltips.length > 0) {
-        return getSignatureTooltip(tr.state);
+      // If there's existing data and cursor moved, recompute to update arg highlighting
+      if (data) {
+        return getSignatureData(tr.state);
       }
       // Otherwise don't show new tooltips on click/focus
-      return [];
+      return null;
     }
 
-    return tooltips;
-  },
+    return data;
+  }
+});
 
-  provide: field => showTooltip.computeN([field], state => state.field(field))
+/**
+ * ViewPlugin that manages the fixed-position tooltip DOM element.
+ */
+const signatureHelpPlugin = ViewPlugin.fromClass(class {
+  constructor(view) {
+    this.tooltip = null;
+    this.update(view);
+  }
+
+  update(update) {
+    const data = update.state.field(signatureHelpField);
+
+    if (data) {
+      // Show or update tooltip
+      if (!this.tooltip) {
+        this.tooltip = document.createElement('div');
+        this.tooltip.className = 'cm-signature-tooltip-container';
+        document.body.appendChild(this.tooltip);
+      }
+      // Clear and recreate content
+      this.tooltip.innerHTML = '';
+      this.tooltip.appendChild(createSignatureTooltip(data.funcMeta, data.argIndex));
+    } else {
+      // Hide tooltip
+      if (this.tooltip) {
+        this.tooltip.remove();
+        this.tooltip = null;
+      }
+    }
+  }
+
+  destroy() {
+    if (this.tooltip) {
+      this.tooltip.remove();
+      this.tooltip = null;
+    }
+  }
 });
 
 /**
  * Theme for signature help tooltips.
  */
 export const signatureHelpTheme = EditorView.baseTheme({
-  // Ensure tooltip container has high z-index
-  '.cm-tooltip': {
-    zIndex: '99999 !important',
-    backgroundColor: '#0a0a0a'
-  },
-  '.cm-tooltip.cm-tooltip-above': {
-    backgroundColor: '#0a0a0a',
-    overflow: 'visible'
-  },
-  '.cm-signature-tooltip': {
-    backgroundColor: '#0a0a0a',
-    color: '#d4d4d4',
-    border: '1px solid #333',
-    borderRadius: '4px',
-    padding: '12px 14px',
-    fontSize: '15px',
-    fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-    maxWidth: '500px',
-    minHeight: 'fit-content',
-    height: 'auto',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.6)',
-    zIndex: '99999 !important',
-    overflow: 'visible',
-    display: 'block'
-  },
-  '.cm-signature-name': {
-    color: '#dcdcaa',
-    fontWeight: 'bold'
-  },
-  '.cm-signature-arg': {
-    color: '#9cdcfe'
-  },
-  '.cm-signature-arg-active': {
-    color: '#4ec9b0',
-    fontWeight: 'bold',
-    textDecoration: 'underline'
-  },
-  '.cm-signature-primary': {
-    marginBottom: '6px'
-  },
-  '.cm-signature-desc': {
-    color: '#a0a0a0',
-    fontSize: '13px',
-    fontFamily: '"Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
-    marginBottom: '6px',
-    paddingBottom: '6px',
-    borderBottom: '1px solid #333'
-  },
-  '.cm-signature-alt-title': {
-    color: '#808080',
-    fontSize: '12px',
-    marginBottom: '4px'
-  },
-  '.cm-signature-list': {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px'
-  },
-  '.cm-signature-item': {
-    color: '#9cdcfe',
-    fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-    fontSize: '13px',
-    padding: '1px 0'
-  }
+  // Styles are applied via global CSS since tooltip is in document.body
 });
+
+// Inject global styles for the fixed tooltip
+const styleId = 'cm-signature-help-styles';
+if (!document.getElementById(styleId)) {
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = `
+    .cm-signature-tooltip-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 99999;
+    }
+    .cm-signature-tooltip {
+      background-color: #0a0a0a;
+      color: #d4d4d4;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-family: Monaco, Consolas, "Courier New", monospace;
+      max-width: 500px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    }
+    .cm-signature-name {
+      color: #dcdcaa;
+      font-weight: bold;
+    }
+    .cm-signature-arg {
+      color: #9cdcfe;
+    }
+    .cm-signature-arg-active {
+      color: #4ec9b0;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .cm-signature-primary {
+      margin-bottom: 6px;
+    }
+    .cm-signature-desc {
+      color: #a0a0a0;
+      font-size: 13px;
+      font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #333;
+    }
+    .cm-signature-alt-title {
+      color: #808080;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .cm-signature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .cm-signature-item {
+      color: #9cdcfe;
+      font-family: Monaco, Consolas, "Courier New", monospace;
+      font-size: 13px;
+      padding: 1px 0;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+/**
+ * Combined extension for signature help.
+ */
+export const signatureHelpExtension = [signatureHelpField, signatureHelpPlugin];
 
 /**
  * Get function info for a given name (for external use).

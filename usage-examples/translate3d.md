@@ -1,5 +1,5 @@
 
-G=g3d(0, 0, 20, 20)
+G=g3d(5, 5, 25, 25)
 P1=point3d(G,0,2,3)
 P2=point3d(G,-1,3,4)
 S=translate3d(P1, P2, 5, 5,0)

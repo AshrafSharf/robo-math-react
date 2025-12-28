@@ -17,6 +17,7 @@ import { VectorUtil } from '../../../geom/VectorUtil.js';
 
 export class VecProjectExpression extends AbstractNonArithmeticExpression {
     static NAME = 'vecproject';
+    static isVectorType = true;
 
     constructor(subExpressions) {
         super();

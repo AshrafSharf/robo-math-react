@@ -36,7 +36,7 @@ intersect3d(obj1, obj2)
 ## Code
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 
 // Line-Plane intersection
 L = line3d(g, 0, 0, 0, 1, 1, 1)
@@ -68,7 +68,7 @@ axis = intersect3d(P1, P2)        // x-axis as line3d
 When objects don't intersect, the result is not rendered:
 
 ```
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 
 // Parallel lines (skew in 3D)
 L1 = line3d(g, 0, 0, 0, 1, 0, 0)

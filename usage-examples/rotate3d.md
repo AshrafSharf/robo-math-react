@@ -1,11 +1,11 @@
-g = g3d(0, 0, 20, 20)
+g = g3d(5, 5, 25, 25)
 V = vector3d(g, 0, 0, 0, 3, 3, 0)
 A=rotate3d(V, 90, 0, 0, 1)
 rotate3d(A, 45, 1, 0, 1)
 
 
 #Example
-G=g3d(0, 0, 20, 20)
+G=g3d(5, 5, 25, 25)
 P1=point3d(G,0,2,3)
 P2=point3d(G,-1,3,4)
 S=translate3d(P1, P2, 5, 5,0)

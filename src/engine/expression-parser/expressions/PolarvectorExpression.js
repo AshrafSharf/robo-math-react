@@ -22,6 +22,7 @@ import { LineUtil } from '../../../geom/LineUtil.js';
 
 export class PolarvectorExpression extends AbstractNonArithmeticExpression {
     static NAME = 'polarvector';
+    static isVectorType = true;
 
     constructor(subExpressions) {
         super();

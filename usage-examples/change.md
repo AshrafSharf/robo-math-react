@@ -50,7 +50,7 @@ Point pt1 animates to (-2,3), line l1 updates automatically.
 
 ### 3D Point
 ```
-g1 = g3d(0, 0, 20, 20)
+g1 = g3d(5, 5, 25, 25)
 pt1 = point3d(g1, 1, 2, 3)
 l1 = line3d(g1, pt1, point3d(g1, 5, 5, 5))
 change(pt1, point3d(g1, 4, 5, 6))
@@ -72,7 +72,7 @@ Line animates to new position, midpoint updates.
 
 ### 3D Line
 ```
-g1 = g3d(0, 0, 20, 20)
+g1 = g3d(5, 5, 25, 25)
 l1 = line3d(g1, 0, 0, 0, 3, 3, 3)
 change(l1, line3d(g1, 1, 1, 1, 5, 5, 5))
 ```
@@ -92,7 +92,7 @@ Vector animates from one position to another.
 
 ### 3D Vector
 ```
-g1 = g3d(0, 0, 20, 20)
+g1 = g3d(5, 5, 25, 25)
 v1 = vector3d(g1, 0, 0, 0, 2, 3, 4)
 change(v1, vector3d(g1, 1, 1, 1, 5, 6, 7))
 ```

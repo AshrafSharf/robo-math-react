@@ -179,11 +179,6 @@ function AppContent() {
     <div id="robo" className="robo-compass-div">
       {/* Top Header */}
       <div className="robo-compass-header navbar navbar-inverse">
-        <div className="navbar-header robo-logo">
-          <a className="navbar-brand" href="/">
-            <h3 style={{ margin: 0, color: 'white', display: 'inline-block' }}>Robo Math</h3>
-          </a>
-        </div>
         <LessonHeader showGrid={showGrid} onShowGridChange={setShowGrid} onOpenImport={handleOpenImport} />
       </div>
 

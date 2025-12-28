@@ -21,6 +21,7 @@ import { VectorUtil } from '../../../geom/VectorUtil.js';
 
 export class ReverseExpression extends AbstractNonArithmeticExpression {
     static NAME = 'reverse';
+    static isVectorType = true;
 
     constructor(subExpressions) {
         super();

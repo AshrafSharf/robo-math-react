@@ -21,6 +21,7 @@ import { VectorUtil } from '../../../geom/VectorUtil.js';
 
 export class VecSumExpression extends AbstractNonArithmeticExpression {
     static NAME = 'vecsum';
+    static isVectorType = true;
 
     constructor(subExpressions) {
         super();

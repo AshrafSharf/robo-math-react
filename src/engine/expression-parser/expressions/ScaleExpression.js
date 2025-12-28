@@ -17,10 +17,12 @@
  * When scaling multiple shapes, returns a ShapeCollection.
  */
 import { AbstractArithmeticExpression } from './AbstractArithmeticExpression.js';
+import { AssignmentExpression } from './AssignmentExpression.js';
 import { ScaleCommand } from '../../commands/ScaleCommand.js';
 import { TransformationUtil } from '../../../geom/TransformationUtil.js';
 import { scale_error_messages } from '../core/ErrorMessages.js';
 import { GEOMETRY_TYPES } from './IntersectExpression.js';
+import { getOrderedDependents } from '../../utils/DependencyTrackingUtil.js';
 
 export class ScaleExpression extends AbstractArithmeticExpression {
     static NAME = 'scale';
@@ -41,6 +43,7 @@ export class ScaleExpression extends AbstractArithmeticExpression {
         this.originalShapeName = null;  // 'point', 'line', 'vector', 'circle', 'polygon'
         this.originalShapeType = null;  // GEOMETRY_TYPES value
         this.originalShapeVariableName = null;  // Variable name for registry lookup (e.g., "P")
+        this.isVectorType = false;  // True if shape uses VectorCommand (has arrowhead)
         this.scaleFactor = 1;       // Scale factor
         this.center = { x: 0, y: 0 }; // Scale center
         this.graphExpression = null;
@@ -48,6 +51,9 @@ export class ScaleExpression extends AbstractArithmeticExpression {
         // Multi-shape mode
         this.isMultiShape = false;
         this.shapeDataArray = [];  // [{originalShapeVarName, scaledData, originalShapeName, originalShapeType}, ...]
+
+        // Pre-computed dependent scaled data (single shape mode)
+        this.dependentScaledData = [];  // [{label, scaledData, originalShapeName, originalShapeType}, ...]
     }
 
     resolve(context) {
@@ -107,7 +113,8 @@ export class ScaleExpression extends AbstractArithmeticExpression {
                     originalShapeVarName: shapeVarName,
                     scaledData,
                     originalShapeName: shapeName,
-                    originalShapeType: shapeType
+                    originalShapeType: shapeType,
+                    isVectorType: shapeExpr.constructor.isVectorType === true
                 });
             }
         } else {
@@ -117,6 +124,7 @@ export class ScaleExpression extends AbstractArithmeticExpression {
             this.originalShapeType = this._getGeometryType(shapeExpr);
             this.originalShapeName = shapeExpr.getName();
             this.originalShapeVariableName = this._getVariableName(this.subExpressions[1]);
+            this.isVectorType = shapeExpr.constructor.isVectorType === true;
 
             if (!ScaleExpression.SUPPORTED_TYPES.has(this.originalShapeType)) {
                 this.dispatchError(scale_error_messages.INVALID_SHAPE(this.originalShapeName));
@@ -124,6 +132,34 @@ export class ScaleExpression extends AbstractArithmeticExpression {
 
             // Extract original data and compute scaling based on shape type
             this._extractAndScale(shapeExpr);
+
+            // Find dependents and pre-compute their scaled data
+            if (this.originalShapeVariableName) {
+                const orderedDependents = getOrderedDependents(context, this.originalShapeVariableName);
+                this.dependentScaledData = [];
+
+                for (const { expr, label } of orderedDependents) {
+                    if (!label) continue;
+
+                    expr.resolve(context);
+                    const cmdExpr = this._getCommandableExpr(expr);
+                    if (!cmdExpr) continue;
+
+                    const shapeType = this._getGeometryType(cmdExpr);
+                    if (!ScaleExpression.SUPPORTED_TYPES.has(shapeType)) continue;
+
+                    const scaledData = this._computeScaledData(cmdExpr, shapeType);
+                    if (!scaledData) continue;
+
+                    this.dependentScaledData.push({
+                        label,
+                        scaledData,
+                        originalShapeName: cmdExpr.getName(),
+                        originalShapeType: shapeType,
+                        isVectorType: cmdExpr.constructor.isVectorType === true
+                    });
+                }
+            }
         }
     }
 
@@ -182,6 +218,16 @@ export class ScaleExpression extends AbstractArithmeticExpression {
             factorIndex: len - 1,
             center: { x: 0, y: 0 }
         };
+    }
+
+    /**
+     * Get the commandable expression (RHS for assignments, or the expression itself)
+     */
+    _getCommandableExpr(expr) {
+        if (expr instanceof AssignmentExpression) {
+            return expr.getComparableExpression();
+        }
+        return expr;
     }
 
     /**
@@ -488,7 +534,7 @@ export class ScaleExpression extends AbstractArithmeticExpression {
             );
         }
 
-        // Single shape mode: existing behavior
+        // Single shape mode: pass pre-computed dependent data
         return new ScaleCommand(
             this.graphExpression,
             this.originalShapeVariableName,  // Variable name for registry lookup
@@ -497,7 +543,8 @@ export class ScaleExpression extends AbstractArithmeticExpression {
             this.originalShapeType,
             this.scaleFactor,
             this.center,
-            mergedOptions
+            { ...mergedOptions, isVectorType: this.isVectorType },
+            this.dependentScaledData
         );
     }
 

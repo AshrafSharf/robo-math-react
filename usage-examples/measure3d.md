@@ -34,7 +34,7 @@ measure3d(g, pt1, pt2, label)
 ## Code
 
 ```
-g1 = g3d(0, 0, 16, 8)
+g1 = g3d(5, 5, 25, 25)
 
 # Basic distance marker with coordinates
 measure3d(g1, 0, 0, 0, 5, 0, 0, "5 units")
