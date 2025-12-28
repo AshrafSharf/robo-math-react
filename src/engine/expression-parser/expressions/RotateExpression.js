@@ -21,6 +21,7 @@ import { RotateCommand } from '../../commands/RotateCommand.js';
 import { TransformationUtil } from '../../../geom/TransformationUtil.js';
 import { rotate_error_messages } from '../core/ErrorMessages.js';
 import { GEOMETRY_TYPES } from './IntersectExpression.js';
+import { getOrderedDependents } from '../../utils/DependencyTrackingUtil.js';
 
 export class RotateExpression extends AbstractArithmeticExpression {
     static NAME = 'rotate';
@@ -124,6 +125,60 @@ export class RotateExpression extends AbstractArithmeticExpression {
 
             // Extract original data and compute rotation based on shape type
             this._extractAndRotate(shapeExpr);
+
+            // Find and add dependents (only for named variables)
+            if (this.originalShapeVariableName) {
+                let dependents = [];
+                try {
+                    dependents = getOrderedDependents(context, this.originalShapeVariableName);
+                } catch (e) {
+                    console.warn('rotate: Error getting dependents:', e);
+                }
+
+                // Add each dependent to shapeDataArray
+                for (const { expr, label } of dependents) {
+                    // Skip the rotate expression itself (it has no label)
+                    if (!label) continue;
+
+                    // If expr is an AssignmentExpression, get the actual RHS expression
+                    let actualExpr = expr;
+                    if (typeof expr.getComparableExpression === 'function') {
+                        actualExpr = expr.getComparableExpression();
+                    }
+                    if (!actualExpr) continue;
+
+                    const depShapeType = this._getGeometryType(actualExpr);
+                    if (!RotateExpression.SUPPORTED_TYPES.has(depShapeType)) continue;
+
+                    try {
+                        const rotatedData = this._computeRotatedData(actualExpr, depShapeType);
+                        if (!rotatedData) continue;
+
+                        this.shapeDataArray.push({
+                            originalShapeVarName: label,
+                            rotatedData,
+                            originalShapeName: actualExpr.getName(),
+                            originalShapeType: depShapeType,
+                            isDependent: true  // Mark as dependency-triggered
+                        });
+                    } catch (e) {
+                        console.warn(`rotate: Could not compute rotation for dependent ${label}:`, e.message);
+                    }
+                }
+
+                // If we added dependents, switch to multi-shape mode
+                if (this.shapeDataArray.length > 0) {
+                    this.isMultiShape = true;
+                    // Move main shape into shapeDataArray as first element
+                    this.shapeDataArray.unshift({
+                        originalShapeVarName: this.originalShapeVariableName,
+                        rotatedData: this.rotatedData,
+                        originalShapeName: this.originalShapeName,
+                        originalShapeType: this.originalShapeType,
+                        isDependent: false  // This is the caller
+                    });
+                }
+            }
         }
     }
 

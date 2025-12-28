@@ -2,6 +2,7 @@
  * Graph3DExpression - creates a 3D graph container using logical coordinate bounds
  *
  * Syntax:
+ *   g3d(row1, col1, row2, col2, axes3d(...))
  *   g3d(row1, col1, row2, col2, xRange, yRange, zRange)
  *
  * coordinateSystem can be:
@@ -11,6 +12,18 @@
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { Create3DGraphCommand } from '../../commands/Create3DGraphCommand.js';
 import { RangeExpression } from './RangeExpression.js';
+import { Axes3dExpression } from './Axes3dExpression.js';
+import { VariableReferenceExpression } from './VariableReferenceExpression.js';
+
+/**
+ * Unwrap a variable reference to get the underlying expression
+ */
+function unwrapExpression(expr) {
+    if (expr instanceof VariableReferenceExpression) {
+        return expr.variableValueExpression;
+    }
+    return expr;
+}
 
 export class Graph3DExpression extends AbstractNonArithmeticExpression {
     static NAME = 'g3d';
@@ -33,6 +46,9 @@ export class Graph3DExpression extends AbstractNonArithmeticExpression {
         this.yScale = 'linear';
         this.zScale = 'linear';
         this.showGrid = true;
+        this.showGridLines = false;  // default: gridlines hidden
+        this.gridColor = null;
+        this.gridStrokeWidth = null;
         this.coordinateSystem = 'lhs'; // Default to LHS coordinate system
         // Reference to created grapher (set by command after init)
         this.grapher = null;
@@ -69,23 +85,60 @@ export class Graph3DExpression extends AbstractNonArithmeticExpression {
             this.dispatchError(`g3d() end col (${this.col2}) must be greater than start col (${this.col1})`);
         }
 
-        // Process remaining args (ranges for x, y, z)
-        let rangeIndex = 0;
-        for (let i = 4; i < this.subExpressions.length; i++) {
-            const expr = this.subExpressions[i];
-            expr.resolve(context);
+        // Process remaining args (axes3d or ranges for x, y, z)
+        if (this.subExpressions.length > 4) {
+            const arg5Raw = this.subExpressions[4];
+            arg5Raw.resolve(context);
+            const arg5 = unwrapExpression(arg5Raw);
 
-            if (expr instanceof RangeExpression) {
-                if (rangeIndex === 0) {
-                    this._extractFromRange(expr, 'x');
-                } else if (rangeIndex === 1) {
-                    this._extractFromRange(expr, 'y');
-                } else if (rangeIndex === 2) {
-                    this._extractFromRange(expr, 'z');
+            if (arg5 instanceof Axes3dExpression) {
+                // g3d(r1, c1, r2, c2, axes3d(...))
+                this._extractFromAxes3d(arg5);
+            } else if (arg5 instanceof RangeExpression) {
+                // g3d(r1, c1, r2, c2, xRange, yRange, zRange)
+                this._extractFromRange(arg5, 'x');
+                let rangeIndex = 1;
+                for (let i = 5; i < this.subExpressions.length; i++) {
+                    const exprRaw = this.subExpressions[i];
+                    exprRaw.resolve(context);
+                    const expr = unwrapExpression(exprRaw);
+                    if (expr instanceof RangeExpression) {
+                        if (rangeIndex === 1) {
+                            this._extractFromRange(expr, 'y');
+                        } else if (rangeIndex === 2) {
+                            this._extractFromRange(expr, 'z');
+                        }
+                        rangeIndex++;
+                    }
                 }
-                rangeIndex++;
             }
         }
+    }
+
+    _extractFromAxes3d(axes3dExpr) {
+        const xRange = axes3dExpr.getXRange();
+        const yRange = axes3dExpr.getYRange();
+        const zRange = axes3dExpr.getZRange();
+        const grid3d = axes3dExpr.getGrid3d();
+
+        if (xRange) {
+            this._extractFromRange(xRange, 'x');
+        }
+        if (yRange) {
+            this._extractFromRange(yRange, 'y');
+        }
+        if (zRange) {
+            this._extractFromRange(zRange, 'z');
+        }
+        if (grid3d) {
+            this.gridColor = grid3d.getColor();
+            this.gridStrokeWidth = grid3d.getStrokeWidth();
+        }
+
+        // Extract grid visibility options
+        this.showGrid = axes3dExpr.getShowGrid();
+        this.showGridLines = axes3dExpr.getShowGridLines();
+        this.coordinateSystem = axes3dExpr.getCoordinateSystem();
     }
 
     _extractFromRange(rangeExpr, axis) {
@@ -135,6 +188,9 @@ export class Graph3DExpression extends AbstractNonArithmeticExpression {
                 yScaleType: this.yScale,
                 zScaleType: this.zScale,
                 showGrid: this.showGrid,
+                showGridLines: this.showGridLines,
+                gridColor: this.gridColor,
+                gridStrokeWidth: this.gridStrokeWidth,
                 coordinateSystem: this.coordinateSystem
             },
             this  // Pass expression reference so command can set grapher

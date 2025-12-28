@@ -1,4 +1,6 @@
 import { NumericExpression } from '../expressions/NumericExpression.js';
+import { PointExpression } from '../expressions/PointExpression.js';
+import { Point3DExpression } from '../expressions/3d/Point3DExpression.js';
 
 /**
  * System constants - predefined numeric variables available in all expressions
@@ -7,6 +9,24 @@ const SYSTEM_CONSTANTS = {
     pi: Math.PI,
     e: Math.E
 };
+
+/**
+ * Create a pre-resolved origin point (0, 0)
+ */
+function createOrigin() {
+    const origin = new PointExpression([]);
+    origin.point = { x: 0, y: 0 };
+    return origin;
+}
+
+/**
+ * Create a pre-resolved origin3d point (0, 0, 0)
+ */
+function createOrigin3D() {
+    const origin3d = new Point3DExpression([]);
+    origin3d.point = { x: 0, y: 0, z: 0 };
+    return origin3d;
+}
 
 /**
  * Context for expression evaluation - stores variable references and state
@@ -28,12 +48,17 @@ export class ExpressionContext {
     }
 
     /**
-     * Initialize predefined system constants (pi, e)
+     * Initialize predefined system constants (pi, e, origin, origin3d)
      */
     initSystemConstants() {
+        // Numeric constants
         for (const [name, value] of Object.entries(SYSTEM_CONSTANTS)) {
             this.references[name] = new NumericExpression(value);
         }
+
+        // Point constants
+        this.references['origin'] = createOrigin();
+        this.references['origin3d'] = createOrigin3D();
     }
 
     // Dependency tracking: set/get current caller

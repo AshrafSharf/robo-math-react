@@ -13,7 +13,7 @@ export class Create3DGraphCommand extends BaseCommand {
      * @param {number} col1 - Start column (left)
      * @param {number} row2 - End row (bottom)
      * @param {number} col2 - End column (right)
-     * @param {Object} options - Additional options {xRange, yRange, zRange, showGrid, coordinateSystem}
+     * @param {Object} options - Additional options {xRange, yRange, zRange, showGrid, showGridLines, gridColor, gridStrokeWidth, coordinateSystem}
      * @param {Object} expression - Reference to Graph3DExpression for storing grapher
      */
     constructor(row1, col1, row2, col2, options = {}, expression = null) {
@@ -26,6 +26,9 @@ export class Create3DGraphCommand extends BaseCommand {
         this.yRange = options.yRange || [-10, 10];
         this.zRange = options.zRange || [-10, 10];
         this.showGrid = options.showGrid !== false;
+        this.showGridLines = options.showGridLines || false;
+        this.gridColor = options.gridColor || null;
+        this.gridStrokeWidth = options.gridStrokeWidth || null;
         this.coordinateSystem = options.coordinateSystem || 'lhs';
         this.expression = expression;  // Reference to Graph3DExpression
     }
@@ -45,6 +48,9 @@ export class Create3DGraphCommand extends BaseCommand {
                 yRange: this.yRange,
                 zRange: this.zRange,
                 showGrid: this.showGrid,
+                showGridLines: this.showGridLines,
+                gridColor: this.gridColor,
+                gridStrokeWidth: this.gridStrokeWidth,
                 coordinateSystem: this.coordinateSystem
             }
         );

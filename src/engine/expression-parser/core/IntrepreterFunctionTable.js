@@ -172,6 +172,9 @@ import { FOExpression } from '../expressions/styling/FOExpression.js';
 import { RangeExpression } from '../expressions/RangeExpression.js';
 import { GridExpression } from '../expressions/GridExpression.js';
 import { AxesExpression } from '../expressions/AxesExpression.js';
+import { Range3dExpression } from '../expressions/Range3dExpression.js';
+import { Grid3dExpression } from '../expressions/Grid3dExpression.js';
+import { Axes3dExpression } from '../expressions/Axes3dExpression.js';
 import { NextToExpression } from '../expressions/NextToExpression.js';
 import { NextBoundsExpression } from '../expressions/NextBoundsExpression.js';
 import { resolveExpressionDependencies } from './ExpressionDependencyResolver.js';
@@ -448,6 +451,11 @@ export class IntrepreterFunctionTable {
         registerMultiArg('range', RangeExpression);  // range(min, max, step, scale)
         registerMultiArg('grid', GridExpression);    // grid(c(gray), s(0.5))
         registerMultiArg('axes', AxesExpression);    // axes(xRange, yRange, grid)
+
+        // 3D axis configuration expressions
+        registerMultiArg('range3d', Range3dExpression);  // range3d(xRange, yRange, zRange)
+        registerMultiArg('grid3d', Grid3dExpression);    // grid3d(c(gray), s(0.5))
+        registerMultiArg('axes3d', Axes3dExpression);    // axes3d(range3d, grid3d, "options")
 
         // Position expressions (deferred evaluation)
         registerMultiArg('nextto', NextToExpression);       // nextto(ref, position, dx?, dy?) → {row, col}
