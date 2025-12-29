@@ -222,7 +222,7 @@ export class Para3DExpression extends AbstractNonArithmeticExpression {
                 yEquation: this.yEquation,
                 zEquation: this.zEquation
             },
-            options
+            { ...options, ...this.getStyleOptions() }
         );
     }
 

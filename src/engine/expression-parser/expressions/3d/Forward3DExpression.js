@@ -79,7 +79,7 @@ export class Forward3DExpression extends AbstractNonArithmeticExpression {
             this.originalShapeVarName,
             this.scalar,
             this.inputType,
-            options
+            { ...options, ...this.getStyleOptions() }
         );
     }
 

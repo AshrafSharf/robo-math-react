@@ -25,6 +25,7 @@ export class KatexComponent {
     this.visible = false;
     this.color = options.color || '#000000';
     this.fontSizeValue = options.fontSize || 35;
+    this.inline = options.inline !== false;  // Default to inline (compact mode)
     this.containerDOM = null;
 
     this.init();
@@ -48,10 +49,9 @@ export class KatexComponent {
   }
 
   renderMath() {
-    const html = KatexProcessor.renderToString(
-      this.componentState.content,
-      this.fontSizeValue
-    );
+    const html = this.inline
+      ? KatexProcessor.renderInline(this.componentState.content, this.fontSizeValue)
+      : KatexProcessor.renderToString(this.componentState.content, this.fontSizeValue);
     $(this.containerDOM).html(html);
 
     this.componentState.size = {

@@ -375,27 +375,13 @@ export const GRAPH_FUNCTIONS = {
     ],
     category: 'Graph'
   },
-  table: {
-    name: 'table',
-    signature: '(row, col)',
-    args: ['row: number', 'col: number'],
-    description: 'Create table at logical position (configure via Settings panel)',
-    altSignatures: [
-      'table(row, col)',
-      'table(row, col, rows, cols, "v1", "v2", ...)',
-      'T = table(0, 0)',
-      'T = table(4, 5, 2, 2, "a", "b", "c", "d")'
-    ],
-    category: 'Graph'
-  },
   ref: {
     name: 'ref',
     signature: '()',
     args: [],
     description: 'Reference expression - content from Settings panel Ref tab',
     altSignatures: [
-      'G = ref()  // then add g2d(...) in Ref tab',
-      'T = ref()  // then add table(...) in Ref tab'
+      'G = ref()  // then add g2d(...) in Ref tab'
     ],
     category: 'Graph'
   }

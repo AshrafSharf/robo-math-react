@@ -3,6 +3,7 @@
  *
  * For text collections: extracts TextItem at command time from shapeRegistry
  * For polygon collections: creates a NEW LineCommand from edge coordinates
+ * For table collections: extracts TableCellAdapter at command time from shapeRegistry
  * For shape collections: the data is already extracted during resolve,
  *                        this command just ensures proper registry handling
  */
@@ -12,9 +13,11 @@ import { LineCommand } from './LineCommand.js';
 export class ItemCommand extends BaseCommand {
     /**
      * @param {Object} options
-     * @param {string} options.collectionType - 'text', 'shape2d', 'shape3d', 'polygon'
+     * @param {string} options.collectionType - 'text', 'shape2d', 'shape3d', 'polygon', 'table'
      * @param {string} options.collectionVariableName - Variable name of the collection
-     * @param {number} options.index - Index of the item to get
+     * @param {number} options.index - Index of the item to get (for non-table collections)
+     * @param {number} options.rowIndex - Row index (for table collections)
+     * @param {number} options.colIndex - Column index (for table collections)
      * @param {ItemExpression} options.expression - Reference to expression for storing result
      */
     constructor(options = {}) {
@@ -22,12 +25,42 @@ export class ItemCommand extends BaseCommand {
         this.options = options;
         this.extractedItem = null;
         this.lineCommand = null;  // For polygon edge access
+        this.tableCell = null;    // For table cell access
     }
 
     async doInit() {
-        const { collectionType, collectionVariableName, index, expression } = this.options;
+        const { collectionType, collectionVariableName, index, rowIndex, colIndex, expression } = this.options;
 
-        if (collectionType === 'text') {
+        if (collectionType === 'table') {
+            // Table collections: extract cell from shapeRegistry using (row, col)
+            const collection = this.commandContext.shapeRegistry[collectionVariableName];
+            if (!collection) {
+                console.warn(`ItemCommand: "${collectionVariableName}" not found in registry`);
+                return;
+            }
+
+            // Validate indices
+            const rowCount = collection.getRowCount?.() || 0;
+            const colCount = collection.getColCount?.() || 0;
+            if (rowIndex < 0 || rowIndex >= rowCount) {
+                console.warn(`ItemCommand: Row ${rowIndex} out of bounds (table has ${rowCount} rows)`);
+                return;
+            }
+            if (colIndex < 0 || colIndex >= colCount) {
+                console.warn(`ItemCommand: Column ${colIndex} out of bounds (table has ${colCount} columns)`);
+                return;
+            }
+
+            // Get the table cell
+            this.tableCell = collection.get(rowIndex, colIndex);
+
+            // Store in expression for later access
+            if (expression) {
+                expression.setTableCell(this.tableCell);
+            }
+
+            this.commandResult = this.tableCell;
+        } else if (collectionType === 'text') {
             // Text collections: extract TextItem from shapeRegistry
             const collection = this.commandContext.shapeRegistry[collectionVariableName];
             if (!collection) {
@@ -112,6 +145,7 @@ export class ItemCommand extends BaseCommand {
         }
         this.extractedItem = null;
         this.lineCommand = null;
+        this.tableCell = null;
         this.commandResult = null;
         this.isInitialized = false;
     }

@@ -292,16 +292,18 @@ Creates a new MathTextComponent at a TextItem's position with matching style.
 ### Syntax
 
 ```
-replace("latex string", textItemOrCollection)
+msub(textItemOrCollection, "latex string")
 ```
 
 ### Example
 
 ```
-M = mathtext(2, 3, "x^2 + y^2 = r^2")
-write(M)
-C = subonly(M, "x^2")
-replace("a^2", C)    // Creates "a^2" at C's position with C's style
+M = print(1,10,"a + b = c")
+T = select(M, "b")
+msub(T, "\beta")
+
+P = print(5,10,"x^2 + y^2")
+msub(select(P, "x^2"), "z^2")
 ```
 
 ### How It Works

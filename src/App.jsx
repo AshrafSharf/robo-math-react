@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Toaster } from 'react-hot-toast';
 import CommandEditorWithPopup from './components/CommandEditor/CommandEditorWithPopup';
 import RoboCanvasGridOverlay from './components/RoboCanvasGridOverlay';
 import AnnotationLayer from './components/AnnotationLayer';
@@ -7,7 +8,7 @@ import './App.css';
 import { RoboCanvas } from './RoboCanvas.js';
 import { useCommandExecution } from './hooks/useCommandExecution.js';
 import { IntrepreterFunctionTable } from './engine/expression-parser/core/IntrepreterFunctionTable.js';
-import { LessonProvider, useLesson, useLessonPersistence, PageTabBar, LessonHeader } from './lesson';
+import { LessonProvider, useLesson, useLessonPersistence, AssetProvider, PageTabBar, LessonHeader } from './lesson';
 import { ExpressionFocusManager } from './engine/focus/index.js';
 import { createCommand } from './components/CommandEditor/utils/commandModel';
 import { SettingsRecoveryService } from './components/CommandEditor/utils/SettingsRecoveryService';
@@ -254,7 +255,29 @@ function AppContent() {
 function App() {
   return (
     <LessonProvider>
-      <AppContent />
+      <AssetProvider>
+        <AppContent />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              background: '#333',
+              color: '#fff',
+            },
+            success: {
+              style: {
+                background: '#16a34a',
+              },
+            },
+            error: {
+              style: {
+                background: '#dc2626',
+              },
+            },
+          }}
+        />
+      </AssetProvider>
     </LessonProvider>
   );
 }

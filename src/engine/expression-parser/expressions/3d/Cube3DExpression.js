@@ -152,7 +152,7 @@ export class Cube3DExpression extends AbstractNonArithmeticExpression {
             return new CubeS3DCommand(
                 this.s3dParentExpression,
                 { center: this.center, size: this.size },
-                options,
+                { ...options, ...this.getStyleOptions() },
                 this
             );
         }
@@ -161,6 +161,7 @@ export class Cube3DExpression extends AbstractNonArithmeticExpression {
         const mergedOpts = {
             styleOptions: {
                 ...defaults.styleOptions,
+                ...this.getStyleOptions(),
                 ...(options.styleOptions || {})
             }
         };

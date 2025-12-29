@@ -24,16 +24,19 @@ export class KatexProcessor {
    * Render LaTeX to HTML using KaTeX
    * @param {string} latex - LaTeX string
    * @param {number} fontSize - Font size in pixels
+   * @param {Object} options - Optional settings
+   * @param {boolean} options.inline - Use inline mode (no extra vertical spacing)
    * @returns {string} HTML string
    */
-  static renderLatex(latex, fontSize) {
+  static renderLatex(latex, fontSize, options = {}) {
     try {
-      // Wrap in displaystyle for consistency with MathJax behavior
-      const displayLatex = `\\displaystyle{${latex}}`;
+      const isInline = options.inline === true;
+      // Wrap in displaystyle for consistency with MathJax behavior (unless inline)
+      const displayLatex = isInline ? latex : `\\displaystyle{${latex}}`;
 
       return katex.renderToString(displayLatex, {
         throwOnError: true,
-        displayMode: true,
+        displayMode: !isInline,
         output: 'html',
         trust: true,
         strict: false
@@ -42,5 +45,15 @@ export class KatexProcessor {
       console.error('KatexProcessor:', error.message);
       return `<span class="katex-error" style="color: #cc0000;">⚠️ Invalid LaTeX</span>`;
     }
+  }
+
+  /**
+   * Render LaTeX in inline mode (compact, no extra vertical spacing)
+   * @param {string} latex - LaTeX string
+   * @param {number} fontSize - Font size in pixels
+   * @returns {string} HTML string
+   */
+  static renderInline(latex, fontSize) {
+    return this.renderLatex(latex, fontSize, { inline: true });
   }
 }

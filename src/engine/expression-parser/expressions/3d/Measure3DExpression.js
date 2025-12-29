@@ -149,7 +149,7 @@ export class Measure3DExpression extends AbstractNonArithmeticExpression {
             this.getStartPoint(),
             this.getEndPoint(),
             this.text,
-            options
+            { ...options, ...this.getStyleOptions() }
         );
     }
 

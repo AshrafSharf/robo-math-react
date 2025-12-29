@@ -505,7 +505,7 @@ font-size: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 200px;
     max-width: 350px;
-    z-index: 10000;
+    z-index: 1000;
 }
 
 .error-popup-message {

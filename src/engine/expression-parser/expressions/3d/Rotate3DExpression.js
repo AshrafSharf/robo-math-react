@@ -362,7 +362,7 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
                 this.s3dTargetExpression,
                 this.angle,
                 this.axis,
-                options
+                { ...options, ...this.getStyleOptions() }
             );
         }
 
@@ -372,7 +372,7 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
                 this.shapeDataArray,
                 this.angle,
                 this.axis,
-                { ...options, isMultiShape: true }
+                { ...options, ...this.getStyleOptions(), isMultiShape: true }
             );
         }
 
@@ -382,6 +382,7 @@ export class Rotate3DExpression extends AbstractNonArithmeticExpression {
         const mergedOpts = {
             styleOptions: {
                 ...defaults.styleOptions,
+                ...this.getStyleOptions(),
                 ...(options.styleOptions || {})
             }
         };

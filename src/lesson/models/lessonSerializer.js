@@ -43,10 +43,22 @@ export const validateLesson = (lesson) => {
     ? lesson.activePageId
     : pages[0].id;
 
+  // Ensure latexVariables is an array
+  const latexVariables = Array.isArray(lesson.latexVariables)
+    ? lesson.latexVariables
+    : [];
+
+  // Ensure assets is an array
+  const assets = Array.isArray(lesson.assets)
+    ? lesson.assets
+    : [];
+
   return {
     ...defaultLesson,
     ...lesson,
     pages,
-    activePageId
+    activePageId,
+    latexVariables,
+    assets
   };
 };

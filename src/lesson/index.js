@@ -5,6 +5,7 @@ export { serializeLesson, deserializeLesson, validateLesson } from './models/les
 // Context
 export { LessonProvider, useLesson } from './context';
 export { useLessonPersistence } from './context/useLessonPersistence';
+export { AssetProvider, useAssets } from './context/AssetContext';
 
 // Components
 export { PageTabBar, LessonHeader } from './components';

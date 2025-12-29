@@ -324,7 +324,7 @@ export class Scale3DExpression extends AbstractNonArithmeticExpression {
                 this.shapeDataArray,
                 this.scaleFactor,
                 this.center,
-                { ...options, isMultiShape: true }
+                { ...options, ...this.getStyleOptions(), isMultiShape: true }
             );
         }
 
@@ -333,6 +333,7 @@ export class Scale3DExpression extends AbstractNonArithmeticExpression {
         const mergedOpts = {
             styleOptions: {
                 ...defaults.styleOptions,
+                ...this.getStyleOptions(),
                 ...(options.styleOptions || {})
             }
         };

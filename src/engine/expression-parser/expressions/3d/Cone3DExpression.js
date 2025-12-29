@@ -159,7 +159,7 @@ export class Cone3DExpression extends AbstractNonArithmeticExpression {
             return new ConeS3DCommand(
                 this.s3dParentExpression,
                 { center: this.center, radius: this.radius, height: this.height },
-                options,
+                { ...options, ...this.getStyleOptions() },
                 this
             );
         }
@@ -168,6 +168,7 @@ export class Cone3DExpression extends AbstractNonArithmeticExpression {
         const mergedOpts = {
             styleOptions: {
                 ...defaults.styleOptions,
+                ...this.getStyleOptions(),
                 ...(options.styleOptions || {})
             }
         };

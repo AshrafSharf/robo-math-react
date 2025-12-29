@@ -310,7 +310,7 @@ export class Translate3DExpression extends AbstractNonArithmeticExpression {
                 this.graphExpression,
                 this.shapeDataArray,
                 this.delta,
-                { ...options, isMultiShape: true }
+                { ...options, ...this.getStyleOptions(), isMultiShape: true }
             );
         }
 
@@ -319,6 +319,7 @@ export class Translate3DExpression extends AbstractNonArithmeticExpression {
         const mergedOpts = {
             styleOptions: {
                 ...defaults.styleOptions,
+                ...this.getStyleOptions(),
                 ...(options.styleOptions || {})
             }
         };

@@ -154,7 +154,6 @@ import { DistanceMarkerExpression } from '../expressions/DistanceMarkerExpressio
 import { SequenceExpression } from '../expressions/SequenceExpression.js';
 import { ParallelExpression } from '../expressions/ParallelExpression.js';
 import { RefExpression } from '../expressions/RefExpression.js';
-import { TableExpression } from '../expressions/TableExpression.js';
 import { AssignmentExpression } from '../expressions/AssignmentExpression.js';
 import { AdditionExpression } from '../expressions/AdditionExpression.js';
 import { ChangeExpression } from '../../change/ChangeExpression.js';
@@ -169,6 +168,7 @@ import { SExpression } from '../expressions/styling/SExpression.js';
 import { FCExpression } from '../expressions/styling/FCExpression.js';
 import { SOExpression } from '../expressions/styling/SOExpression.js';
 import { FOExpression } from '../expressions/styling/FOExpression.js';
+import { PExpression } from '../expressions/styling/PExpression.js';
 import { RangeExpression } from '../expressions/RangeExpression.js';
 import { GridExpression } from '../expressions/GridExpression.js';
 import { AxesExpression } from '../expressions/AxesExpression.js';
@@ -177,6 +177,9 @@ import { Grid3dExpression } from '../expressions/Grid3dExpression.js';
 import { Axes3dExpression } from '../expressions/Axes3dExpression.js';
 import { NextToExpression } from '../expressions/NextToExpression.js';
 import { NextBoundsExpression } from '../expressions/NextBoundsExpression.js';
+import { TablePExpression } from '../expressions/TablePExpression.js';
+import { TableWExpression } from '../expressions/TableWExpression.js';
+import { HeaderExpression } from '../expressions/HeaderExpression.js';
 import { resolveExpressionDependencies } from './ExpressionDependencyResolver.js';
 import { registerCustomFunctions } from './CustomFunctionDefinitions.js';
 
@@ -332,7 +335,6 @@ export class IntrepreterFunctionTable {
         registerMultiArg('seq', SequenceExpression);
         registerMultiArg('para', ParallelExpression);
         registerMultiArg('ref', RefExpression);
-        registerMultiArg('table', TableExpression);
 
         // Function definition and calling
         registerMultiArg('def', FunctionDefinitionExpression);
@@ -446,6 +448,7 @@ export class IntrepreterFunctionTable {
         registerMultiArg('fc', FCExpression); // fillColor: fc(red), fc("#ff0000")
         registerMultiArg('so', SOExpression); // strokeOpacity: so(0.5)
         registerMultiArg('fo', FOExpression); // fillOpacity: fo(0.5)
+        registerMultiArg('p', PExpression);   // precision: p(2) - decimal places for tables
 
         // Axis configuration expressions
         registerMultiArg('range', RangeExpression);  // range(min, max, step, scale)
@@ -460,6 +463,11 @@ export class IntrepreterFunctionTable {
         // Position expressions (deferred evaluation)
         registerMultiArg('nextto', NextToExpression);       // nextto(ref, position, dx?, dy?) → {row, col}
         registerMultiArg('nextbounds', NextBoundsExpression); // nextbounds(ref, position, rows, cols, dx?, dy?) → {row1, col1, row2, col2}
+
+        // Table expressions
+        registerMultiArg('tablep', TablePExpression);  // tablep(row, col, "formula1", ..., range(...)) - KaTeX cells
+        registerMultiArg('tablew', TableWExpression);  // tablew(row, col, "formula1", ..., range(...)) - MathText cells
+        registerMultiArg('header', HeaderExpression);  // header("col1", "col2", ...) - column headers for tables
 
         // Custom functions (math, utility, etc.)
         registerCustomFunctions(ExpressionInterpreter.expTable);

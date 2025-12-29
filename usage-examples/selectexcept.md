@@ -47,7 +47,7 @@ M = mtext(5, 2, "\tan(\theta) = \frac{\sin(\theta)}{\cos(\theta)}")
 nonThetas = selectexcept(M, "\theta")
 
 # Replace them with x
-replace("x", nonThetas)
+msub(nonThetas, "x")
 ```
 
 ## Combining with select

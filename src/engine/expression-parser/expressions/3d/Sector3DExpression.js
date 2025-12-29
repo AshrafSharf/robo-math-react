@@ -146,7 +146,7 @@ export class Sector3DExpression extends AbstractNonArithmeticExpression {
             this.vertex,
             this.point1,
             this.point2,
-            { ...options, radius: this.radius }
+            { ...options, ...this.getStyleOptions(), radius: this.radius }
         );
     }
 

@@ -176,7 +176,7 @@ export class Cylinder3DExpression extends AbstractNonArithmeticExpression {
             return new CylinderS3DCommand(
                 this.s3dParentExpression,
                 { center: this.center, radius: this.radius, height: this.height },
-                options,
+                { ...options, ...this.getStyleOptions() },
                 this
             );
         }
@@ -185,6 +185,7 @@ export class Cylinder3DExpression extends AbstractNonArithmeticExpression {
         const mergedOpts = {
             styleOptions: {
                 ...defaults.styleOptions,
+                ...this.getStyleOptions(),
                 ...(options.styleOptions || {})
             }
         };

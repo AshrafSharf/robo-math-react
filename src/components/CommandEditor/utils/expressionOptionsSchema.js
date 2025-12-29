@@ -3,7 +3,7 @@
  * Defines available options and defaults for each expression type
  *
  * All shapes use expression-based styling (c, s, f, so, fo, fc) and only show Animation tab.
- * Graph containers (g2d, p2d) and table have dedicated options panels.
+ * Graph containers (g2d, p2d) have dedicated options panels.
  *
  * _tabs: Array of allowed tab ids (e.g., ['animation'] or ['expression'])
  */
@@ -99,19 +99,6 @@ export const EXPRESSION_OPTIONS_SCHEMA = {
     _style: null, // Dynamic - determined by inner expression type
     content: { type: 'text', default: '', label: 'Expression' },
   },
-
-  // Table - configurable table at logical coordinates
-  table: {
-    _style: null, // No standard style controls
-    _tabs: ['expression'], // Only show Table options tab (no Style or Animation)
-    rows: { type: 'number', default: 2, min: 1, max: 20, label: 'Rows' },
-    cols: { type: 'number', default: 2, min: 1, max: 10, label: 'Columns' },
-    headers: { type: 'array', default: null, label: 'Header Row' }, // 1D array of {content}
-    headerBgColor: { type: 'color', default: '#e8f0fe', label: 'Header Background' },
-    cells: { type: 'grid', default: null, label: 'Cell Content' }, // 2D array of {content}
-    borderStyle: { type: 'select', options: ['all', 'none', 'horizontal', 'vertical', 'outer'], default: 'all', label: 'Border Style' },
-    cellPadding: { type: 'text', default: '8px 12px', label: 'Cell Padding' },
-  },
 };
 
 // Animation options (for Animation tab)
@@ -148,9 +135,9 @@ export function getExpressionSchema(expressionType) {
 
 /**
  * List of expression types that have dedicated options panels
- * p2d and table have dedicated panels (g2d uses expression syntax for options)
+ * p2d has a dedicated panel (g2d uses expression syntax for options)
  */
-export const EXPRESSION_TYPES_WITH_OPTIONS = ['p2d', 'table'];
+export const EXPRESSION_TYPES_WITH_OPTIONS = ['p2d'];
 
 /**
  * Get style type for expression

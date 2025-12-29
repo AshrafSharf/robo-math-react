@@ -382,6 +382,8 @@ export class Angle3DExpression extends AbstractNonArithmeticExpression {
             return null;
         }
 
+        const styleOpts = this.getStyleOptions();
+
         // Automatically use RightAngle3DCommand if angle is ~90°
         if (this.isRightAngle()) {
             return new RightAngle3DCommand(
@@ -389,7 +391,7 @@ export class Angle3DExpression extends AbstractNonArithmeticExpression {
                 this.vertex,
                 this.point1,
                 this.point2,
-                { ...options, size: this.radius * 0.5 }
+                { ...options, ...styleOpts, size: this.radius * 0.5 }
             );
         }
 
@@ -399,7 +401,7 @@ export class Angle3DExpression extends AbstractNonArithmeticExpression {
             this.point1,
             this.point2,
             this.getAngleType(),
-            { ...options, radius: this.radius }
+            { ...options, ...styleOpts, radius: this.radius }
         );
     }
 

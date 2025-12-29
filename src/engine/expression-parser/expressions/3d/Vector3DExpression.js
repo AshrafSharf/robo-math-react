@@ -8,7 +8,6 @@
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
 import { Vector3DCommand } from '../../../commands/3d/Vector3DCommand.js';
 import { vector3d_error_messages } from '../../core/ErrorMessages.js';
-import { ExpressionOptionsRegistry } from '../../core/ExpressionOptionsRegistry.js';
 import { NumericExpression } from '../NumericExpression.js';
 
 export class Vector3DExpression extends AbstractNonArithmeticExpression {
@@ -146,17 +145,14 @@ export class Vector3DExpression extends AbstractNonArithmeticExpression {
 
     /**
      * Create a Vector3DCommand from this expression
-     * Style comes directly from expression: c() -> color, s() -> strokeWidth (shaft thickness)
+     * Style comes from expression via getStyleOptions(): c() -> color, s() -> strokeWidth, etc.
      * @param {Object} options - Additional options (for registry/animation use)
      * @returns {Vector3DCommand}
      */
     toCommand(options = {}) {
         const pts = this.getVectorPoints();
-        const styleOptions = {
-            color: this.color,
-            strokeWidth: this.strokeWidth  // s() maps to vector shaft thickness
-        };
-        return new Vector3DCommand(this.graphExpression, pts[0], pts[1], { styleOptions });
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new Vector3DCommand(this.graphExpression, pts[0], pts[1], { styleOptions: mergedOptions });
     }
 
     /**

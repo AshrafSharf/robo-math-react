@@ -3,18 +3,17 @@
  *
  * Syntax:
  *   item(collection, index)           // For text/shape collections
- *   item(table, rowIndex)             // Get table row
- *   item(table, rowIndex, colIndex)   // Get table cell
+ *   item(table, row, col)             // For table collections (two indices)
  *
  * Works with:
  *   - TextItemCollection (from select, selectexcept, writeonly, writewithout)
  *   - ShapeCollection (from 2D multi-shape translate, rotate, scale)
  *   - Shape3DCollection (from 3D multi-shape translate3d, rotate3d, scale3d)
- *   - TableItemCollection (from table) - supports row and cell access
+ *   - TableCellCollection (from tablep, tablew)
  *
  * For shape collections: provides full shape accessor interface for chaining.
  * For text collections: defers to ItemCommand at command time.
- * For table collections: returns TableRow (2 args) or TableCell (3 args).
+ * For table collections: uses (row, col) indices, defers to ItemCommand.
  *
  * Examples:
  *   S = select(M, "pattern")
@@ -25,9 +24,9 @@
  *   T = item(S, 0)             // Get first translated point
  *   U = translate(G, T, 10, 10) // Chain with another translate
  *
- *   A = table()
- *   R = item(A, 0)             // Get row 0 (TableRow)
- *   C = item(A, 0, 1)          // Get cell at row 0, col 1 (TableCell)
+ *   T = tablep(0, 0, "x", "x^2", range(1, 10))
+ *   cell = item(T, 2, 1)       // Get cell at row 2, column 1
+ *   show(cell)                 // Show the cell
  */
 import { AbstractNonArithmeticExpression } from './AbstractNonArithmeticExpression.js';
 import { ItemCommand } from '../../commands/ItemCommand.js';
@@ -40,9 +39,9 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     static TEXT_SOURCES = ['select', 'selectexcept', 'writeonly', 'writewithout'];
     static SHAPE_2D_SOURCES = ['translate', 'rotate', 'scale'];
     static SHAPE_3D_SOURCES = ['translate3d', 'rotate3d', 'scale3d'];
-    static TABLE_SOURCES = ['table'];
     static POLYGON_SOURCES = ['polygon', 'sss', 'sas', 'asa', 'aas'];
     static CHANGE_SOURCES = ['change'];
+    static TABLE_SOURCES = ['tablep', 'tablew'];
 
     constructor(subExpressions) {
         super();
@@ -72,11 +71,10 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
         this.delegateExpression = null;
         this.commandResult = null;  // Extracted from collection for direct use
 
-        // For table collections
-        this.isTableRowAccess = false;
-        this.isTableCellAccess = false;
+        // For table collections (row, col indices)
         this.rowIndex = 0;
         this.colIndex = 0;
+        this.tableCell = null;  // Set by ItemCommand during doInit
     }
 
     resolve(context) {
@@ -118,10 +116,6 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
             }
             this.collectionType = 'shape3d';
             this.graphExpression = this.sourceExpression.graphExpression;
-        } else if (ItemExpression.TABLE_SOURCES.includes(exprName)) {
-            this.collectionType = 'table';
-            // Table supports 2 args (row) or 3 args (cell)
-            // Will handle index extraction below
         } else if (ItemExpression.POLYGON_SOURCES.includes(exprName)) {
             // Polygon/triangle expressions are always collections (edges)
             this.collectionType = 'polygon';
@@ -129,12 +123,43 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
         } else if (ItemExpression.CHANGE_SOURCES.includes(exprName)) {
             // Change collections delegate to the underlying expression
             this.collectionType = 'change';
+        } else if (ItemExpression.TABLE_SOURCES.includes(exprName)) {
+            // Table collections use (row, col) indices
+            this.collectionType = 'table';
         } else {
-            const validSources = [...ItemExpression.TEXT_SOURCES, ...ItemExpression.SHAPE_2D_SOURCES, ...ItemExpression.SHAPE_3D_SOURCES, ...ItemExpression.TABLE_SOURCES, ...ItemExpression.POLYGON_SOURCES, ...ItemExpression.CHANGE_SOURCES];
+            const validSources = [...ItemExpression.TEXT_SOURCES, ...ItemExpression.SHAPE_2D_SOURCES, ...ItemExpression.SHAPE_3D_SOURCES, ...ItemExpression.POLYGON_SOURCES, ...ItemExpression.CHANGE_SOURCES, ...ItemExpression.TABLE_SOURCES];
             this.dispatchError(`item(): First argument must be a collection from ${validSources.join(', ')}`);
         }
 
-        // Second arg: row index (for tables) or item index (for other collections)
+        // Handle table collections specially (require 3 args: table, row, col)
+        if (this.collectionType === 'table') {
+            if (this.subExpressions.length < 3) {
+                this.dispatchError('item() for tables requires 3 arguments: item(table, row, col)');
+            }
+
+            // Second arg: row index
+            this.subExpressions[1].resolve(context);
+            const rowExpr = this._getResolvedExpression(context, this.subExpressions[1]);
+            const rowValues = rowExpr.getVariableAtomicValues();
+            if (rowValues.length !== 1) {
+                this.dispatchError('item() second argument (row) must be a number');
+            }
+            this.rowIndex = Math.floor(rowValues[0]);
+
+            // Third arg: column index
+            this.subExpressions[2].resolve(context);
+            const colExpr = this._getResolvedExpression(context, this.subExpressions[2]);
+            const colValues = colExpr.getVariableAtomicValues();
+            if (colValues.length !== 1) {
+                this.dispatchError('item() third argument (col) must be a number');
+            }
+            this.colIndex = Math.floor(colValues[0]);
+
+            // Table cell extraction is deferred to command time
+            return;
+        }
+
+        // Second arg: item index (for non-table collections)
         this.subExpressions[1].resolve(context);
         const indexExpr = this._getResolvedExpression(context, this.subExpressions[1]);
         const indexValues = indexExpr.getVariableAtomicValues();
@@ -142,27 +167,6 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
             this.dispatchError('item() second argument must be a number (index)');
         }
         this.index = Math.floor(indexValues[0]);
-
-        // Handle table collections specially (2 args = row, 3 args = cell)
-        if (this.collectionType === 'table') {
-            this.rowIndex = this.index;
-
-            // Check for third argument (column index for cell access)
-            if (this.subExpressions.length >= 3) {
-                this.subExpressions[2].resolve(context);
-                const colExpr = this._getResolvedExpression(context, this.subExpressions[2]);
-                const colValues = colExpr.getVariableAtomicValues();
-                if (colValues.length !== 1) {
-                    this.dispatchError('item() third argument must be a number (column index)');
-                }
-                this.colIndex = Math.floor(colValues[0]);
-                this.isTableCellAccess = true;
-            } else {
-                this.isTableRowAccess = true;
-            }
-            // Table validation happens at command time when collection is available
-            return;
-        }
 
         // Validate index and extract data for shape collections
         // Skip for 'text' and 'change' - handled at command time via shapeRegistry lookup
@@ -408,55 +412,29 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
     }
 
     /**
-     * Get the resolved value (TextItem, TableRow, or TableCell)
-     * @returns {TextItem|TableRow|TableCell}
+     * Get the resolved value (TextItem)
+     * @returns {TextItem}
      */
     getResolvedValue() {
-        if (this.isTableRowAccess) {
-            return this.getTableRow();
-        }
-        if (this.isTableCellAccess) {
-            return this.getTableCell();
-        }
         return this.textItem;
     }
 
-    // ===== Table accessors =====
+    // ===== Table cell accessor =====
 
     /**
-     * Get table row (for 2-arg table access)
-     * @returns {TableRow|null}
+     * Set the table cell (called by ItemCommand during doInit)
+     * @param {TableCellAdapter} cell
      */
-    getTableRow() {
-        if (!this.isTableRowAccess) return null;
-        const collection = this.sourceExpression?.getTableCollection?.();
-        return collection?.getRow(this.rowIndex) || null;
+    setTableCell(cell) {
+        this.tableCell = cell;
     }
 
     /**
-     * Get table cell (for 3-arg table access)
-     * @returns {TableCell|null}
+     * Get the table cell
+     * @returns {TableCellAdapter}
      */
     getTableCell() {
-        if (!this.isTableCellAccess) return null;
-        const collection = this.sourceExpression?.getTableCollection?.();
-        return collection?.getCell(this.rowIndex, this.colIndex) || null;
-    }
-
-    /**
-     * Check if this is a table row access
-     * @returns {boolean}
-     */
-    isRowAccess() {
-        return this.isTableRowAccess;
-    }
-
-    /**
-     * Check if this is a table cell access
-     * @returns {boolean}
-     */
-    isCellAccess() {
-        return this.isTableCellAccess;
+        return this.tableCell;
     }
 
     // ===== Command generation =====
@@ -466,21 +444,20 @@ export class ItemExpression extends AbstractNonArithmeticExpression {
             collectionType: this.collectionType,
             collectionVariableName: this.collectionVariableName,
             index: this.index,
+            rowIndex: this.rowIndex,
+            colIndex: this.colIndex,
             expression: this
         });
     }
 
     canPlay() {
-        // Text items don't play directly, shapes can be used in playable expressions
-        return this.collectionType !== 'text';
+        // Text and table items don't play directly, shapes can be used in playable expressions
+        return this.collectionType !== 'text' && this.collectionType !== 'table';
     }
 
     getFriendlyToStr() {
-        if (this.isTableCellAccess) {
+        if (this.collectionType === 'table') {
             return `item[${this.collectionVariableName}, ${this.rowIndex}, ${this.colIndex}]`;
-        }
-        if (this.isTableRowAccess) {
-            return `item[${this.collectionVariableName}, ${this.rowIndex}]`;
         }
         return `item[${this.collectionVariableName}, ${this.index}]`;
     }

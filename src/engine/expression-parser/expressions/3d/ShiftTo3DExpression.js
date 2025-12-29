@@ -141,7 +141,7 @@ export class ShiftTo3DExpression extends AbstractNonArithmeticExpression {
             this.targetPosition,
             this.coordinates,
             this.inputType,
-            options
+            { ...options, ...this.getStyleOptions() }
         );
     }
 

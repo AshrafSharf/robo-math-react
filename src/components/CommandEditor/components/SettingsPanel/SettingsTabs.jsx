@@ -20,7 +20,7 @@ const SettingsTabs = ({ activeTab, onTabChange, expressionType, innerExpressionT
     tabs.push({ id: 'ref', label: 'Ref' });
   }
 
-  // Expression options tab (g2d, p2d, table)
+  // Expression options tab (g2d, p2d)
   if (hasOptionsPanel(effectiveType)) {
     tabs.push({
       id: 'expression',

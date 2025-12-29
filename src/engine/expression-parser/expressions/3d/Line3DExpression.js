@@ -8,7 +8,6 @@
 import { AbstractNonArithmeticExpression } from '../AbstractNonArithmeticExpression.js';
 import { Line3DCommand } from '../../../commands/3d/Line3DCommand.js';
 import { line3d_error_messages } from '../../core/ErrorMessages.js';
-import { ExpressionOptionsRegistry } from '../../core/ExpressionOptionsRegistry.js';
 
 export class Line3DExpression extends AbstractNonArithmeticExpression {
     static NAME = 'line3d';
@@ -145,17 +144,14 @@ export class Line3DExpression extends AbstractNonArithmeticExpression {
 
     /**
      * Create a Line3DCommand from this expression
-     * Style comes directly from expression: c() -> color, s() -> strokeWidth (thickness)
+     * Style comes from expression via getStyleOptions(): c() -> color, s() -> strokeWidth, etc.
      * @param {Object} options - Additional options (for registry/animation use)
      * @returns {Line3DCommand}
      */
     toCommand(options = {}) {
         const pts = this.getLinePoints();
-        const styleOptions = {
-            color: this.color,
-            strokeWidth: this.strokeWidth  // s() maps to line thickness
-        };
-        return new Line3DCommand(this.graphExpression, pts[0], pts[1], { styleOptions });
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        return new Line3DCommand(this.graphExpression, pts[0], pts[1], { styleOptions: mergedOptions });
     }
 
     /**

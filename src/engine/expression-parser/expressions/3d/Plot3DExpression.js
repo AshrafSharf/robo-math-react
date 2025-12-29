@@ -208,7 +208,7 @@ export class Plot3DExpression extends AbstractNonArithmeticExpression {
             { xMin: this.xMin, xMax: this.xMax },
             { yMin: this.yMin, yMax: this.yMax },
             this.equation,
-            options
+            { ...options, ...this.getStyleOptions() }
         );
     }
 

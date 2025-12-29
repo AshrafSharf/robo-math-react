@@ -28,6 +28,8 @@ export const createLesson = (name = 'Untitled Lesson') => ({
   name,
   pages: [createPage(1)],
   activePageId: 1,
+  latexVariables: [],
+  assets: [],
   createdAt: Date.now(),
   updatedAt: Date.now()
 });

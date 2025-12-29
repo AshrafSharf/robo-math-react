@@ -1,50 +1,39 @@
 # text-replace
 
-Replace parts of a math expression with new content using the `replace()` function.
+Replace parts of a math expression with new content using the `msub()` function.
 
 ## Code
 
 ```
-eq1 = "x^2+y^2=20"
-m1 = mtext(5, 12, eq1)
-write(m1)
+M = write(1,10,"a + b = c")
+T = select(M, "b")
+msub(T,"\beta")
 
-sel1 = select(m1, "x^2")
-replace("a^2", sel1)
-
-sel2 = select(m1, "20")
-replace("30", sel2)
+P = write(5,10,"x^2 + y^2")
+c = select(P, "x^2")
+msub(c,"z^2")
+mcancel(c)
 ```
 
 ## With Fade Animation
 
 ```
-eq1 = "x^2 + y^2 = 20"
-m1 = mtext(5, 12, eq1)
-write(m1)
-
-sel1 = select(m1, "x^2")
-seq(fadeout(sel1), replace("a^2", sel1))
-```
-
-
-M = print(0,10,"a + b = c")
+M = write(1,10,"a + b = c")
 T = select(M, "b")
-replace("\beta",T)
-P = print(5,10,"x^2 + y^2")
-replace("z^2",select(P, "x^2"))
-
+seq(fadeout(T), msub(T, "\beta"))
+```
 
 ## Comments
 
 | Line | Explanation |
 |------|-------------|
-| `select(m1, "x^2")` | Get reference to x^2 in the expression |
-| `replace("a^2", sel1)` | Replace x^2 with a^2 |
-| `seq(fadeout(...), replace(...))` | Fade out then replace |
+| `select(M, "b")` | Get reference to "b" in the expression |
+| `msub(T, "\beta")` | Replace selection with \beta |
+| `mcancel(c)` | Add cancel line through the replaced text |
 
 ## Related
 
-- `select` - Extract patterns from mtext
+- `select` - Extract patterns from write/print
 - `seq` - Run effects sequentially
 - `fadeout` - Fade out animation
+- `mcancel` - Add cancel line

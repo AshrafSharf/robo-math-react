@@ -227,17 +227,6 @@ export class ExpressionPipelineService {
 
             // Ref expression content
             content: registryOptions.content,
-
-            // Table options (registry spreads them at top level, TableExpression expects them under .table)
-            table: {
-                rows: registryOptions.rows,
-                cols: registryOptions.cols,
-                headers: registryOptions.headers,
-                headerBgColor: registryOptions.headerBgColor,
-                cells: registryOptions.cells,
-                borderStyle: registryOptions.borderStyle,
-                cellPadding: registryOptions.cellPadding,
-            },
         };
 
         const command = expression.toCommand(commandOptions);

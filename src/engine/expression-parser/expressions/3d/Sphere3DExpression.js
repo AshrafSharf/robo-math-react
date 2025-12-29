@@ -172,7 +172,7 @@ export class Sphere3DExpression extends AbstractNonArithmeticExpression {
             return new SphereS3DCommand(
                 this.s3dParentExpression,
                 { center: this.center, radius: this.radius },
-                options,
+                { ...options, ...this.getStyleOptions() },
                 this
             );
         }
@@ -182,6 +182,7 @@ export class Sphere3DExpression extends AbstractNonArithmeticExpression {
         const mergedOpts = {
             styleOptions: {
                 ...defaults.styleOptions,
+                ...this.getStyleOptions(),
                 ...(options.styleOptions || {})
             }
         };

@@ -151,7 +151,7 @@ export class RightAngle3DExpression extends AbstractNonArithmeticExpression {
             this.vertex,
             this.point1,
             this.point2,
-            { ...options, size: this.size }
+            { ...options, ...this.getStyleOptions(), size: this.size }
         );
     }
 

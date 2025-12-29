@@ -17,7 +17,6 @@ import { NumericExpression } from '../NumericExpression.js';
 import { Point3DCommand } from '../../../commands/3d/Point3DCommand.js';
 import { NoOpCommand } from '../../../commands/NoOpCommand.js';
 import { point3d_error_messages } from '../../core/ErrorMessages.js';
-import { ExpressionOptionsRegistry } from '../../core/ExpressionOptionsRegistry.js';
 
 export class Point3DExpression extends AbstractArithmeticExpression {
     static NAME = 'point3d';
@@ -223,7 +222,7 @@ export class Point3DExpression extends AbstractArithmeticExpression {
 
     /**
      * Create a Point3DCommand from this expression
-     * Style comes directly from expression: c() -> color, s() -> radius
+     * Style comes from expression via getStyleOptions(): c() -> color, s() -> strokeWidth (radius), etc.
      * @param {Object} options - Additional options (for registry/animation use)
      * @returns {Point3DCommand|NoOpCommand}
      */
@@ -234,11 +233,12 @@ export class Point3DExpression extends AbstractArithmeticExpression {
         }
 
         // g3d mode - render the point
-        const styleOptions = {
-            color: this.color,
-            radius: this.strokeWidth  // s() maps to point radius
-        };
-        return new Point3DCommand(this.graphExpression, this.getPoint(), { styleOptions });
+        const mergedOptions = { ...options, ...this.getStyleOptions() };
+        // Map strokeWidth to radius for point rendering
+        if (mergedOptions.strokeWidth != null) {
+            mergedOptions.radius = mergedOptions.strokeWidth;
+        }
+        return new Point3DCommand(this.graphExpression, this.getPoint(), { styleOptions: mergedOptions });
     }
 
     /**

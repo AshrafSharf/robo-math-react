@@ -36,7 +36,7 @@ const SettingsPanel = ({ command, commands, onUpdate, onRedrawSingle, onClose, a
     return type;
   }, [command?.expression]);
 
-  // Check allowed tabs from schema (e.g., table only allows 'expression')
+  // Check allowed tabs from schema
   const allowedTabs = getAllowedTabs(expressionType);
 
   // Default tab: expression options

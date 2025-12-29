@@ -207,7 +207,7 @@ export class Curve3DExpression extends AbstractNonArithmeticExpression {
                 yEquation: this.yEquation,
                 zEquation: this.zEquation
             },
-            options
+            { ...options, ...this.getStyleOptions() }
         );
     }
 

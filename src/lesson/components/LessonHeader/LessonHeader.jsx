@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { useLesson } from '../../context';
+import { AssetManagerModal } from '../../../components/AssetManager';
+import { createLesson as apiCreateLesson, updateLesson, deleteLesson } from '../../../api';
 import './LessonHeader.css';
 
 const Icons = {
@@ -21,14 +24,28 @@ const Icons = {
       <path d="M14 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5" />
       <path d="M7 8v5M11 8v5" />
     </svg>
+  ),
+  assets: (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="2" y="2" width="14" height="14" rx="2" />
+      <circle cx="6.5" cy="6.5" r="1.5" />
+      <path d="M16 12l-4-4-6 6" />
+      <path d="M10 16l-4-4-4 4" />
+    </svg>
   )
 };
 
 const LessonHeader = () => {
-  const { lesson, setLessonName, newLesson } = useLesson();
+  const { lesson, setLesson, setLessonName, newLesson } = useLesson();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(lesson.name);
+  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const inputRef = useRef(null);
+
+  // Check if lesson has been saved (has a server-side ID)
+  // Local IDs start with 'lesson_', server IDs are UUIDs
+  const hasLessonId = lesson.id && !lesson.id.startsWith('lesson_');
 
   useEffect(() => {
     setEditValue(lesson.name);
@@ -41,10 +58,20 @@ const LessonHeader = () => {
     }
   }, [isEditing]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmed = editValue.trim();
-    if (trimmed) {
+    if (trimmed && trimmed !== lesson.name) {
       setLessonName(trimmed);
+      // If lesson exists on server, update title immediately
+      if (hasLessonId) {
+        try {
+          await updateLesson(lesson.id, { title: trimmed });
+          toast.success('Title updated');
+        } catch (err) {
+          console.error('Title update failed:', err);
+          toast.error(`Title update failed: ${err.message}`);
+        }
+      }
     } else {
       setEditValue(lesson.name);
     }
@@ -66,15 +93,72 @@ const LessonHeader = () => {
     }
   };
 
-  const handleSaveLesson = () => {
-    // TODO: Implement save to API
-    console.log('Save lesson:', lesson);
+  const handleSaveLesson = async () => {
+    console.log('handleSaveLesson called, saving:', saving, 'hasLessonId:', hasLessonId);
+    if (saving) return;
+    setSaving(true);
+
+    try {
+      // Prepare content for API
+      const content = {
+        pages: lesson.pages,
+        latexVariables: lesson.latexVariables || [],
+        assets: lesson.assets || [],
+      };
+
+      if (hasLessonId) {
+        // Update existing lesson
+        const payload = {
+          title: lesson.name,
+          content,
+        };
+        console.log('Updating lesson:', lesson.id);
+        console.log('PUT payload:', JSON.stringify(payload, null, 2));
+        await updateLesson(lesson.id, payload);
+        console.log('Update successful');
+        toast.success('Lesson saved');
+      } else {
+        // Create new lesson
+        console.log('Creating new lesson');
+        const response = await apiCreateLesson({
+          title: lesson.name,
+          content,
+        });
+        console.log('Create response:', response);
+        // Update local lesson with server ID
+        setLesson({
+          ...lesson,
+          id: response.lesson.id,
+          updatedAt: Date.now(),
+        });
+        toast.success('Lesson created');
+      }
+    } catch (err) {
+      console.error('Save failed:', err);
+      toast.error(`Save failed: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDeleteLesson = () => {
+  const handleDeleteLesson = async () => {
+    if (!hasLessonId) {
+      // Just clear local lesson if not saved to server
+      if (window.confirm('Clear this lesson?')) {
+        newLesson();
+      }
+      return;
+    }
+
     if (window.confirm('Delete this lesson? This action cannot be undone.')) {
-      // TODO: Implement delete via API
-      console.log('Delete lesson:', lesson.id);
+      try {
+        await deleteLesson(lesson.id);
+        toast.success('Lesson deleted');
+        newLesson();
+      } catch (err) {
+        console.error('Delete failed:', err);
+        toast.error(`Delete failed: ${err.message}`);
+      }
     }
   };
 
@@ -98,11 +182,25 @@ const LessonHeader = () => {
         <button className="header-icon-btn" onClick={handleNewLesson} title="New Lesson">
           {Icons.new}
         </button>
-        <button className="header-icon-btn" onClick={handleSaveLesson} title="Save Lesson">
+        <button
+          className="header-icon-btn"
+          onClick={handleSaveLesson}
+          disabled={saving}
+          title={saving ? 'Saving...' : 'Save Lesson'}
+        >
           {Icons.save}
         </button>
         <button className="header-icon-btn header-icon-btn--danger" onClick={handleDeleteLesson} title="Delete Lesson">
           {Icons.delete}
+        </button>
+        <div className="header-divider" />
+        <button
+          className={`header-icon-btn ${isAssetModalOpen ? 'active' : ''}`}
+          onClick={() => setIsAssetModalOpen(true)}
+          disabled={!hasLessonId}
+          title={hasLessonId ? 'Assets' : 'Save lesson first to manage assets'}
+        >
+          {Icons.assets}
         </button>
       </div>
 
@@ -130,6 +228,12 @@ const LessonHeader = () => {
         )}
       </div>
 
+      {/* Asset Manager Modal */}
+      <AssetManagerModal
+        isOpen={isAssetModalOpen}
+        onClose={() => setIsAssetModalOpen(false)}
+        lessonId={hasLessonId ? lesson.id : null}
+      />
     </div>
   );
 };

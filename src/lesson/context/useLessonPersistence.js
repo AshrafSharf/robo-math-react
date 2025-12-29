@@ -20,7 +20,9 @@ export function useLessonPersistence(lesson, setLesson) {
 
     timerRef.current = setTimeout(() => {
       try {
-        localStorage.setItem(STORAGE_KEY, serializeLesson(lesson));
+        const serialized = serializeLesson(lesson);
+        console.log('Saving to localStorage:', lesson.pages[0]?.commands?.length, 'commands');
+        localStorage.setItem(STORAGE_KEY, serialized);
       } catch (e) {
         console.warn('Failed to save lesson to localStorage:', e);
       }
@@ -38,7 +40,9 @@ export function useLessonPersistence(lesson, setLesson) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        return deserializeLesson(stored);
+        const lesson = deserializeLesson(stored);
+        console.log('Loaded from localStorage:', lesson.pages[0]?.commands?.length, 'commands', lesson.pages[0]?.commands?.[0]?.expression);
+        return lesson;
       }
     } catch (e) {
       console.warn('Failed to load lesson from localStorage:', e);

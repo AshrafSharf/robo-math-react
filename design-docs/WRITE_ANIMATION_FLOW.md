@@ -515,7 +515,7 @@ sins = subwithout(M, "\sin")
 // The \sin strokes remain visible, only data is returned
 
 // Later use the selection:
-replace("x", sins)  // Works because \sin is still visible
+msub(sins, "x")  // Works because \sin is still visible
 ```
 
 ## Hide + Selective Write Workflow

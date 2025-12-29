@@ -79,7 +79,7 @@ sel3 = select(m7, "x^2")      # Just x^2
 # Animate selections
 write(sel2)
 fadeout(sel3)
-replace("a^2", sel3)
+msub(sel3, "a^2")
 ```
 
 ## Related
@@ -87,4 +87,4 @@ replace("a^2", sel3)
 - `write` - Create and animate text
 - `select` - Extract patterns from mtext
 - `hide`, `show` - Visibility control
-- `replace` - Replace text content
+- `msub` - Replace text content

@@ -116,7 +116,7 @@ export class Reverse3DExpression extends AbstractNonArithmeticExpression {
             this.originalShapeVarName,
             this.coordinates,
             this.inputType,
-            options
+            { ...options, ...this.getStyleOptions() }
         );
     }
 
